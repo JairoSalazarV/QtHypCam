@@ -1,24 +1,1234 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="geometry" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>885</width>
+    <height>655</height>
    </rect>
   </property>
-  <property name="windowTitle" >
-   <string>MainWindow</string>
+  <property name="mouseTracking">
+   <bool>true</bool>
   </property>
-  <widget class="QMenuBar" name="menuBar" />
-  <widget class="QToolBar" name="mainToolBar" />
-  <widget class="QWidget" name="centralWidget" />
-  <widget class="QStatusBar" name="statusBar" />
+  <property name="windowTitle">
+   <string>Hyperspectral camera</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QTabWidget" name="pbExpPixs">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>861</width>
+      <height>621</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>3</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Cameras</string>
+     </attribute>
+     <widget class="QTableWidget" name="tableLstCams">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>100</y>
+        <width>321</width>
+        <height>231</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Camera</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>IP</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QFrame" name="frame">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>321</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>14</y>
+         <width>275</width>
+         <height>36</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelIP">
+          <property name="text">
+           <string>IP</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="txtIp">
+          <property name="inputMask">
+           <string>999.999.999.999</string>
+          </property>
+          <property name="text">
+           <string>192.168.1.68</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="pbAddIp">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ping to IP typed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="lstImgs.qrc">
+            <normaloff>:/new/icons/imagenInte/list-add.png</normaloff>:/new/icons/imagenInte/list-add.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QPushButton" name="pbSearchAll">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search and add all cameras in the network&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="lstImgs.qrc">
+            <normaloff>:/new/icons/imagenInte/zoom-in.png</normaloff>:/new/icons/imagenInte/zoom-in.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+       <zorder>pbAddIp</zorder>
+       <zorder>labelIP</zorder>
+       <zorder>txtIp</zorder>
+       <zorder>pbSearchAll</zorder>
+      </widget>
+     </widget>
+     <widget class="QFrame" name="frame_2">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>20</y>
+        <width>441</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>14</y>
+         <width>421</width>
+         <height>35</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QLabel" name="labelCommand">
+          <property name="text">
+           <string>Command</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="txtCommand">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="pbSendComm">
+          <property name="toolTip">
+           <string>Send command</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset resource="lstImgs.qrc">
+            <normaloff>:/new/icons/imagenInte/gtk-media-play-ltr.svg</normaloff>:/new/icons/imagenInte/gtk-media-play-ltr.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>15</width>
+            <height>15</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QCheckBox" name="checkBlind">
+          <property name="text">
+           <string>blind</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QTextEdit" name="txtCommRes">
+      <property name="geometry">
+       <rect>
+        <x>380</x>
+        <y>100</y>
+        <width>441</width>
+        <height>231</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbConnect">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>100</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Connect&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/right.gif</normaloff>:/new/icons/imagenInte/right.gif</iconset>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_2">
+     <attribute name="title">
+      <string>Streaming</string>
+     </attribute>
+     <widget class="QPushButton" name="pbStartVideo">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Play&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/player_play.svg</normaloff>:/new/icons/imagenInte/player_play.svg</iconset>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelVideo">
+      <property name="geometry">
+       <rect>
+        <x>450</x>
+        <y>60</y>
+        <width>391</width>
+        <height>311</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="lineWidth">
+       <number>1</number>
+      </property>
+      <property name="midLineWidth">
+       <number>0</number>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="margin">
+       <number>0</number>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>21</x>
+        <y>101</y>
+        <width>157</width>
+        <height>100</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="scrollsLayouts">
+       <item>
+        <widget class="QComboBox" name="cbAWB"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cbExposure"/>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QRadioButton" name="rbFormat1">
+           <property name="text">
+            <string>Gray</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="rbFormat2">
+           <property name="text">
+            <string>YUV420</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QPushButton" name="pbSaveRaspParam">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>480</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save parameters into XML&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/add-484.png</normaloff>:/new/icons/imagenInte/add-484.png</iconset>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>21</x>
+        <y>200</y>
+        <width>221</width>
+        <height>271</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="slidesLayout">
+       <item>
+        <widget class="QSlider" name="slideBrightness">
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideSharpness">
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideContrast">
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideSaturation">
+         <property name="minimum">
+          <number>-100</number>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideShuterSpeed">
+         <property name="maximum">
+          <number>330000</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideISO">
+         <property name="minimum">
+          <number>100</number>
+         </property>
+         <property name="maximum">
+          <number>800</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideExpComp">
+         <property name="minimum">
+          <number>-10</number>
+         </property>
+         <property name="maximum">
+          <number>10</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideRed">
+         <property name="maximum">
+          <number>8</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSlider" name="slideGreen">
+         <property name="maximum">
+          <number>8</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QLabel" name="labelSaturation">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>297</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Saturation</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelRed">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>417</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Red</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelISO">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>358</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ISO</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelContrast">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>268</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Contrast</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelShuterSpeed">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>327</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Shuter Speed</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelGreen">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>447</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Green</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelExposureComp">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>387</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Exposure Comp</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelSharpness">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>237</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Sharpness</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelBrightness">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>206</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Brightness</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="txtCamParamXMLName">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>480</y>
+        <width>221</width>
+        <height>33</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbObtPar">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>290</x>
+        <y>480</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obtain parameters from XML&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbSnapshot">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/snapshot</normaloff>:/new/icons/imagenInte/snapshot</iconset>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="cbPreview">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>95</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Preview</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="cbOneShot">
+      <property name="geometry">
+       <rect>
+        <x>105</x>
+        <y>50</y>
+        <width>95</width>
+        <height>26</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>one shot</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>Cut</string>
+     </attribute>
+     <widget class="QPushButton" name="pbUpdCut">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Update image&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/actualizar.png</normaloff>:/new/icons/imagenInte/actualizar.png</iconset>
+      </property>
+     </widget>
+     <widget class="QGraphicsView" name="gvCut">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>631</width>
+        <height>471</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>530</y>
+        <width>631</width>
+        <height>50</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Position</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSlider" name="slideCutPosX">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Width</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSlider" name="slideCutWX">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>670</x>
+        <y>50</y>
+        <width>46</width>
+        <height>471</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QSlider" name="slideCutPosY">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSlider" name="slideCutWY">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QPushButton" name="pbSaveSquare">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>49</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save small square pin-holl&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/bullet.gif</normaloff>:/new/icons/imagenInte/bullet.gif</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbSaveBigSquare">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save usable area&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/bigSquare.png</normaloff>:/new/icons/imagenInte/bigSquare.png</iconset>
+      </property>
+     </widget>
+     <zorder>layoutWidget</zorder>
+     <zorder>pbUpdCut</zorder>
+     <zorder>gvCut</zorder>
+     <zorder>layoutWidget_2</zorder>
+     <zorder>pbSaveSquare</zorder>
+     <zorder>pbSaveBigSquare</zorder>
+    </widget>
+    <widget class="QWidget" name="tab_5">
+     <attribute name="title">
+      <string>Spectometer</string>
+     </attribute>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>2</x>
+        <y>438</y>
+        <width>851</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridColors">
+       <item row="0" column="0">
+        <widget class="QSlider" name="slideRedLen">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;611.3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal {
+    height: 1px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F00, stop:1 #F00);
+    margin: 2px 0;
+}
+
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #F00, stop:1 #F00);
+    border: 2px solid #F00;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}</string>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QSlider" name="slideBlueLen">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;435.7&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal {
+    height: 1px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00F, stop:1 #00F);
+    margin: 2px 0;
+}
+
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F, stop:1 #00F);
+    border: 2px solid #00F;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}</string>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QSlider" name="slideGreenLen">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;546.1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal {
+    height: 1px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0F0, stop:1 #0F0);
+    margin: 2px 0;
+}
+
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0F0, stop:1 #0F0);
+    border: 2px solid #0F0;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}</string>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>510</y>
+        <width>521</width>
+        <height>36</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="5">
+        <widget class="QCheckBox" name="chbGreen">
+         <property name="text">
+          <string>Green</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pbSpecSnapshot">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="lstImgs.qrc">
+           <normaloff>:/new/icons/imagenInte/snapshot</normaloff>:/new/icons/imagenInte/snapshot</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QCheckBox" name="chbBlue">
+         <property name="text">
+          <string>Blue</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QPushButton" name="pbSnapCal">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Meassure&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="lstImgs.qrc">
+           <normaloff>:/new/icons/imagenInte/digikam.png</normaloff>:/new/icons/imagenInte/digikam.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pbSpecCut">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Cut selected area&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="lstImgs.qrc">
+           <normaloff>:/new/icons/imagenInte/tijeras.png</normaloff>:/new/icons/imagenInte/tijeras.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="8">
+        <widget class="QPushButton" name="pbViewBack">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Hide background&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="lstImgs.qrc">
+           <normaloff>:/new/icons/imagenInte/ojo.png</normaloff>:/new/icons/imagenInte/ojo.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="sbSpecUsb">
+         <property name="maximum">
+          <number>9</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>USB</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QCheckBox" name="chbRed">
+         <property name="text">
+          <string>Red</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Analyisis</string>
+     </attribute>
+     <widget class="QTableWidget" name="tableLstPoints">
+      <property name="geometry">
+       <rect>
+        <x>660</x>
+        <y>30</y>
+        <width>161</width>
+        <height>301</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>x</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>y</string>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="textAlignment">
+        <set>AlignCenter</set>
+       </property>
+      </column>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>674</x>
+        <y>3</y>
+        <width>131</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>List of points</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbPtsClearAll">
+      <property name="geometry">
+       <rect>
+        <x>806</x>
+        <y>62</y>
+        <width>31</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/edit-clear.png</normaloff>:/new/icons/imagenInte/edit-clear.png</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbSavePixs">
+      <property name="geometry">
+       <rect>
+        <x>806</x>
+        <y>95</y>
+        <width>31</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/download-icon.gif</normaloff>:/new/icons/imagenInte/download-icon.gif</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pb2XY">
+      <property name="geometry">
+       <rect>
+        <x>806</x>
+        <y>128</y>
+        <width>31</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/h.png</normaloff>:/new/icons/imagenInte/h.png</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbLoadImg">
+      <property name="geometry">
+       <rect>
+        <x>806</x>
+        <y>29</y>
+        <width>31</width>
+        <height>34</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+    </widget>
+   </widget>
+   <widget class="QProgressBar" name="progBar">
+    <property name="geometry">
+     <rect>
+      <x>557</x>
+      <y>10</y>
+      <width>311</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>24</number>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>885</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionExit"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
  </widget>
- <layoutDefault spacing="6" margin="11" />
- <pixmapfunction></pixmapfunction>
- <resources/>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="lstImgs.qrc"/>
+ </resources>
  <connections/>
 </ui>
