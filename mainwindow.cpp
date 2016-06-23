@@ -26,6 +26,7 @@
 #include <QFormLayout>
 
 //OpenCV
+//Comentario
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
