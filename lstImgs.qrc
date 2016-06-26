@@ -227,5 +227,9 @@
         <file>imagenInte/bigSquare.png</file>
         <file>imagenInte/tijeras.png</file>
         <file>imagenInte/ojo.png</file>
+        <file>imagenInte/calTop.png</file>
+        <file>imagenInte/calRight.png</file>
+        <file>imagenInte/calLeft.png</file>
+        <file>imagenInte/calBottom.png</file>
     </qresource>
 </RCC>

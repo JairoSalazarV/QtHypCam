@@ -17,7 +17,7 @@ GraphicsView::GraphicsView(QObject *parent) : QGraphicsView(){
 
 void GraphicsView::mouseReleaseEvent(QMouseEvent *e)
 {
-    emit signalMouseReleased(e->x(),e->y());
+    emit signalMouseReleased(e);
 
     //qDebug() << "Signal mouse pressed emmited";
 }
@@ -25,7 +25,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *e)
 
 void GraphicsView::mousePressEvent(QMouseEvent *e)
 {
-    emit signalMousePressed(e->x(),e->y());
+    emit signalMousePressed(e);
 
     //qDebug() << "Signal mouse pressed emmited";
 }

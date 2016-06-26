@@ -10,7 +10,10 @@
     #define _BIG_WIDTH 2272
     #define _BIG_HEIGHT 1704
     #define _GRAPH_HEIGHT 440
-    #define  _USE_CAM true
+    #define  _USE_CAM false
+    #define _FACT_MULT 3
+    #define _PRELOAD_IP true
+    #define PI 3.14159265
 
     typedef struct linearRegresion{
         float a;

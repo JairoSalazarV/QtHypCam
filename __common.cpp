@@ -90,8 +90,8 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
     //Turn on camera
     //..
     CvCapture* usbCam  = cvCreateCameraCapture( usb );
-    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_WIDTH,  320*8 );
-    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_HEIGHT, 240*8 );
+    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_WIDTH,  320*_FACT_MULT );
+    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_HEIGHT, 240*_FACT_MULT );
     assert( usbCam );
     QtDelay(stabMs);
 
@@ -126,6 +126,11 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
 
 bool saveFile( QString fileName, QString contain ){
     QFile file(fileName);
+    if(file.exists()){
+        if(!file.remove()){
+            return false;
+        }
+    }
     if (file.open(QIODevice::ReadWrite)) {
         QTextStream stream(&file);
         stream << contain << endl;
@@ -134,6 +139,14 @@ bool saveFile( QString fileName, QString contain ){
         return false;
     }
     return true;
+}
+
+QImage funcRotateImage(QString filePath, float rotAngle){
+    QTransform transformation;
+    transformation.rotate(rotAngle);
+    QImage tmpImg(filePath);
+    tmpImg = tmpImg.transformed(transformation);
+    return tmpImg;
 }
 
 QString readAllFile( QString filePath ){

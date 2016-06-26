@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>885</width>
-    <height>655</height>
+    <height>698</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -653,6 +653,19 @@
        <string>one shot</string>
       </property>
      </widget>
+     <widget class="QLineEdit" name="txtSnapPath">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>10</y>
+        <width>113</width>
+        <height>33</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>./snapshots/</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">
@@ -821,6 +834,260 @@
      <zorder>layoutWidget_2</zorder>
      <zorder>pbSaveSquare</zorder>
      <zorder>pbSaveBigSquare</zorder>
+    </widget>
+    <widget class="QWidget" name="tab_6">
+     <attribute name="title">
+      <string>Calib double axis</string>
+     </attribute>
+     <widget class="QPushButton" name="pbObtPar_2">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>280</x>
+        <y>556</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Obtain parameters from XML&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
+     <widget class="QWidget" name="layoutWidget_3">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>485</y>
+        <width>571</width>
+        <height>71</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridCalLens">
+       <item row="0" column="0">
+        <widget class="QSlider" name="slideCalRlen">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;611.3&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal {
+    height: 1px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F00, stop:1 #F00);
+    margin: 2px 0;
+}
+
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #F00, stop:1 #F00);
+    border: 2px solid #F00;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}</string>
+         </property>
+         <property name="maximum">
+          <number>100</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QSlider" name="slideCalBLen">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;435.7&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal {
+    height: 1px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #00F, stop:1 #00F);
+    margin: 2px 0;
+}
+
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #00F, stop:1 #00F);
+    border: 2px solid #00F;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}</string>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QSlider" name="slideCalGLen">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;546.1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QSlider::groove:horizontal {
+    height: 1px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0F0, stop:1 #0F0);
+    margin: 2px 0;
+}
+
+
+QSlider::handle:horizontal {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #0F0, stop:1 #0F0);
+    border: 2px solid #0F0;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}</string>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="layoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>576</x>
+        <y>0</y>
+        <width>46</width>
+        <height>481</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="0" column="0">
+        <widget class="QSlider" name="slide2AxCalPos">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSlider" name="slide2AxCalRot">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="singleStep">
+          <number>1</number>
+         </property>
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QFrame" name="containerCalSave">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>10</y>
+        <width>191</width>
+        <height>251</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>15</x>
+         <y>30</y>
+         <width>160</width>
+         <height>192</height>
+        </rect>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pbCalSaveRot">
+          <property name="text">
+           <string>Save rotation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="pbClearCalScene">
+          <property name="text">
+           <string>Clear line</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <layout class="QGridLayout" name="gridLayout_7">
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pbCalSaveTop">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="lstImgs.qrc">
+              <normaloff>:/new/icons/imagenInte/calTop.png</normaloff>:/new/icons/imagenInte/calTop.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QPushButton" name="pbCalSaveLeft">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="lstImgs.qrc">
+              <normaloff>:/new/icons/imagenInte/calLeft.png</normaloff>:/new/icons/imagenInte/calLeft.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <widget class="QPushButton" name="pbCalSaveright">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="lstImgs.qrc">
+              <normaloff>:/new/icons/imagenInte/calRight.png</normaloff>:/new/icons/imagenInte/calRight.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="pbCalSaveBottom">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="lstImgs.qrc">
+              <normaloff>:/new/icons/imagenInte/calBottom.png</normaloff>:/new/icons/imagenInte/calBottom.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
@@ -1190,7 +1457,7 @@ QSlider::handle:horizontal {
      </rect>
     </property>
     <property name="value">
-     <number>24</number>
+     <number>0</number>
     </property>
    </widget>
   </widget>

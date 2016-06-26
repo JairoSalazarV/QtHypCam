@@ -44,6 +44,8 @@
 
     linearRegresion *funcCalcLinReg(float *X);
 
+    QImage funcRotateImage(QString filePath, float rotAngle);
+
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
     //QImage *IplImageToQImage(const IplImage * iplImage, uchar **data,

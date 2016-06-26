@@ -15,15 +15,25 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    QString auxQstring;
+
 public:
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
 public slots:
-    void funcAddPoint( int x, int y );
+    void funcAddPoint(QMouseEvent *e);
+
+
 
 private slots:
+
+    void funcEndRect(QMouseEvent *e, GraphicsView *tmpCanvas);
+
+    void funcCalibMouseRelease(QMouseEvent *e);
+
+    void funcSpectMouseRelease(QMouseEvent *e);
 
     void on_pbGetVideo_clicked();
 
@@ -157,9 +167,7 @@ private slots:
 
     void funcUpdateColorSensibilities();
 
-    void funcBeginRect(int x, int y);
-
-    void funcEndRect(int x, int y);
+    void funcBeginRect(QMouseEvent *e);
 
     void on_pbSpecCut_clicked();
 
@@ -178,6 +186,21 @@ private slots:
     void on_pbViewBack_clicked();
 
     void on_pbSnapCal_clicked();
+
+    void on_pbObtPar_2_clicked();
+
+
+    void on_slide2AxCalPos_valueChanged(int value);
+
+    void updateCalibLine();
+
+    void on_slide2AxCalRot_valueChanged(int value);
+
+    void on_pbCalSaveRot_clicked();
+
+    void refreshGvCalib(QString fileName);
+
+    void on_pbClearCalScene_clicked();
 
 private:
     Ui::MainWindow *ui;

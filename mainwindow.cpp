@@ -26,7 +26,6 @@
 #include <QFormLayout>
 
 //OpenCV
-//Comentario
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -38,6 +37,7 @@ structRaspcamSettings *raspcamSettings = (structRaspcamSettings*)malloc(sizeof(s
 
 GraphicsView *myCanvas;
 GraphicsView *canvasSpec;
+GraphicsView *canvasCalib;
 
 QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/200Id/CROPED/100.tif";
 //QString impPath = "./imgResources/CIE.png";
@@ -80,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //Create Graphic View Widget
     myCanvas = new GraphicsView;
     canvasSpec = new GraphicsView;
+    canvasCalib = new GraphicsView;
     //QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/25Id/15.png";
     funcPutImageIntoGV( myCanvas, imgPath );
 
@@ -97,28 +98,44 @@ MainWindow::MainWindow(QWidget *parent) :
     lstSelPix = new QList<QPair<int,int>>;
     connect(
                 myCanvas,
-                SIGNAL( signalMousePressed(int, int) ),
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
                 this,
-                SLOT( funcAddPoint(int, int) )
+                SLOT( funcAddPoint(QMouseEvent*) )
            );
     ui->progBar->setVisible(false);
+
+    //Connect to calib double axis
+    connect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcBeginRect(QMouseEvent*) )
+           );
+    connect(
+                canvasCalib,
+                SIGNAL( signalMouseReleased(QMouseEvent*) ),
+                this,
+                SLOT( funcCalibMouseRelease(QMouseEvent*) )
+           );
 
     //Connect to spec
     connect(
                 canvasSpec,
-                SIGNAL( signalMousePressed(int, int) ),
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
                 this,
-                SLOT( funcBeginRect(int, int) )
+                SLOT( funcBeginRect(QMouseEvent*) )
            );
     connect(
                 canvasSpec,
-                SIGNAL( signalMouseReleased(int, int) ),
+                SIGNAL( signalMouseReleased(QMouseEvent*) ),
                 this,
-                SLOT( funcEndRect(int, int) )
+                SLOT( funcSpectMouseRelease(QMouseEvent*) )
            );
 
+
+
     //Try to connect to the last IP
-    if( false ){
+    if( _PRELOAD_IP ){
         QString lastIP = readAllFile( "./settings/lastIp.hypcam" );
         lastIP.replace("\n","");
         ui->txtIp->setText(lastIP);
@@ -143,7 +160,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::funcAddPoint( int x, int y ){
+void MainWindow::funcSpectMouseRelease( QMouseEvent *e){
+    funcEndRect(e, canvasSpec );
+    funcDrawLines(0,0,0,0);
+}
+
+void MainWindow::funcCalibMouseRelease( QMouseEvent *e){
+    funcEndRect( e, canvasCalib );
+    ui->pbClearCalScene->setText("Clear line");
+}
+
+void MainWindow::funcAddPoint( QMouseEvent *e ){
     //Correct pointer
     //x = x-3;
     //y = y-4;
@@ -153,12 +180,12 @@ void MainWindow::funcAddPoint( int x, int y ){
     ui->tableLstPoints->setItem(
                                     idRow,
                                     0,
-                                    new QTableWidgetItem( QString::number(x) )
+                                    new QTableWidgetItem( QString::number(e->x()) )
                                 );
     ui->tableLstPoints->setItem(
                                     idRow,
                                     1,
-                                    new QTableWidgetItem( QString::number(y) )
+                                    new QTableWidgetItem( QString::number(e->y()) )
                                 );
 
     funcUpdatePolitope();
@@ -601,7 +628,10 @@ bool MainWindow::funcReceiveFile(
                 }
             }
         }
+        ui->progBar->setValue(0);
         ui->progBar->setVisible(false);
+        QtDelay(30);
+
     }
 
     qDebug() << "tmpPos: " << tmpPos;
@@ -1173,9 +1203,8 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
     ui->progBar->setValue(0);
-    QtDelay(20);
     ui->progBar->setVisible(true);
-    QtDelay(20);
+    QtDelay(50);
 
     //Set required image's settings
     //..
@@ -1223,31 +1252,27 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
     //Tranform image because cut image was manipulated by the raspberry
     //..
-    QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB888 );
-    if( reqImg->needCut ){
-        int r,c,i;
-        QRgb     tmpPix;
-        i=0;
+    QImage tmpImg( QSize(tmpSqW, tmpSqH), QImage::Format_RGB888 );
+    qDebug() << "imgW: " << tmpImg.width();
+    qDebug() << "imgH: " << tmpImg.height();
+
+
+    int r,c,i;
+    QRgb tmpPix;
+    i=0;
+    for(r=0;r<tmpSqH;r++){
         for(c=0;c<tmpSqW;c++){
-            for(r=0;r<tmpSqH;r++){
-                tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-                tmpImg.setPixel( r, c, tmpPix );
-                i += 3;
+            if(!tmpImg.valid(c,r)){
+                qDebug() << "Invalid r: " << r << " c: "<<c;
+                QtDelay(20);
+                return false;
             }
-        }
-    }else{
-        int r,c,i;
-        QRgb     tmpPix;
-        i=0;
-        for(r=0;r<tmpSqH;r++){
-            for(c=0;c<tmpSqW;c++){
-                tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-                tmpImg.setPixel( c, r, tmpPix );
-                i += 3;
-            }
+            tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
+            tmpImg.setPixel( c/*x*/, r/*y*/, tmpPix );
+            i += 3;
         }
     }
-    tmpImg.save("./Results/tmpCropFromSave.ppm");
+    //tmpImg.save("./Results/tmpCropFromSave.ppm");
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpImg) );
     ui->labelVideo->setFixedWidth( tmpSqW );
     ui->labelVideo->setFixedHeight( tmpSqH );
@@ -1600,7 +1625,6 @@ void MainWindow::funcGetSnapshot()
     QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB32 );
     QRgb tmpPix;
     i=0;
-
     for(r=0;r<tmpSqH;r++){
         for(c=0;c<tmpSqW;c++){
             tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
@@ -1619,9 +1643,10 @@ void MainWindow::funcGetSnapshot()
     //Save snapshot
     //..
     //Take file name
-    char tmpFileName[16+14];
-    snprintf(tmpFileName, 16+14, "./snapshots/%lu.ppm", time(NULL));
-    std::ofstream outFile ( tmpFileName, std::ios::binary );
+    QString tmpFileName = ui->txtSnapPath->text().trimmed();
+    tmpFileName.append(QString::number(time(NULL)));
+    tmpFileName.append(".ppm");
+    std::ofstream outFile ( tmpFileName.toStdString(), std::ios::binary );
     outFile<<"P6\n"<<tmpSqW<<" "<<tmpSqH<<" 255\n";
     outFile.write( (char*)tmpFrame, 3*tmpSqW*tmpSqH );
     outFile.close();
@@ -1906,12 +1931,12 @@ void MainWindow::on_pbSpecSnapshot_clicked()
     //Turn on camera
     //..
     CvCapture* usbCam  = cvCreateCameraCapture( ui->sbSpecUsb->value() );
-    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_WIDTH,  320*8 );
-    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_HEIGHT, 240*8 );
+    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_WIDTH,  320*_FACT_MULT );
+    cvSetCaptureProperty( usbCam,  CV_CAP_PROP_FRAME_HEIGHT, 240*_FACT_MULT );
     assert( usbCam );
 
     //Create image
-    //..
+    //..    
     IplImage *tmpCam = cvQueryFrame( usbCam );
     if( ( tmpCam = cvQueryFrame( usbCam ) ) ){
         //Get the image
@@ -1972,30 +1997,25 @@ void MainWindow::on_pbSpecSnapshot_clicked()
 
 }
 
-void MainWindow::funcBeginRect(int x, int y){
-    calStruct.x1 = x;
-    calStruct.y1 = y;
+void MainWindow::funcBeginRect(QMouseEvent* e){
+    calStruct.x1 = e->x();
+    calStruct.y1 = e->y();
     qDebug() << "funcBeginRect";
 }
 
-void MainWindow::funcEndRect(int x, int y){
-    calStruct.x2 = x;
-    calStruct.y2 = y;
+void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
+    calStruct.x2 = e->x();
+    calStruct.y2 = e->y();
     ui->pbSpecCut->setEnabled(true);
-    qDeleteAll(canvasSpec->scene()->items());
-    //canvasSpec->scene()->clear();
+    qDeleteAll(tmpCanvas->scene()->items());
     int x1, y1, x2, y2;
-    x1 = (calStruct.x1<=x)?calStruct.x1:x;
-    x2 = (calStruct.x1>=x)?calStruct.x1:x;
-    y1 = (calStruct.y1<=y)?calStruct.y1:y;
-    y2 = (calStruct.y1>=y)?calStruct.y1:y;
+    x1 = (calStruct.x1<=e->x())?calStruct.x1:e->x();
+    x2 = (calStruct.x1>=e->x())?calStruct.x1:e->x();
+    y1 = (calStruct.y1<=e->y())?calStruct.y1:e->y();
+    y2 = (calStruct.y1>=e->y())?calStruct.y1:e->y();
     QGraphicsRectItem* tmpRect = new QGraphicsRectItem(x1,y1,x2-x1,y2-y1);
     tmpRect->setPen( QPen(Qt::red) );
-    canvasSpec->scene()->addItem(tmpRect);
-    qDebug() << "funcEndRect";
-
-    //Redrawn lines
-    funcDrawLines(0,0,0,0);
+    tmpCanvas->scene()->addItem(tmpRect);
 }
 
 void MainWindow::on_chbRed_clicked()
@@ -2271,7 +2291,7 @@ void MainWindow::on_pbSnapCal_clicked()
 
     //Calculate wavelen
     //..
-    int tmpX;
+    //int tmpX;
     float tmpWave;
     float pixX[] = {
                         (float)ui->slideBlueLen->value(),
@@ -2307,3 +2327,164 @@ void MainWindow::on_pbSnapCal_clicked()
 
 
 
+
+void MainWindow::on_pbObtPar_2_clicked()
+{
+    //Select image
+    //..
+    auxQstring = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select image..."),
+                                                        "./snapshots/Calib/",
+                                                        "(*.ppm);;"
+                                                     );
+    if( auxQstring.isEmpty() ){
+        return (void)NULL;
+    }    
+
+    //Rotate if requires
+    //..
+    if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
+        float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
+        QImage imgRot = funcRotateImage(auxQstring, rotAngle);
+        auxQstring = "./tmpImages/rotated.ppm";
+        imgRot.save(auxQstring);
+    }
+
+    //Refresh image in scene
+    //..
+    //Show image
+    QPixmap pix(auxQstring);
+    pix = pix.scaled(QSize(640,480),Qt::KeepAspectRatio);
+    qDebug() << "width: "<< pix.width();
+    qDebug() << "height: "<< pix.height();
+    //It creates the scene to be loaded into Layout
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    canvasCalib->setBackgroundBrush(pix);
+    canvasCalib->setScene( sceneCalib );
+    canvasCalib->resize(pix.width(),pix.height());
+    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    //Load layout
+    QLayout *layout = new QVBoxLayout();
+    layout->addWidget(canvasCalib);
+    layout->setEnabled(false);
+    ui->tab_6->setLayout(layout);
+
+    /*
+    qDebug() << "tres";
+    ui->tab_6->layout()->addWidget(canvasCalib);    
+    qDebug() << "cuatro";
+    ui->tab_6->layout()->setEnabled(false);
+    ui->tab_6->layout()->setAlignment(Qt::AlignLeft);
+    */
+
+    //refreshGvCalib( auxQstring );
+
+    //It enables slides
+    //..
+    ui->slide2AxCalPos->setEnabled(true);
+    ui->slide2AxCalRot->setEnabled(true);
+    int tmpMaxRot = 25;
+    int  maxPos = (canvasCalib->width()>=canvasCalib->height())?canvasCalib->width():canvasCalib->height();
+    ui->slide2AxCalPos->setMaximum(0);
+    ui->slide2AxCalPos->setMaximum(maxPos);
+    ui->slide2AxCalRot->setMinimum(-tmpMaxRot);
+    ui->slide2AxCalRot->setMaximum(tmpMaxRot);
+    ui->slide2AxCalRot->setValue(0);
+    ui->slideCalRlen->setEnabled(true);
+    ui->slideCalGLen->setEnabled(true);
+    ui->slideCalBLen->setEnabled(true);
+    ui->slideCalRlen->setMaximum(maxPos);
+    ui->slideCalGLen->setMaximum(maxPos);
+    ui->slideCalBLen->setMaximum(maxPos);
+    ui->containerCalSave->setEnabled(true);
+
+
+}
+
+
+
+void MainWindow::refreshGvCalib( QString fileName )
+{
+    //Add image to graphic view
+    //
+    QImage imgOrig(fileName);
+    QImage tmpImg = imgOrig.scaled(QSize(640,480),Qt::KeepAspectRatio);
+    QGraphicsScene *scene = new QGraphicsScene(0,0,tmpImg.width(),tmpImg.height());
+    scene->setBackgroundBrush( QPixmap::fromImage(tmpImg) );
+    canvasCalib->setScene( scene );
+    canvasCalib->resize(tmpImg.width(),tmpImg.height());
+    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+
+}
+
+void MainWindow::on_slide2AxCalPos_valueChanged(int value)
+{
+    value = value;
+    updateCalibLine();
+}
+
+void MainWindow::updateCalibLine(){
+    canvasCalib->scene()->clear();
+
+    //Creates white line
+    //..
+    int x1,x2,y;
+    y = canvasCalib->height() - ui->slide2AxCalPos->value();
+    x1 = 0;
+    x2 = canvasCalib->width();
+    float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
+    canvasCalib->scene()->addLine(x1,y,x2,y,QPen(QColor("#FAE330")));
+    ui->slide2AxCalPos->setToolTip( QString::number(ui->slide2AxCalPos->value()) );
+    ui->slide2AxCalRot->setToolTip( QString::number(rotAngle) );
+    ui->pbClearCalScene->setText("Clear line");
+
+}
+
+void MainWindow::on_slide2AxCalRot_valueChanged(int value)
+{
+    //Prepare variables
+    //..
+    value = value;
+    QString tmpPath = "./tmpImages/rotated.ppm";
+    float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
+    QImage tmpImg(auxQstring);
+
+    //Save image rotated
+    //..
+    QTransform transformation;
+    transformation.rotate(rotAngle);
+    tmpImg = tmpImg.transformed(transformation);
+    tmpImg.save(tmpPath);
+
+    //Refresh image in scene
+    //..
+    refreshGvCalib( tmpPath );
+    updateCalibLine();
+
+}
+
+void MainWindow::on_pbCalSaveRot_clicked()
+{
+    //Points from scene
+    float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
+    qDebug() << "rotAngle: " << rotAngle;
+    if( saveFile("./settings/calib/rotation.hypcam",QString::number(rotAngle)) ){
+        funcShowMsg("Success","Rotation saved successfully: "+QString::number(rotAngle));
+    }else{
+        funcShowMsg("ERROR","Saving rotation");
+    }
+}
+
+void MainWindow::on_pbClearCalScene_clicked()
+{
+    if( ui->pbClearCalScene->text() == "Clear line" ){
+        ui->pbClearCalScene->setText("Show line");
+        canvasCalib->scene()->clear();
+    }else{
+        ui->pbClearCalScene->setText("Clear line");
+        updateCalibLine();
+    }
+}
