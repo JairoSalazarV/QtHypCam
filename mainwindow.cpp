@@ -29,6 +29,11 @@
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
+//Custom
+#include <customline.h>
+#include <selcolor.h>
+
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -47,6 +52,26 @@ QList<QPair<int,int>> *lstSelPix;
 
 //int tmpRect[4];
 calcAndCropSnap calStruct;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -93,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableLstPoints->setMaximumHeight(200);
     ui->tableLstPoints->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
+    /*
     //Connect to image
     lstBorder = new QList<QPair<int,int>>;
     lstSelPix = new QList<QPair<int,int>>;
@@ -131,6 +157,8 @@ MainWindow::MainWindow(QWidget *parent) :
                 this,
                 SLOT( funcSpectMouseRelease(QMouseEvent*) )
            );
+    */
+
 
 
 
@@ -144,12 +172,21 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->pbConnect->click();
     }
 
+    //Fill the lastsnapshots path as default
+    QString lastSnapPath = readAllFile( "./settings/lastSnapPath.hypcam" );
+    lastSnapPath.replace("\n","");
+    ui->txtSnapPath->setText(lastSnapPath);
+
     //Set layout into spectometer
     QFormLayout *layout = new QFormLayout;
     ui->tab_5->setLayout(layout);
 
     if(_USE_CAM)ui->sbSpecUsb->setValue(1);
     else ui->sbSpecUsb->setValue(0);
+
+    //Enable-Disable buttoms
+    //..
+    ui->toolBarDraw->setEnabled(false);
 
 
 }
@@ -621,6 +658,7 @@ bool MainWindow::funcReceiveFile(
             //Request other part
             if( i<(int)numMsgs ){
                 //qDebug() << "W2";
+                QtDelay(1);
                 n = ::write(sockfd,"sendpart",8);
                 if(n<0){
                     qDebug() << "ERROR: Sending part-file request";
@@ -1106,6 +1144,7 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
     qDebug() << "Socket opened";
 
     //Require photo size
+    //QtDelay(5);
     ::write(sockfd,reqImg,sizeof(strReqImg));
     qDebug() << "Img request sent";
 
@@ -1586,6 +1625,11 @@ void MainWindow::funcGetSnapshot()
 
     ui->progBar->setVisible(true);
 
+    //Save path
+    //..
+    saveFile("./settings/lastSnapPath.hypcam",ui->txtSnapPath->text());
+
+
     //Set required image's settings
     //..
     strReqImg *reqImg   = (strReqImg*)malloc(sizeof(strReqImg));
@@ -1957,7 +2001,7 @@ void MainWindow::on_pbSpecSnapshot_clicked()
         //..        
 
         //Show image
-        QPixmap pix(tmpName);
+        QPixmap pix(tmpName);        
         pix = pix.scaledToHeight( _GRAPH_HEIGHT );
         QGraphicsScene *scene = new QGraphicsScene(0,0,pix.width(),pix.height());
         canvasSpec->setBackgroundBrush(pix);
@@ -2180,6 +2224,7 @@ void MainWindow::on_pbSpecCut_clicked()
     //qDeleteAll(canvasSpec->scene()->items());
     QPixmap cropped = tmpPix.copy( QRect( calStruct.X1, calStruct.Y1, calStruct.lenW, calStruct.lenH ) );
     cropped.save("./snapshots/tmpThumb.png");
+    cropped.save("./snapshots/tmpUSB.png");
     QGraphicsScene *scene = new QGraphicsScene(0,0,cropped.width(),cropped.height());
     canvasSpec->setBackgroundBrush(cropped);
     canvasSpec->setCacheMode(QGraphicsView::CacheNone);
@@ -2399,6 +2444,7 @@ void MainWindow::on_pbObtPar_2_clicked()
     ui->slideCalGLen->setMaximum(maxPos);
     ui->slideCalBLen->setMaximum(maxPos);
     ui->containerCalSave->setEnabled(true);
+    ui->toolBarDraw->setEnabled(true);
 
 
 }
@@ -2412,12 +2458,13 @@ void MainWindow::refreshGvCalib( QString fileName )
     QImage imgOrig(fileName);
     QImage tmpImg = imgOrig.scaled(QSize(640,480),Qt::KeepAspectRatio);
     QGraphicsScene *scene = new QGraphicsScene(0,0,tmpImg.width(),tmpImg.height());
+    canvasCalib->scene()->setBackgroundBrush( QPixmap::fromImage(tmpImg) );
+    canvasCalib->resize(tmpImg.width(),tmpImg.height());
     scene->setBackgroundBrush( QPixmap::fromImage(tmpImg) );
     canvasCalib->setScene( scene );
     canvasCalib->resize(tmpImg.width(),tmpImg.height());
-    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-
+    //canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    //canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 }
 
 void MainWindow::on_slide2AxCalPos_valueChanged(int value)
@@ -2448,9 +2495,9 @@ void MainWindow::on_slide2AxCalRot_valueChanged(int value)
     //Prepare variables
     //..
     value = value;
-    QString tmpPath = "./tmpImages/rotated.ppm";
+    QString tmpPath = "./tmpImages/tmpImg2Disp.ppm";
     float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
-    QImage tmpImg(auxQstring);
+    QImage tmpImg(tmpPath);
 
     //Save image rotated
     //..
@@ -2458,6 +2505,7 @@ void MainWindow::on_slide2AxCalRot_valueChanged(int value)
     transformation.rotate(rotAngle);
     tmpImg = tmpImg.transformed(transformation);
     tmpImg.save(tmpPath);
+    QtDelay(100);
 
     //Refresh image in scene
     //..
@@ -2487,4 +2535,267 @@ void MainWindow::on_pbClearCalScene_clicked()
         ui->pbClearCalScene->setText("Clear line");
         updateCalibLine();
     }
+}
+
+void MainWindow::on_slide2AxCalThre_valueChanged(int value)
+{
+    QImage *imgThre = new QImage(auxQstring);
+    funcImgThreshold( value, imgThre );
+    QString tmpFilePaht = "./tmpImages/tmpImg2Disp.ppm";
+    if( imgThre->save(tmpFilePaht) ){
+        QtDelay(100);
+        QPixmap pix(tmpFilePaht);
+        pix = pix.scaled(QSize(640,480),Qt::KeepAspectRatio);
+        canvasCalib->setBackgroundBrush(pix);
+        ui->slide2AxCalThre->setToolTip(QString::number(value));
+    }
+}
+
+void MainWindow::funcImgThreshold( int threshold, QImage *tmpImage ){
+    int r, c;
+    QRgb pix;
+    for(r=0;r<tmpImage->height();r++){
+        for(c=0;c<tmpImage->width();c++){
+            pix = tmpImage->pixel(c,r);
+            if( qRed(pix)<=threshold && qGreen(pix)<=threshold && qBlue(pix)<=threshold ){
+                tmpImage->setPixel(QPoint(c,r),0);
+            }
+        }
+    }
+}
+
+void MainWindow::on_pbCalSaveTop_clicked()
+{
+
+    //Update image view
+    //..
+    QImage tmpImg( auxQstring );
+    funcUpdateImgView( &tmpImg );
+
+    //Crop image
+    //..
+    funcTransPix(
+                    &calStruct,
+                    canvasCalib->width(),
+                    canvasCalib->height(),
+                    tmpImg.width(),
+                    tmpImg.height()
+                );
+
+    //Analize square selected
+    //..
+    QImage imgCrop = tmpImg.copy(
+                                    calStruct.X1,
+                                    calStruct.Y1,
+                                    calStruct.lenW,
+                                    calStruct.lenH
+                                );
+    colorAnalyseResult *tmpRes = funcAnalizeImage( &imgCrop );
+
+
+    //Draw fluorescent RGB pixels
+    //..
+    int tmpX;
+    //Clear scene
+    canvasCalib->scene()->clear();
+    //Regresh rec
+    canvasCalib->scene()->addRect(calStruct.x1,calStruct.y1,calStruct.x2-calStruct.x1,calStruct.y2-calStruct.y1,QPen(QColor("#FF0000")));
+    //Red
+    tmpX = round(
+                    (float)((calStruct.X1 + tmpRes->maxRx)*canvasCalib->width()) /
+                    (float)tmpImg.width()
+                );
+    customLine *redLine = new customLine(QPoint(tmpX,0),QPoint(tmpX,canvasCalib->height()),QPen(Qt::red));
+    canvasCalib->scene()->addItem(redLine);
+    redLine->setToolTip("Red");
+    redLine->parameters.name = "Vertical-Red-Right-Line";
+    redLine->parameters.orientation = 2;
+    redLine->parameters.lenght = canvasCalib->height();
+    redLine->parameters.movible = false;
+    //Green
+    tmpX = round(
+                    (float)((calStruct.X1 + tmpRes->maxGx)*canvasCalib->width()) /
+                    (float)tmpImg.width()
+                );
+    customLine *GreenLine = new customLine(QPoint(tmpX,0),QPoint(tmpX,canvasCalib->height()),QPen(Qt::green));
+    canvasCalib->scene()->addItem(GreenLine);
+    GreenLine->setToolTip("Green");
+    GreenLine->parameters.name = "Vertical-Green-Right-Line";
+    GreenLine->parameters.orientation = 2;
+    GreenLine->parameters.lenght = canvasCalib->height();
+    GreenLine->parameters.movible = false;
+    //Blue
+    tmpX = round(
+                    (float)((calStruct.X1 + tmpRes->maxBx)*canvasCalib->width()) /
+                    (float)tmpImg.width()
+                );
+    customLine *BlueLine = new customLine(QPoint(tmpX,0),QPoint(tmpX,canvasCalib->height()),QPen(Qt::blue));
+    canvasCalib->scene()->addItem(BlueLine);
+    BlueLine->setToolTip("Blue");
+    BlueLine->parameters.name = "Vertical-Blue-Right-Line";
+    BlueLine->parameters.orientation = 2;
+    BlueLine->parameters.lenght = canvasCalib->height();
+    BlueLine->parameters.movible = false;
+
+
+    /*
+    //Red
+    tmpX = round(
+                    (float)((calStruct.X1 + tmpRes->maxRx)*canvasCalib->width()) /
+                    (float)tmpImg.width()
+                );
+    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#FF0000"))));
+    qDebug() << "Red: " << tmpX;
+    //Green
+    tmpX = round(
+                    (float)((calStruct.X1 + tmpRes->maxGx)*canvasCalib->width()) /
+                    (float)tmpImg.width()
+                );
+    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#00FF00"))));
+    qDebug() << "Green: " << tmpX;
+    //Blue
+    tmpX = round(
+                    (float)((calStruct.X1 + tmpRes->maxBx)*canvasCalib->width()) /
+                    (float)tmpImg.width()
+                );
+    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#0000FF"))));
+    qDebug() << "Blue: " << tmpX;
+    */
+
+}
+
+void MainWindow::funcUpdateImgView(QImage *tmpImg){
+    //Applies rotation
+    //..
+
+    //Applies threshold
+    //..
+    if( ui->slide2AxCalThre->value()>0 ){
+        funcImgThreshold( ui->slide2AxCalThre->value(), tmpImg );
+    }
+}
+
+void MainWindow::on_pbSpecLoadSnap_clicked()
+{
+    //Select image
+    //..
+    auxQstring = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select image..."),
+                                                        "./snapshots/Calib/",
+                                                        "(*.ppm);;"
+                                                     );
+    if( auxQstring.isEmpty() ){
+        return (void)NULL;
+    }
+
+    //Rotate if requires
+    //..
+    if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
+        float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
+        QImage imgRot = funcRotateImage(auxQstring, rotAngle);
+        auxQstring = "./tmpImages/rotated.ppm";
+        imgRot.save(auxQstring);
+    }
+
+
+    //Create canvas
+    //Display accum
+    //..
+
+    //Show image
+    QPixmap pix(auxQstring);
+    pix.save("./snapshots/tmpUSB.png");
+    pix = pix.scaledToHeight( _GRAPH_HEIGHT );
+    QGraphicsScene *scene = new QGraphicsScene(0,0,pix.width(),pix.height());
+    canvasSpec->setBackgroundBrush(pix);
+    canvasSpec->setScene( scene );
+    canvasSpec->resize(pix.width(),pix.height());
+    canvasSpec->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasSpec->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    ui->tab_5->layout()->addWidget(canvasSpec);
+    ui->tab_5->layout()->setEnabled(false);
+    ui->tab_5->layout()->setAlignment(Qt::AlignLeft);
+    ui->gridColors->setAlignment(Qt::AlignLeft);
+    ui->gridColors->setAlignment(Qt::AlignLeft);
+
+
+    ui->slideRedLen->setMaximumWidth(pix.width());
+    ui->slideGreenLen->setMaximumWidth(pix.width());
+    ui->slideBlueLen->setMaximumWidth(pix.width());
+
+    pix.save("./snapshots/tmpThumb.png");
+
+
+}
+
+void MainWindow::on_actionRect_triggered()
+{
+    selColor *selCol = new selColor(this);
+    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addRect2Calib(QString)));
+    selCol->setModal(true);
+    selCol->exec();
+    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addRect2Calib(QString)));
+}
+
+void MainWindow::on_actionCircle_triggered()
+{
+    selColor *selCol = new selColor(this);
+    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addCircle2Calib(QString)));
+    selCol->setModal(true);
+    selCol->exec();
+    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addCircle2Calib(QString)));
+}
+
+void MainWindow::on_actionHorizontalLine_triggered()
+{
+    selColor *selCol = new selColor(this);
+    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
+    selCol->setModal(true);
+    selCol->exec();
+    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
+}
+
+void MainWindow::on_actionVerticalLine_triggered()
+{
+    selColor *selCol = new selColor(this);
+    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
+    selCol->setModal(true);
+    selCol->exec();
+    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
+}
+
+void MainWindow::addRect2Calib(QString colSeld){
+    qDebug() << "Rect: " << colSeld;
+
+}
+
+void MainWindow::addCircle2Calib(QString colSeld){
+    qDebug() << "Circle: " << colSeld;
+
+}
+
+void MainWindow::addVertLine2Calib(QString colSeld){
+    int x = round( canvasCalib->width() / 2 );
+    QPoint p1(x,0);
+    QPoint p2(x,canvasCalib->height());
+    canvasCalib->scene()->addItem( new customLine(p1, p2, QPen(QColor(colSeld))) );
+}
+
+void MainWindow::addHorLine2Calib(QString colSeld){
+    int y = round( canvasCalib->height() / 2 );
+    QPoint p1(0,y);
+    QPoint p2( canvasCalib->width(), y);
+    canvasCalib->scene()->addItem( new customLine(p1, p2, QPen(QColor(colSeld))) );
+}
+
+
+
+
+
+
+
+void MainWindow::on_actionClear_triggered()
+{
+    canvasCalib->scene()->clear();
 }

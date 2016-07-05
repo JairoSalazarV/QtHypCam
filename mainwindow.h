@@ -25,7 +25,13 @@ public:
 public slots:
     void funcAddPoint(QMouseEvent *e);
 
+    void addRect2Calib(QString colSeld);
 
+    void addCircle2Calib(QString colSeld);
+
+    void addHorLine2Calib(QString colSeld);
+
+    void addVertLine2Calib(QString colSeld);
 
 private slots:
 
@@ -201,6 +207,28 @@ private slots:
     void refreshGvCalib(QString fileName);
 
     void on_pbClearCalScene_clicked();
+
+    void on_slide2AxCalThre_valueChanged(int value);
+
+    void funcImgThreshold( int threshold, QImage *tmpImage );
+
+    void on_pbCalSaveTop_clicked();
+
+    void funcUpdateImgView(QImage *tmpImg);
+
+    void on_pbSpecLoadSnap_clicked();
+
+    void on_actionRect_triggered();
+
+
+
+    void on_actionHorizontalLine_triggered();
+
+    void on_actionCircle_triggered();
+
+    void on_actionVerticalLine_triggered();
+
+    void on_actionClear_triggered();
 
 private:
     Ui::MainWindow *ui;

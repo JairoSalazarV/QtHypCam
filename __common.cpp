@@ -11,7 +11,115 @@
 #include <QTextStream>
 
 
+void funcTransPix( calcAndCropSnap *calStruct, int w, int h, int W, int H ){
+    //Extrapolate dimensions
+    calStruct->X1   = round( ((float)W/(float)w)*(float)calStruct->x1 );
+    calStruct->Y1   = round( ((float)H/(float)h)*(float)calStruct->y1 );
+    calStruct->X2   = round( ((float)W/(float)w)*(float)calStruct->x2 );
+    calStruct->Y2   = round( ((float)H/(float)h)*(float)calStruct->y2 );
+    calStruct->lenW = abs(calStruct->X2-calStruct->X1);
+    calStruct->lenH = abs(calStruct->Y2-calStruct->Y1);
+}
+
 colorAnalyseResult *funcAnalizeImage( QImage *img ){
+
+    //Reserve memory
+    //..
+    colorAnalyseResult* colResults = (colorAnalyseResult*)malloc(sizeof(colorAnalyseResult));
+    int aux = img->width() * sizeof(int);
+    colResults->Red = (int*)malloc( aux );
+    colResults->Green = (int*)malloc( aux );
+    colResults->Blue = (int*)malloc( aux );
+    memset( colResults->Red, '\0', aux );
+    memset( colResults->Green, '\0', aux );
+    memset( colResults->Blue, '\0', aux );
+
+    //Procced to analyze the image
+    //..
+    int r,c,tmpMaxR=0,tmpMaxG=0,tmpMaxB=0,tmpMaxRx=0,tmpMaxGx=0,tmpMaxBx=0;
+    QRgb pixel;
+    colResults->maxRx   = 0;
+    colResults->maxGx   = 0;
+    colResults->maxBx   = 0;
+    colResults->maxMax  = 0;
+    //colResults->maxR = 0;
+    //colResults->maxG = 0;
+    //colResults->maxB = 0;
+    for(r=0;r<img->height();r++){
+        tmpMaxR = 0;
+        tmpMaxG = 0;
+        tmpMaxB = 0;
+        tmpMaxRx = 0;
+        tmpMaxGx = 0;
+        tmpMaxBx = 0;
+        for(c=0;c<img->width();c++){
+            if(!img->valid(c,r)){
+                qDebug() << "Invalid r: " << r << "c: "<<c;
+                qDebug() << "img.width(): " << img->width();
+                qDebug() << "img.height(): " << img->height();
+                return colResults;
+            }
+            pixel = img->pixel(c,r);
+            //Red
+            if(tmpMaxR<qRed(pixel)){
+                tmpMaxR     = qRed(pixel);
+                tmpMaxRx    = c;
+            }
+            //Green
+            if(tmpMaxG<qGreen(pixel)){
+                tmpMaxG     = qGreen(pixel);
+                tmpMaxGx    = c;
+            }
+            //Blue
+            if(tmpMaxB<qBlue(pixel)){
+                tmpMaxB     = qBlue(pixel);
+                tmpMaxBx    = c;
+            }
+        }
+        //Acumulate
+        colResults->maxRx += tmpMaxRx;
+        colResults->maxGx += tmpMaxGx;
+        colResults->maxBx += tmpMaxBx;
+
+
+    }
+    //Mean
+    colResults->maxRx = round( (float)colResults->maxRx / (float)img->height());
+    colResults->maxGx = round( (float)colResults->maxGx / (float)img->height());
+    colResults->maxBx = round( (float)colResults->maxBx / (float)img->height());
+
+    tmpMaxRx = colResults->maxRx;
+    tmpMaxGx = colResults->maxGx;
+    tmpMaxBx = colResults->maxBx;
+    //funcShowMsg("Result",
+    //            "(" + QString::number(tmpMaxR)+","+QString::number(tmpMaxRx) + ")" +
+    //            "(" + QString::number(tmpMaxG)+","+QString::number(tmpMaxGx) + ")" +
+    //            "(" + QString::number(tmpMaxB)+","+QString::number(tmpMaxBx) + ")"
+    //           );
+
+    //Get the maxMax
+    //..
+    if( colResults->maxMax < colResults->maxR ){
+        colResults->maxMax      = colResults->maxR;
+        colResults->maxMaxx     = colResults->maxRx;
+        colResults->maxMaxColor = 1;
+    }
+    if( colResults->maxMax < colResults->maxG ){
+        colResults->maxMax      = colResults->maxG;
+        colResults->maxMaxx     = colResults->maxGx;
+        colResults->maxMaxColor = 2;
+    }
+    if( colResults->maxMax < colResults->maxB ){
+        colResults->maxMax      = colResults->maxB;
+        colResults->maxMaxx     = colResults->maxBx;
+        colResults->maxMaxColor = 3;
+    }
+
+    return colResults;
+
+
+
+    /*
     //Reserve memory
     //..
     colorAnalyseResult* colResults = (colorAnalyseResult*)malloc(sizeof(colorAnalyseResult));
@@ -84,6 +192,7 @@ colorAnalyseResult *funcAnalizeImage( QImage *img ){
     }
 
     return colResults;
+    */
 }
 
 IplImage *funcGetImgFromCam( int usb, int stabMs ){

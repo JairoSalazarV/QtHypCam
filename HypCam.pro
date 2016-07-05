@@ -16,15 +16,20 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     __common.cpp \
     hypCamAPI.cpp \
-    graphicsview.cpp
+    graphicsview.cpp \
+    customline.cpp \
+    selcolor.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
     lstStructs.h \
     hypCamAPI.h \
-    graphicsview.h
+    graphicsview.h \
+    customline.h \
+    selcolor.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    selcolor.ui
 
 RESOURCES += \
     lstImgs.qrc

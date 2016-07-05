@@ -3,6 +3,7 @@
 
     #include <string>
     #include <sys/types.h>
+    #include <QString>
 
 
     const unsigned int frameBodyLen = 1024;
@@ -10,10 +11,17 @@
     #define _BIG_WIDTH 2272
     #define _BIG_HEIGHT 1704
     #define _GRAPH_HEIGHT 440
-    #define  _USE_CAM false
+    #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _PRELOAD_IP true
+    #define _PRELOAD_IP false
     #define PI 3.14159265
+
+    typedef struct customLineParameters{
+        bool movible;
+        int orientation; //0:Rotated | 1:Horizontal | 2:Vertical
+        int lenght;
+        QString name;
+    }customLineParameters;
 
     typedef struct linearRegresion{
         float a;

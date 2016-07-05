@@ -24,4 +24,5 @@ class GraphicsView : public QGraphicsView
 
 };
 
+
 #endif // GRAPHICSVIEW_H

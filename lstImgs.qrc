@@ -232,4 +232,12 @@
         <file>imagenInte/calLeft.png</file>
         <file>imagenInte/calBottom.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>imagenInte/rectOn.png</file>
+        <file>imagenInte/rectOff.png</file>
+        <file>imagenInte/circleOn.png</file>
+        <file>imagenInte/circleOff.png</file>
+        <file>imagenInte/horizontalLine.png</file>
+        <file>imagenInte/VerticalLine.png</file>
+    </qresource>
 </RCC>
