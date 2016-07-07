@@ -5,23 +5,35 @@
     #include <sys/types.h>
     #include <QString>
 
+    #include <graphicsview.h>
+
 
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN 1024;
     #define _BIG_WIDTH 2272
     #define _BIG_HEIGHT 1704
     #define _GRAPH_HEIGHT 440
+    #define _GRAPH_CALIB_HEIGHT 590
+    #define _DISPLAY_IMAGE "./tmpImages/tmpImg2Disp.ppm"
     #define  _USE_CAM true
     #define _FACT_MULT 3
     #define _PRELOAD_IP false
     #define PI 3.14159265
 
     typedef struct customLineParameters{
-        bool movible;
+        bool movible = false;
         int orientation; //0:Rotated | 1:Horizontal | 2:Vertical
         int lenght;
         QString name;
     }customLineParameters;
+
+    typedef struct customRectParameters{
+        bool movible = false;
+        bool scalable = false;
+        int analCentroid = 0;//0:No | 1:Red | 2:Green | 3:Blue | 4:source(white[All RGB])
+        QString name;
+        GraphicsView *canvas;
+    }customRectParameters;
 
     typedef struct linearRegresion{
         float a;

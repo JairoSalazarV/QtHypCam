@@ -215,7 +215,6 @@
         <file>imagenInte/add.png</file>
         <file>imagenInte/add.gif</file>
         <file>imagenInte/actualizar.png</file>
-        <file>imagenInte/086745-simple-red-glossy-icon-business-cursor.png</file>
         <file>imagenInte/36604.png</file>
         <file>imagenInte/_-27.png</file>
         <file>imagenInte/_-4.png</file>
@@ -231,6 +230,7 @@
         <file>imagenInte/calRight.png</file>
         <file>imagenInte/calLeft.png</file>
         <file>imagenInte/calBottom.png</file>
+        <file>imagenInte/DoubleAxisDiff.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>
@@ -239,5 +239,11 @@
         <file>imagenInte/circleOff.png</file>
         <file>imagenInte/horizontalLine.png</file>
         <file>imagenInte/VerticalLine.png</file>
+        <file>imagenInte/HorizLineOn.png</file>
+        <file>imagenInte/HorizLineOff.png</file>
+        <file>imagenInte/VerticalLineOn.png</file>
+        <file>imagenInte/VerticalLineOff.png</file>
+        <file>imagenInte/MouseSelOn.png</file>
+        <file>imagenInte/MouseSelOff.png</file>
     </qresource>
 </RCC>

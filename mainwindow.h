@@ -200,15 +200,13 @@ private slots:
 
     void updateCalibLine();
 
-    void on_slide2AxCalRot_valueChanged(int value);
-
     void on_pbCalSaveRot_clicked();
 
     void refreshGvCalib(QString fileName);
 
     void on_pbClearCalScene_clicked();
 
-    void on_slide2AxCalThre_valueChanged(int value);
+    //void on_slide2AxCalThre_valueChanged(int value);
 
     void funcImgThreshold( int threshold, QImage *tmpImage );
 
@@ -229,6 +227,22 @@ private slots:
     void on_actionVerticalLine_triggered();
 
     void on_actionClear_triggered();
+
+    void on_actionSelection_triggered();
+
+    void ResetGraphToolBar( QString toEnable );
+
+    void funcAnalizeAreaSelected(QPoint p1, QPoint p2);
+
+    void disableAllToolBars();
+
+    void on_actionDrawToolbar_triggered();
+
+    void on_pbExpPixs_tabBarClicked(int index);
+
+    void on_slide2AxCalThre_sliderReleased();
+
+    void on_actionDoubAxisDiff_triggered();
 
 private:
     Ui::MainWindow *ui;

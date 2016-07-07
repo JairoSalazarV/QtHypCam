@@ -31,7 +31,10 @@
 
 //Custom
 #include <customline.h>
+#include <customrect.h>
 #include <selcolor.h>
+#include <gencalibxml.h>
+
 
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
@@ -52,6 +55,7 @@ QList<QPair<int,int>> *lstSelPix;
 
 //int tmpRect[4];
 calcAndCropSnap calStruct;
+bool globaIsRotated;
 
 
 
@@ -188,13 +192,20 @@ MainWindow::MainWindow(QWidget *parent) :
     //..
     ui->toolBarDraw->setEnabled(false);
 
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(false);
+
+    disableAllToolBars();
 
 }
-
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::disableAllToolBars(){
+    ui->toolBarDraw->setVisible(false);
 }
 
 void MainWindow::funcSpectMouseRelease( QMouseEvent *e){
@@ -204,7 +215,7 @@ void MainWindow::funcSpectMouseRelease( QMouseEvent *e){
 
 void MainWindow::funcCalibMouseRelease( QMouseEvent *e){
     funcEndRect( e, canvasCalib );
-    ui->pbClearCalScene->setText("Clear line");
+    //ui->pbClearCalScene->setText("Clear line");
 }
 
 void MainWindow::funcAddPoint( QMouseEvent *e ){
@@ -2057,9 +2068,18 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     x2 = (calStruct.x1>=e->x())?calStruct.x1:e->x();
     y1 = (calStruct.y1<=e->y())?calStruct.y1:e->y();
     y2 = (calStruct.y1>=e->y())?calStruct.y1:e->y();
-    QGraphicsRectItem* tmpRect = new QGraphicsRectItem(x1,y1,x2-x1,y2-y1);
+    customRect* tmpRect = new customRect(QPoint(x1,y1),QPoint(x2-x1,y2-y1));
+    //customRect* tmpRect = new customRect(this);
     tmpRect->setPen( QPen(Qt::red) );
     tmpCanvas->scene()->addItem(tmpRect);
+    tmpRect->setFocus();
+    tmpRect->parameters.movible = true;
+    tmpRect->parameters.canvas = tmpCanvas;
+}
+
+void MainWindow::funcAnalizeAreaSelected(QPoint p1, QPoint p2){
+    p1 = p1;
+    p2 = p2;
 }
 
 void MainWindow::on_chbRed_clicked()
@@ -2392,15 +2412,17 @@ void MainWindow::on_pbObtPar_2_clicked()
     if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
         float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
         QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        auxQstring = "./tmpImages/rotated.ppm";
-        imgRot.save(auxQstring);
+        imgRot.save(_DISPLAY_IMAGE);
+        globaIsRotated = true;
+    }else{
+        globaIsRotated = false;
     }
 
     //Refresh image in scene
     //..
     //Show image
-    QPixmap pix(auxQstring);
-    pix = pix.scaled(QSize(640,480),Qt::KeepAspectRatio);
+    QPixmap pix(_DISPLAY_IMAGE);
+    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
     qDebug() << "width: "<< pix.width();
     qDebug() << "height: "<< pix.height();
     //It creates the scene to be loaded into Layout
@@ -2428,23 +2450,11 @@ void MainWindow::on_pbObtPar_2_clicked()
 
     //It enables slides
     //..
-    ui->slide2AxCalPos->setEnabled(true);
-    ui->slide2AxCalRot->setEnabled(true);
-    int tmpMaxRot = 25;
-    int  maxPos = (canvasCalib->width()>=canvasCalib->height())?canvasCalib->width():canvasCalib->height();
-    ui->slide2AxCalPos->setMaximum(0);
-    ui->slide2AxCalPos->setMaximum(maxPos);
-    ui->slide2AxCalRot->setMinimum(-tmpMaxRot);
-    ui->slide2AxCalRot->setMaximum(tmpMaxRot);
-    ui->slide2AxCalRot->setValue(0);
-    ui->slideCalRlen->setEnabled(true);
-    ui->slideCalGLen->setEnabled(true);
-    ui->slideCalBLen->setEnabled(true);
-    ui->slideCalRlen->setMaximum(maxPos);
-    ui->slideCalGLen->setMaximum(maxPos);
-    ui->slideCalBLen->setMaximum(maxPos);
-    ui->containerCalSave->setEnabled(true);
+    //ui->containerCalSave->setEnabled(true);
     ui->toolBarDraw->setEnabled(true);
+    ui->toolBarDraw->setVisible(true);
+    ui->slide2AxCalThre->setEnabled(true);
+
 
 
 }
@@ -2474,6 +2484,7 @@ void MainWindow::on_slide2AxCalPos_valueChanged(int value)
 }
 
 void MainWindow::updateCalibLine(){
+    /*
     canvasCalib->scene()->clear();
 
     //Creates white line
@@ -2487,35 +2498,13 @@ void MainWindow::updateCalibLine(){
     ui->slide2AxCalPos->setToolTip( QString::number(ui->slide2AxCalPos->value()) );
     ui->slide2AxCalRot->setToolTip( QString::number(rotAngle) );
     ui->pbClearCalScene->setText("Clear line");
-
-}
-
-void MainWindow::on_slide2AxCalRot_valueChanged(int value)
-{
-    //Prepare variables
-    //..
-    value = value;
-    QString tmpPath = "./tmpImages/tmpImg2Disp.ppm";
-    float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
-    QImage tmpImg(tmpPath);
-
-    //Save image rotated
-    //..
-    QTransform transformation;
-    transformation.rotate(rotAngle);
-    tmpImg = tmpImg.transformed(transformation);
-    tmpImg.save(tmpPath);
-    QtDelay(100);
-
-    //Refresh image in scene
-    //..
-    refreshGvCalib( tmpPath );
-    updateCalibLine();
+    */
 
 }
 
 void MainWindow::on_pbCalSaveRot_clicked()
 {
+    /*
     //Points from scene
     float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
     qDebug() << "rotAngle: " << rotAngle;
@@ -2524,10 +2513,12 @@ void MainWindow::on_pbCalSaveRot_clicked()
     }else{
         funcShowMsg("ERROR","Saving rotation");
     }
+    */
 }
 
 void MainWindow::on_pbClearCalScene_clicked()
 {
+    /*
     if( ui->pbClearCalScene->text() == "Clear line" ){
         ui->pbClearCalScene->setText("Show line");
         canvasCalib->scene()->clear();
@@ -2535,21 +2526,38 @@ void MainWindow::on_pbClearCalScene_clicked()
         ui->pbClearCalScene->setText("Clear line");
         updateCalibLine();
     }
+    */
 }
 
+/*
 void MainWindow::on_slide2AxCalThre_valueChanged(int value)
 {
+
+    //Rotate image if requested
+    //..
+    if(globaIsRotated){
+        float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
+        QImage imgRot = funcRotateImage(auxQstring, rotAngle);
+        imgRot.save(_DISPLAY_IMAGE);
+    }
+    //Apply threshold to the image
+    //..
     QImage *imgThre = new QImage(auxQstring);
     funcImgThreshold( value, imgThre );
-    QString tmpFilePaht = "./tmpImages/tmpImg2Disp.ppm";
+    QString tmpFilePaht = _DISPLAY_IMAGE;
     if( imgThre->save(tmpFilePaht) ){
         QtDelay(100);
         QPixmap pix(tmpFilePaht);
-        pix = pix.scaled(QSize(640,480),Qt::KeepAspectRatio);
+        pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
         canvasCalib->setBackgroundBrush(pix);
+        ui->slide2AxCalThre->setValue(value);
         ui->slide2AxCalThre->setToolTip(QString::number(value));
+        ui->slide2AxCalThre->update();
+        QtDelay(20);
     }
+
 }
+*/
 
 void MainWindow::funcImgThreshold( int threshold, QImage *tmpImage ){
     int r, c;
@@ -2694,7 +2702,6 @@ void MainWindow::on_pbSpecLoadSnap_clicked()
     if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
         float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
         QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        auxQstring = "./tmpImages/rotated.ppm";
         imgRot.save(auxQstring);
     }
 
@@ -2731,11 +2738,43 @@ void MainWindow::on_pbSpecLoadSnap_clicked()
 
 void MainWindow::on_actionRect_triggered()
 {
+    /*
     selColor *selCol = new selColor(this);
     connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addRect2Calib(QString)));
     selCol->setModal(true);
     selCol->exec();
     disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addRect2Calib(QString)));
+    */
+    //Change mouse's cursor
+    addRect2Calib("#F00");
+    QApplication::setOverrideCursor(Qt::CrossCursor);
+    ResetGraphToolBar("Rectangle");
+    //Connect to calib double axis
+    connect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcBeginRect(QMouseEvent*) )
+           );
+    connect(
+                canvasCalib,
+                SIGNAL( signalMouseReleased(QMouseEvent*) ),
+                this,
+                SLOT( funcCalibMouseRelease(QMouseEvent*) )
+           );
+
+
+}
+
+void MainWindow::ResetGraphToolBar( QString toEnable ){
+    //Disable all
+    //..
+
+
+
+    if( toEnable=="Rectangle" ){
+
+    }
 }
 
 void MainWindow::on_actionCircle_triggered()
@@ -2798,4 +2837,81 @@ void MainWindow::addHorLine2Calib(QString colSeld){
 void MainWindow::on_actionClear_triggered()
 {
     canvasCalib->scene()->clear();
+}
+
+void MainWindow::on_actionSelection_triggered()
+{
+    //Change cursor
+    QApplication::restoreOverrideCursor();
+    //Disconnect
+    //..
+    //Rectangle
+    disconnect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcBeginRect(QMouseEvent*) )
+           );
+    disconnect(
+                canvasCalib,
+                SIGNAL( signalMouseReleased(QMouseEvent*) ),
+                this,
+                SLOT( funcCalibMouseRelease(QMouseEvent*) )
+           );
+
+}
+
+void MainWindow::on_actionDrawToolbar_triggered()
+{
+    disableAllToolBars();
+    ui->toolBarDraw->setVisible(true);
+}
+
+void MainWindow::on_pbExpPixs_tabBarClicked(int index)
+{
+    disableAllToolBars();
+    switch(index){
+        case 3:
+            ui->toolBarDraw->setVisible(true);
+            break;
+    }
+}
+
+
+
+void MainWindow::on_slide2AxCalThre_sliderReleased()
+{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    int value = ui->slide2AxCalThre->value();
+    //Rotate image if requested
+    //..
+    if(globaIsRotated){
+        float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
+        QImage imgRot = funcRotateImage(auxQstring, rotAngle);
+        imgRot.save(_DISPLAY_IMAGE);
+    }
+    //Apply threshold to the image
+    //..
+    QImage *imgThre = new QImage(auxQstring);
+    funcImgThreshold( value, imgThre );
+    QString tmpFilePaht = _DISPLAY_IMAGE;
+    if( imgThre->save(tmpFilePaht) ){
+        QtDelay(100);
+        QPixmap pix(tmpFilePaht);
+        pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
+        canvasCalib->setBackgroundBrush(pix);
+        ui->slide2AxCalThre->setValue(value);
+        ui->slide2AxCalThre->setToolTip(QString::number(value));
+        ui->slide2AxCalThre->update();
+        //QtDelay(20);
+    }
+    QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::on_actionDoubAxisDiff_triggered()
+{
+    genCalibXML *genCalib = new genCalibXML(this);
+    genCalib->setModal(true);
+    genCalib->show();
+
 }

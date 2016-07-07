@@ -18,7 +18,10 @@ SOURCES += main.cpp\
     hypCamAPI.cpp \
     graphicsview.cpp \
     customline.cpp \
-    selcolor.cpp
+    selcolor.cpp \
+    customrect.cpp \
+    showancalchrres.cpp \
+    gencalibxml.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -26,10 +29,15 @@ HEADERS  += mainwindow.h \
     hypCamAPI.h \
     graphicsview.h \
     customline.h \
-    selcolor.h
+    selcolor.h \
+    customrect.h \
+    showancalchrres.h \
+    gencalibxml.h
 
 FORMS    += mainwindow.ui \
-    selcolor.ui
+    selcolor.ui \
+    showancalchrres.ui \
+    gencalibxml.ui
 
 RESOURCES += \
     lstImgs.qrc
