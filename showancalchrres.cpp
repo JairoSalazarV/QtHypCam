@@ -32,7 +32,6 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     globalCalStruct.x2 = (int)rx2;
     globalCalStruct.y2 = (int)ry2;
 
-
     //Prepare variables
     //..
     int w, h, W, H;
@@ -42,18 +41,22 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     w = rect->parameters.canvas->width();
     h = rect->parameters.canvas->height();
     //Extrapolate dimensions
-    qDebug() << globalCalStruct.x1 << ", " << globalCalStruct.y1;
-    qDebug() << globalCalStruct.x2 << ", " << globalCalStruct.y2;
+
     globalCalStruct.X1 = round( ((float)W/(float)w)*(float)globalCalStruct.x1 );
     globalCalStruct.Y1 = round( ((float)H/(float)h)*(float)globalCalStruct.y1 );
     globalCalStruct.X2 = round( ((float)W/(float)w)*(float)globalCalStruct.x2 );
     globalCalStruct.Y2 = round( ((float)H/(float)h)*(float)globalCalStruct.y2 );
     globalCalStruct.lenW = abs(globalCalStruct.X2-globalCalStruct.X1);
     globalCalStruct.lenH = abs(globalCalStruct.Y2-globalCalStruct.Y1);
-    //qDebug() << globalCalStruct.X1 << ", " << globalCalStruct.Y1;
-    //qDebug() << globalCalStruct.X2 << ", " << globalCalStruct.Y2;
-    //qDebug() << "lenW=" << globalCalStruct.lenW;
-    //qDebug() << "lenH=" << globalCalStruct.lenH;
+    globalCalStruct.origImgW = W;
+    globalCalStruct.origImgH = H;
+
+    //qDebug() << "p1: " << globalCalStruct.x1 << ", " << globalCalStruct.y1;
+    //qDebug() << "p2: " << globalCalStruct.x2 << ", " << globalCalStruct.y2;
+    //qDebug() << "P1: " << globalCalStruct.X1 << ", " << globalCalStruct.Y1;
+    //qDebug() << "P2: " << globalCalStruct.X2 << ", " << globalCalStruct.Y2;
+    //qDebug() << "lenW: " << globalCalStruct.lenW;
+    //qDebug() << "lenH: " << globalCalStruct.lenH;
 
     //Crop & show image
     //..
@@ -65,19 +68,21 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     ui->canvasCroped->setBackgroundBrush(cropped);
     ui->canvasCroped->setCacheMode(QGraphicsView::CacheNone);
     ui->canvasCroped->setScene( scene );
-    ui->canvasCroped->resize(cropped.width()+tmpOffset,cropped.height()+tmpOffset);    
+    ui->canvasCroped->resize(cropped.width(),cropped.height());
     float toolBarW = ui->frame->width();
     int newW = (cropped.width()>toolBarW)?cropped.width():toolBarW;
-    this->resize(QSize(newW+tmpOffset,cropped.height()+tmpOffset+(tmpOffset*2)+ui->frame->height()));
+    this->resize(QSize(newW+(tmpOffset*2),cropped.height()+(tmpOffset*2)+ui->frame->height()));
     int framex = round((float)(this->width()-ui->frame->width())/2.0);
     int framey = ui->canvasCroped->height()+tmpOffset;
     ui->frame->move(QPoint(framex,framey));
     int canvasx = round((float)(this->width()-ui->canvasCroped->width())/2.0);
     ui->canvasCroped->move(QPoint(canvasx,0));
+    ui->canvasCroped->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    ui->canvasCroped->setVerticalScrollBarPolicy ( Qt::ScrollBarAlwaysOff );
 
     //Update lines
     //..
-    drawLines();
+    drawSensitivities();
 
 }
 
@@ -184,15 +189,21 @@ void showAnCalChrRes::updColSenVert(){
     redPeak->setY(yR);
     greenPeak->setY(yG);
     bluePeak->setY(yB);
-
-    tmpCanvas->scene()->addItem(redPeak);
-    tmpCanvas->scene()->addItem(greenPeak);
-    tmpCanvas->scene()->addItem(bluePeak);
-
+    if(ui->chbRedLine->isChecked()){
+        tmpCanvas->scene()->addItem(redPeak);
+    }
+    if(ui->chbGreenLine->isChecked()){
+        tmpCanvas->scene()->addItem(greenPeak);
+    }
+    if(ui->chbBlueLine->isChecked()){
+        tmpCanvas->scene()->addItem(bluePeak);
+    }
     globalRedLine = redPeak;
     globalGreenLine = greenPeak;
     globalBlueLine = bluePeak;
 }
+
+
 
 void showAnCalChrRes::updColSenHoriz(){
     //Accumulate values in each color
@@ -294,11 +305,15 @@ void showAnCalChrRes::updColSenHoriz(){
     redPeak->setX(xR);
     greenPeak->setX(xG);
     bluePeak->setX(xB);
-
-    tmpCanvas->scene()->addItem(redPeak);
-    tmpCanvas->scene()->addItem(greenPeak);
-    tmpCanvas->scene()->addItem(bluePeak);
-
+    if(ui->chbRedLine->isChecked()){
+        tmpCanvas->scene()->addItem(redPeak);
+    }
+    if(ui->chbGreenLine->isChecked()){
+        tmpCanvas->scene()->addItem(greenPeak);
+    }
+    if(ui->chbBlueLine->isChecked()){
+        tmpCanvas->scene()->addItem(bluePeak);
+    }
     globalRedLine = redPeak;
     globalGreenLine = greenPeak;
     globalBlueLine = bluePeak;
@@ -306,21 +321,35 @@ void showAnCalChrRes::updColSenHoriz(){
 
 void showAnCalChrRes::on_chbBlue_clicked()
 {
-    drawLines();
+    drawSensitivities();
 }
 
 void showAnCalChrRes::on_chbGreen_clicked()
 {
-    drawLines();
+    drawSensitivities();
 }
 
 void showAnCalChrRes::on_chbRed_clicked()
 {
-    drawLines();
+    drawSensitivities();
 }
 
-void showAnCalChrRes::drawLines(){
-    if(globalRect->parameters.analCentroid==0){
+void showAnCalChrRes::drawRGBPeakLines(){
+    ui->canvasCroped->scene()->clear();
+    drawSensitivities();
+    if(ui->chbRedLine->isChecked()){
+        ui->canvasCroped->scene()->addItem(globalRedLine);
+    }
+    if(ui->chbGreenLine->isChecked()){
+        ui->canvasCroped->scene()->addItem(globalGreenLine);
+    }
+    if(ui->chbBlueLine->isChecked()){
+        ui->canvasCroped->scene()->addItem(globalBlueLine);
+    }
+}
+
+void showAnCalChrRes::drawSensitivities(){
+    if(globalRect->parameters.analCentroid==0){//No
         globalIsHoriz = (ui->canvasCroped->width()>ui->canvasCroped->height())?true:false;
         if(globalIsHoriz){//Horizontal
             updColSenHoriz();
@@ -329,46 +358,48 @@ void showAnCalChrRes::drawLines(){
         }
     }
 
-    if(globalRect->parameters.analCentroid==1){
+    if(globalRect->parameters.analCentroid==1){//Red
         int x, y;
         updColSenHoriz();
         x = globalRedLine->x();        
         updColSenVert();
         y = globalRedLine->y();
-        qDebug() << "rX: " << x;
-        qDebug() << "rY: " << y;
+        //qDebug() << "rx: " << x;
+        //qDebug() << "ry: " << y;
         drawCenter(x,y,Qt::red);
     }
 
-    if(globalRect->parameters.analCentroid==2){
+    if(globalRect->parameters.analCentroid==2){//Green
         int x, y;
         updColSenHoriz();
         x = globalGreenLine->x();
         updColSenVert();
         y = globalGreenLine->y();
-        qDebug() << "gX: " << x;
-        qDebug() << "gY: " << y;
+        //qDebug() << "gx: " << x;
+        //qDebug() << "gy: " << y;
         drawCenter(x,y,Qt::green);
     }
 
-    if(globalRect->parameters.analCentroid==3){
+    if(globalRect->parameters.analCentroid==3){//Blue
         int x, y;
         updColSenHoriz();
         x = globalBlueLine->x();
         updColSenVert();
         y = globalBlueLine->y();
-        qDebug() << "bX: " << x;
-        qDebug() << "bY: " << y;
+        //qDebug() << "bx: " << x;
+        //qDebug() << "by: " << y;
         drawCenter(x,y,Qt::blue);
     }
-    if(globalRect->parameters.analCentroid==4){
+    if(globalRect->parameters.analCentroid==4){//Source
         int x, y;
         updColSenHoriz();
         x = round((float)(globalRedLine->x()+globalGreenLine->x()+globalBlueLine->x())/3.0);
         updColSenVert();
-        y = round((float)(globalRedLine->y()+globalGreenLine->y()+globalBlueLine->y())/3.0);
-        qDebug() << "sX: " << x;
-        qDebug() << "sY: " << y;
+        y = round((float)(globalRedLine->y()+globalGreenLine->y()+globalBlueLine->y())/3.0);       
+        qDebug() << "sx: " << x;
+        qDebug() << "sy: " << y;
+        qDebug() << "sX: " << globalCalStruct.X1;
+        qDebug() << "sY: " << globalCalStruct.Y1;
         drawCenter(x,y,Qt::magenta);
     }
 }
@@ -379,8 +410,12 @@ void showAnCalChrRes::drawCenter(int x, int y, Qt::GlobalColor color){
     QtDelay(20);
     addLine2CanvasInPos(true,x,color);
     globalVLine = globalTmpLine;
+    //qDebug() << "globalVLine_x: " << globalVLine->x();
+    //qDebug() << "globalVLine_y: " << globalVLine->y();
     addLine2CanvasInPos(false,y,color);
     globalHLine = globalTmpLine;
+    //qDebug() << "globalHLine_x: " << globalHLine->x();
+    //qDebug() << "globalHLine_y: " << globalHLine->y();
 }
 
 void showAnCalChrRes::addLine2CanvasInPos(bool vertical, int pos, Qt::GlobalColor color){
@@ -388,18 +423,20 @@ void showAnCalChrRes::addLine2CanvasInPos(bool vertical, int pos, Qt::GlobalColo
         qDebug() << "vPos: " << pos;
         QPoint p1(0,0);
         QPoint p2(0,ui->canvasCroped->height());
-        p1.setX(pos);
-        p2.setX(pos);
+        //p1.setX(pos);
+        //p2.setX(pos);
         customLine *tmpLine = new customLine(p1,p2,QPen(color));
+        tmpLine->setX(pos);
         globalTmpLine = tmpLine;
         ui->canvasCroped->scene()->addItem(tmpLine);
     }else{//Horizontal
         qDebug() << "hPos: " << pos;
         QPoint p1(0,0);
         QPoint p2(ui->canvasCroped->width(),0);
-        p1.setY(pos);
-        p2.setY(pos);
+        //p1.setY(pos);
+        //p2.setY(pos);
         customLine *tmpLine = new customLine(p1,p2,QPen(color));
+        tmpLine->setY(pos);
         globalTmpLine = tmpLine;
         ui->canvasCroped->scene()->addItem(tmpLine);
     }
@@ -414,7 +451,7 @@ void showAnCalChrRes::on_pbCloseThis_clicked()
 void showAnCalChrRes::on_pbSaveAnalysis_clicked()
 {
 
-    //Identify quadrant
+    //Identify file-name's base
     //..
     if(ui->txtQuadFilename->text().trimmed().isEmpty()){
         funcShowMsg("Lack","Type a file-name");
@@ -430,14 +467,24 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     fileName.append(".hypcam");
     QString coordinates;
 
-    if(globalRect->parameters.analCentroid > 0){//Source
+    if(globalRect->parameters.analCentroid > 0){//Centroid
         int xPos, yPos;
-        xPos  = globalCalStruct.X1 + globalVLine->x();
-        yPos  = ui->canvasCroped->height() - globalHLine->y();
-        yPos += globalCalStruct.Y1;
+        xPos = globalCalStruct.X1 + globalVLine->x();
+        yPos = globalCalStruct.Y1 + globalHLine->y();
+        //yPos = globalCalStruct.origImgH - yPos;
         coordinates.append(QString::number(xPos));
         coordinates.append(",");
         coordinates.append(QString::number(yPos));
+        //qDebug() << "x: " << globalVLine->x();
+        //qDebug() << "y: " << globalHLine->y();
+        //qDebug() << "X: " << globalCalStruct.X1;
+        //qDebug() << "Y: " << globalCalStruct.Y1;
+        //qDebug() << "lenW: " << globalCalStruct.lenW;
+        //qDebug() << "lenH: " << globalCalStruct.lenH;
+        //qDebug() << "origImgW: " << globalCalStruct.origImgW;
+        //qDebug() << "origImgH: " << globalCalStruct.origImgH;
+        //qDebug() << "xPos: " << xPos;
+        //qDebug() << "yPos: " << yPos;
     }else{
         //Obtain line positions
         //..
@@ -464,8 +511,12 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     }
 
     //Save
+    //..
+    //Save coordinates
     if(saveFile(fileName,coordinates)){
-        funcShowMsg("Setting saver successfully","");
+        //Save canvas background path
+        saveFile("./settings/Calib/backgroundPath.hypcam",globalRect->parameters.backgroundPath);
+        funcShowMsg("Setting saved successfully","");
     }else{
         funcShowMsg("ERROR","Saving setting-file");
     }
@@ -478,5 +529,54 @@ void showAnCalChrRes::on_pbClearCalib_clicked()
         QDir calibFolder("./settings/Calib/");
         calibFolder.removeRecursively();
         QDir().mkdir("./settings/Calib/");
+        QDir().mkdir("./settings/Calib/images/");
     }
+}
+
+void showAnCalChrRes::on_pbSaveScene_clicked()
+{
+    //Identify filename
+    //..
+    if(ui->txtQuadFilename->text().trimmed().isEmpty()){
+        funcShowMsg("Lack","Type a file-name");
+        ui->txtQuadFilename->setFocus();
+        return (void)NULL;
+    }
+    //FileName
+    //..
+    QString fileName;
+    fileName.append("./settings/Calib/images/");
+    fileName.append(ui->txtQuadFilename->text());
+    fileName.append(".png");
+    //Save
+    //..
+    //Remove if exists
+    QFile prevImg(fileName);
+    if(prevImg.exists()){
+        prevImg.remove();
+    }
+    prevImg.close();
+    //Save Graphicsview's scene
+    QPixmap pixMap = QPixmap::grabWidget(ui->canvasCroped);
+    if(pixMap.save(fileName)){
+        funcShowMsg("Image saved successfully","");
+    }else{
+        funcShowMsg("ERROR","Saving image");
+    }
+
+}
+
+void showAnCalChrRes::on_chbRedLine_clicked()
+{
+    drawRGBPeakLines();
+}
+
+void showAnCalChrRes::on_chbGreenLine_clicked()
+{
+    drawRGBPeakLines();
+}
+
+void showAnCalChrRes::on_chbBlueLine_clicked()
+{
+    drawRGBPeakLines();
 }

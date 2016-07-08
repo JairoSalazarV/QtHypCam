@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->txtIp->setText(qsIP);
 
 
-    //Initialize global settings
+    //Initialize global settingsPlan de Guadalupe 3257, San Pedro Tlaquepaque, Jal.
     camSelected->isConnected    = false;
     camSelected->On             = false;
     camSelected->stream         = false;
@@ -2075,6 +2075,7 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     tmpRect->setFocus();
     tmpRect->parameters.movible = true;
     tmpRect->parameters.canvas = tmpCanvas;
+    tmpRect->parameters.backgroundPath = auxQstring;
 }
 
 void MainWindow::funcAnalizeAreaSelected(QPoint p1, QPoint p2){
@@ -2406,6 +2407,11 @@ void MainWindow::on_pbObtPar_2_clicked()
     if( auxQstring.isEmpty() ){
         return (void)NULL;
     }    
+
+    //Create a copy of the image selected
+    //..
+    QImage origImg(auxQstring);
+    origImg.save(_DISPLAY_IMAGE);
 
     //Rotate if requires
     //..

@@ -29,7 +29,9 @@ private slots:
 
     void on_chbRed_clicked();
 
-    void drawLines();
+    void drawRGBPeakLines();
+
+    void drawSensitivities();
 
     void drawCenter(int x, int y, Qt::GlobalColor color);
 
@@ -40,6 +42,14 @@ private slots:
     void on_pbSaveAnalysis_clicked();
 
     void on_pbClearCalib_clicked();
+
+    void on_pbSaveScene_clicked();
+
+    void on_chbRedLine_clicked();
+
+    void on_chbGreenLine_clicked();
+
+    void on_chbBlueLine_clicked();
 
 private:
     Ui::showAnCalChrRes *ui;

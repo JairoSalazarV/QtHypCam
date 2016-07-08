@@ -32,6 +32,7 @@
         bool scalable = false;
         int analCentroid = 0;//0:No | 1:Red | 2:Green | 3:Blue | 4:source(white[All RGB])
         QString name;
+        QString backgroundPath;
         GraphicsView *canvas;
     }customRectParameters;
 
@@ -69,6 +70,8 @@
         int Y2;
         int lenW;
         int lenH;
+        int origImgW;
+        int origImgH;
     }calcAndCropSnap;
 
     typedef struct frameHeader{
