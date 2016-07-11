@@ -212,9 +212,9 @@ private slots:
 
     void funcImgThreshold( int threshold, QImage *tmpImage );
 
-    void on_pbCalSaveTop_clicked();
+    //void on_pbCalSaveTop_clicked();
 
-    void funcUpdateImgView(QImage *tmpImg);
+    //void funcUpdateImgView(QImage *tmpImg);
 
     void on_pbSpecLoadSnap_clicked();
 
@@ -242,12 +242,28 @@ private slots:
 
     void on_pbExpPixs_tabBarClicked(int index);
 
-    void on_slide2AxCalThre_sliderReleased();
+    //void on_slide2AxCalThre_sliderReleased();
 
     void on_actionDoubAxisDiff_triggered();
 
 
     void on_slideTriggerTime_valueChanged(int value);
+
+    void on_actionRotateImg_triggered();
+
+    void doImgRotation(float angle );
+
+    void DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor color);
+
+    void reloadImage2Display();
+
+    void on_actionLoadCanvas_triggered();
+
+    void on_actionApplyThreshold_triggered();
+
+    void applyThreshol2Scene(QString threshold);
+
+    float getLastAngle();
 
 private:
     Ui::MainWindow *ui;

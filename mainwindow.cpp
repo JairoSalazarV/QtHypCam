@@ -34,6 +34,8 @@
 #include <customrect.h>
 #include <selcolor.h>
 #include <gencalibxml.h>
+#include <rotationfrm.h>
+#include <recparamfrm.h>
 
 
 
@@ -46,6 +48,10 @@ structRaspcamSettings *raspcamSettings = (structRaspcamSettings*)malloc(sizeof(s
 GraphicsView *myCanvas;
 GraphicsView *canvasSpec;
 GraphicsView *canvasCalib;
+
+customLine *globalCanvHLine;
+customLine *globalCanvVLine;
+//customLine *globalTmpLine;
 
 QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/200Id/CROPED/100.tif";
 //QString impPath = "./imgResources/CIE.png";
@@ -1208,7 +1214,7 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
 
     //Save a backup of the image received
     //..
-    if(!saveBinFile( (unsigned long)fileLen, tmpFile,_IMAGE_RECEIVED_PATH)){
+    if(!saveBinFile( (unsigned long)fileLen, tmpFile,_PATH_IMAGE_RECEIVED)){
         qDebug()<< "ERROR: saving image-file received";
     }
 
@@ -1323,7 +1329,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
     //It save the received image
     funcGetRemoteImg( reqImg );
-    QImage tmpImg(_IMAGE_RECEIVED_PATH);
+    QImage tmpImg(_PATH_IMAGE_RECEIVED);
     /*
     //Tranform image because cut image was manipulated by the raspberry
     //..    
@@ -1697,14 +1703,14 @@ void MainWindow::funcGetSnapshot()
         tmpSqW = reqImg->imgCols;
         tmpSqH = reqImg->imgRows;
     }
-    //It saves image into HDD: _IMAGE_RECEIVED_PATH
+    //It saves image into HDD: _PATH_IMAGE_RECEIVED
     unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
 
     //Tranform image and save it
     //..
     //int r,c,i;
     //QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB888 );
-    QImage tmpImg( _IMAGE_RECEIVED_PATH );
+    QImage tmpImg( _PATH_IMAGE_RECEIVED );
     /*
     QRgb tmpPix;
     i=0;
@@ -2440,14 +2446,17 @@ void MainWindow::on_pbObtPar_2_clicked()
     //Create a copy of the image selected
     //..
     QImage origImg(auxQstring);
-    origImg.save(_DISPLAY_IMAGE);
+    qDebug() << "auxQstring: " << auxQstring;
+    if( !origImg.save(_PATH_DISPLAY_IMAGE) ){
+        funcShowMsg("ERROR","Creating image to display");
+        return (void)NULL;
+    }
 
     //Rotate if requires
     //..
     if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
-        float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
-        QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        imgRot.save(_DISPLAY_IMAGE);
+        float rotAngle = getLastAngle();
+        doImgRotation( rotAngle );
         globaIsRotated = true;
     }else{
         globaIsRotated = false;
@@ -2456,17 +2465,8 @@ void MainWindow::on_pbObtPar_2_clicked()
     //Refresh image in scene
     //..
     //Show image
-    QPixmap pix(_DISPLAY_IMAGE);
-    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
-    qDebug() << "width: "<< pix.width();
-    qDebug() << "height: "<< pix.height();
-    //It creates the scene to be loaded into Layout
-    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
-    canvasCalib->setBackgroundBrush(pix);
-    canvasCalib->setScene( sceneCalib );
-    canvasCalib->resize(pix.width(),pix.height());
-    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    reloadImage2Display();
+
     //Load layout
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
@@ -2488,7 +2488,7 @@ void MainWindow::on_pbObtPar_2_clicked()
     //ui->containerCalSave->setEnabled(true);
     ui->toolBarDraw->setEnabled(true);
     ui->toolBarDraw->setVisible(true);
-    ui->slide2AxCalThre->setEnabled(true);
+    //ui->slide2AxCalThre->setEnabled(true);
 
 
 
@@ -2573,13 +2573,13 @@ void MainWindow::on_slide2AxCalThre_valueChanged(int value)
     if(globaIsRotated){
         float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
         QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        imgRot.save(_DISPLAY_IMAGE);
+        imgRot.save(_PATH_DISPLAY_IMAGE);
     }
     //Apply threshold to the image
     //..
     QImage *imgThre = new QImage(auxQstring);
     funcImgThreshold( value, imgThre );
-    QString tmpFilePaht = _DISPLAY_IMAGE;
+    QString tmpFilePaht = _PATH_DISPLAY_IMAGE;
     if( imgThre->save(tmpFilePaht) ){
         QtDelay(100);
         QPixmap pix(tmpFilePaht);
@@ -2607,6 +2607,8 @@ void MainWindow::funcImgThreshold( int threshold, QImage *tmpImage ){
     }
 }
 
+
+/*
 void MainWindow::on_pbCalSaveTop_clicked()
 {
 
@@ -2681,32 +2683,11 @@ void MainWindow::on_pbCalSaveTop_clicked()
     BlueLine->parameters.movible = false;
 
 
-    /*
-    //Red
-    tmpX = round(
-                    (float)((calStruct.X1 + tmpRes->maxRx)*canvasCalib->width()) /
-                    (float)tmpImg.width()
-                );
-    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#FF0000"))));
-    qDebug() << "Red: " << tmpX;
-    //Green
-    tmpX = round(
-                    (float)((calStruct.X1 + tmpRes->maxGx)*canvasCalib->width()) /
-                    (float)tmpImg.width()
-                );
-    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#00FF00"))));
-    qDebug() << "Green: " << tmpX;
-    //Blue
-    tmpX = round(
-                    (float)((calStruct.X1 + tmpRes->maxBx)*canvasCalib->width()) /
-                    (float)tmpImg.width()
-                );
-    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#0000FF"))));
-    qDebug() << "Blue: " << tmpX;
-    */
 
 }
+*/
 
+/*
 void MainWindow::funcUpdateImgView(QImage *tmpImg){
     //Applies rotation
     //..
@@ -2717,6 +2698,7 @@ void MainWindow::funcUpdateImgView(QImage *tmpImg){
         funcImgThreshold( ui->slide2AxCalThre->value(), tmpImg );
     }
 }
+*/
 
 void MainWindow::on_pbSpecLoadSnap_clicked()
 {
@@ -2823,20 +2805,20 @@ void MainWindow::on_actionCircle_triggered()
 
 void MainWindow::on_actionHorizontalLine_triggered()
 {
-    selColor *selCol = new selColor(this);
-    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
-    selCol->setModal(true);
-    selCol->exec();
-    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
+    selColor *selHCol = new selColor(this);
+    connect(selHCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
+    selHCol->setModal(true);
+    selHCol->exec();
+    disconnect(selHCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
 }
 
 void MainWindow::on_actionVerticalLine_triggered()
 {
-    selColor *selCol = new selColor(this);
-    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
-    selCol->setModal(true);
-    selCol->exec();
-    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
+    selColor *selVCol = new selColor(this);
+    connect(selVCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
+    selVCol->setModal(true);
+    selVCol->exec();
+    disconnect(selVCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
 }
 
 void MainWindow::addRect2Calib(QString colSeld){
@@ -2852,15 +2834,23 @@ void MainWindow::addCircle2Calib(QString colSeld){
 void MainWindow::addVertLine2Calib(QString colSeld){
     int x = round( canvasCalib->width() / 2 );
     QPoint p1(x,0);
-    QPoint p2(x,canvasCalib->height());
-    canvasCalib->scene()->addItem( new customLine(p1, p2, QPen(QColor(colSeld))) );
+    QPoint p2(x, canvasCalib->height());
+    customLine *tmpVLine = new customLine(p1, p2, QPen(QColor(colSeld)));
+    globalCanvVLine = tmpVLine;
+    //globalCanvVLine->setRotation(-90.0);
+    //globalCanvVLine->moveBy(60,this->height());
+    canvasCalib->scene()->addItem( globalCanvVLine );
+    canvasCalib->update();
 }
 
 void MainWindow::addHorLine2Calib(QString colSeld){
     int y = round( canvasCalib->height() / 2 );
     QPoint p1(0,y);
     QPoint p2( canvasCalib->width(), y);
-    canvasCalib->scene()->addItem( new customLine(p1, p2, QPen(QColor(colSeld))) );
+    customLine *tmpHLine = new customLine(p1, p2, QPen(QColor(colSeld)));
+    globalCanvHLine = tmpHLine;
+    canvasCalib->scene()->addItem( globalCanvHLine );
+    canvasCalib->update();
 }
 
 
@@ -2913,35 +2903,36 @@ void MainWindow::on_pbExpPixs_tabBarClicked(int index)
 }
 
 
-
+/*
 void MainWindow::on_slide2AxCalThre_sliderReleased()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    int value = ui->slide2AxCalThre->value();
+    //int value = ui->slide2AxCalThre->value();
     //Rotate image if requested
     //..
     if(globaIsRotated){
         float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
         QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        imgRot.save(_DISPLAY_IMAGE);
+        imgRot.save(_PATH_DISPLAY_IMAGE);
     }
     //Apply threshold to the image
     //..
     QImage *imgThre = new QImage(auxQstring);
     funcImgThreshold( value, imgThre );
-    QString tmpFilePaht = _DISPLAY_IMAGE;
+    QString tmpFilePaht = _PATH_DISPLAY_IMAGE;
     if( imgThre->save(tmpFilePaht) ){
         QtDelay(100);
         QPixmap pix(tmpFilePaht);
         pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
         canvasCalib->setBackgroundBrush(pix);
-        ui->slide2AxCalThre->setValue(value);
-        ui->slide2AxCalThre->setToolTip(QString::number(value));
-        ui->slide2AxCalThre->update();
+       // ui->slide2AxCalThre->setValue(value);
+        //ui->slide2AxCalThre->setToolTip(QString::number(value));
+        //ui->slide2AxCalThre->update();
         //QtDelay(20);
     }
     QApplication::restoreOverrideCursor();
 }
+*/
 
 void MainWindow::on_actionDoubAxisDiff_triggered()
 {
@@ -2955,4 +2946,153 @@ void MainWindow::on_actionDoubAxisDiff_triggered()
 void MainWindow::on_slideTriggerTime_valueChanged(int value)
 {
     ui->labelTriggerTime->setText( "Trigger at: " + QString::number(value) + "s" );
+}
+
+void MainWindow::on_actionRotateImg_triggered()
+{
+    DrawVerAndHorLines( canvasCalib, Qt::magenta );
+    rotationFrm *doRot = new rotationFrm(this);
+    doRot->setModal(false);
+    connect(doRot,SIGNAL(angleChanged(float)),this,SLOT(doImgRotation(float)));
+    doRot->show();
+    doRot->move(QPoint(this->width(),0));
+    doRot->raise();
+    doRot->update();
+}
+
+void MainWindow::doImgRotation( float angle ){
+    QTransform transformation;
+    transformation.rotate(angle);
+    QImage tmpImg(auxQstring);
+    tmpImg = tmpImg.transformed(transformation);
+    tmpImg.save(_PATH_DISPLAY_IMAGE);
+    reloadImage2Display();
+    DrawVerAndHorLines( canvasCalib, Qt::magenta );
+}
+
+void MainWindow::DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor color){
+    QPoint p1(0,(tmpCanvas->height()/2));
+    QPoint p2(tmpCanvas->width(),(tmpCanvas->height()/2));
+    customLine *hLine = new customLine(p1,p2,QPen(color));
+    tmpCanvas->scene()->addItem(hLine);
+    p1.setX((tmpCanvas->width()/2));
+    p1.setY(0);
+    p2.setX((tmpCanvas->width()/2));
+    p2.setY(tmpCanvas->height());
+    customLine *vLine = new customLine(p1,p2,QPen(color));
+    tmpCanvas->scene()->addItem(vLine);
+    tmpCanvas->update();
+}
+
+void MainWindow::reloadImage2Display(){
+    //Load image to display
+    QPixmap pix(_PATH_DISPLAY_IMAGE);
+    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
+    //qDebug() << "width: "<< pix.width();
+    //qDebug() << "height: "<< pix.height();
+    //It creates the scene to be loaded into Layout
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    canvasCalib->setBackgroundBrush(QBrush(Qt::black));
+    canvasCalib->setBackgroundBrush(pix);    
+    canvasCalib->setScene( sceneCalib );
+    canvasCalib->resize(pix.width(),pix.height());
+    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->update();
+}
+
+void MainWindow::on_actionLoadCanvas_triggered()
+{
+    //Select image
+    //..
+    auxQstring = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select image..."),
+                                                        "./snapshots/Calib/",
+                                                        "(*.ppm *.RGB888);;"
+                                                     );
+    if( auxQstring.isEmpty() ){
+        return (void)NULL;
+    }
+
+    //Create a copy of the image selected
+    //..
+    QImage origImg(auxQstring);
+    origImg.save(_PATH_DISPLAY_IMAGE);
+
+    //Rotate if requires
+    //..
+    if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
+        float rotAngle = getLastAngle();
+        doImgRotation( rotAngle );
+        globaIsRotated = true;
+    }else{
+        globaIsRotated = false;
+    }
+
+    //Refresh image in scene
+    //..
+    //Show image
+    reloadImage2Display();
+    //Load layout
+    QLayout *layout = new QVBoxLayout();
+    layout->addWidget(canvasCalib);
+    layout->setEnabled(false);
+    ui->tab_6->setLayout(layout);
+
+    //It enables slides
+    //..
+    ui->toolBarDraw->setEnabled(true);
+    ui->toolBarDraw->setVisible(true);
+    //ui->slide2AxCalThre->setEnabled(true);
+}
+
+void MainWindow::on_actionApplyThreshold_triggered()
+{
+    recParamFrm *recParam = new recParamFrm(this);
+    recParam->setModal(false);
+    connect(recParam,SIGNAL(paramGenerated(QString)),this,SLOT(applyThreshol2Scene(QString)));
+    recParam->setWindowTitle("Type the threshold [0-255]");
+    recParam->show();
+    recParam->raise();
+    recParam->update();
+}
+
+void MainWindow::applyThreshol2Scene(QString threshold){
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    int value = threshold.toInt(0);
+    //Apply threshold to the image
+    //..
+    QImage *imgThre = new QImage(auxQstring);
+    funcImgThreshold( value, imgThre );
+    imgThre->save(_PATH_DISPLAY_IMAGE);
+    //Rotate image if requested
+    //..
+    if(globaIsRotated){
+        float rotAngle = getLastAngle();
+        QImage imgRot = funcRotateImage(_PATH_DISPLAY_IMAGE, rotAngle);
+        imgRot.save(_PATH_DISPLAY_IMAGE);
+        qDebug() << "Rotate: " << rotAngle;
+    }
+    //Update canvas
+    //..
+    reloadImage2Display();
+
+    /*
+    if( imgThre->save(_PATH_DISPLAY_IMAGE) ){
+        QtDelay(100);
+        QPixmap pix(_PATH_DISPLAY_IMAGE);
+        pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
+        canvasCalib->setBackgroundBrush(pix);
+        ui->slide2AxCalThre->setValue(value);
+        ui->slide2AxCalThre->setToolTip(QString::number(value));
+        ui->slide2AxCalThre->update();
+        //QtDelay(20);
+    }
+    */
+    QApplication::restoreOverrideCursor();
+}
+
+float MainWindow::getLastAngle(){
+    return readAllFile( _PATH_LAST_ROTATION ).trimmed().toFloat(0);
 }

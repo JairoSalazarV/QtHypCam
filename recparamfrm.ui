@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>recParamFrm</class>
+ <widget class="QDialog" name="recParamFrm">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>252</width>
+    <height>51</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QLineEdit" name="txtParam">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>191</width>
+     <height>33</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbSendParam">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>10</y>
+     <width>31</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Play&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/dialog-apply.svg</normaloff>:/new/icons/imagenInte/dialog-apply.svg</iconset>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="lstImgs.qrc"/>
+ </resources>
+ <connections/>
+</ui>

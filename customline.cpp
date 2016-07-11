@@ -10,8 +10,8 @@ customLine::customLine(QPoint p1, QPoint p2, QPen pen)
     setLine(p1.x(),p1.y(),p2.x(),p2.y());
     setPen(pen);
     setFlag(QGraphicsItem::ItemIsFocusable);
-    setAcceptHoverEvents(true);
-    setAcceptTouchEvents(true);    
+    //setAcceptHoverEvents(true);
+    //setAcceptTouchEvents(true);
 }
 
 void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
@@ -22,17 +22,21 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
     QtDelay(250);
     this->setPen(backPen);
     this->parameters.movible = false;
+    this->parameters.rotate = false;
     //Obtain user request
-    QAction *a = showContMenuLine(event->screenPos());
+    QAction *tmpA = showContMenuLine(event->screenPos());
 
-    if( a!=0 ){
-        if(a->text()=="Move"){
+    if( tmpA!=0 ){
+        if(tmpA->text()=="Move"){
             this->parameters.movible = true;
         }
-        if(a->text()=="Remove"){
+        if(tmpA->text()=="Rotate"){
+            this->parameters.rotate = true;
+        }
+        if(tmpA->text()=="Remove"){
             this->removeFromIndex();
         }
-        if(a->text()=="Right"){
+        if(tmpA->text()=="Right"){
         }
         update();
     }
@@ -41,13 +45,20 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
 QAction *customLine::showContMenuLine(QPoint pos){
     QMenu *xmenu = new QMenu();
     xmenu->addAction( "Move" );
-    xmenu->addSeparator();
+    xmenu->addAction( "Rotate" );    
 
-    QMenu* submenu2 = xmenu->addMenu( "It is on the" );
-    submenu2->addAction( "Right" );
-    submenu2->addAction( "Leftt" );
-    submenu2->addAction( "Up" );
-    submenu2->addAction( "Down" );
+    xmenu->addSeparator();
+    QMenu* submenu2 = xmenu->addMenu( "Save" );
+    submenu2->addAction( "its rotation" );
+
+    /*
+    xmenu->addSeparator();
+    QMenu* submenu3 = xmenu->addMenu( "It is on the" );
+    submenu3->addAction( "Right" );
+    submenu3->addAction( "Leftt" );
+    submenu3->addAction( "Up" );
+    submenu3->addAction( "Down" );
+    */
 
     xmenu->addSeparator();
     xmenu->addAction( "Remove" );
@@ -74,6 +85,22 @@ void customLine::keyPressEvent(QKeyEvent *event){
             }
             case Qt::Key_Down:{
                 moveBy(0,1);
+                break;
+            }
+        }
+        update();
+    }
+    if(this->parameters.rotate){
+        float inc = 0.1;
+        switch( event->key() ){
+            case Qt::Key_Up:{
+                //this->parameters.rotation -= inc;
+                setRotation(this->rotation()-inc);
+                break;
+            }
+            case Qt::Key_Down:{
+                //this->parameters.rotation += inc;
+                setRotation(this->rotation()+inc);
                 break;
             }
         }

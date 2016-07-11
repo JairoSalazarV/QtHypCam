@@ -13,16 +13,20 @@
     #define _BIG_WIDTH 2592 //2592 | 640 | 320
     #define _BIG_HEIGHT 1944 //1944 | 480 | 240
     #define _GRAPH_HEIGHT 440
-    #define _GRAPH_CALIB_HEIGHT 590
-    #define _DISPLAY_IMAGE "./tmpImages/tmpImg2Disp.ppm"
-    #define _IMAGE_RECEIVED_PATH "./tmpImages/tmpImgRec.RGB888"
+    #define _GRAPH_CALIB_HEIGHT 590    
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _PRELOAD_IP true
+    #define _PRELOAD_IP false
     #define PI 3.14159265
+
+    #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
+    #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
+    #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
+    #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
 
     typedef struct customLineParameters{
         bool movible = false;
+        bool rotate = false;
         int orientation; //0:Rotated | 1:Horizontal | 2:Vertical
         int lenght;
         QString name;

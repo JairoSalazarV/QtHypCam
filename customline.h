@@ -16,7 +16,7 @@ public:
 protected:    
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
     virtual void keyPressEvent(QKeyEvent *event);
-    void drawTmpRemarkLines(int x, int y, int len);
+    //void drawTmpRemarkLines(int x, int y, int len);
 
 };
 

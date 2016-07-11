@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     selcolor.cpp \
     customrect.cpp \
     showancalchrres.cpp \
-    gencalibxml.cpp
+    gencalibxml.cpp \
+    rotationfrm.cpp \
+    recparamfrm.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -32,12 +34,16 @@ HEADERS  += mainwindow.h \
     selcolor.h \
     customrect.h \
     showancalchrres.h \
-    gencalibxml.h
+    gencalibxml.h \
+    rotationfrm.h \
+    recparamfrm.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
     showancalchrres.ui \
-    gencalibxml.ui
+    gencalibxml.ui \
+    rotationfrm.ui \
+    recparamfrm.ui
 
 RESOURCES += \
     lstImgs.qrc

@@ -675,75 +675,12 @@
     </widget>
     <widget class="QWidget" name="tab_6">
      <attribute name="title">
-      <string>Calib double axis</string>
+      <string>Graphic tools</string>
      </attribute>
-     <widget class="QFrame" name="containerCalSave">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>868</x>
-        <y>10</y>
-        <width>51</width>
-        <height>281</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QPushButton" name="pbObtPar_2">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>240</y>
-         <width>31</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load image from file...&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>...</string>
-       </property>
-      </widget>
-      <widget class="QSlider" name="slide2AxCalThre">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>16</x>
-         <y>10</y>
-         <width>20</width>
-         <height>221</height>
-        </rect>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set threshold&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="maximum">
-        <number>255</number>
-       </property>
-       <property name="singleStep">
-        <number>1</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-      </widget>
-     </widget>
     </widget>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
-      <string>Spectometer</string>
+      <string>Spectrometer</string>
      </attribute>
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
@@ -1155,6 +1092,8 @@ QSlider::handle:horizontal {
    <addaction name="actionRect"/>
    <addaction name="actionHorizontalLine"/>
    <addaction name="actionVerticalLine"/>
+   <addaction name="actionRotateImg"/>
+   <addaction name="actionApplyThreshold"/>
    <addaction name="separator"/>
    <addaction name="actionClear"/>
   </widget>
@@ -1171,6 +1110,7 @@ QSlider::handle:horizontal {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionLoadCanvas"/>
    <addaction name="actionDrawToolbar"/>
    <addaction name="actionDoubAxisDiff"/>
   </widget>
@@ -1273,6 +1213,42 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Generate calibration .XML</string>
+   </property>
+  </action>
+  <action name="actionRotateImg">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/actualizar.png</normaloff>:/new/icons/imagenInte/actualizar.png</iconset>
+   </property>
+   <property name="text">
+    <string>rotateImg</string>
+   </property>
+   <property name="toolTip">
+    <string>Rotate the image</string>
+   </property>
+  </action>
+  <action name="actionLoadCanvas">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/folder.png</normaloff>:/new/icons/imagenInte/folder.png</iconset>
+   </property>
+   <property name="text">
+    <string>loadCanvas</string>
+   </property>
+   <property name="toolTip">
+    <string>Load canvas</string>
+   </property>
+  </action>
+  <action name="actionApplyThreshold">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/FiltroActualizar.gif</normaloff>:/new/icons/imagenInte/FiltroActualizar.gif</iconset>
+   </property>
+   <property name="text">
+    <string>applyThreshold</string>
+   </property>
+   <property name="toolTip">
+    <string>Apply threshold</string>
    </property>
   </action>
  </widget>
