@@ -365,6 +365,16 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Red = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Green" )
                 raspcamSettings->Green = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Denoise" )
+                raspcamSettings->Denoise = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="ColorBalance" )
+                raspcamSettings->ColorBalance = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Preview" )
+                raspcamSettings->Preview = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="OneShot" )
+                raspcamSettings->OneShot = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TriggerTime" )
+                raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -638,7 +648,7 @@ bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directo
     QFile DummyFile(directory);
     if(DummyFile.open(QIODevice::WriteOnly)) {
         qint64 bytesWritten = DummyFile.write(reinterpret_cast<const char*>(dataPtr), datasize);
-        if (bytesWritten < datasize) {
+        if (bytesWritten < (qint64)datasize) {
             return false;
         }
         DummyFile.close();

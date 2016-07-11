@@ -15,6 +15,7 @@
     #define _GRAPH_HEIGHT 440
     #define _GRAPH_CALIB_HEIGHT 590
     #define _DISPLAY_IMAGE "./tmpImages/tmpImg2Disp.ppm"
+    #define _IMAGE_RECEIVED_PATH "./tmpImages/tmpImgRec.RGB888"
     #define  _USE_CAM true
     #define _FACT_MULT 3
     #define _PRELOAD_IP true
@@ -107,6 +108,11 @@
         u_int8_t        Format;                 // 1->raspicam::RASPICAM_FORMAT_GRAY | 2->raspicam::RASPICAM_FORMAT_YUV420
         u_int8_t        Red;                    // 0 to 8 set the value for the RED component of white balance
         u_int8_t        Green;                  // 0 to 8 set the value for the GREEN component of white balance
+        u_int8_t        Preview;                // 0v1: Request a preview
+        u_int8_t        OneShot;                // 0: Video streaming | 1:Snapshot
+        u_int8_t        TriggerTime;            // Seconds before to take a photo
+        u_int8_t        Denoise;                // 0v1: Denoise efx
+        u_int8_t        ColorBalance;           // 0v1: ColorBalance efx
     }structRaspcamSettings;
 
     typedef struct squareAperture{

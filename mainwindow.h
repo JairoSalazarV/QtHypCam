@@ -74,23 +74,23 @@ private slots:
 
     void funcIniCamParam(structRaspcamSettings *raspcamSettings);
 
-    void on_slideBrightness_valueChanged(int value);
+    //void on_slideBrightness_valueChanged(int value);
 
-    void on_slideSharpness_valueChanged(int value);
+    //void on_slideSharpness_valueChanged(int value);
 
-    void on_slideContrast_valueChanged(int value);
+    //void on_slideContrast_valueChanged(int value);
 
-    void on_slideSaturation_valueChanged(int value);
+    //void on_slideSaturation_valueChanged(int value);
 
     void on_slideShuterSpeed_valueChanged(int value);
 
     void on_slideISO_valueChanged(int value);
 
-    void on_slideExpComp_valueChanged(int value);
+    //void on_slideExpComp_valueChanged(int value);
 
-    void on_slideRed_valueChanged(int value);
+    //void on_slideRed_valueChanged(int value);
 
-    void on_slideGreen_valueChanged(int value);
+    //void on_slideGreen_valueChanged(int value);
 
     void on_pbSaveRaspParam_clicked();
 
@@ -245,6 +245,9 @@ private slots:
     void on_slide2AxCalThre_sliderReleased();
 
     void on_actionDoubAxisDiff_triggered();
+
+
+    void on_slideTriggerTime_valueChanged(int value);
 
 private:
     Ui::MainWindow *ui;

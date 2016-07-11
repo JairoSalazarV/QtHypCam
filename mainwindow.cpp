@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->txtIp->setText(qsIP);
 
 
-    //Initialize global settingsPlan de Guadalupe 3257, San Pedro Tlaquepaque, Jal.
+    //Initialize global settings
     camSelected->isConnected    = false;
     camSelected->On             = false;
     camSelected->stream         = false;
@@ -502,24 +502,24 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     tmpList.clear();
 
     //Gray YUV420
-    if( raspcamSettings->Format == 1 )ui->rbFormat1->setChecked(true);
-    if( raspcamSettings->Format == 2 )ui->rbFormat2->setChecked(true);
+    //if( raspcamSettings->Format == 1 )ui->rbFormat1->setChecked(true);
+    //if( raspcamSettings->Format == 2 )ui->rbFormat2->setChecked(true);
 
     //Brightness
-    ui->slideBrightness->setValue( raspcamSettings->Brightness );
-    ui->labelBrightness->setText( "Brightness: " + QString::number(raspcamSettings->Brightness) );
+    //ui->slideBrightness->setValue( raspcamSettings->Brightness );
+    //ui->labelBrightness->setText( "Brightness: " + QString::number(raspcamSettings->Brightness) );
 
     //Sharpness
-    ui->slideSharpness->setValue( raspcamSettings->Sharpness );
-    ui->labelSharpness->setText( "Sharpness: " + QString::number(raspcamSettings->Sharpness) );
+    //ui->slideSharpness->setValue( raspcamSettings->Sharpness );
+    //ui->labelSharpness->setText( "Sharpness: " + QString::number(raspcamSettings->Sharpness) );
 
     //Contrast
-    ui->slideContrast->setValue( raspcamSettings->Contrast );
-    ui->labelContrast->setText( "Contrast: " + QString::number(raspcamSettings->Contrast) );
+    //ui->slideContrast->setValue( raspcamSettings->Contrast );
+    //ui->labelContrast->setText( "Contrast: " + QString::number(raspcamSettings->Contrast) );
 
     //Saturation
-    ui->slideSaturation->setValue( raspcamSettings->Saturation );
-    ui->labelSaturation->setText( "Saturation: " + QString::number(raspcamSettings->Saturation) );
+    //ui->slideSaturation->setValue( raspcamSettings->Saturation );
+    //ui->labelSaturation->setText( "Saturation: " + QString::number(raspcamSettings->Saturation) );
 
     //ShuterSpeed
     ui->slideShuterSpeed->setValue( raspcamSettings->ShutterSpeed );
@@ -530,17 +530,34 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     ui->labelISO->setText( "ISO: " + QString::number(raspcamSettings->ISO) );
 
     //ExposureCompensation
-    ui->slideExpComp->setValue( raspcamSettings->ExposureCompensation );
-    ui->labelExposureComp->setText( "Exp. Comp.: " + QString::number(raspcamSettings->ExposureCompensation) );
+    //ui->slideExpComp->setValue( raspcamSettings->ExposureCompensation );
+    //ui->labelExposureComp->setText( "Exp. Comp.: " + QString::number(raspcamSettings->ExposureCompensation) );
 
     //RED
     //qDebug() << "Red: " << raspcamSettings->Red;
-    ui->slideRed->setValue( raspcamSettings->Red );
-    ui->labelRed->setText( "Red: " + QString::number(raspcamSettings->Red) );
+    //ui->slideRed->setValue( raspcamSettings->Red );
+    //ui->labelRed->setText( "Red: " + QString::number(raspcamSettings->Red) );
 
     //GREEN
-    ui->slideGreen->setValue( raspcamSettings->Green );
-    ui->labelGreen->setText( "Green: " + QString::number(raspcamSettings->Green) );
+    //ui->slideGreen->setValue( raspcamSettings->Green );
+    //ui->labelGreen->setText( "Green: " + QString::number(raspcamSettings->Green) );
+
+    //PREVIEW
+    if( raspcamSettings->Preview )ui->cbPreview->setChecked(true);
+    else ui->cbPreview->setChecked(false);
+
+    //TRIGGER TIME
+    ui->slideTriggerTime->setValue(raspcamSettings->TriggerTime);
+    ui->labelTriggerTime->setText("Trigger time: " + QString::number(raspcamSettings->TriggerTime)+"s");
+
+    //DENOISE EFX
+    if( raspcamSettings->Denoise )ui->cbDenoise->setChecked(true);
+    else ui->cbDenoise->setChecked(false);
+
+    //COLORBALANCE EFX
+    if( raspcamSettings->ColorBalance )ui->cbColorBalance->setChecked(true);
+    else ui->cbColorBalance->setChecked(false);
+
 
 }
 
@@ -1191,12 +1208,8 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
 
     //Save a backup of the image received
     //..
-    if(!saveBinFile( (unsigned long)fileLen, tmpFile,"./tmpImages/tmpImgRec.RGB888")){
+    if(!saveBinFile( (unsigned long)fileLen, tmpFile,_IMAGE_RECEIVED_PATH)){
         qDebug()<< "ERROR: saving image-file received";
-    }
-    else
-    {
-        funcShowMsg("File","Saved");
     }
 
     //Close socket and return
@@ -1209,17 +1222,21 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
     //raspSett.width                 = ui->slideWidth->value();
     //raspSett.height                = ui->slideHeight->value();
     //raspSett.AWB                   = ui->cbAWB->currentText().toStdString().c_str();
-    raspSett.Brightness            = ui->slideBrightness->value();
-    raspSett.Contrast              = ui->slideContrast->value();
+    //raspSett.Brightness            = ui->slideBrightness->value();
+    //raspSett.Contrast              = ui->slideContrast->value();
     //raspSett.Exposure              = ui->cbExposure->currentText().toStdString().c_str();
-    raspSett.ExposureCompensation  = ui->slideExpComp->value();
-    raspSett.Format                = ( ui->rbFormat1->isChecked() )?1:2;
-    raspSett.Green                 = ui->slideGreen->value();
+    //raspSett.ExposureCompensation  = ui->slideExpComp->value();
+    //raspSett.Format                = ( ui->rbFormat1->isChecked() )?1:2;
+    //raspSett.Green                 = ui->slideGreen->value();
     raspSett.ISO                   = ui->slideISO->value();
-    raspSett.Red                   = ui->slideRed->value();
-    raspSett.Saturation            = ui->slideSaturation->value();
-    raspSett.Sharpness             = ui->slideSharpness->value();
+    //raspSett.Red                   = ui->slideRed->value();
+    //raspSett.Saturation            = ui->slideSaturation->value();
+    //raspSett.Sharpness             = ui->slideSharpness->value();
     raspSett.ShutterSpeed          = ui->slideShuterSpeed->value();
+    raspSett.Denoise = (ui->cbDenoise->isChecked())?1:0;
+    raspSett.ColorBalance = (ui->cbColorBalance->isChecked())?1:0;
+    raspSett.TriggerTime = ui->slideTriggerTime->value();
+
     return raspSett;
 }
 
@@ -1279,46 +1296,37 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     reqImg->idMsg       = (unsigned char)7;    
     reqImg->stabSec     = sec2Stab;    
     reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );    
-    //Type
-    if( ui->cbPreview->isChecked() ){
-        //Canvas settings
-        reqImg->needCut         = false;
-        reqImg->imgCols         = 320;//2592 | 640 | 320
-        reqImg->imgRows         = 240;//1944 | 480 | 240
-    }else{
-        //Canvas settings
-        reqImg->needCut     = true;
-        reqImg->imgCols     = _BIG_WIDTH;//2592 | 640 | 320
-        reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480 | 240
-    }
+
     //Get square parameters
-    if( !funGetSquareXML( "./XML/squareAperture.xml", &reqImg->sqApSett ) ){
-        funcShowMsg("ERROR","Loading bigSquare.xml");
+    //..
+    QString tmpSquare2Load = (ui->cbPreview->isChecked())?"./XML/bigSquare.xml":"./XML/squareAperture.xml";
+    if( !funGetSquareXML( tmpSquare2Load, &reqImg->sqApSett ) ){
+        funcShowMsg("ERROR","Loading squareAperture.xml");
         return false;
     }
+    reqImg->needCut     = true;
+    reqImg->imgCols     = abs(reqImg->sqApSett.x2-reqImg->sqApSett.x1);
+    reqImg->imgRows     = abs(reqImg->sqApSett.y2-reqImg->sqApSett.y1);
 
-
-
-
+    /*
     //Require and dysplay remote image
     //...
     int tmpSqW;
     int tmpSqH;
-    if( reqImg->needCut ){
-        int X1 = round( (float)(reqImg->sqApSett.x1 * reqImg->imgCols) / reqImg->sqApSett.width );
-        int X2 = round( (float)(reqImg->sqApSett.x2 * reqImg->imgCols) / reqImg->sqApSett.width );
-        int Y1 = round( (float)(reqImg->sqApSett.y1 * reqImg->imgRows) / reqImg->sqApSett.height );
-        int Y2 = round( (float)(reqImg->sqApSett.y2 * reqImg->imgRows) / reqImg->sqApSett.height );
-        tmpSqW = X2-X1;
-        tmpSqH = Y2-Y1;
-    }else{
-        tmpSqW = reqImg->imgCols;
-        tmpSqH = reqImg->imgRows;
-    }
-    unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
+    int X1 = round( (float)(reqImg->sqApSett.x1 * reqImg->imgCols) / reqImg->sqApSett.width );
+    int X2 = round( (float)(reqImg->sqApSett.x2 * reqImg->imgCols) / reqImg->sqApSett.width );
+    int Y1 = round( (float)(reqImg->sqApSett.y1 * reqImg->imgRows) / reqImg->sqApSett.height );
+    int Y2 = round( (float)(reqImg->sqApSett.y2 * reqImg->imgRows) / reqImg->sqApSett.height );
+    tmpSqW = X2-X1;
+    tmpSqH = Y2-Y1;
+    */
 
+    //It save the received image
+    funcGetRemoteImg( reqImg );
+    QImage tmpImg(_IMAGE_RECEIVED_PATH);
+    /*
     //Tranform image because cut image was manipulated by the raspberry
-    //..
+    //..    
     QImage tmpImg( QSize(tmpSqW, tmpSqH), QImage::Format_RGB888 );
     qDebug() << "imgW: " << tmpImg.width();
     qDebug() << "imgH: " << tmpImg.height();
@@ -1333,14 +1341,16 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
                 return false;
             }
             tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-            tmpImg.setPixel( c/*x*/, r/*y*/, tmpPix );
+            tmpImg.setPixel( c, r, tmpPix );
             i += 3;
         }
     }
+    */
     //tmpImg.save("./Results/tmpCropFromSave.ppm");
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpImg) );
-    ui->labelVideo->setFixedWidth( tmpSqW );
-    ui->labelVideo->setFixedHeight( tmpSqH );
+    ui->labelVideo->setFixedWidth( tmpImg.width() );
+    ui->labelVideo->setFixedHeight( tmpImg.height() );
+    ui->labelVideo->update();
 
     //Delay in order to refresh actions applied
     QtDelay( msSleep );
@@ -1455,26 +1465,6 @@ void MainWindow::on_pbSaveImage_clicked()
     ui->pbStartVideo->click();
 }
 
-void MainWindow::on_slideBrightness_valueChanged(int value)
-{
-    ui->labelBrightness->setText( "Brightess: " + QString::number(value) );
-}
-
-void MainWindow::on_slideSharpness_valueChanged(int value)
-{
-    ui->labelSharpness->setText( "Sharpness: " + QString::number(value) );
-}
-
-void MainWindow::on_slideContrast_valueChanged(int value)
-{
-    ui->labelContrast->setText( "Contrast: " + QString::number(value) );
-}
-
-void MainWindow::on_slideSaturation_valueChanged(int value)
-{
-    ui->labelSaturation->setText( "Saturation: " + QString::number(value) );
-}
-
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
 {
     ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value) );
@@ -1483,21 +1473,6 @@ void MainWindow::on_slideShuterSpeed_valueChanged(int value)
 void MainWindow::on_slideISO_valueChanged(int value)
 {
     ui->labelISO->setText( "ISO: " + QString::number(value) );
-}
-
-void MainWindow::on_slideExpComp_valueChanged(int value)
-{
-    ui->labelExposureComp->setText( "Exposure Comp: " + QString::number(value) );
-}
-
-void MainWindow::on_slideRed_valueChanged(int value)
-{
-    ui->labelRed->setText( "Red: " + QString::number(value) );
-}
-
-void MainWindow::on_slideGreen_valueChanged(int value)
-{
-    ui->labelGreen->setText( "Green: " + QString::number(value) );
 }
 
 void MainWindow::on_pbSaveRaspParam_clicked()
@@ -1566,33 +1541,29 @@ void MainWindow::on_pbSaveRaspParam_clicked()
 }
 
 bool MainWindow::saveRaspCamSettings( QString tmpName ){
-    //Prepare file
+    //Prepare file contain
+    //..
     QString newFileCon = "";
     QString denoiseFlag = (ui->cbDenoise->isChecked())?"1":"0";
     QString colbalFlag = (ui->cbColorBalance->isChecked())?"1":"0";
-    QString formatFlag = (ui->rbFormat1->isChecked())?"    <Format>1</Format>\n":"    <Format>2</Format>\n";
+    QString previewFlag = (ui->cbPreview->isChecked())?"1":"0";
+    QString oneShotFlag = (ui->cbOneShot->isChecked())?"1":"0";
     newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
     newFileCon.append("<settings>\n");
     newFileCon.append("    <AWB>"+ ui->cbAWB->currentText() +"</AWB>\n");
     newFileCon.append("    <Exposure>"+ ui->cbExposure->currentText() +"</Exposure>\n");
-    newFileCon.append("    <Denoise>"+ denoiseFlag +"</Exposure>\n");
+    newFileCon.append("    <Denoise>"+ denoiseFlag +"</Denoise>\n");
     newFileCon.append("    <ColorBalance>"+ colbalFlag +"</ColorBalance>\n");
-    newFileCon.append("    <Brightness>"+ QString::number(ui->slideBrightness->value() ) +"</Brightness>\n");
-    newFileCon.append("    <Sharpness>"+ QString::number(ui->slideSharpness->value() ) +"</Sharpness>\n");
-    newFileCon.append("    <Contrast>"+ QString::number(ui->slideContrast->value() ) +"</Contrast>\n");
-    newFileCon.append("    <Saturation>"+ QString::number(ui->slideSaturation->value() ) +"</Saturation>\n");
-    newFileCon.append("    <ShutterSpeed>"+ QString::number(ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
-    newFileCon.append("    <ISO>"+ QString::number(ui->slideISO->value() ) +"</ISO>\n");
-    newFileCon.append("    <TriggerTimer>"+ QString::number(ui->slideTriggerTimer->value() ) +"</TriggerTimer>\n");
-    newFileCon.append("    <ExposureCompensation>"+ QString::number(ui->slideExpComp->value() ) +"</ExposureCompensation>\n");
-    newFileCon.append(formatFlag);
-    newFileCon.append("    <Red>"+ QString::number(ui->slideRed->value() ) +"</Red>\n");
-    newFileCon.append("    <Green>"+ QString::number(ui->slideGreen->value() ) +"</Green>\n");
+    newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
+    newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
+    newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
+    newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
+    newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
     newFileCon.append("</settings>");
-
     //Save
-    //ui->txtCamParamXMLName->setText(tmpName);
+    //..
     QFile newFile( "./XML/camPerfils/" + tmpName + ".xml" );
+    if(newFile.exists())newFile.remove();
     if ( newFile.open(QIODevice::ReadWrite) ){
         QTextStream stream( &newFile );
         stream << newFileCon << endl;
@@ -1644,29 +1615,23 @@ bool MainWindow::funcSetCam( structRaspcamSettings *raspcamSettings ){
 
         //raspcamSettings->height = ui->slideHeight->value();
 
-        raspcamSettings->Brightness = ui->slideBrightness->value();
+        //raspcamSettings->Brightness = ui->slideBrightness->value();
 
-        raspcamSettings->Sharpness = ui->slideSharpness->value();
+        //raspcamSettings->Sharpness = ui->slideSharpness->value();
 
-        raspcamSettings->Contrast = ui->slideContrast->value();
+        //raspcamSettings->Contrast = ui->slideContrast->value();
 
-        raspcamSettings->Saturation = ui->slideSaturation->value();
+        //raspcamSettings->Saturation = ui->slideSaturation->value();
 
         raspcamSettings->ShutterSpeed = ui->slideShuterSpeed->value();
 
         raspcamSettings->ISO = ui->slideISO->value();
 
-        raspcamSettings->ExposureCompensation = ui->slideExpComp->value();
+        //raspcamSettings->ExposureCompensation = ui->slideExpComp->value();
 
-        if( ui->rbFormat1->isChecked() ){
-            raspcamSettings->Format = 2;
-        }else{
-            raspcamSettings->Format = 1;
-        }
+        //raspcamSettings->Red = ui->slideRed->value();
 
-        raspcamSettings->Red = ui->slideRed->value();
-
-        raspcamSettings->Green = ui->slideGreen->value();
+        //raspcamSettings->Green = ui->slideGreen->value();
 
 
 
@@ -1732,12 +1697,15 @@ void MainWindow::funcGetSnapshot()
         tmpSqW = reqImg->imgCols;
         tmpSqH = reqImg->imgRows;
     }
+    //It saves image into HDD: _IMAGE_RECEIVED_PATH
     unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
 
     //Tranform image and save it
     //..
-    int r,c,i;
-    QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB32 );
+    //int r,c,i;
+    //QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB888 );
+    QImage tmpImg( _IMAGE_RECEIVED_PATH );
+    /*
     QRgb tmpPix;
     i=0;
     for(r=0;r<tmpSqH;r++){
@@ -1747,6 +1715,7 @@ void MainWindow::funcGetSnapshot()
             i += 3;
         }
     }
+    */
 
     //Show snapshot
     int tmpFixW = 350;
@@ -2462,7 +2431,7 @@ void MainWindow::on_pbObtPar_2_clicked()
                                                         this,
                                                         tr("Select image..."),
                                                         "./snapshots/Calib/",
-                                                        "(*.ppm);;"
+                                                        "(*.ppm *.RGB888);;"
                                                      );
     if( auxQstring.isEmpty() ){
         return (void)NULL;
@@ -2980,4 +2949,10 @@ void MainWindow::on_actionDoubAxisDiff_triggered()
     genCalib->setModal(true);
     genCalib->show();
 
+}
+
+
+void MainWindow::on_slideTriggerTime_valueChanged(int value)
+{
+    ui->labelTriggerTime->setText( "Trigger at: " + QString::number(value) + "s" );
 }

@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -286,9 +286,9 @@
       <property name="geometry">
        <rect>
         <x>21</x>
-        <y>101</y>
+        <y>190</y>
         <width>157</width>
-        <height>100</height>
+        <height>71</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="scrollsLayouts">
@@ -301,24 +301,6 @@
        </item>
        <item>
         <widget class="QComboBox" name="cbExposure"/>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item>
-          <widget class="QRadioButton" name="rbFormat1">
-           <property name="text">
-            <string>Gray</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="rbFormat2">
-           <property name="text">
-            <string>YUV420</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </item>
       </layout>
      </widget>
@@ -349,73 +331,12 @@
       <property name="geometry">
        <rect>
         <x>21</x>
-        <y>200</y>
+        <y>300</y>
         <width>221</width>
-        <height>311</height>
+        <height>101</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="slidesLayout">
-       <item>
-        <widget class="QSlider" name="slideBrightness">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="slideSharpness">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="minimum">
-          <number>-100</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="slideContrast">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="minimum">
-          <number>-100</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="slideSaturation">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="minimum">
-          <number>-100</number>
-         </property>
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QSlider" name="slideShuterSpeed">
          <property name="maximum">
@@ -429,10 +350,10 @@
        <item>
         <widget class="QSlider" name="slideISO">
          <property name="minimum">
-          <number>100</number>
+          <number>0</number>
          </property>
          <property name="maximum">
-          <number>800</number>
+          <number>3000</number>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -440,54 +361,15 @@
         </widget>
        </item>
        <item>
-        <widget class="QSlider" name="slideExpComp">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QSlider" name="slideTriggerTime">
          <property name="minimum">
-          <number>-10</number>
-         </property>
-         <property name="maximum">
-          <number>10</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="slideRed">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="maximum">
-          <number>8</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="slideGreen">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="maximum">
-          <number>8</number>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSlider" name="slideTriggerTimer">
-         <property name="minimum">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="maximum">
           <number>15</number>
+         </property>
+         <property name="value">
+          <number>3</number>
          </property>
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -499,37 +381,11 @@
        </item>
       </layout>
      </widget>
-     <widget class="QLabel" name="labelSaturation">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>297</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Saturation</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelRed">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>417</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Red</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="labelISO">
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>358</y>
+        <y>340</y>
         <width>169</width>
         <height>19</height>
        </rect>
@@ -538,82 +394,17 @@
        <string>ISO</string>
       </property>
      </widget>
-     <widget class="QLabel" name="labelContrast">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>268</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Contrast</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="labelShuterSpeed">
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>327</y>
+        <y>310</y>
         <width>169</width>
         <height>19</height>
        </rect>
       </property>
       <property name="text">
        <string>Shuter Speed</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelGreen">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>447</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Green</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelExposureComp">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>387</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Exposure Comp</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelSharpness">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>237</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Sharpness</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelBrightness">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>206</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Brightness</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="txtCamParamXMLName">
@@ -681,33 +472,27 @@
        <string>./snapshots/</string>
       </property>
      </widget>
-     <widget class="QLabel" name="labelGreen_2">
-      <property name="geometry">
-       <rect>
-        <x>249</x>
-        <y>476</y>
-        <width>169</width>
-        <height>19</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Trigger time</string>
-      </property>
-     </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>20</x>
         <y>50</y>
-        <width>391</width>
-        <height>28</height>
+        <width>122</width>
+        <height>124</height>
        </rect>
       </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QCheckBox" name="cbPreview">
+        <widget class="QCheckBox" name="cbColorBalance">
          <property name="text">
-          <string>Preview</string>
+          <string>Color balance</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="cbDenoise">
+         <property name="text">
+          <string>Denoise</string>
          </property>
         </widget>
        </item>
@@ -722,20 +507,26 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="cbDenoise">
+        <widget class="QCheckBox" name="cbPreview">
          <property name="text">
-          <string>Denoise</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbColorBalance">
-         <property name="text">
-          <string>Color balance</string>
+          <string>Preview</string>
          </property>
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QLabel" name="labelTriggerTime">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>370</y>
+        <width>169</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Trigger time</string>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_4">
