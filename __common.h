@@ -48,6 +48,8 @@
 
     void funcTransPix(calcAndCropSnap *calStruct , int w, int h, int W, int H);
 
+    bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory);
+
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
     //QImage *IplImageToQImage(const IplImage * iplImage, uchar **data,

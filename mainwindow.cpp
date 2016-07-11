@@ -669,7 +669,7 @@ bool MainWindow::funcReceiveFile(
             //Request other part
             if( i<(int)numMsgs ){
                 //qDebug() << "W2";
-                QtDelay(1);
+                QtDelay(2);
                 n = ::write(sockfd,"sendpart",8);
                 if(n<0){
                     qDebug() << "ERROR: Sending part-file request";
@@ -1122,6 +1122,12 @@ void MainWindow::on_pbStartVideo_clicked()
     if( !camSelected->isConnected ){
         funcShowMsg("Lack","Select and connect a camera");
     }else{
+        //Save camera settings
+        //..
+        saveRaspCamSettings( "tmp" );
+
+        //Play
+        //..
         if( camSelected->stream ){//Playing video
             camSelected->stream = false;
             ui->pbStartVideo->setIcon( QIcon(":/new/icons/imagenInte/player_play.svg") );
@@ -1159,7 +1165,7 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
     ::write(sockfd,reqImg,sizeof(strReqImg));
     qDebug() << "Img request sent";
 
-    //Receive ACK
+    //Receive ACK with the camera status
     read(sockfd,bufferRead,frameBodyLen);
     if( bufferRead[1] == 1 ){//Begin the image adquisition routine
         qDebug() << "Camera OK";
@@ -1176,10 +1182,21 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
     //Receive File photogram
     int buffLen = ceil((float)fileLen/(float)frameBodyLen)*frameBodyLen;
     unsigned char *tmpFile = (unsigned char*)malloc(buffLen);
+    QtDelay(60);
     if( funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile ) ){
         qDebug() << "Frame received";
     }else{
         qDebug() << "ERROR: Frame does not received";
+    }
+
+    //Save a backup of the image received
+    //..
+    if(!saveBinFile( (unsigned long)fileLen, tmpFile,"./tmpImages/tmpImgRec.RGB888")){
+        qDebug()<< "ERROR: saving image-file received";
+    }
+    else
+    {
+        funcShowMsg("File","Saved");
     }
 
     //Close socket and return
@@ -1252,8 +1269,8 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 
 bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
-    ui->progBar->setValue(0);
     ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
     QtDelay(50);
 
     //Set required image's settings
@@ -1305,8 +1322,6 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     QImage tmpImg( QSize(tmpSqW, tmpSqH), QImage::Format_RGB888 );
     qDebug() << "imgW: " << tmpImg.width();
     qDebug() << "imgH: " << tmpImg.height();
-
-
     int r,c,i;
     QRgb tmpPix;
     i=0;
@@ -1508,6 +1523,12 @@ void MainWindow::on_pbSaveRaspParam_clicked()
         }
 
         if( saveFile ){
+            if( saveRaspCamSettings( tmpName ) ){
+                funcShowMsg("Success","File stored successfully");
+            }else{
+                funcShowMsg("ERROR","Saving raspcamsettings");
+            }
+            /*
             //Prepare file
             QString newFileCon = "";
             newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
@@ -1539,8 +1560,47 @@ void MainWindow::on_pbSaveRaspParam_clicked()
                 newFile.close();
                 funcShowMsg("Success","File stored successfully");
             }
+            */
         }
     }
+}
+
+bool MainWindow::saveRaspCamSettings( QString tmpName ){
+    //Prepare file
+    QString newFileCon = "";
+    QString denoiseFlag = (ui->cbDenoise->isChecked())?"1":"0";
+    QString colbalFlag = (ui->cbColorBalance->isChecked())?"1":"0";
+    QString formatFlag = (ui->rbFormat1->isChecked())?"    <Format>1</Format>\n":"    <Format>2</Format>\n";
+    newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
+    newFileCon.append("<settings>\n");
+    newFileCon.append("    <AWB>"+ ui->cbAWB->currentText() +"</AWB>\n");
+    newFileCon.append("    <Exposure>"+ ui->cbExposure->currentText() +"</Exposure>\n");
+    newFileCon.append("    <Denoise>"+ denoiseFlag +"</Exposure>\n");
+    newFileCon.append("    <ColorBalance>"+ colbalFlag +"</ColorBalance>\n");
+    newFileCon.append("    <Brightness>"+ QString::number(ui->slideBrightness->value() ) +"</Brightness>\n");
+    newFileCon.append("    <Sharpness>"+ QString::number(ui->slideSharpness->value() ) +"</Sharpness>\n");
+    newFileCon.append("    <Contrast>"+ QString::number(ui->slideContrast->value() ) +"</Contrast>\n");
+    newFileCon.append("    <Saturation>"+ QString::number(ui->slideSaturation->value() ) +"</Saturation>\n");
+    newFileCon.append("    <ShutterSpeed>"+ QString::number(ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
+    newFileCon.append("    <ISO>"+ QString::number(ui->slideISO->value() ) +"</ISO>\n");
+    newFileCon.append("    <TriggerTimer>"+ QString::number(ui->slideTriggerTimer->value() ) +"</TriggerTimer>\n");
+    newFileCon.append("    <ExposureCompensation>"+ QString::number(ui->slideExpComp->value() ) +"</ExposureCompensation>\n");
+    newFileCon.append(formatFlag);
+    newFileCon.append("    <Red>"+ QString::number(ui->slideRed->value() ) +"</Red>\n");
+    newFileCon.append("    <Green>"+ QString::number(ui->slideGreen->value() ) +"</Green>\n");
+    newFileCon.append("</settings>");
+
+    //Save
+    //ui->txtCamParamXMLName->setText(tmpName);
+    QFile newFile( "./XML/camPerfils/" + tmpName + ".xml" );
+    if ( newFile.open(QIODevice::ReadWrite) ){
+        QTextStream stream( &newFile );
+        stream << newFileCon << endl;
+        newFile.close();
+    }else{
+        return false;
+    }
+    return true;
 }
 
 void MainWindow::on_pbObtPar_clicked()

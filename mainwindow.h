@@ -94,6 +94,8 @@ private slots:
 
     void on_pbSaveRaspParam_clicked();
 
+    bool saveRaspCamSettings( QString tmpName );
+
     void on_pbObtPar_clicked();
 
     bool funcSetCam( structRaspcamSettings *raspcamSettings );

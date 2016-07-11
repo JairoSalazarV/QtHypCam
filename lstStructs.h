@@ -10,14 +10,14 @@
 
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN 1024;
-    #define _BIG_WIDTH 2272
-    #define _BIG_HEIGHT 1704
+    #define _BIG_WIDTH 2592 //2592 | 640 | 320
+    #define _BIG_HEIGHT 1944 //1944 | 480 | 240
     #define _GRAPH_HEIGHT 440
     #define _GRAPH_CALIB_HEIGHT 590
     #define _DISPLAY_IMAGE "./tmpImages/tmpImg2Disp.ppm"
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _PRELOAD_IP false
+    #define _PRELOAD_IP true
     #define PI 3.14159265
 
     typedef struct customLineParameters{

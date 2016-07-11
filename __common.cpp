@@ -634,5 +634,15 @@ linearRegresion *funcCalcLinReg( float *X ){
 
 
 
-
+bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory){
+    QFile DummyFile(directory);
+    if(DummyFile.open(QIODevice::WriteOnly)) {
+        qint64 bytesWritten = DummyFile.write(reinterpret_cast<const char*>(dataPtr), datasize);
+        if (bytesWritten < datasize) {
+            return false;
+        }
+        DummyFile.close();
+    }
+    return true;
+}
 
