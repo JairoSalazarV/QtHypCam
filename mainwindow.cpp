@@ -2105,6 +2105,8 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     y2 = (calStruct.y1>=e->y())?calStruct.y1:e->y();
     customRect* tmpRect = new customRect(QPoint(x1,y1),QPoint(x2-x1,y2-y1));
     //customRect* tmpRect = new customRect(this);
+    tmpRect->parameters.W = canvasCalib->width();
+    tmpRect->parameters.H = canvasCalib->height();
     tmpRect->setPen( QPen(Qt::red) );
     tmpCanvas->scene()->addItem(tmpRect);
     tmpRect->setFocus();

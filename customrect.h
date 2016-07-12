@@ -8,7 +8,7 @@
 #include <lstStructs.h>
 #include <QPoint>
 
-//#include <QObject>
+#include <QObject>
 //#include <QtGui>
 //#include <QtCore>
 
@@ -18,17 +18,27 @@ class customRect : public QGraphicsRectItem
 
 public:
     customRectParameters parameters;
+
     customRect(QPoint p1, QPoint p2);
+
+    bool saveSquareAs(QString fileName);
+
+public slots:
     QAction *showContMenuLine(QPoint pos);
 
-protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void keyPressEvent(QKeyEvent *event);
+    //void emitSignal();
 
     /*
 signals:
-    void signalCustRectAreaSelected(QPoint p1, QPoint p2);
-*/
+    virtual void saveSquareAperture(QRect* tmpRect);
+
+    virtual void saveRegionOfInteres(customRect* tmpRect);
+    */
+
+protected:
+    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
+    virtual void keyPressEvent(QKeyEvent *event);
 
 };
 

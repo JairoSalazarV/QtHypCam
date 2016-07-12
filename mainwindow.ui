@@ -14,7 +14,7 @@
    <bool>true</bool>
   </property>
   <property name="windowTitle">
-   <string>Hyperspectral camera</string>
+   <string>Hyperspectral Image Sensor (Beta 0.1)</string>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTabWidget" name="pbExpPixs">
