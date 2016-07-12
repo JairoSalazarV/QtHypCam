@@ -11,15 +11,18 @@
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN 1024;
     #define _BIG_WIDTH 2592 //2592 | 640 | 320
-    #define _BIG_HEIGHT 1944 //1944 | 480 | 240
+    #define _BIG_HEIGHT 1944 //1944 | 480 | 240    
+    #define _FRAME_THUMB_W 500
+    #define _FRAME_THUMB_H 375
     #define _GRAPH_HEIGHT 440
     #define _GRAPH_CALIB_HEIGHT 590    
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _PRELOAD_IP false
+    #define _PRELOAD_IP true
     #define PI 3.14159265
 
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
+    #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
@@ -128,12 +131,12 @@
     }structRaspcamSettings;
 
     typedef struct squareAperture{
-        int width;
-        int height;
-        int x1;//Left-Top = 1,1
-        int y1;//Left-Top = 1,1
-        int x2;//Left-Top = 1,1
-        int y2;//Left-Top = 1,1
+        int canvasW;
+        int canvasH;
+        int rectX;//Begin
+        int rectY;//Begin
+        int rectW;//Len
+        int rectH;//Len
     }squareAperture;
 
     typedef struct strReqImg{

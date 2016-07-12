@@ -284,27 +284,27 @@ bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement) {
 
-            if( xmlReader->name()=="width" )
-                squareParam->width = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="W" )
+                squareParam->canvasW = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="height" )
-                squareParam->height = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="H" )
+                squareParam->canvasH = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="x1" )
-                squareParam->x1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x" )
+                squareParam->rectX = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="y1" )
-                squareParam->y1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y" )
+                squareParam->rectY = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="x2" )
-                squareParam->x2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="w" )
+                squareParam->rectW = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="y2" )
-                squareParam->y2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="h" )
+                squareParam->rectH = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
-        funcShowMsg("raspcamSettings.xml Parse Error",xmlReader->errorString());
+        funcShowMsg("Parse Error",xmlReader->errorString());
         return false;
     }
     xmlReader->clear();

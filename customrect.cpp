@@ -170,8 +170,6 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //..
             saveSquareAs(_PATH_REGION_OF_INTERES);
         }
-
-
         update();
     }
 }

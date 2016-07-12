@@ -183,7 +183,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     //Fill the lastsnapshots path as default
-    QString lastSnapPath = readAllFile( "./settings/lastSnapPath.hypcam" );
+    QString lastSnapPath = readAllFile( _PATH_LAST_SNAPPATH );
     lastSnapPath.replace("\n","");
     ui->txtSnapPath->setText(lastSnapPath);
 
@@ -549,8 +549,8 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     //ui->labelGreen->setText( "Green: " + QString::number(raspcamSettings->Green) );
 
     //PREVIEW
-    if( raspcamSettings->Preview )ui->cbPreview->setChecked(true);
-    else ui->cbPreview->setChecked(false);
+    //if( raspcamSettings->Preview )ui->cbPreview->setChecked(true);
+    //else ui->cbPreview->setChecked(false);
 
     //TRIGGER TIME
     ui->slideTriggerTime->setValue(raspcamSettings->TriggerTime);
@@ -1294,6 +1294,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
     ui->progBar->setVisible(true);
     ui->progBar->setValue(0);
+    ui->progBar->update();
     QtDelay(50);
 
     //Set required image's settings
@@ -1303,55 +1304,31 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     reqImg->stabSec     = sec2Stab;    
     reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );    
 
-    //Get square parameters
+    //Define photo's region
     //..
-    QString tmpSquare2Load = (ui->cbPreview->isChecked())?"./XML/bigSquare.xml":"./XML/squareAperture.xml";
-    if( !funGetSquareXML( tmpSquare2Load, &reqImg->sqApSett ) ){
-        funcShowMsg("ERROR","Loading squareAperture.xml");
-        return false;
-    }
-    reqImg->needCut     = true;
-    reqImg->imgCols     = abs(reqImg->sqApSett.x2-reqImg->sqApSett.x1);
-    reqImg->imgRows     = abs(reqImg->sqApSett.y2-reqImg->sqApSett.y1);
+    if( ui->cbFullPhoto->isChecked() ){
+        reqImg->needCut     = false;
+        reqImg->imgCols     = _BIG_WIDTH;
+        reqImg->imgRows     = _BIG_HEIGHT;
+    }else{
+        //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
+        if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
+            funcShowMsg("ERROR","Loading squareAperture.xml");
+            return false;
+        }
+        reqImg->needCut     = true;
+        //Calculate real number of columns of the required photo
+        reqImg->imgCols         = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+        reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+        reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+        reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
 
-    /*
-    //Require and dysplay remote image
-    //...
-    int tmpSqW;
-    int tmpSqH;
-    int X1 = round( (float)(reqImg->sqApSett.x1 * reqImg->imgCols) / reqImg->sqApSett.width );
-    int X2 = round( (float)(reqImg->sqApSett.x2 * reqImg->imgCols) / reqImg->sqApSett.width );
-    int Y1 = round( (float)(reqImg->sqApSett.y1 * reqImg->imgRows) / reqImg->sqApSett.height );
-    int Y2 = round( (float)(reqImg->sqApSett.y2 * reqImg->imgRows) / reqImg->sqApSett.height );
-    tmpSqW = X2-X1;
-    tmpSqH = Y2-Y1;
-    */
+    }
 
     //It save the received image
     funcGetRemoteImg( reqImg );
     QImage tmpImg(_PATH_IMAGE_RECEIVED);
-    /*
-    //Tranform image because cut image was manipulated by the raspberry
-    //..    
-    QImage tmpImg( QSize(tmpSqW, tmpSqH), QImage::Format_RGB888 );
-    qDebug() << "imgW: " << tmpImg.width();
-    qDebug() << "imgH: " << tmpImg.height();
-    int r,c,i;
-    QRgb tmpPix;
-    i=0;
-    for(r=0;r<tmpSqH;r++){
-        for(c=0;c<tmpSqW;c++){
-            if(!tmpImg.valid(c,r)){
-                qDebug() << "Invalid r: " << r << " c: "<<c;
-                QtDelay(20);
-                return false;
-            }
-            tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-            tmpImg.setPixel( c, r, tmpPix );
-            i += 3;
-        }
-    }
-    */
+
     //tmpImg.save("./Results/tmpCropFromSave.ppm");
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpImg) );
     ui->labelVideo->setFixedWidth( tmpImg.width() );
@@ -1552,15 +1529,17 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     QString newFileCon = "";
     QString denoiseFlag = (ui->cbDenoise->isChecked())?"1":"0";
     QString colbalFlag = (ui->cbColorBalance->isChecked())?"1":"0";
-    QString previewFlag = (ui->cbPreview->isChecked())?"1":"0";
+    //QString previewFlag = (ui->cbPreview->isChecked())?"1":"0";
     QString oneShotFlag = (ui->cbOneShot->isChecked())?"1":"0";
+    QString fullPhotoFlag = (ui->cbFullPhoto->isChecked())?"1":"0";
     newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
     newFileCon.append("<settings>\n");
     newFileCon.append("    <AWB>"+ ui->cbAWB->currentText() +"</AWB>\n");
     newFileCon.append("    <Exposure>"+ ui->cbExposure->currentText() +"</Exposure>\n");
     newFileCon.append("    <Denoise>"+ denoiseFlag +"</Denoise>\n");
     newFileCon.append("    <ColorBalance>"+ colbalFlag +"</ColorBalance>\n");
-    newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
+    newFileCon.append("    <FullPhoto>"+ fullPhotoFlag +"</FullPhoto>\n");
+    //newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
     newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
     newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
     newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
@@ -1669,77 +1648,63 @@ void MainWindow::funcGetSnapshot()
 
     //Save path
     //..
-    saveFile("./settings/lastSnapPath.hypcam",ui->txtSnapPath->text());
+    saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
 
 
     //Set required image's settings
     //..
     strReqImg *reqImg   = (strReqImg*)malloc(sizeof(strReqImg));
     reqImg->idMsg       = (unsigned char)7;
-    reqImg->needCut     = true;
-    reqImg->stabSec     = 3;
-    reqImg->imgCols     = _BIG_WIDTH;//2592 | 640
-    reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480
-    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );
-    //Get square parameters
-    if( !funGetSquareXML( "./XML/bigSquare.xml", &reqImg->sqApSett ) ){
-        funcShowMsg("ERROR","Loading bigSquare.xml");
-        return (void)NULL;
+    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );    
+
+    //Define photo's region
+    //..
+    if( ui->cbFullPhoto->isChecked() ){
+        reqImg->needCut     = false;
+        reqImg->imgCols     = _BIG_WIDTH;//2592 | 640
+        reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480
+    }else{
+        if( !funGetSquareXML( _PATH_REGION_OF_INTERES, &reqImg->sqApSett ) ){
+            funcShowMsg("ERROR","Loading squareAperture.xml");
+            return (void)false;
+        }
+        reqImg->needCut     = true;
+        //Calculate real number of columns of the required photo
+        reqImg->imgCols         = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+        reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+        reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+        reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+
+        //qDebug() << "canvasW: " << reqImg->sqApSett.canvasW;
+        //qDebug() << "canvasH: " << reqImg->sqApSett.canvasH;
+        //qDebug() << "rectX: " << reqImg->sqApSett.rectX;
+        //qDebug() << "rectY: " << reqImg->sqApSett.rectY;
+        //qDebug() << "reqImg->imgCols: " << reqImg->imgCols;
+        //qDebug() << "reqImg->imgRows: " << reqImg->imgRows;
+
+        //return (void)true;
     }
 
     //Require remote image
     //...
-    //unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
-    int tmpSqW = reqImg->sqApSett.x2-reqImg->sqApSett.x1;
-    int tmpSqH = reqImg->sqApSett.y2-reqImg->sqApSett.y1;
-    int X1 = round( (float)(reqImg->sqApSett.x1 * reqImg->imgCols) / reqImg->sqApSett.width );
-    int X2 = round( (float)(reqImg->sqApSett.x2 * reqImg->imgCols) / reqImg->sqApSett.width );
-    int Y1 = round( (float)(reqImg->sqApSett.y1 * reqImg->imgRows) / reqImg->sqApSett.height );
-    int Y2 = round( (float)(reqImg->sqApSett.y2 * reqImg->imgRows) / reqImg->sqApSett.height );
-    if( reqImg->needCut ){
-        tmpSqW = X2-X1;
-        tmpSqH = Y2-Y1;
-    }else{
-        tmpSqW = reqImg->imgCols;
-        tmpSqH = reqImg->imgRows;
-    }
     //It saves image into HDD: _PATH_IMAGE_RECEIVED
-    unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
-
-    //Tranform image and save it
-    //..
-    //int r,c,i;
-    //QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB888 );
+    funcGetRemoteImg( reqImg );
     QImage tmpImg( _PATH_IMAGE_RECEIVED );
-    /*
-    QRgb tmpPix;
-    i=0;
-    for(r=0;r<tmpSqH;r++){
-        for(c=0;c<tmpSqW;c++){
-            tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-            tmpImg.setPixel( c, r, tmpPix );
-            i += 3;
-        }
-    }
-    */
 
     //Show snapshot
-    int tmpFixW = 350;
-    int tmpFixH = 350;
-    QImage tmpThumb = tmpImg.scaled( QSize(tmpFixW,tmpFixH), Qt::KeepAspectRatio );
+    //..
+    QImage tmpThumb = tmpImg.scaledToHeight(_FRAME_THUMB_H);
+    tmpThumb = tmpThumb.scaledToWidth(_FRAME_THUMB_W);
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
     ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
 
-    //Save snapshot
+    //Save snapshot with a timestamp file-name generated automatically
     //..
-    //Take file name
     QString tmpFileName = ui->txtSnapPath->text().trimmed();
     tmpFileName.append(QString::number(time(NULL)));
-    tmpFileName.append(".ppm");
-    std::ofstream outFile ( tmpFileName.toStdString(), std::ios::binary );
-    outFile<<"P6\n"<<tmpSqW<<" "<<tmpSqH<<" 255\n";
-    outFile.write( (char*)tmpFrame, 3*tmpSqW*tmpSqH );
-    outFile.close();
+    tmpFileName.append(".RGB888");
+    QFile::copy(_PATH_IMAGE_RECEIVED, tmpFileName);
+    qDebug() << "tmpFileName: " << tmpFileName;
 
 
 }
@@ -1878,6 +1843,7 @@ void MainWindow::on_pbLoadImg_clicked()
     //funcShowMsg("",fileNames.at(0));
 }
 
+/*
 void MainWindow::on_pbUpdCut_clicked()
 {
 
@@ -1951,8 +1917,9 @@ void MainWindow::funcSetLines(){
     ui->gvCut->scene()->addLine(1,ui->gvCut->height()-yPos,ui->gvCut->width(),ui->gvCut->height()-yPos,QPen(Qt::red));
     ui->gvCut->scene()->addLine(1,ui->gvCut->height()-yPos-yW,ui->gvCut->width(),ui->gvCut->height()-yPos-yW,QPen(Qt::red));
 }
+*/
 
-
+/*
 void MainWindow::on_slideCutPosX_valueChanged(int xpos)
 {
     xpos = xpos;
@@ -1976,7 +1943,8 @@ void MainWindow::on_slideCutPosY_valueChanged(int value)
     value = value;
     funcSetLines();
 }
-
+*/
+/*
 void MainWindow::on_pbSaveSquare_clicked()
 {
     if( funcShowMsgYesNo("Alert","Do you want to replace the setting?") == 1 ){
@@ -1987,7 +1955,9 @@ void MainWindow::on_pbSaveSquare_clicked()
         }
     }
 }
+*/
 
+/*
 bool MainWindow::funcSaveRect( QString fileName ){
     QString tmpContain;
     tmpContain.append( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
@@ -2004,7 +1974,9 @@ bool MainWindow::funcSaveRect( QString fileName ){
     }
     return true;
 }
+*/
 
+/*
 void MainWindow::on_pbSaveBigSquare_clicked()
 {
     if( funcShowMsgYesNo("Alert","Do you want to replace the setting?") == 1 ){
@@ -2015,6 +1987,7 @@ void MainWindow::on_pbSaveBigSquare_clicked()
         }
     }
 }
+*/
 
 void MainWindow::on_pbSpecSnapshot_clicked()
 {

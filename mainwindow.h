@@ -151,23 +151,23 @@ private slots:
 
     structRaspcamSettings funcFillSnapshotSettings(structRaspcamSettings raspSett );
 
-    void on_pbUpdCut_clicked();
+    //void on_pbUpdCut_clicked();
 
-    void on_slideCutPosX_valueChanged(int xpos);
+    //void on_slideCutPosX_valueChanged(int xpos);
 
-    void funcSetLines();
+    //void funcSetLines();
 
-    void on_slideCutWX_valueChanged(int value);
+    //void on_slideCutWX_valueChanged(int value);
 
-    void on_slideCutWY_valueChanged(int value);
+    //void on_slideCutWY_valueChanged(int value);
 
-    void on_slideCutPosY_valueChanged(int value);
+    //void on_slideCutPosY_valueChanged(int value);
 
-    void on_pbSaveSquare_clicked();
+    //void on_pbSaveSquare_clicked();
 
-    bool funcSaveRect( QString fileName );
+    //bool funcSaveRect( QString fileName );
 
-    void on_pbSaveBigSquare_clicked();
+    //void on_pbSaveBigSquare_clicked();
 
     void on_pbSpecSnapshot_clicked();
 
