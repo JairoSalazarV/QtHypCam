@@ -58,6 +58,8 @@ private slots:
                             unsigned char *tmpFile
                         );
 
+    void funcActivateProgBar();
+
     void on_pbConnect_clicked();
 
     void on_pbCamTurnOn_clicked();
@@ -264,6 +266,14 @@ private slots:
     void applyThreshol2Scene(QString threshold);
 
     float getLastAngle();
+
+    void mouseCursorWait();
+
+    void mouseCursorReset();
+
+    void on_actionLoadSquareRectangle_triggered();
+
+    void on_actionLoadRegOfInteres_triggered();
 
 private:
     Ui::MainWindow *ui;

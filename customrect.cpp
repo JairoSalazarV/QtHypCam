@@ -25,6 +25,7 @@ QAction *customRect::showContMenuLine(QPoint pos){
     xmenu->addAction( "Move" );
     xmenu->addAction( "Scale" );
     xmenu->addAction( "Analize" );
+    xmenu->addAction( "Properties" );
 
     xmenu->addSeparator();
     QMenu* submenu2 = xmenu->addMenu( "Calculate" );
@@ -170,6 +171,15 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //..
             saveSquareAs(_PATH_REGION_OF_INTERES);
         }
+        if(a->text()=="Properties"){
+            qreal x,y,w,h;
+            this->rect().getRect(&x,&y,&w,&h);
+            QString tmpPropMsg;
+            tmpPropMsg.append("Pos("+QString::number(x)+", " + QString::number(y)  +")\n");
+            tmpPropMsg.append(QString::number(w)+" x " + QString::number(h)  +"\n");
+            funcShowMsg("Rectangle properties",tmpPropMsg);
+        }
+
         update();
     }
 }

@@ -655,4 +655,3 @@ bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directo
     }
     return true;
 }
-

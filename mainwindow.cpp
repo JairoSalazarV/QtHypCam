@@ -493,15 +493,15 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
 {    
     QList<QString> tmpList;
 
-    //Set AWB
-    tmpList<<"OFF"<<"AUTO"<<"SUNLIGHT"<<"CLOUDY"<<"TUNGSTEN"<<"FLUORESCENT"<<"INCANDESCENT"<<"FLASH"<<"HORIZON";
+    //Set AWB: off,auto,sun,cloud,shade,tungsten,fluorescent,incandescent,flash,horizon
+    tmpList<<"none"<<"off"<<"auto"<<"sun"<<"cloud"<<"shade"<<"tungsten"<<"fluorescent"<<"incandescent"<<"flash"<<"horizon";
     ui->cbAWB->clear();
     ui->cbAWB->addItems( tmpList );
     ui->cbAWB->setCurrentText((char*)raspcamSettings->AWB);
     tmpList.clear();
 
-    //Set Exposure
-    tmpList<<"OFF"<<"AUTO"<<"NIGHT"<<"NIGHTPREVIEW"<<"BACKLIGHT"<<"SPOTLIGHT"<<"SPORTS"<<"SNOW"<<"BEACH"<<"VERYLONG"<<"FIXEDFPS"<<"ANTISHAKE"<<"FIREWORKS";
+    //Set Exposure: off,auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
+    tmpList<<"none"<<"off"<<"auto"<<"night"<<"nightpreview"<<"backlight"<<"spotlight"<<"sports"<<"snow"<<"beach"<<"verylong"<<"fixedfps"<<"antishake"<<"fireworks";
     ui->cbExposure->clear();
     ui->cbExposure->addItems( tmpList );
     ui->cbExposure->setCurrentText((char*)raspcamSettings->Exposure);
@@ -660,6 +660,8 @@ bool MainWindow::funcReceiveFile(
     }
     //funcShowMsg("alert","Requesting file");
 
+
+
     //Receive file parts
     unsigned int numMsgs = (fileLen>0)?floor( (float)fileLen / (float)frameBodyLen ):0;
     numMsgs = ((numMsgs*frameBodyLen)<fileLen)?numMsgs+1:numMsgs;
@@ -676,8 +678,11 @@ bool MainWindow::funcReceiveFile(
     }else{
 
         //ui->progBar->setVisible(true);
-        ui->progBar->setRange(1,numMsgs);
-        ui->progBar->setValue(1);        
+        ui->progBar->setRange(0,numMsgs);
+        ui->progBar->setValue(0);
+
+        funcActivateProgBar();
+
         for(i=1;i<=(int)numMsgs;i++){
             ui->progBar->setValue(i);
             bzero(bufferRead,frameBodyLen);
@@ -710,6 +715,14 @@ bool MainWindow::funcReceiveFile(
 
 
     return true;
+}
+
+void MainWindow::funcActivateProgBar(){
+    mouseCursorReset();
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    QtDelay(50);
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -1227,10 +1240,18 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
     //Take settings from gui ;D
     //raspSett.width                 = ui->slideWidth->value();
     //raspSett.height                = ui->slideHeight->value();
-    //raspSett.AWB                   = ui->cbAWB->currentText().toStdString().c_str();
+    memcpy(
+                raspSett.AWB,
+                ui->cbAWB->currentText().toStdString().c_str(),
+                sizeof(raspSett.AWB)
+          );
     //raspSett.Brightness            = ui->slideBrightness->value();
     //raspSett.Contrast              = ui->slideContrast->value();
-    //raspSett.Exposure              = ui->cbExposure->currentText().toStdString().c_str();
+    memcpy(
+                raspSett.Exposure,
+                ui->cbExposure->currentText().toStdString().c_str(),
+                sizeof(raspSett.Exposure)
+          );
     //raspSett.ExposureCompensation  = ui->slideExpComp->value();
     //raspSett.Format                = ( ui->rbFormat1->isChecked() )?1:2;
     //raspSett.Green                 = ui->slideGreen->value();
@@ -1292,10 +1313,9 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 
 bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
-    ui->progBar->setVisible(true);
-    ui->progBar->setValue(0);
-    ui->progBar->update();
-    QtDelay(50);
+    msSleep = msSleep;
+    mouseCursorWait();
+    this->update();
 
     //Set required image's settings
     //..
@@ -1306,23 +1326,35 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
     //Define photo's region
     //..
-    if( ui->cbFullPhoto->isChecked() ){
+    if( ui->cbThumbPreview->isChecked() )
+    {
         reqImg->needCut     = false;
-        reqImg->imgCols     = _BIG_WIDTH;
-        reqImg->imgRows     = _BIG_HEIGHT;
-    }else{
-        //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
-        if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
-            funcShowMsg("ERROR","Loading squareAperture.xml");
-            return false;
+        reqImg->imgCols     = _FRAME_THUMB_W;
+        reqImg->imgRows     = _FRAME_THUMB_H;
+    }
+    else
+    {
+        if( ui->cbFullPhoto->isChecked() )
+        {
+            reqImg->needCut = false;
+            reqImg->imgCols = _BIG_WIDTH;
+            reqImg->imgRows = _BIG_HEIGHT;
         }
-        reqImg->needCut     = true;
-        //Calculate real number of columns of the required photo
-        reqImg->imgCols         = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-        reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
-        reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-        reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+        else
+        {
+            //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
+            if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
+                funcShowMsg("ERROR","Loading squareAperture.xml");
+                return false;
+            }
+            reqImg->needCut     = true;
+            //Calculate real number of columns of the required photo
+            reqImg->imgCols         = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+            reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+            reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+            reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
 
+        }
     }
 
     //It save the received image
@@ -1335,8 +1367,8 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     ui->labelVideo->setFixedHeight( tmpImg.height() );
     ui->labelVideo->update();
 
-    //Delay in order to refresh actions applied
-    QtDelay( msSleep );
+    //Delay in order to refresh actions applied    
+    this->update();
     return true;
 }
 
@@ -1644,7 +1676,7 @@ bool MainWindow::funcSetCam( structRaspcamSettings *raspcamSettings ){
 void MainWindow::funcGetSnapshot()
 {
 
-    ui->progBar->setVisible(true);
+    mouseCursorWait();
 
     //Save path
     //..
@@ -3070,4 +3102,52 @@ void MainWindow::applyThreshol2Scene(QString threshold){
 
 float MainWindow::getLastAngle(){
     return readAllFile( _PATH_LAST_ROTATION ).trimmed().toFloat(0);
+}
+
+
+void MainWindow::mouseCursorWait(){
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+}
+
+void MainWindow::mouseCursorReset(){
+    QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::on_actionLoadSquareRectangle_triggered()
+{
+    //Obtain squiare aperture params
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, tmpSqAperture ) ){
+        funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
+        return (void)false;
+    }
+
+    //Draw a rectangle of the square aperture
+    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
+    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    customRect *tmpRect = new customRect(p1,p2);
+    tmpRect->setPen(QPen(Qt::red));
+    canvasCalib->scene()->clear();
+    canvasCalib->scene()->addItem(tmpRect);
+    canvasCalib->update();
+
+}
+
+void MainWindow::on_actionLoadRegOfInteres_triggered()
+{
+    //Obtain squiare aperture params
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_REGION_OF_INTERES, tmpSqAperture ) ){
+        funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
+        return (void)false;
+    }
+
+    //Draw a rectangle of the square aperture
+    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
+    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    customRect *tmpRect = new customRect(p1,p2);
+    tmpRect->setPen(QPen(Qt::red));
+    canvasCalib->scene()->clear();
+    canvasCalib->scene()->addItem(tmpRect);
+    canvasCalib->update();
 }
