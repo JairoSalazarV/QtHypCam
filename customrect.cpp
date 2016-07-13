@@ -39,6 +39,11 @@ QAction *customRect::showContMenuLine(QPoint pos){
     submenu3->addAction( "Region of interes" );
 
     xmenu->addSeparator();
+    QMenu* submenu4 = xmenu->addMenu( "Modify" );
+    submenu4->addAction( "Auto-width" );
+    submenu4->addAction( "Auto-height" );
+
+    xmenu->addSeparator();
     xmenu->addAction( "Remove" );
 
     return xmenu->exec(pos);
@@ -178,6 +183,16 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             tmpPropMsg.append("Pos("+QString::number(x)+", " + QString::number(y)  +")\n");
             tmpPropMsg.append(QString::number(w)+" x " + QString::number(h)  +"\n");
             funcShowMsg("Rectangle properties",tmpPropMsg);
+        }
+
+        if(a->text()=="Auto-width"){
+            int tmpH = round( (float)this->rect().width() * ((float)_BIG_HEIGHT/(float)_BIG_WIDTH) );
+            this->setRect(this->rect().x(),this->rect().y(),this->rect().width(),tmpH);
+        }
+
+        if(a->text()=="Auto-height"){
+            int tmpW = round( (float)this->rect().height() * ((float)_BIG_WIDTH/(float)_BIG_HEIGHT) );
+            this->setRect(this->rect().x(),this->rect().y(),tmpW,this->rect().height());
         }
 
         update();

@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -344,21 +344,56 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>21</x>
-        <y>350</y>
+        <x>20</x>
+        <y>360</y>
         <width>221</width>
-        <height>101</height>
+        <height>111</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="slidesLayout">
        <item>
-        <widget class="QSlider" name="slideShuterSpeed">
-         <property name="maximum">
-          <number>3000000</number>
+        <widget class="QFrame" name="frame_3">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
          </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
          </property>
+         <widget class="QSlider" name="slideShuterSpeed">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>30</y>
+            <width>219</width>
+            <height>19</height>
+           </rect>
+          </property>
+          <property name="maximum">
+           <number>3000000</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
+         <widget class="QSlider" name="slideShuterSpeedSmall">
+          <property name="geometry">
+           <rect>
+            <x>0</x>
+            <y>10</y>
+            <width>219</width>
+            <height>19</height>
+           </rect>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="maximum">
+           <number>95000</number>
+          </property>
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+         </widget>
         </widget>
        </item>
        <item>
@@ -399,7 +434,7 @@
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>390</y>
+        <y>430</y>
         <width>169</width>
         <height>19</height>
        </rect>
@@ -412,7 +447,7 @@
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>360</y>
+        <y>380</y>
         <width>169</width>
         <height>19</height>
        </rect>
@@ -533,7 +568,7 @@
       <property name="geometry">
        <rect>
         <x>250</x>
-        <y>420</y>
+        <y>452</y>
         <width>169</width>
         <height>19</height>
        </rect>

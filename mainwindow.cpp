@@ -529,7 +529,8 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
 
     //ShuterSpeed
     ui->slideShuterSpeed->setValue( raspcamSettings->ShutterSpeed );
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed) );
+    ui->slideShuterSpeedSmall->setValue( raspcamSettings->ShutterSpeedSmall );
+    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed+raspcamSettings->ShutterSpeedSmall) );
 
     //ISO
     ui->slideISO->setValue( raspcamSettings->ISO );
@@ -1259,7 +1260,7 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
     //raspSett.Red                   = ui->slideRed->value();
     //raspSett.Saturation            = ui->slideSaturation->value();
     //raspSett.Sharpness             = ui->slideSharpness->value();
-    raspSett.ShutterSpeed          = ui->slideShuterSpeed->value();
+    raspSett.ShutterSpeed          = ui->slideShuterSpeed->value() + ui->slideShuterSpeedSmall->value();
     raspSett.Denoise = (ui->cbDenoise->isChecked())?1:0;
     raspSett.ColorBalance = (ui->cbColorBalance->isChecked())?1:0;
     raspSett.TriggerTime = ui->slideTriggerTime->value();
@@ -1322,7 +1323,9 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     strReqImg *reqImg   = (strReqImg*)malloc(sizeof(strReqImg));
     reqImg->idMsg       = (unsigned char)7;    
     reqImg->stabSec     = sec2Stab;    
-    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );    
+    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );
+
+    qDebug() << "reqImg->raspSett.TriggerTime: " << reqImg->raspSett.TriggerTime;
 
     //Define photo's region
     //..
@@ -1482,7 +1485,7 @@ void MainWindow::on_pbSaveImage_clicked()
 
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
 {
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value) );
+    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value + ui->slideShuterSpeedSmall->value()) );
 }
 
 void MainWindow::on_slideISO_valueChanged(int value)
@@ -1575,6 +1578,7 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
     newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
     newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
+    newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
     newFileCon.append("</settings>");
     //Save
@@ -3127,6 +3131,8 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
     QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
     customRect *tmpRect = new customRect(p1,p2);
     tmpRect->setPen(QPen(Qt::red));
+    tmpRect->parameters.W = canvasCalib->width();
+    tmpRect->parameters.H = canvasCalib->height();
     canvasCalib->scene()->clear();
     canvasCalib->scene()->addItem(tmpRect);
     canvasCalib->update();
@@ -3147,7 +3153,14 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
     QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
     customRect *tmpRect = new customRect(p1,p2);
     tmpRect->setPen(QPen(Qt::red));
+    tmpRect->parameters.W = canvasCalib->width();
+    tmpRect->parameters.H = canvasCalib->height();
     canvasCalib->scene()->clear();
     canvasCalib->scene()->addItem(tmpRect);
     canvasCalib->update();
+}
+
+void MainWindow::on_slideShuterSpeedSmall_valueChanged(int value)
+{
+    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value + ui->slideShuterSpeed->value()) );
 }

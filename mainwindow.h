@@ -275,6 +275,8 @@ private slots:
 
     void on_actionLoadRegOfInteres_triggered();
 
+    void on_slideShuterSpeedSmall_valueChanged(int value);
+
 private:
     Ui::MainWindow *ui;
 };

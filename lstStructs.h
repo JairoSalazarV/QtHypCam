@@ -117,7 +117,8 @@
         int             Sharpness;              // -100 to 100
         int             Contrast;               // -100 to 100
         int             Saturation;             // -100 to 100
-        int             ShutterSpeed;           // microsecs (max 330000)
+        int             ShutterSpeed;           // microsecs (0 - 3000000)
+        int             ShutterSpeedSmall;      // microsecs (1 - 95000)
         int             ISO;                    // 100 to 800
         int             ExposureCompensation;   // -10 to 10
         u_int8_t        Format;                 // 1->raspicam::RASPICAM_FORMAT_GRAY | 2->raspicam::RASPICAM_FORMAT_YUV420
