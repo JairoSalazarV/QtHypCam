@@ -21,8 +21,9 @@ void recParamFrm::on_pbSendParam_clicked()
     }
     else
     {
-        emit paramGenerated(ui->txtParam->text());
         this->close();
+        this->update();
+        emit paramGenerated(ui->txtParam->text());        
     }
 
 }

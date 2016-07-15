@@ -21,9 +21,9 @@
     #define _PRELOAD_IP true
     #define PI 3.14159265
 
-    #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
-    #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
+    #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
+    #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"    
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
     #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"

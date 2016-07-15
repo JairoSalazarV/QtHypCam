@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -204,7 +204,7 @@
        <rect>
         <x>380</x>
         <y>100</y>
-        <width>441</width>
+        <width>531</width>
         <height>231</height>
        </rect>
       </property>
@@ -227,6 +227,46 @@
       <property name="icon">
        <iconset resource="lstImgs.qrc">
         <normaloff>:/new/icons/imagenInte/right.gif</normaloff>:/new/icons/imagenInte/right.gif</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbLANConnect">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>140</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Connect&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/WiFi.png</normaloff>:/new/icons/imagenInte/WiFi.png</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbLANTestConn">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>180</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Connect&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/question.png</normaloff>:/new/icons/imagenInte/question.png</iconset>
       </property>
      </widget>
     </widget>
@@ -828,141 +868,6 @@ QSlider::handle:horizontal {
       </layout>
      </widget>
     </widget>
-    <widget class="QWidget" name="tab_3">
-     <attribute name="title">
-      <string>Analyisis</string>
-     </attribute>
-     <widget class="QTableWidget" name="tableLstPoints">
-      <property name="geometry">
-       <rect>
-        <x>660</x>
-        <y>30</y>
-        <width>161</width>
-        <height>301</height>
-       </rect>
-      </property>
-      <column>
-       <property name="text">
-        <string>x</string>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="textAlignment">
-        <set>AlignCenter</set>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>y</string>
-       </property>
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="textAlignment">
-        <set>AlignCenter</set>
-       </property>
-      </column>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>674</x>
-        <y>3</y>
-        <width>131</width>
-        <height>21</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>List of points</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pbPtsClearAll">
-      <property name="geometry">
-       <rect>
-        <x>806</x>
-        <y>62</y>
-        <width>31</width>
-        <height>34</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/edit-clear.png</normaloff>:/new/icons/imagenInte/edit-clear.png</iconset>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pbSavePixs">
-      <property name="geometry">
-       <rect>
-        <x>806</x>
-        <y>95</y>
-        <width>31</width>
-        <height>34</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/download-icon.gif</normaloff>:/new/icons/imagenInte/download-icon.gif</iconset>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pb2XY">
-      <property name="geometry">
-       <rect>
-        <x>806</x>
-        <y>128</y>
-        <width>31</width>
-        <height>34</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/h.png</normaloff>:/new/icons/imagenInte/h.png</iconset>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pbLoadImg">
-      <property name="geometry">
-       <rect>
-        <x>806</x>
-        <y>29</y>
-        <width>31</width>
-        <height>34</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string>...</string>
-      </property>
-     </widget>
-    </widget>
    </widget>
    <widget class="QProgressBar" name="progBar">
     <property name="geometry">
@@ -1015,10 +920,14 @@ QSlider::handle:horizontal {
    <addaction name="actionRect"/>
    <addaction name="actionHorizontalLine"/>
    <addaction name="actionVerticalLine"/>
+   <addaction name="actionToolPenArea"/>
    <addaction name="actionRotateImg"/>
    <addaction name="actionApplyThreshold"/>
    <addaction name="actionLoadSquareRectangle"/>
    <addaction name="actionLoadRegOfInteres"/>
+   <addaction name="actionSend_to_XYZ"/>
+   <addaction name="actionSaveCanvas"/>
+   <addaction name="actionExportPixelsSelected"/>
    <addaction name="separator"/>
    <addaction name="actionClear"/>
   </widget>
@@ -1198,6 +1107,54 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Load region of interes rectangle</string>
+   </property>
+  </action>
+  <action name="actionToolPenArea">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/imagenInte/toolSelect.png</normaloff>:/imagenInte/toolSelect.png</iconset>
+   </property>
+   <property name="text">
+    <string>toolPenArea</string>
+   </property>
+   <property name="toolTip">
+    <string>Pen selection tool</string>
+   </property>
+  </action>
+  <action name="actionSaveCanvas">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/snapshot</normaloff>:/new/icons/imagenInte/snapshot</iconset>
+   </property>
+   <property name="text">
+    <string>SaveCanvas</string>
+   </property>
+   <property name="toolTip">
+    <string>Save canvas</string>
+   </property>
+  </action>
+  <action name="actionSend_to_XYZ">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/calRight.png</normaloff>:/new/icons/imagenInte/calRight.png</iconset>
+   </property>
+   <property name="text">
+    <string>Send to XYZ</string>
+   </property>
+   <property name="toolTip">
+    <string>Send to XYZ</string>
+   </property>
+  </action>
+  <action name="actionExportPixelsSelected">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/add-221.png</normaloff>:/new/icons/imagenInte/add-221.png</iconset>
+   </property>
+   <property name="text">
+    <string>ExportPixelsSelected</string>
+   </property>
+   <property name="toolTip">
+    <string>Export pixels selected</string>
    </property>
   </action>
  </widget>

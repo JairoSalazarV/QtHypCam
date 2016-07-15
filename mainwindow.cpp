@@ -48,6 +48,7 @@ structRaspcamSettings *raspcamSettings = (structRaspcamSettings*)malloc(sizeof(s
 GraphicsView *myCanvas;
 GraphicsView *canvasSpec;
 GraphicsView *canvasCalib;
+GraphicsView *canvasAux;
 
 customLine *globalCanvHLine;
 customLine *globalCanvVLine;
@@ -58,17 +59,11 @@ QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philip
 
 QList<QPair<int,int>> *lstBorder;
 QList<QPair<int,int>> *lstSelPix;
+QList<QPair<int,int>> *lstPixSelAux;
 
 //int tmpRect[4];
 calcAndCropSnap calStruct;
 bool globaIsRotated;
-
-
-
-
-
-
-
 
 
 
@@ -92,13 +87,14 @@ MainWindow::MainWindow(QWidget *parent) :
     funcObtSettings( lstSettings );
 
     //Fill IP prefix
-
-    char cIP[15];
-    funcObtainIP( cIP );
-    QString qsIP(cIP);
-    QStringList lstIP = qsIP.split('.');
-    qsIP = lstIP.at(0) + "." +lstIP.at(1) + "."+lstIP.at(2) + ".";
-    ui->txtIp->setText(qsIP);
+    if(_PRELOAD_IP){
+        char cIP[15];
+        funcObtainIP( cIP );
+        QString qsIP(cIP);
+        QStringList lstIP = qsIP.split('.');
+        qsIP = lstIP.at(0) + "." +lstIP.at(1) + "."+lstIP.at(2) + ".";
+        ui->txtIp->setText(qsIP);
+    }
 
 
     //Initialize global settings
@@ -116,17 +112,14 @@ MainWindow::MainWindow(QWidget *parent) :
     myCanvas = new GraphicsView;
     canvasSpec = new GraphicsView;
     canvasCalib = new GraphicsView;
+    canvasAux = new GraphicsView;
     //QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/25Id/15.png";
     funcPutImageIntoGV( myCanvas, imgPath );
 
-
-
-    //Lst points width
-    ui->tableLstPoints->setColumnWidth(0,50);
-    ui->tableLstPoints->setColumnWidth(1,50);
-    ui->tableLstPoints->setMaximumWidth(137);
-    ui->tableLstPoints->setMaximumHeight(200);
-    ui->tableLstPoints->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    //Initialize points container for free-hand pen tool
+    lstBorder = new QList<QPair<int,int>>;
+    lstSelPix = new QList<QPair<int,int>>;
+    lstPixSelAux = new QList<QPair<int,int>>;
 
     /*
     //Connect to image
@@ -225,25 +218,15 @@ void MainWindow::funcCalibMouseRelease( QMouseEvent *e){
 }
 
 void MainWindow::funcAddPoint( QMouseEvent *e ){
-    //Correct pointer
-    //x = x-3;
-    //y = y-4;
 
-    int idRow = ui->tableLstPoints->rowCount();
-    ui->tableLstPoints->insertRow( idRow );
-    ui->tableLstPoints->setItem(
-                                    idRow,
-                                    0,
-                                    new QTableWidgetItem( QString::number(e->x()) )
-                                );
-    ui->tableLstPoints->setItem(
-                                    idRow,
-                                    1,
-                                    new QTableWidgetItem( QString::number(e->y()) )
-                                );
+    //Extract pixel's coordinates
+    QPair<int,int> tmpPixSel;
+    tmpPixSel.first = e->x();
+    tmpPixSel.second = e->y();
+    lstPixSelAux->append(tmpPixSel);
 
+    //Update politope
     funcUpdatePolitope();
-
 
 }
 
@@ -252,13 +235,13 @@ bool MainWindow::funcUpdatePolitope(){
     int i, x1, y1, x2, y2, x0, y0;
 
     //If is the first point
-    if( ui->tableLstPoints->rowCount() < 2 ){
-        x1  = ui->tableLstPoints->item(0,0)->text().toFloat(0)-3;
-        y1  = ui->tableLstPoints->item(0,1)->text().toFloat(0)-4;
+    if( lstPixSelAux->count() < 2 ){
+        x1  = lstPixSelAux->at(0).first - 3;//Point +/- error
+        y1  = lstPixSelAux->at(0).second - 4;//Point +/- error
         QGraphicsEllipseItem* item = new QGraphicsEllipseItem(x1, y1, 5, 5 );
-        item->setPen( QPen(QColor("#FFFFFF")) );
-        item->setBrush( QBrush(QColor("#FF0000")) );
-        myCanvas->scene()->addItem(item);
+        item->setPen( QPen(Qt::white) );
+        item->setBrush( QBrush(Qt::red) );
+        canvasAux->scene()->addItem(item);
         return true;
     }
 
@@ -267,13 +250,13 @@ bool MainWindow::funcUpdatePolitope(){
     //--------------------------------------------
 
     //Last two points
-    i   = ui->tableLstPoints->rowCount()-1;
-    x0  = ui->tableLstPoints->item(0,0)->text().toFloat(0);
-    y0  = ui->tableLstPoints->item(0,1)->text().toFloat(0);
-    x1  = ui->tableLstPoints->item(i-1,0)->text().toFloat(0);
-    y1  = ui->tableLstPoints->item(i-1,1)->text().toFloat(0);
-    x2  = ui->tableLstPoints->item(i,0)->text().toFloat(0);
-    y2  = ui->tableLstPoints->item(i,1)->text().toFloat(0);
+    i   = lstPixSelAux->count()-1;
+    x0  = lstPixSelAux->at(0).first;
+    y0  = lstPixSelAux->at(0).second;
+    x1  = lstPixSelAux->at(i-1).first;
+    y1  = lstPixSelAux->at(i-1).second;
+    x2  = lstPixSelAux->at(i).first;
+    y2  = lstPixSelAux->at(i).second;
 
     //Draw the line
     if( abs(x0-x2)<=6 && abs(y0-y2)<=6 ){//Politope closed
@@ -304,11 +287,12 @@ bool MainWindow::funcUpdatePolitope(){
 void MainWindow::funcFillFigure(){
     // Clear points
     //...
-    qDebug() << "Polytope closed: " << QString::number(lstBorder->count()) ;
-    while(ui->tableLstPoints->rowCount() > 0){
-        ui->tableLstPoints->removeRow(0);
-    }
-    funcPutImageIntoGV( myCanvas, imgPath );
+    //qDebug() << "Polytope closed: " << QString::number(lstBorder->count()) ;
+    //while(ui->tableLstPoints->rowCount() > 0){
+    //    ui->tableLstPoints->removeRow(0);
+    //}
+    //funcPutImageIntoGV( canvasAux, imgPath );
+    canvasAux->scene()->clear();
 
     // Get max and min Y
     //...
@@ -365,6 +349,17 @@ void MainWindow::funcFillFigure(){
                                     "#FFFFFF"
                                 );
     }
+
+    lstPixSelAux->clear();
+
+     disconnect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcAddPoint(QMouseEvent*) )
+           );
+
+     mouseCursorReset();
 
 
 }
@@ -469,7 +464,7 @@ void MainWindow::funcDrawPointIntoCanvas(
 ){
     QGraphicsEllipseItem* item = new QGraphicsEllipseItem( x, y, w, h );
     item->setPen( QPen(QColor(color)) );
-    myCanvas->scene()->addItem(item);
+    canvasAux->scene()->addItem(item);
     item->setBrush( QBrush(QColor(lineColor)) );
 }
 
@@ -584,7 +579,7 @@ void MainWindow::on_pbGetVideo_clicked()
     server = gethostbyname( "192.168.1.69" );
     //server = gethostbyname( "10.0.5.126" );
     if (server == NULL) {
-        //fprintf(stderr,"ERROR, no such host\n");
+        //fprintf(stderr,"ERROR, not such host\n");
         exit(0);
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -651,6 +646,8 @@ bool MainWindow::funcReceiveFile(
 
     qDebug() << "Inside funcReceiveFile";
 
+
+
     //Requesting file
     int i, n;
     //qDebug() << "Writing0";
@@ -669,6 +666,7 @@ bool MainWindow::funcReceiveFile(
     unsigned int tmpPos = 0;
     memset(tmpFile,'\0',fileLen);
     qDebug() << "Receibing... " <<  QString::number(numMsgs) << " messages";
+    qDebug() << "fileLen: " << fileLen;
 
     //Receive the last
     if(numMsgs==0){
@@ -688,6 +686,7 @@ bool MainWindow::funcReceiveFile(
             ui->progBar->setValue(i);
             bzero(bufferRead,frameBodyLen);
             n = read(sockfd,bufferRead,frameBodyLen);
+            qDebug() << "n: " << n;
             if(n!=(int)frameBodyLen&&i<(int)numMsgs){
                 qDebug() << "ERROR, message " << i << "WRONG";
                 return false;
@@ -699,7 +698,7 @@ bool MainWindow::funcReceiveFile(
             if( i<(int)numMsgs ){
                 //qDebug() << "W2";
                 QtDelay(2);
-                n = ::write(sockfd,"sendpart",8);
+                n = ::write(sockfd,"sendpart",8);                
                 if(n<0){
                     qDebug() << "ERROR: Sending part-file request";
                     return false;
@@ -708,6 +707,7 @@ bool MainWindow::funcReceiveFile(
         }
         ui->progBar->setValue(0);
         ui->progBar->setVisible(false);
+        ui->progBar->update();
         QtDelay(30);
 
     }
@@ -832,7 +832,7 @@ void MainWindow::on_pbSearchAll_clicked()
                 }else{
                     server = gethostbyname( candIP.at(0).trimmed().toStdString().c_str() );
                     if (server == NULL) {
-                        qDebug() << "no such host";
+                        qDebug() << "Not such host";
                     }else{
 
 
@@ -929,171 +929,96 @@ void MainWindow::on_pbSearchAll_clicked()
 void MainWindow::on_pbSendComm_clicked()
 {
     if( !camSelected->isConnected){
-
         funcShowMsg("Alert","Camera not connected");
-
-    }else{
-        if( ui->txtCommand->text().isEmpty() ){
-            funcShowMsg("Alert","Empty command");
-        }else{
-
-            if( ui->tableLstCams->rowCount() == 0 ){
-                funcShowMsg("Alert","No camera detected");
-            }else{
-                ui->tableLstCams->setFocus();
-
-                //Prepare message to send
-                //funcShowMsg("Ip",ui->tableLstCams->item(tmpRow,1)->text());
-                frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
-                memset(frame2send,'\0',sizeof(frameStruct));
-                if( !ui->checkBlind->isChecked() ){
-                    frame2send->header.idMsg = (unsigned char)2;
-                }else{
-                    frame2send->header.idMsg = (unsigned char)3;
-                }
-                frame2send->header.numTotMsg = 1;
-                frame2send->header.consecutive = 1;
-                frame2send->header.bodyLen   = ui->txtCommand->text().length();
-                memcpy(
-                            frame2send->msg,
-                            ui->txtCommand->text().toStdString().c_str(),
-                            ui->txtCommand->text().length()
-                      );
-
-                //Prepare command message
-                int sockfd, n, tmpFrameLen;
-                //unsigned char bufferRead[sizeof(frameStruct)];
-                struct sockaddr_in serv_addr;
-                struct hostent *server;
-                sockfd = socket(AF_INET, SOCK_STREAM, 0);
-                qDebug() << "Comm IP: " << QString((char*)camSelected->IP);
-                if (sockfd < 0){
-                    qDebug() << "opening socket";
-                }else{
-                    //server = gethostbyname( ui->tableLstCams->item(tmpRow,1)->text().toStdString().c_str() );
-                    server = gethostbyname( (char*)camSelected->IP );
-                    if (server == NULL) {
-                        qDebug() << "no such host";
-
-                    }else{
-                        bzero((char *) &serv_addr, sizeof(serv_addr));
-                        serv_addr.sin_family = AF_INET;
-                        bcopy((char *)server->h_addr,
-                            (char *)&serv_addr.sin_addr.s_addr,
-                            server->h_length);
-                        serv_addr.sin_port = htons(camSelected->tcpPort);
-                        if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
-                            qDebug() << "connecting";
-                        }else{
-
-
-                            //Request command result
-                            qDebug() << "idMsg: " << (int)frame2send->header.idMsg;
-                            qDebug() << "command: " << frame2send->msg;
-                            qDebug() << "tmpFrameLen: " << sizeof(frameHeader) + ui->txtCommand->text().length();
-                            tmpFrameLen = sizeof(frameHeader) + ui->txtCommand->text().length();
-                            n = ::write(sockfd,frame2send,tmpFrameLen);
-                            if(n<0){
-                                qDebug() << "Sending command";
-                            }
-
-                            //Receibing ack with file len
-                            unsigned int fileLen;
-                            unsigned char bufferRead[frameBodyLen];
-                            n = read(sockfd,bufferRead,frameBodyLen);
-                            memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
-                            //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
-
-                            //Receive File
-                            unsigned char tmpFile[fileLen];
-                            funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
-                            ::close(sockfd);
-
-                            //Show command result
-                            std::string tmpTxt((char*)tmpFile);
-                            //qDebug() << (char*)tmpFile;
-                            ui->txtCommRes->setText( QString(tmpTxt.c_str()) ) ;
-
-
-                            /*
-                            if (n < 0){
-                                qDebug() << "writing to socket";
-                            }else{
-                                //Receibing ack with file len
-                                n = read(sockfd,bufferRead,sizeof(frameStruct));
-                                if (n < 0){
-                                    qDebug() << "reading socket";
-                                }else{
-                                    memcpy(frame2send,bufferRead,n);
-                                    ui->txtCommRes->setText( QString(frame2send->msg) );
-                                }
-                            }
-                            */
-
-
-
-                        }
-                    }
-                    ::close(sockfd);
-                }
-
-
-
-            }
-
-
-
-            //unsigned int tmpId = ui->tableLstCams->model()->data(ui->tableLstProj->model()->index(index.row(),0),Qt::DisplayRole).toInt();
-
-
-
-            /*
-
-
-            int sockfd, n, tmpFrameLen;
-            struct sockaddr_in serv_addr;
-            struct hostent *server;
-            sockfd = socket(AF_INET, SOCK_STREAM, 0);
-            qDebug() << "IP: " << IP.c_str();
-            if (sockfd < 0){
-                qDebug() << "opening socket";
-            }else{
-                server = gethostbyname( IP.c_str() );
-                if (server == NULL) {
-                    qDebug() << "no such host";
-                }else{
-                    bzero((char *) &serv_addr, sizeof(serv_addr));
-                    serv_addr.sin_family = AF_INET;
-                    bcopy((char *)server->h_addr,
-                        (char *)&serv_addr.sin_addr.s_addr,
-                        server->h_length);
-                    serv_addr.sin_port = htons(portno);
-                    if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
-                        qDebug() << "connecting";
-                    }else{
-                        //Request camera settings
-                        char tmpIdMsg = (char)1;
-                        tmpFrameLen = sizeof(camSettings);
-                        unsigned char bufferRead[tmpFrameLen];
-                        n = ::write(sockfd,&tmpIdMsg,1);
-                        if (n < 0){
-                            qDebug() << "writing to socket";
-                        }else{
-                            //Receibing ack with file len
-                            n = read(sockfd,bufferRead,tmpFrameLen);
-                            if (n < 0){
-                                qDebug() << "reading socket";
-                            }else{
-                                memcpy(tmpCamSett,&bufferRead,tmpFrameLen);
-                            }
-                        }
-                    }
-                }
-                ::close(sockfd);
-            }
-            */
-        }
+        return (void)NULL;
     }
+    if( ui->txtCommand->text().isEmpty() ){
+        funcShowMsg("Alert","Empty command");
+        return (void)NULL;
+    }
+    if( ui->tableLstCams->rowCount() == 0 ){
+        funcShowMsg("Alert","Not camera detected");
+        return (void)NULL;
+    }
+    ui->tableLstCams->setFocus();
+
+    //Prepare message to send
+    frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
+    memset(frame2send,'\0',sizeof(frameStruct));
+    if( !ui->checkBlind->isChecked() ){
+        frame2send->header.idMsg = (unsigned char)2;
+    }else{
+        frame2send->header.idMsg = (unsigned char)3;
+    }
+    frame2send->header.numTotMsg = 1;
+    frame2send->header.consecutive = 1;
+    frame2send->header.bodyLen   = ui->txtCommand->text().length();
+    memcpy(
+                frame2send->msg,
+                ui->txtCommand->text().toStdString().c_str(),
+                ui->txtCommand->text().length()
+          );
+
+    //Prepare command message
+    int sockfd, n, tmpFrameLen;
+    //unsigned char bufferRead[sizeof(frameStruct)];
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    qDebug() << "Comm IP: " << QString((char*)camSelected->IP);
+    if (sockfd < 0){
+        qDebug() << "opening socket";
+        return (void)NULL;
+    }
+    //server = gethostbyname( ui->tableLstCams->item(tmpRow,1)->text().toStdString().c_str() );
+    server = gethostbyname( (char*)camSelected->IP );
+    if (server == NULL) {
+        qDebug() << "Not such host";
+        return (void)NULL;
+    }
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr,
+        (char *)&serv_addr.sin_addr.s_addr,
+        server->h_length);
+    serv_addr.sin_port = htons(camSelected->tcpPort);
+    if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
+        qDebug() << "ERROR: connecting to socket";
+        return (void)NULL;
+    }
+
+
+    //Request command result
+    qDebug() << "idMsg: " << (int)frame2send->header.idMsg;
+    qDebug() << "command: " << frame2send->msg;
+    qDebug() << "tmpFrameLen: " << sizeof(frameHeader) + ui->txtCommand->text().length();
+    tmpFrameLen = sizeof(frameHeader) + ui->txtCommand->text().length();
+    n = ::write(sockfd,frame2send,tmpFrameLen);
+    if(n<0){
+        qDebug() << "ERROR: Sending command";
+        return (void)NULL;
+    }
+
+    //Receibing ack with file len
+    unsigned int fileLen;
+    unsigned char bufferRead[frameBodyLen];
+    n = read(sockfd,bufferRead,frameBodyLen);
+    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
+    fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
+    qDebug() << "fileLen: " << fileLen;
+    //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
+
+    //Receive File
+    unsigned char tmpFile[fileLen];
+    funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
+    qDebug() <<tmpFile;
+    ::close(sockfd);
+
+    //Show command result
+    std::string tmpTxt((char*)tmpFile);
+    qDebug() << "Get: " << (char*)tmpFile;
+    ui->txtCommRes->setText( QString(tmpTxt.c_str()) ) ;
+
 }
 
 void MainWindow::on_pbConnect_clicked()
@@ -1770,30 +1695,29 @@ void MainWindow::on_pbExpIds_clicked()
     scene->setBackgroundBrush(pim.scaled(screen_width,screen_height,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
 }
 
-void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath){
-    QImage tmpImg(imgPath);
-    QGraphicsScene *scene = new QGraphicsScene(0,0,tmpImg.width(),tmpImg.height());
+void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath){    
     QPixmap pim(imgPath);
+    QGraphicsScene *scene = new QGraphicsScene(0,0,pim.width(),pim.height());
     scene->setBackgroundBrush(pim);
     gvContainer->setScene(scene);
-    gvContainer->resize(tmpImg.width(),tmpImg.height());
+    gvContainer->resize(pim.width(),pim.height());
     gvContainer->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     gvContainer->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
+    /*
     QHBoxLayout *layout = new QHBoxLayout;
     ui->tab_3->setLayout(layout);
-    ui->tab_3->layout()->addWidget(myCanvas);
+    ui->tab_3->layout()->addWidget(gvContainer);
     layout->setEnabled(false);
+    */
 }
 
 
 void MainWindow::on_pbPtsClearAll_clicked()
 {
-    while(ui->tableLstPoints->rowCount() > 0){
-        ui->tableLstPoints->removeRow(0);
-    }
+    lstPixSelAux->clear();
 
-    funcPutImageIntoGV( myCanvas, imgPath );
+    canvasAux->scene()->clear();
 
     lstBorder->clear();
     lstSelPix->clear();
@@ -1805,7 +1729,7 @@ void MainWindow::on_pbPtsClearAll_clicked()
 void MainWindow::on_pbSavePixs_clicked()
 {
     if( lstSelPix->isEmpty() ){
-        funcShowMsg("LACK","No pixels to export");
+        funcShowMsg("LACK","Not pixels to export");
     }else{
         int i;
         QString filePath = "./Results/lstPixels.txt";
@@ -1828,7 +1752,7 @@ bool MainWindow::on_pb2XY_clicked()
     //Validate that exist pixel selected
     //..
     if( lstSelPix->count()<1){
-        funcShowMsg("Lack","No pixels selected");
+        funcShowMsg("Lack","Not pixels selected");
         return false;
     }
 
@@ -2773,6 +2697,9 @@ void MainWindow::on_actionRect_triggered()
     selCol->exec();
     disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addRect2Calib(QString)));
     */
+
+    clearFreeHandPoligon();
+
     //Change mouse's cursor
     addRect2Calib("#F00");
     QApplication::setOverrideCursor(Qt::CrossCursor);
@@ -2872,13 +2799,55 @@ void MainWindow::addHorLine2Calib(QString colSeld){
 
 void MainWindow::on_actionClear_triggered()
 {
+    //Clear scene
     canvasCalib->scene()->clear();
+
+    clearFreeHandPoligon();
+
+    clearRectangle();
+
+    //Mouse
+    mouseCursorReset();
+
+}
+
+void MainWindow::clearFreeHandPoligon(){
+    //Clear Free-hand points
+    lstBorder->clear();
+    lstSelPix->clear();
+    lstPixSelAux->clear();
+
+    //Disconnect signals
+    disconnect(
+               canvasAux,
+               SIGNAL( signalMousePressed(QMouseEvent*) ),
+               this,
+               SLOT( funcAddPoint(QMouseEvent*) )
+          );
+    canvasAux->update();
+}
+
+void MainWindow::clearRectangle(){
+    disconnect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcBeginRect(QMouseEvent*) )
+           );
+    disconnect(
+                canvasCalib,
+                SIGNAL( signalMouseReleased(QMouseEvent*) ),
+                this,
+                SLOT( funcCalibMouseRelease(QMouseEvent*) )
+           );
+    canvasCalib->update();
 }
 
 void MainWindow::on_actionSelection_triggered()
 {
     //Change cursor
     QApplication::restoreOverrideCursor();
+
     //Disconnect
     //..
     //Rectangle
@@ -3020,7 +2989,7 @@ void MainWindow::on_actionLoadCanvas_triggered()
                                                         this,
                                                         tr("Select image..."),
                                                         "./snapshots/Calib/",
-                                                        "(*.ppm *.RGB888);;"
+                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg);;"
                                                      );
     if( auxQstring.isEmpty() ){
         return (void)NULL;
@@ -3163,4 +3132,149 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
 void MainWindow::on_slideShuterSpeedSmall_valueChanged(int value)
 {
     ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value + ui->slideShuterSpeed->value()) );
+}
+
+void MainWindow::on_actionToolPenArea_triggered()
+{
+    clearRectangle();
+    mouseCursorCross();
+    canvasAux = canvasCalib;
+    connect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcAddPoint(QMouseEvent*) )
+           );
+}
+
+void MainWindow::mouseCursorHand(){
+    QApplication::setOverrideCursor(Qt::PointingHandCursor);
+}
+
+void MainWindow::mouseCursorCross(){
+    QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void MainWindow::on_actionSend_to_XYZ_triggered()
+{
+    //Validate that exist pixel selected
+    //..
+    if( lstSelPix->count()<1){
+        funcShowMsg("Lack","Not pixels selected");
+        return (void)false;
+    }
+
+    //Create xycolor space
+    //..
+    GraphicsView *xySpace = new GraphicsView(this);
+    funcPutImageIntoGV(xySpace, "./imgResources/CIEManual.png");
+    xySpace->setWindowTitle( "XY color space" );
+    xySpace->show();
+
+    //Transform each pixel from RGB to xy and plot it
+    //..
+    QImage tmpImg(_PATH_DISPLAY_IMAGE);
+    int W = tmpImg.width();
+    int H = tmpImg.height();
+    int pixX, pixY;
+    QRgb tmpPix;
+    colSpaceXYZ *tmpXYZ = (colSpaceXYZ*)malloc(sizeof(colSpaceXYZ));
+    int tmpOffsetX = -13;
+    int tmpOffsetY = -55;
+    int tmpX, tmpY;
+    int i;
+    qDebug() << "<lstSelPix->count(): " << lstSelPix->count();
+    for( i=0; i<lstSelPix->count(); i++ ){
+        //Get pixel position in real image
+        pixX = (float)(lstSelPix->at(i).first * W) / (float)canvasAux->width();
+        pixY = (float)(lstSelPix->at(i).second * H) / (float)canvasAux->height();
+        tmpPix = tmpImg.pixel( pixX, pixY );
+        funcRGB2XYZ( tmpXYZ, (float)qRed(tmpPix), (float)qGreen(tmpPix), (float)qBlue(tmpPix) );
+        //funcRGB2XYZ( tmpXYZ, 255.0, 0, 0  );
+        tmpX = floor( (tmpXYZ->x * 441.0) / 0.75 ) + tmpOffsetX;
+        tmpY = 522 - floor( (tmpXYZ->y * 481.0) / 0.85 ) + tmpOffsetY;
+        funcAddPoit2Graph( xySpace, tmpX, tmpY, 1, 1,
+                           QColor(qRed(tmpPix),qGreen(tmpPix),qBlue(tmpPix)),
+                           QColor(qRed(tmpPix),qGreen(tmpPix),qBlue(tmpPix))
+                         );
+    }
+
+    //Save image plotted
+    //..
+    QPixmap pixMap = QPixmap::grabWidget(xySpace);
+    pixMap.save("./Results/Miscelaneas/RGBPloted.png");
+
+}
+
+void MainWindow::on_actionSaveCanvas_triggered()
+{
+    recParamFrm *recParam = new recParamFrm(this);
+    recParam->setModal(false);
+    connect(recParam,SIGNAL(paramGenerated(QString)),this,SLOT(saveCalib(QString)));
+    recParam->setWindowTitle("Type the filename...");
+    recParam->show();
+    recParam->raise();
+    recParam->update();
+}
+
+void MainWindow::saveCalib(QString fileName){
+    bool result = saveCanvas(canvasCalib,fileName);
+    if( result ){
+        funcShowMsg("Success","Canvas saved");
+    }else{
+        funcShowMsg("ERROR","Saving Canvas");
+    }
+}
+
+bool MainWindow::saveCanvas(GraphicsView *tmpCanvas, QString fileName){
+    //Save
+    //..
+    //Remove if exists
+    QFile prevImg(fileName);
+    if(prevImg.exists()){
+        prevImg.remove();
+    }
+    prevImg.close();
+    QPixmap pixMap = QPixmap::grabWidget(tmpCanvas);
+    if(pixMap.save(fileName)){
+        return true;
+    }else{
+        return false;
+    }
+    return true;
+}
+
+void MainWindow::on_actionExportPixelsSelected_triggered()
+{
+    if( lstSelPix->isEmpty() ){
+        funcShowMsg("LACK","Not pixels to export");
+    }else{
+        int i;
+        QString filePath = "./Results/lstPixels.txt";
+        QFile fileLstPixels(filePath);
+        if (!fileLstPixels.open(QIODevice::WriteOnly | QIODevice::Text)){
+            funcShowMsg("ERROR","Creating file fileLstPixels");
+        }else{
+            QTextStream streamLstPixels(&fileLstPixels);
+            for( i=0; i<lstSelPix->count(); i++ ){
+                streamLstPixels << QString::number(lstSelPix->at(i).first) << " "<< QString::number(lstSelPix->at(i).second) << "\n";
+            }
+        }
+        fileLstPixels.close();
+        funcShowMsg("Success","List of pixels exported into: "+filePath);
+    }
+}
+
+void MainWindow::on_pbLANConnect_clicked()
+{
+    ui->txtCommand->setText("sudo iwconfig wlan0 essid ESSID-NAME key s:PASS");
+    ui->checkBlind->setChecked(true);
+    funcShowMsg("Alert","Execute IWCONFIG setting BLIND mode");
+}
+
+void MainWindow::on_pbLANTestConn_clicked()
+{
+    ui->txtCommand->setText("iwconfig");
+    ui->checkBlind->setChecked(false);
+    ui->pbSendComm->click();
 }

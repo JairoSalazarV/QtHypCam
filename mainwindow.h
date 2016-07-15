@@ -232,6 +232,10 @@ private slots:
 
     void on_actionClear_triggered();
 
+    void clearFreeHandPoligon();
+
+    void clearRectangle();
+
     void on_actionSelection_triggered();
 
     void ResetGraphToolBar( QString toEnable );
@@ -267,15 +271,35 @@ private slots:
 
     float getLastAngle();
 
-    void mouseCursorWait();
-
-    void mouseCursorReset();
-
     void on_actionLoadSquareRectangle_triggered();
 
     void on_actionLoadRegOfInteres_triggered();
 
     void on_slideShuterSpeedSmall_valueChanged(int value);
+
+    void on_actionToolPenArea_triggered();
+
+    void mouseCursorHand();
+
+    void mouseCursorCross();
+
+    void mouseCursorWait();
+
+    void mouseCursorReset();
+
+    void on_actionSend_to_XYZ_triggered();
+
+    void on_actionSaveCanvas_triggered();
+
+    void saveCalib(QString fileName);
+
+    bool saveCanvas(GraphicsView *tmpCanvas, QString fileName);
+
+    void on_actionExportPixelsSelected_triggered();
+
+    void on_pbLANConnect_clicked();
+
+    void on_pbLANTestConn_clicked();
 
 private:
     Ui::MainWindow *ui;
