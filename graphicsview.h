@@ -12,7 +12,12 @@ class GraphicsView : public QGraphicsView
         explicit GraphicsView(QObject *parent = 0);
         ~GraphicsView(){};
 
+        QAction *showContextMenuLine(QPoint pos);
+
     private:
+
+        void funcShowColumnSlide( bool ColumnByColumn );
+
         void mousePressEvent(QMouseEvent *e);
 
         void mouseReleaseEvent(QMouseEvent *e);

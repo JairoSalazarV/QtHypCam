@@ -36,6 +36,8 @@
 #include <gencalibxml.h>
 #include <rotationfrm.h>
 #include <recparamfrm.h>
+//#include <generatehypercube.h>
+#include <validatecalibration.h>
 
 
 
@@ -54,7 +56,7 @@ customLine *globalCanvHLine;
 customLine *globalCanvVLine;
 //customLine *globalTmpLine;
 
-QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/200Id/CROPED/100.tif";
+//QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/200Id/CROPED/100.tif";
 //QString impPath = "./imgResources/CIE.png";
 
 QList<QPair<int,int>> *lstBorder;
@@ -86,15 +88,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     funcObtSettings( lstSettings );
 
+    /*
     //Fill IP prefix
-    if(_PRELOAD_IP){
+    //if(_PRELOAD_IP){
         char cIP[15];
         funcObtainIP( cIP );
         QString qsIP(cIP);
         QStringList lstIP = qsIP.split('.');
         qsIP = lstIP.at(0) + "." +lstIP.at(1) + "."+lstIP.at(2) + ".";
         ui->txtIp->setText(qsIP);
-    }
+    //}
+    */
 
 
     //Initialize global settings
@@ -114,7 +118,7 @@ MainWindow::MainWindow(QWidget *parent) :
     canvasCalib = new GraphicsView;
     canvasAux = new GraphicsView;
     //QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/25Id/15.png";
-    funcPutImageIntoGV( myCanvas, imgPath );
+    //funcPutImageIntoGV( myCanvas, imgPath );
 
     //Initialize points container for free-hand pen tool
     lstBorder = new QList<QPair<int,int>>;
@@ -166,10 +170,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //Try to connect to the last IP
-    if( _PRELOAD_IP ){
-        QString lastIP = readAllFile( "./settings/lastIp.hypcam" );
-        lastIP.replace("\n","");
-        ui->txtIp->setText(lastIP);
+    QString lastIP = readAllFile( "./settings/lastIp.hypcam" );
+    lastIP.replace("\n","");
+    ui->txtIp->setText(lastIP);
+    if(_AUTOCONNECT){
         ui->pbAddIp->click();
         ui->tableLstCams->selectRow(0);
         ui->pbConnect->click();
@@ -1686,13 +1690,15 @@ void MainWindow::on_pbSnapshot_clicked()
 
 
 void MainWindow::on_pbExpIds_clicked()
-{    
+{
+    /*
     int screen_width =  1000;
     int screen_height = 700;
 
     QGraphicsScene *scene = new QGraphicsScene(0,0,screen_width,screen_height);
     QPixmap pim(imgPath);
     scene->setBackgroundBrush(pim.scaled(screen_width,screen_height,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+    */
 }
 
 void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath){    
@@ -1747,6 +1753,8 @@ void MainWindow::on_pbSavePixs_clicked()
     }
 }
 
+
+/*
 bool MainWindow::on_pb2XY_clicked()
 {
     //Validate that exist pixel selected
@@ -1791,10 +1799,10 @@ bool MainWindow::on_pb2XY_clicked()
 
     return true;
 }
+*/
 
 
-
-
+/*
 void MainWindow::on_pbLoadImg_clicked()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File"),"./imgResources/",tr("Image files (*.*)"));
@@ -1802,6 +1810,7 @@ void MainWindow::on_pbLoadImg_clicked()
     funcPutImageIntoGV( myCanvas, imgPath );
     //funcShowMsg("",fileNames.at(0));
 }
+*/
 
 /*
 void MainWindow::on_pbUpdCut_clicked()
@@ -3277,4 +3286,16 @@ void MainWindow::on_pbLANTestConn_clicked()
     ui->txtCommand->setText("iwconfig");
     ui->checkBlind->setChecked(false);
     ui->pbSendComm->click();
+}
+
+void MainWindow::on_actionGenHypercube_triggered()
+{
+
+}
+
+void MainWindow::on_actionValidCal_triggered()
+{
+    validateCalibration *frmValCal = new validateCalibration(this);
+    frmValCal->setModal(false);
+    frmValCal->show();
 }

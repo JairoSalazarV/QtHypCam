@@ -517,7 +517,7 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     //Save coordinates
     if(saveFile(fileName,coordinates)){
         //Save canvas background path
-        saveFile("./settings/Calib/backgroundPath.hypcam",globalRect->parameters.backgroundPath);
+        saveFile(_PATH_CALBKG,globalRect->parameters.backgroundPath);
         funcShowMsg("Setting saved successfully","");
     }else{
         funcShowMsg("ERROR","Saving setting-file");

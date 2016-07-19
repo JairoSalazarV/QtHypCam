@@ -147,9 +147,9 @@ private slots:
 
     void on_pbSavePixs_clicked();
 
-    bool on_pb2XY_clicked();
+    //bool on_pb2XY_clicked();
 
-    void on_pbLoadImg_clicked();
+    //void on_pbLoadImg_clicked();
 
     structRaspcamSettings funcFillSnapshotSettings(structRaspcamSettings raspSett );
 
@@ -300,6 +300,10 @@ private slots:
     void on_pbLANConnect_clicked();
 
     void on_pbLANTestConn_clicked();
+
+    void on_actionGenHypercube_triggered();
+
+    void on_actionValidCal_triggered();
 
 private:
     Ui::MainWindow *ui;

@@ -10,6 +10,167 @@
 #include <QFile>
 #include <QTextStream>
 
+void funcPrintCalibration(lstCalibFileNames *calibSettings){
+
+    qDebug() << "W" << calibSettings->W;
+    qDebug() << "H" << calibSettings->H;
+    qDebug() << "source" << calibSettings->source;
+    qDebug() << "bigX" << calibSettings->bigX;
+    qDebug() << "bigY" << calibSettings->bigY;
+    qDebug() << "bigW" << calibSettings->bigW;
+    qDebug() << "bigH" << calibSettings->bigH;
+    qDebug() << "squareX" << calibSettings->squareX;
+    qDebug() << "squareY" << calibSettings->squareY;
+    qDebug() << "squareW" << calibSettings->squareW;
+    qDebug() << "squareH" << calibSettings->squareH;
+
+    qDebug() << "bRD" << calibSettings->blueRightDown;
+    qDebug() << "bR" << calibSettings->blueRight;
+    qDebug() << "bU" << calibSettings->blueUp;
+    qDebug() << "bLU" << calibSettings->blueLeftUp;
+    qDebug() << "bL" << calibSettings->blueLeft;
+    qDebug() << "bLD" << calibSettings->blueLeftDown;
+    qDebug() << "bD" << calibSettings->blueDown;
+
+    qDebug() << "gRD" << calibSettings->greenRightDown;
+    qDebug() << "gR" << calibSettings->greenRight;
+    qDebug() << "gU" << calibSettings->greenUp;
+    qDebug() << "gLU" << calibSettings->greenLeftUp;
+    qDebug() << "gL" << calibSettings->greenLeft;
+    qDebug() << "gLD" << calibSettings->greenLeftDown;
+    qDebug() << "gD" << calibSettings->greenDown;
+
+    qDebug() << "rRD" << calibSettings->redRightDown;
+    qDebug() << "rR" << calibSettings->redRight;
+    qDebug() << "rU" << calibSettings->redUp;
+    qDebug() << "rLU" << calibSettings->redLeftUp;
+    qDebug() << "rL" << calibSettings->redLeft;
+    qDebug() << "rLD" << calibSettings->redLeftDown;
+    qDebug() << "rD" << calibSettings->redDown;
+
+
+}
+
+bool funcGetCalibration(lstCalibFileNames *calibSettings){
+
+
+    QFile *xmlFile = new QFile(_PATH_CALIBRATION_FILE);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening _PATH_CALIBRATION_FILE");
+        return false;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+                continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="W" )
+                calibSettings->W = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="H" )
+                calibSettings->H = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="bigX" )
+                calibSettings->bigX = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="bigY" )
+                calibSettings->bigY = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="bigW" )
+                calibSettings->bigW = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="bigH" )
+                calibSettings->bigH = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squareX" )
+                calibSettings->squareX = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squareY" )
+                calibSettings->squareY = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squareW" )
+                calibSettings->squareW = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squareH" )
+                calibSettings->squareH = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="source" )
+                calibSettings->source = xmlReader->readElementText();
+
+            if( xmlReader->name()=="bRD" )
+                calibSettings->blueRightDown = xmlReader->readElementText();
+            if( xmlReader->name()=="bR" )
+                calibSettings->blueRight = xmlReader->readElementText();
+            if( xmlReader->name()=="bRU" )
+                calibSettings->blueRightUp = xmlReader->readElementText();
+            if( xmlReader->name()=="bU" )
+                calibSettings->blueUp = xmlReader->readElementText();
+            if( xmlReader->name()=="bLU" )
+                calibSettings->blueLeftUp = xmlReader->readElementText();
+            if( xmlReader->name()=="bL" )
+                calibSettings->blueLeft = xmlReader->readElementText();
+            if( xmlReader->name()=="bLD" )
+                calibSettings->blueLeftDown = xmlReader->readElementText();
+            if( xmlReader->name()=="bD" )
+                calibSettings->blueDown = xmlReader->readElementText();
+
+            if( xmlReader->name()=="gRD" )
+                calibSettings->greenRightDown = xmlReader->readElementText();
+            if( xmlReader->name()=="gR" )
+                calibSettings->greenRight = xmlReader->readElementText();
+            if( xmlReader->name()=="gRU" )
+                calibSettings->greenRightUp = xmlReader->readElementText();
+            if( xmlReader->name()=="gU" )
+                calibSettings->greenUp = xmlReader->readElementText();
+            if( xmlReader->name()=="gLU" )
+                calibSettings->greenLeftUp = xmlReader->readElementText();
+            if( xmlReader->name()=="gL" )
+                calibSettings->greenLeft = xmlReader->readElementText();
+            if( xmlReader->name()=="gLD" )
+                calibSettings->greenLeftDown = xmlReader->readElementText();
+            if( xmlReader->name()=="gD" )
+                calibSettings->greenDown = xmlReader->readElementText();
+
+            if( xmlReader->name()=="rRD" )
+                calibSettings->redRightDown = xmlReader->readElementText();
+            if( xmlReader->name()=="rR" )
+                calibSettings->redRight = xmlReader->readElementText();
+            if( xmlReader->name()=="rRU" )
+                calibSettings->redRightUp = xmlReader->readElementText();
+            if( xmlReader->name()=="rU" )
+                calibSettings->redUp = xmlReader->readElementText();
+            if( xmlReader->name()=="rLU" )
+                calibSettings->redLeftUp = xmlReader->readElementText();
+            if( xmlReader->name()=="rL" )
+                calibSettings->redLeft = xmlReader->readElementText();
+            if( xmlReader->name()=="rLD" )
+                calibSettings->redLeftDown = xmlReader->readElementText();
+            if( xmlReader->name()=="rD" )
+                calibSettings->redDown = xmlReader->readElementText();
+
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("settings.xml Parse Error",xmlReader->errorString());
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+
+    return true;
+}
 
 void funcTransPix( calcAndCropSnap *calStruct, int w, int h, int W, int H ){
     //Extrapolate dimensions
@@ -263,6 +424,13 @@ QString readAllFile( QString filePath ){
     tmpFile.open(QIODevice::ReadOnly);
     QTextStream tmpStream(&tmpFile);
     return tmpStream.readAll();
+}
+
+QString readFileParam(QString fileName){
+    QString tmpFileContain = readAllFile(fileName);
+    tmpFileContain = tmpFileContain.trimmed();
+    tmpFileContain.replace("\n","");
+    return tmpFileContain;
 }
 
 bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
@@ -644,6 +812,29 @@ linearRegresion *funcCalcLinReg( float *X ){
     return linReg;
 }
 
+linearRegresion* funcLinearRegression( float *X, float *Y, int numItems ){
+    linearRegresion *linReg = (linearRegresion*)malloc(sizeof(linearRegresion));
+    float mX=0.0, mY=0.0, aux1=0.0, aux2=0.0;
+    int i;
+    //Mean
+    for(i=0;i<numItems;i++)
+    {
+        mX += X[i];
+        mY += Y[i];
+    }
+    mX /= (float)numItems;
+    mY /= (float)numItems;
+    //
+    for(i=0;i<numItems;i++)
+    {
+        aux1 += (X[i]-mX)*(Y[i]-mY);
+        aux2 += (X[i]-mX)*(X[i]-mX);
+    }
+    linReg->b   = aux1 / aux2;
+    linReg->a   = mY-(linReg->b*mX);
+    //
+    return linReg;
+}
 
 
 bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory){

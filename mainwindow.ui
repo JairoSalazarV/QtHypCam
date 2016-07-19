@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -947,6 +947,8 @@ QSlider::handle:horizontal {
    <addaction name="actionLoadCanvas"/>
    <addaction name="actionDrawToolbar"/>
    <addaction name="actionDoubAxisDiff"/>
+   <addaction name="actionValidCal"/>
+   <addaction name="actionGenHypercube"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -1155,6 +1157,30 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Export pixels selected</string>
+   </property>
+  </action>
+  <action name="actionGenHypercube">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/hypCube.png</normaloff>:/new/icons/imagenInte/hypCube.png</iconset>
+   </property>
+   <property name="text">
+    <string>genHypercube</string>
+   </property>
+   <property name="toolTip">
+    <string>Generate hypercube</string>
+   </property>
+  </action>
+  <action name="actionValidCal">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/validCal.png</normaloff>:/new/icons/imagenInte/validCal.png</iconset>
+   </property>
+   <property name="text">
+    <string>validCal</string>
+   </property>
+   <property name="toolTip">
+    <string>Validate calibration</string>
    </property>
   </action>
  </widget>

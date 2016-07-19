@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     showancalchrres.cpp \
     gencalibxml.cpp \
     rotationfrm.cpp \
-    recparamfrm.cpp
+    recparamfrm.cpp \
+    generatehypercube.cpp \
+    validatecalibration.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -36,14 +38,18 @@ HEADERS  += mainwindow.h \
     showancalchrres.h \
     gencalibxml.h \
     rotationfrm.h \
-    recparamfrm.h
+    recparamfrm.h \
+    generatehypercube.h \
+    validatecalibration.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
     showancalchrres.ui \
     gencalibxml.ui \
     rotationfrm.ui \
-    recparamfrm.ui
+    recparamfrm.ui \
+    generatehypercube.ui \
+    validatecalibration.ui
 
 RESOURCES += \
     lstImgs.qrc

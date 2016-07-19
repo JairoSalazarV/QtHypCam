@@ -2,6 +2,7 @@
 #define GENCALIBXML_H
 
 #include <QDialog>
+#include <__common.h>
 
 namespace Ui {
 class genCalibXML;
@@ -18,9 +19,11 @@ public:
 private slots:
     void funcGetFilePath(QPushButton *tmpPb);
 
+    lstCalibFileNames funcFillCalibStruct();
+
     void autoLoadCentroids();
 
-    void setButton(QPushButton *tmpPb, QString tip, bool doAlert=true);
+    bool setButton(QPushButton *tmpPb, QString tip, bool doAlert=true);
 
     void on_pbSource_clicked();
 
@@ -71,6 +74,11 @@ private slots:
     void on_pbGreenRightDown_clicked();
 
     void on_pbRedRightDown_clicked();
+
+    void on_pbGenCal_clicked();
+
+    lstCalibFileNames fillLstCalibPoints();
+
 
 private:
     Ui::genCalibXML *ui;

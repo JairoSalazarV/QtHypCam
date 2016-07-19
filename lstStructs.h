@@ -3,9 +3,11 @@
 
     #include <string>
     #include <sys/types.h>
-    #include <QString>
+    #include <QString>    
 
     #include <graphicsview.h>
+
+    //#include <string>
 
 
     const unsigned int frameBodyLen = 1024;
@@ -18,7 +20,7 @@
     #define _GRAPH_CALIB_HEIGHT 590    
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _PRELOAD_IP true
+    #define _AUTOCONNECT false
     #define PI 3.14159265
 
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
@@ -28,6 +30,52 @@
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
     #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"
     #define _PATH_REGION_OF_INTERES         "./XML/regionOfInteres.xml"
+    #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
+    #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
+
+    typedef struct lstCalibFileNames{
+        //Miscelaneas
+        QString bkgPath;
+        int W;
+        int H;
+        float bigX;
+        float bigY;
+        float bigW;
+        float bigH;
+        float squareX;
+        float squareY;
+        float squareW;
+        float squareH;
+        //Source
+        QString source;
+        //Blue
+        QString blueRightDown;
+        QString blueRight;
+        QString blueRightUp;
+        QString blueUp;
+        QString blueLeftUp;
+        QString blueLeft;
+        QString blueLeftDown;
+        QString blueDown;
+        //Green
+        QString greenRightDown;
+        QString greenRight;
+        QString greenRightUp;
+        QString greenUp;
+        QString greenLeftUp;
+        QString greenLeft;
+        QString greenLeftDown;
+        QString greenDown;
+        //Red
+        QString redRightDown;
+        QString redRight;
+        QString redRightUp;
+        QString redUp;
+        QString redLeftUp;
+        QString redLeft;
+        QString redLeftDown;
+        QString redDown;
+    }lstCalibFileNames;
 
     typedef struct customLineParameters{
         bool movible = false;

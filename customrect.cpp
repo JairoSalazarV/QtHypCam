@@ -32,6 +32,8 @@ QAction *customRect::showContMenuLine(QPoint pos){
     submenu2->addAction( "Red centroid" );
     submenu2->addAction( "Green centroid" );
     submenu2->addAction( "Blue centroid" );
+    submenu2->addSeparator();
+    submenu2->addAction( "Source centroid" );
 
     xmenu->addSeparator();
     QMenu* submenu3 = xmenu->addMenu( "Save as" );

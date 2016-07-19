@@ -10,6 +10,10 @@
 
     #include <highgui.h>
 
+    void funcPrintCalibration(lstCalibFileNames *calibSettings);
+
+    bool funcGetCalibration(lstCalibFileNames* calibSettings);
+
     void funcObtSettings( structSettings * lstSettings);
 
     void funcShowMsg( QString title, QString msg );
@@ -36,6 +40,8 @@
 
     QString readAllFile( QString filePath );
 
+    QString readFileParam(QString fileName);
+
     bool funGetSquareXML( QString fileName, squareAperture *squareParam );
 
     QImage* IplImage2QImage(IplImage *iplImg);
@@ -43,6 +49,8 @@
     colorAnalyseResult *funcAnalizeImage(QImage *img );
 
     linearRegresion *funcCalcLinReg(float *X);
+
+    linearRegresion* funcLinearRegression( float *X, float *Y, int numItems );
 
     QImage funcRotateImage(QString filePath, float rotAngle);
 
