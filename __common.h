@@ -10,9 +10,13 @@
 
     #include <highgui.h>
 
-    void funcPrintCalibration(lstCalibFileNames *calibSettings);
+    double funcDet2x2(double **M);
 
-    bool funcGetCalibration(lstCalibFileNames* calibSettings);
+    void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett );
+
+    void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings);
+
+    bool funcGetCalibration(lstDoubleAxisCalibration* calibSettings);
 
     void funcObtSettings( structSettings * lstSettings);
 
@@ -50,13 +54,15 @@
 
     linearRegresion *funcCalcLinReg(float *X);
 
-    linearRegresion* funcLinearRegression( float *X, float *Y, int numItems );
+    linearRegresion* funcLinearRegression(double *X, double *Y, int numItems );
 
     QImage funcRotateImage(QString filePath, float rotAngle);
 
     void funcTransPix(calcAndCropSnap *calStruct , int w, int h, int W, int H);
 
     bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory);
+
+    QString funcRemoveFileNameFromPath( QString Path );
 
 
 

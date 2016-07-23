@@ -513,18 +513,39 @@ border:0px;</string>
     <string>...</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pbGenCal">
+  <widget class="QWidget" name="">
    <property name="geometry">
     <rect>
-     <x>50</x>
+     <x>32</x>
      <y>250</y>
-     <width>151</width>
-     <height>31</height>
+     <width>184</width>
+     <height>34</height>
     </rect>
    </property>
-   <property name="text">
-    <string>Generate calib.xml</string>
-   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="pbGenCal">
+      <property name="text">
+       <string>Generate calib.xml</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QToolButton" name="pbFiles">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open in files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normalon>:/new/icons/imagenInte/folder-icon.png</normalon>
+       </iconset>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

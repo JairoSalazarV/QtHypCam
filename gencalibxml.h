@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <__common.h>
+#include <customQMatrix4x3.h>
 
 namespace Ui {
 class genCalibXML;
@@ -17,6 +18,11 @@ public:
     ~genCalibXML();
 
 private slots:
+
+    //customQGenericMatrix funcLinRegTwoIndVar(customQGenericMatrix X);
+
+    void disableButtons();
+
     void funcGetFilePath(QPushButton *tmpPb);
 
     lstCalibFileNames funcFillCalibStruct();
@@ -79,6 +85,8 @@ private slots:
 
     lstCalibFileNames fillLstCalibPoints();
 
+
+    void on_pbFiles_clicked();
 
 private:
     Ui::genCalibXML *ui;

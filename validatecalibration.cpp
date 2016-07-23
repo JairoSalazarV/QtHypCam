@@ -15,7 +15,7 @@ validateCalibration::validateCalibration(QWidget *parent) :
     int offset;
     offset = 1000;
 
-    //Obtain geometry
+    //Set screem geometry
     QPixmap tmpPix(_PATH_DISPLAY_IMAGE);
     int screen2Work = (QApplication::desktop()->screenCount()>1)?1:-1;
     QRect screen = QApplication::desktop()->screenGeometry(screen2Work);
@@ -35,7 +35,7 @@ validateCalibration::validateCalibration(QWidget *parent) :
 
     //Listen mouse events
     //connect( gvValCal, SIGNAL(signalMouseReleased(QMouseEvent)), this, SLOT(mousePresed(QMouseEvent)) );
-
+    gvValCal->funcShowWavelenLines(1);
 
 
 }

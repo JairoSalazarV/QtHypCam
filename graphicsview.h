@@ -3,6 +3,7 @@
 
 #include <QGraphicsView>
 #include <QMouseEvent>
+#include <QGraphicsSceneMouseEvent>
 
 class GraphicsView : public QGraphicsView
 {
@@ -14,9 +15,20 @@ class GraphicsView : public QGraphicsView
 
         QAction *showContextMenuLine(QPoint pos);
 
-    private:
+        void funcShowWavelenLines(int type);
 
-        void funcShowColumnSlide( bool ColumnByColumn );
+    private:
+        float funcCalcWavelen(int pixX , int type);
+
+        void funcShowWavelen(QPoint pos, int type);
+
+        void identifyMinimumWavelenght(QPoint pos, int type);
+
+        void identifyMaximumWavelenght(QPoint pos, int type);
+
+        void funcDisplayPixelProperties(QMouseEvent *e);
+
+        void funcTestCalibration();
 
         void mousePressEvent(QMouseEvent *e);
 

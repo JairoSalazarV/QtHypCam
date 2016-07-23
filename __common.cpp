@@ -10,48 +10,49 @@
 #include <QFile>
 #include <QTextStream>
 
-void funcPrintCalibration(lstCalibFileNames *calibSettings){
+#include <QFileInfo>
+
+QString funcRemoveFileNameFromPath( QString Path ){
+    return QFileInfo(Path).absolutePath();
+}
+
+void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
 
     qDebug() << "W" << calibSettings->W;
     qDebug() << "H" << calibSettings->H;
-    qDebug() << "source" << calibSettings->source;
+
+    qDebug() << "bkgPath" << calibSettings->bkgPath;
+
     qDebug() << "bigX" << calibSettings->bigX;
     qDebug() << "bigY" << calibSettings->bigY;
     qDebug() << "bigW" << calibSettings->bigW;
     qDebug() << "bigH" << calibSettings->bigH;
+
     qDebug() << "squareX" << calibSettings->squareX;
     qDebug() << "squareY" << calibSettings->squareY;
     qDebug() << "squareW" << calibSettings->squareW;
     qDebug() << "squareH" << calibSettings->squareH;
 
-    qDebug() << "bRD" << calibSettings->blueRightDown;
-    qDebug() << "bR" << calibSettings->blueRight;
-    qDebug() << "bU" << calibSettings->blueUp;
-    qDebug() << "bLU" << calibSettings->blueLeftUp;
-    qDebug() << "bL" << calibSettings->blueLeft;
-    qDebug() << "bLD" << calibSettings->blueLeftDown;
-    qDebug() << "bD" << calibSettings->blueDown;
+    qDebug() << "squarePixX: " << calibSettings->squarePixX;
+    qDebug() << "squarePixY: " << calibSettings->squarePixY;
+    qDebug() << "squarePixW: " << calibSettings->squarePixW;
+    qDebug() << "squarePixH: " << calibSettings->squarePixH;
 
-    qDebug() << "gRD" << calibSettings->greenRightDown;
-    qDebug() << "gR" << calibSettings->greenRight;
-    qDebug() << "gU" << calibSettings->greenUp;
-    qDebug() << "gLU" << calibSettings->greenLeftUp;
-    qDebug() << "gL" << calibSettings->greenLeft;
-    qDebug() << "gLD" << calibSettings->greenLeftDown;
-    qDebug() << "gD" << calibSettings->greenDown;
+    qDebug() << "rightLinRegA: " << calibSettings->rightLinRegA;
+    qDebug() << "rightLinRegB: " << calibSettings->rightLinRegB;
 
-    qDebug() << "rRD" << calibSettings->redRightDown;
-    qDebug() << "rR" << calibSettings->redRight;
-    qDebug() << "rU" << calibSettings->redUp;
-    qDebug() << "rLU" << calibSettings->redLeftUp;
-    qDebug() << "rL" << calibSettings->redLeft;
-    qDebug() << "rLD" << calibSettings->redLeftDown;
-    qDebug() << "rD" << calibSettings->redDown;
+    qDebug() << "upLinRegA: " << calibSettings->upLinRegA;
+    qDebug() << "upLinRegB: " << calibSettings->upLinRegB;
 
+    qDebug() << "leftLinRegA: " << calibSettings->leftLinRegA;
+    qDebug() << "leftLinRegB: " << calibSettings->leftLinRegB;
+
+    qDebug() << "downLinRegA: " << calibSettings->downLinRegA;
+    qDebug() << "downLinRegB: " << calibSettings->downLinRegB;
 
 }
 
-bool funcGetCalibration(lstCalibFileNames *calibSettings){
+bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
 
 
     QFile *xmlFile = new QFile(_PATH_CALIBRATION_FILE);
@@ -76,89 +77,60 @@ bool funcGetCalibration(lstCalibFileNames *calibSettings){
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement)
         {
-            if( xmlReader->name()=="W" )
-                calibSettings->W = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="bkgPath" )
+                doubAxisCal->bkgPath = xmlReader->readElementText();
 
+            if( xmlReader->name()=="W" )
+                doubAxisCal->W = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="H" )
-                calibSettings->H = xmlReader->readElementText().toInt(0);
+                doubAxisCal->H = xmlReader->readElementText().toInt(0);
 
             if( xmlReader->name()=="bigX" )
-                calibSettings->bigX = xmlReader->readElementText().toFloat(0);
-
+                doubAxisCal->bigX = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="bigY" )
-                calibSettings->bigY = xmlReader->readElementText().toFloat(0);
-
+                doubAxisCal->bigY = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="bigW" )
-                calibSettings->bigW = xmlReader->readElementText().toFloat(0);
-
+                doubAxisCal->bigW = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="bigH" )
-                calibSettings->bigH = xmlReader->readElementText().toFloat(0);
+                doubAxisCal->bigH = xmlReader->readElementText().toFloat(0);
 
             if( xmlReader->name()=="squareX" )
-                calibSettings->squareX = xmlReader->readElementText().toFloat(0);
-
+                doubAxisCal->squareX = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="squareY" )
-                calibSettings->squareY = xmlReader->readElementText().toFloat(0);
-
+                doubAxisCal->squareY = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="squareW" )
-                calibSettings->squareW = xmlReader->readElementText().toFloat(0);
-
+                doubAxisCal->squareW = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="squareH" )
-                calibSettings->squareH = xmlReader->readElementText().toFloat(0);
+                doubAxisCal->squareH = xmlReader->readElementText().toFloat(0);
 
-            if( xmlReader->name()=="source" )
-                calibSettings->source = xmlReader->readElementText();
+            if( xmlReader->name()=="squarePixX" )
+                doubAxisCal->squarePixX = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixY" )
+                doubAxisCal->squarePixY = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixW" )
+                doubAxisCal->squarePixW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixH" )
+                doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="bRD" )
-                calibSettings->blueRightDown = xmlReader->readElementText();
-            if( xmlReader->name()=="bR" )
-                calibSettings->blueRight = xmlReader->readElementText();
-            if( xmlReader->name()=="bRU" )
-                calibSettings->blueRightUp = xmlReader->readElementText();
-            if( xmlReader->name()=="bU" )
-                calibSettings->blueUp = xmlReader->readElementText();
-            if( xmlReader->name()=="bLU" )
-                calibSettings->blueLeftUp = xmlReader->readElementText();
-            if( xmlReader->name()=="bL" )
-                calibSettings->blueLeft = xmlReader->readElementText();
-            if( xmlReader->name()=="bLD" )
-                calibSettings->blueLeftDown = xmlReader->readElementText();
-            if( xmlReader->name()=="bD" )
-                calibSettings->blueDown = xmlReader->readElementText();
+            if( xmlReader->name()=="rightLinRegA" )
+                doubAxisCal->rightLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="rightLinRegB" )
+                doubAxisCal->rightLinRegB = xmlReader->readElementText().toFloat(0);
 
-            if( xmlReader->name()=="gRD" )
-                calibSettings->greenRightDown = xmlReader->readElementText();
-            if( xmlReader->name()=="gR" )
-                calibSettings->greenRight = xmlReader->readElementText();
-            if( xmlReader->name()=="gRU" )
-                calibSettings->greenRightUp = xmlReader->readElementText();
-            if( xmlReader->name()=="gU" )
-                calibSettings->greenUp = xmlReader->readElementText();
-            if( xmlReader->name()=="gLU" )
-                calibSettings->greenLeftUp = xmlReader->readElementText();
-            if( xmlReader->name()=="gL" )
-                calibSettings->greenLeft = xmlReader->readElementText();
-            if( xmlReader->name()=="gLD" )
-                calibSettings->greenLeftDown = xmlReader->readElementText();
-            if( xmlReader->name()=="gD" )
-                calibSettings->greenDown = xmlReader->readElementText();
+            if( xmlReader->name()=="upLinRegA" )
+                doubAxisCal->upLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="upLinRegB" )
+                doubAxisCal->upLinRegB = xmlReader->readElementText().toFloat(0);
 
-            if( xmlReader->name()=="rRD" )
-                calibSettings->redRightDown = xmlReader->readElementText();
-            if( xmlReader->name()=="rR" )
-                calibSettings->redRight = xmlReader->readElementText();
-            if( xmlReader->name()=="rRU" )
-                calibSettings->redRightUp = xmlReader->readElementText();
-            if( xmlReader->name()=="rU" )
-                calibSettings->redUp = xmlReader->readElementText();
-            if( xmlReader->name()=="rLU" )
-                calibSettings->redLeftUp = xmlReader->readElementText();
-            if( xmlReader->name()=="rL" )
-                calibSettings->redLeft = xmlReader->readElementText();
-            if( xmlReader->name()=="rLD" )
-                calibSettings->redLeftDown = xmlReader->readElementText();
-            if( xmlReader->name()=="rD" )
-                calibSettings->redDown = xmlReader->readElementText();
+            if( xmlReader->name()=="leftLinRegA" )
+                doubAxisCal->leftLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="leftLinRegB" )
+                doubAxisCal->leftLinRegB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="downLinRegA" )
+                doubAxisCal->downLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="downLinRegB" )
+                doubAxisCal->downLinRegB = xmlReader->readElementText().toFloat(0);
 
         }
     }
@@ -167,6 +139,43 @@ bool funcGetCalibration(lstCalibFileNames *calibSettings){
     }
     xmlReader->clear();
     xmlFile->close();
+
+    /*
+    qDebug() << "doubAxisCal->bkgPath: " << doubAxisCal->bkgPath;
+
+    qDebug() << "doubAxisCal->W: " << doubAxisCal->W;
+    qDebug() << "doubAxisCal->H: " << doubAxisCal->H;
+
+    qDebug() << "doubAxisCal->bigX: " << doubAxisCal->bigX;
+    qDebug() << "doubAxisCal->bigY: " << doubAxisCal->bigY;
+    qDebug() << "doubAxisCal->bigW: " << doubAxisCal->bigW;
+    qDebug() << "doubAxisCal->bigH: " << doubAxisCal->bigH;
+
+    qDebug() << "doubAxisCal->squareX: " << doubAxisCal->squareX;
+    qDebug() << "doubAxisCal->squareY: " << doubAxisCal->squareY;
+    qDebug() << "doubAxisCal->squareW: " << doubAxisCal->squareW;
+    qDebug() << "doubAxisCal->squareH: " << doubAxisCal->squareH;
+
+    qDebug() << "doubAxisCal->squarePixX: " << doubAxisCal->squarePixX;
+    qDebug() << "doubAxisCal->squarePixY: " << doubAxisCal->squarePixY;
+    qDebug() << "doubAxisCal->squarePixW: " << doubAxisCal->squarePixW;
+    qDebug() << "doubAxisCal->squarePixH: " << doubAxisCal->squarePixH;
+
+    qDebug() << "doubAxisCal->rightLinRegA: " << doubAxisCal->rightLinRegA;
+    qDebug() << "doubAxisCal->rightLinRegB: " << doubAxisCal->rightLinRegB;
+
+    qDebug() << "doubAxisCal->upLinRegA: " << doubAxisCal->upLinRegA;
+    qDebug() << "doubAxisCal->upLinRegB: " << doubAxisCal->upLinRegB;
+
+    qDebug() << "doubAxisCal->rightLinRegA: " << doubAxisCal->rightLinRegA;
+    qDebug() << "doubAxisCal->rightLinRegB: " << doubAxisCal->rightLinRegB;
+
+    qDebug() << "doubAxisCal->leftLinRegA: " << doubAxisCal->leftLinRegA;
+    qDebug() << "doubAxisCal->leftLinRegB: " << doubAxisCal->leftLinRegB;
+
+    qDebug() << "doubAxisCal->downLinRegA: " << doubAxisCal->downLinRegA;
+    qDebug() << "doubAxisCal->downLinRegA: " << doubAxisCal->downLinRegB;
+    */
 
 
     return true;
@@ -812,9 +821,9 @@ linearRegresion *funcCalcLinReg( float *X ){
     return linReg;
 }
 
-linearRegresion* funcLinearRegression( float *X, float *Y, int numItems ){
+linearRegresion* funcLinearRegression( double *X, double *Y, int numItems ){
     linearRegresion *linReg = (linearRegresion*)malloc(sizeof(linearRegresion));
-    float mX=0.0, mY=0.0, aux1=0.0, aux2=0.0;
+    double mX=0.0, mY=0.0, aux1=0.0, aux2=0.0;
     int i;
     //Mean
     for(i=0;i<numItems;i++)
@@ -822,16 +831,24 @@ linearRegresion* funcLinearRegression( float *X, float *Y, int numItems ){
         mX += X[i];
         mY += Y[i];
     }
-    mX /= (float)numItems;
-    mY /= (float)numItems;
+    mX /= (double)numItems;
+    mY /= (double)numItems;
+    //funcShowMsg("mX,mY",QString::number(mX)+", "+QString::number(mY));
     //
     for(i=0;i<numItems;i++)
     {
         aux1 += (X[i]-mX)*(Y[i]-mY);
         aux2 += (X[i]-mX)*(X[i]-mX);
-    }
+    }    
     linReg->b   = aux1 / aux2;
     linReg->a   = mY-(linReg->b*mX);
+
+    //printf("linReg->b: %lf \n",linReg->b);
+    //printf("aux1: %lf \n",aux1);
+    //printf("aux2: %lf \n",aux2);
+    //printf("mX: %lf \n",mX);
+    //printf("mY: %lf \n",mY);
+
     //
     return linReg;
 }
@@ -847,4 +864,26 @@ bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directo
         DummyFile.close();
     }
     return true;
+}
+
+
+
+void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett ){
+    diffPix->rightY = (float)calSett->rightLinRegA  + ( (float)calSett->rightLinRegB    * (float)diffPix->x );
+    diffPix->upY    = (float)calSett->upLinRegA     + ( (float)calSett->upLinRegB       * (float)diffPix->x );
+    diffPix->leftY  = (float)calSett->leftLinRegA   + ( (float)calSett->leftLinRegB     * (float)diffPix->x );
+    diffPix->downY  = (float)calSett->downLinRegA   + ( (float)calSett->downLinRegB     * (float)diffPix->x );
+
+    qDebug() << "inside: funcSourcePixToDiffPix";
+    qDebug() << "x: " << diffPix->x;
+
+    qDebug() << "calSett->rightLinRegA: " << calSett->rightLinRegA;
+    qDebug() << "calSett->rightLinRegB: " << calSett->rightLinRegB;
+    qDebug() << "calSett->rightY: " << diffPix->rightY;
+
+}
+
+
+double funcDet2x2(double **M){
+    return (M[0][0] * M[1][1]) - (M[1][0]*M[0][1]);
 }

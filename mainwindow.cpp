@@ -86,6 +86,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->actionValidCal->trigger();
+
     funcObtSettings( lstSettings );
 
     /*

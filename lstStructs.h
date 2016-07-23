@@ -23,6 +23,10 @@
     #define _AUTOCONNECT false
     #define PI 3.14159265
 
+    #define _RED_WAVELENGHT 618
+    #define _GREEN_WAVELENGHT 542
+    #define _BLUE_WAVELENGHT 438
+
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
     #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"    
@@ -32,6 +36,47 @@
     #define _PATH_REGION_OF_INTERES         "./XML/regionOfInteres.xml"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
+
+
+
+    typedef struct strDiffPix{
+        int x;
+        int y;
+        int rightX;
+        int rightY;
+        int upX;
+        int upY;
+        int leftX;
+        int leftY;
+        int downX;
+        int downY;
+    }strDiffPix;
+
+    typedef struct lstDoubleAxisCalibration{
+        QString bkgPath;
+        int     W;
+        int     H;
+        float   bigX;
+        float   bigY;
+        float   bigW;
+        float   bigH;
+        float   squareX;
+        float   squareY;
+        float   squareW;
+        float   squareH;
+        int     squarePixX;
+        int     squarePixY;
+        int     squarePixW;
+        int     squarePixH;
+        float   rightLinRegA;
+        float   rightLinRegB;
+        float   upLinRegA;
+        float   upLinRegB;
+        float   leftLinRegA;
+        float   leftLinRegB;
+        float   downLinRegA;
+        float   downLinRegB;
+    }lstDoubleAxisCalibration;
 
     typedef struct lstCalibFileNames{
         //Miscelaneas

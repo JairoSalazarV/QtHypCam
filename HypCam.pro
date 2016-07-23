@@ -25,7 +25,9 @@ SOURCES += main.cpp\
     rotationfrm.cpp \
     recparamfrm.cpp \
     generatehypercube.cpp \
-    validatecalibration.cpp
+    validatecalibration.cpp \
+    customQMatrix4x3.cpp \
+    customQMatrix3x3.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -40,7 +42,9 @@ HEADERS  += mainwindow.h \
     rotationfrm.h \
     recparamfrm.h \
     generatehypercube.h \
-    validatecalibration.h
+    validatecalibration.h \
+    customQMatrix4x3.h \
+    customQMatrix3x3.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
