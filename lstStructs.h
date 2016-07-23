@@ -3,25 +3,128 @@
 
     #include <string>
     #include <sys/types.h>
-    #include <QString>
+    #include <QString>    
 
     #include <graphicsview.h>
+
+    //#include <string>
 
 
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN 1024;
     #define _BIG_WIDTH 2592 //2592 | 640 | 320
-    #define _BIG_HEIGHT 1944 //1944 | 480 | 240
+    #define _BIG_HEIGHT 1944 //1944 | 480 | 240    
+    #define _FRAME_THUMB_W 500
+    #define _FRAME_THUMB_H 375
     #define _GRAPH_HEIGHT 440
-    #define _GRAPH_CALIB_HEIGHT 590
-    #define _DISPLAY_IMAGE "./tmpImages/tmpImg2Disp.ppm"
+    #define _GRAPH_CALIB_HEIGHT 590    
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _PRELOAD_IP true
+    #define _AUTOCONNECT false
     #define PI 3.14159265
+
+    #define _RED_WAVELENGHT 618
+    #define _GREEN_WAVELENGHT 542
+    #define _BLUE_WAVELENGHT 438
+
+    #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
+    #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
+    #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"    
+    #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
+    #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
+    #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"
+    #define _PATH_REGION_OF_INTERES         "./XML/regionOfInteres.xml"
+    #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
+    #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
+
+
+
+    typedef struct strDiffPix{
+        int x;
+        int y;
+        int rightX;
+        int rightY;
+        int upX;
+        int upY;
+        int leftX;
+        int leftY;
+        int downX;
+        int downY;
+    }strDiffPix;
+
+    typedef struct lstDoubleAxisCalibration{
+        QString bkgPath;
+        int     W;
+        int     H;
+        float   bigX;
+        float   bigY;
+        float   bigW;
+        float   bigH;
+        float   squareX;
+        float   squareY;
+        float   squareW;
+        float   squareH;
+        int     squarePixX;
+        int     squarePixY;
+        int     squarePixW;
+        int     squarePixH;
+        float   rightLinRegA;
+        float   rightLinRegB;
+        float   upLinRegA;
+        float   upLinRegB;
+        float   leftLinRegA;
+        float   leftLinRegB;
+        float   downLinRegA;
+        float   downLinRegB;
+    }lstDoubleAxisCalibration;
+
+    typedef struct lstCalibFileNames{
+        //Miscelaneas
+        QString bkgPath;
+        int W;
+        int H;
+        float bigX;
+        float bigY;
+        float bigW;
+        float bigH;
+        float squareX;
+        float squareY;
+        float squareW;
+        float squareH;
+        //Source
+        QString source;
+        //Blue
+        QString blueRightDown;
+        QString blueRight;
+        QString blueRightUp;
+        QString blueUp;
+        QString blueLeftUp;
+        QString blueLeft;
+        QString blueLeftDown;
+        QString blueDown;
+        //Green
+        QString greenRightDown;
+        QString greenRight;
+        QString greenRightUp;
+        QString greenUp;
+        QString greenLeftUp;
+        QString greenLeft;
+        QString greenLeftDown;
+        QString greenDown;
+        //Red
+        QString redRightDown;
+        QString redRight;
+        QString redRightUp;
+        QString redUp;
+        QString redLeftUp;
+        QString redLeft;
+        QString redLeftDown;
+        QString redDown;
+    }lstCalibFileNames;
 
     typedef struct customLineParameters{
         bool movible = false;
+        bool rotate = false;
         int orientation; //0:Rotated | 1:Horizontal | 2:Vertical
         int lenght;
         QString name;
@@ -34,6 +137,12 @@
         QString name;
         QString backgroundPath;
         GraphicsView *canvas;
+        int W;//Canvas width
+        int H;//Canvas height
+        //int x;
+        //int y;
+        //int w;
+        //int h;
     }customRectParameters;
 
     typedef struct linearRegresion{
@@ -101,21 +210,27 @@
         int             Sharpness;              // -100 to 100
         int             Contrast;               // -100 to 100
         int             Saturation;             // -100 to 100
-        int             ShutterSpeed;           // microsecs (max 330000)
+        int             ShutterSpeed;           // microsecs (0 - 3000000)
+        int             ShutterSpeedSmall;      // microsecs (1 - 95000)
         int             ISO;                    // 100 to 800
         int             ExposureCompensation;   // -10 to 10
         u_int8_t        Format;                 // 1->raspicam::RASPICAM_FORMAT_GRAY | 2->raspicam::RASPICAM_FORMAT_YUV420
         u_int8_t        Red;                    // 0 to 8 set the value for the RED component of white balance
         u_int8_t        Green;                  // 0 to 8 set the value for the GREEN component of white balance
+        u_int8_t        Preview;                // 0v1: Request a preview
+        u_int8_t        OneShot;                // 0: Video streaming | 1:Snapshot
+        u_int8_t        TriggerTime;            // Seconds before to take a photo
+        u_int8_t        Denoise;                // 0v1: Denoise efx
+        u_int8_t        ColorBalance;           // 0v1: ColorBalance efx
     }structRaspcamSettings;
 
     typedef struct squareAperture{
-        int width;
-        int height;
-        int x1;//Left-Top = 1,1
-        int y1;//Left-Top = 1,1
-        int x2;//Left-Top = 1,1
-        int y2;//Left-Top = 1,1
+        int canvasW;
+        int canvasH;
+        int rectX;//Begin
+        int rectY;//Begin
+        int rectW;//Len
+        int rectH;//Len
     }squareAperture;
 
     typedef struct strReqImg{

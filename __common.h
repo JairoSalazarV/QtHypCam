@@ -10,6 +10,14 @@
 
     #include <highgui.h>
 
+    double funcDet2x2(double **M);
+
+    void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett );
+
+    void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings);
+
+    bool funcGetCalibration(lstDoubleAxisCalibration* calibSettings);
+
     void funcObtSettings( structSettings * lstSettings);
 
     void funcShowMsg( QString title, QString msg );
@@ -36,6 +44,8 @@
 
     QString readAllFile( QString filePath );
 
+    QString readFileParam(QString fileName);
+
     bool funGetSquareXML( QString fileName, squareAperture *squareParam );
 
     QImage* IplImage2QImage(IplImage *iplImg);
@@ -44,11 +54,17 @@
 
     linearRegresion *funcCalcLinReg(float *X);
 
+    linearRegresion* funcLinearRegression(double *X, double *Y, int numItems );
+
     QImage funcRotateImage(QString filePath, float rotAngle);
 
     void funcTransPix(calcAndCropSnap *calStruct , int w, int h, int W, int H);
 
     bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory);
+
+    QString funcRemoveFileNameFromPath( QString Path );
+
+
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);

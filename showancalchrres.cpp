@@ -5,15 +5,17 @@
 #include <__common.h>
 #include <QDir>
 
+
+bool globalIsHoriz;
+calcAndCropSnap globalCalStruct;
+customRect *globalRect;
+
 customLine *globalRedLine;
 customLine *globalGreenLine;
 customLine *globalBlueLine;
 customLine *globalHLine;
 customLine *globalVLine;
 customLine *globalTmpLine;
-bool globalIsHoriz;
-calcAndCropSnap globalCalStruct;
-customRect *globalRect;
 
 showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     QDialog(parent),
@@ -35,7 +37,7 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     //Prepare variables
     //..
     int w, h, W, H;
-    QPixmap tmpPix(_DISPLAY_IMAGE);
+    QPixmap tmpPix(_PATH_DISPLAY_IMAGE);
     W = tmpPix.width();
     H = tmpPix.height();
     w = rect->parameters.canvas->width();
@@ -515,7 +517,7 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     //Save coordinates
     if(saveFile(fileName,coordinates)){
         //Save canvas background path
-        saveFile("./settings/Calib/backgroundPath.hypcam",globalRect->parameters.backgroundPath);
+        saveFile(_PATH_CALBKG,globalRect->parameters.backgroundPath);
         funcShowMsg("Setting saved successfully","");
     }else{
         funcShowMsg("ERROR","Saving setting-file");

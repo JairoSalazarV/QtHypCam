@@ -58,6 +58,8 @@ private slots:
                             unsigned char *tmpFile
                         );
 
+    void funcActivateProgBar();
+
     void on_pbConnect_clicked();
 
     void on_pbCamTurnOn_clicked();
@@ -74,23 +76,23 @@ private slots:
 
     void funcIniCamParam(structRaspcamSettings *raspcamSettings);
 
-    void on_slideBrightness_valueChanged(int value);
+    //void on_slideBrightness_valueChanged(int value);
 
-    void on_slideSharpness_valueChanged(int value);
+    //void on_slideSharpness_valueChanged(int value);
 
-    void on_slideContrast_valueChanged(int value);
+    //void on_slideContrast_valueChanged(int value);
 
-    void on_slideSaturation_valueChanged(int value);
+    //void on_slideSaturation_valueChanged(int value);
 
     void on_slideShuterSpeed_valueChanged(int value);
 
     void on_slideISO_valueChanged(int value);
 
-    void on_slideExpComp_valueChanged(int value);
+    //void on_slideExpComp_valueChanged(int value);
 
-    void on_slideRed_valueChanged(int value);
+    //void on_slideRed_valueChanged(int value);
 
-    void on_slideGreen_valueChanged(int value);
+    //void on_slideGreen_valueChanged(int value);
 
     void on_pbSaveRaspParam_clicked();
 
@@ -145,29 +147,29 @@ private slots:
 
     void on_pbSavePixs_clicked();
 
-    bool on_pb2XY_clicked();
+    //bool on_pb2XY_clicked();
 
-    void on_pbLoadImg_clicked();
+    //void on_pbLoadImg_clicked();
 
     structRaspcamSettings funcFillSnapshotSettings(structRaspcamSettings raspSett );
 
-    void on_pbUpdCut_clicked();
+    //void on_pbUpdCut_clicked();
 
-    void on_slideCutPosX_valueChanged(int xpos);
+    //void on_slideCutPosX_valueChanged(int xpos);
 
-    void funcSetLines();
+    //void funcSetLines();
 
-    void on_slideCutWX_valueChanged(int value);
+    //void on_slideCutWX_valueChanged(int value);
 
-    void on_slideCutWY_valueChanged(int value);
+    //void on_slideCutWY_valueChanged(int value);
 
-    void on_slideCutPosY_valueChanged(int value);
+    //void on_slideCutPosY_valueChanged(int value);
 
-    void on_pbSaveSquare_clicked();
+    //void on_pbSaveSquare_clicked();
 
-    bool funcSaveRect( QString fileName );
+    //bool funcSaveRect( QString fileName );
 
-    void on_pbSaveBigSquare_clicked();
+    //void on_pbSaveBigSquare_clicked();
 
     void on_pbSpecSnapshot_clicked();
 
@@ -212,9 +214,9 @@ private slots:
 
     void funcImgThreshold( int threshold, QImage *tmpImage );
 
-    void on_pbCalSaveTop_clicked();
+    //void on_pbCalSaveTop_clicked();
 
-    void funcUpdateImgView(QImage *tmpImg);
+    //void funcUpdateImgView(QImage *tmpImg);
 
     void on_pbSpecLoadSnap_clicked();
 
@@ -230,6 +232,10 @@ private slots:
 
     void on_actionClear_triggered();
 
+    void clearFreeHandPoligon();
+
+    void clearRectangle();
+
     void on_actionSelection_triggered();
 
     void ResetGraphToolBar( QString toEnable );
@@ -242,9 +248,62 @@ private slots:
 
     void on_pbExpPixs_tabBarClicked(int index);
 
-    void on_slide2AxCalThre_sliderReleased();
+    //void on_slide2AxCalThre_sliderReleased();
 
     void on_actionDoubAxisDiff_triggered();
+
+
+    void on_slideTriggerTime_valueChanged(int value);
+
+    void on_actionRotateImg_triggered();
+
+    void doImgRotation(float angle );
+
+    void DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor color);
+
+    void reloadImage2Display();
+
+    void on_actionLoadCanvas_triggered();
+
+    void on_actionApplyThreshold_triggered();
+
+    void applyThreshol2Scene(QString threshold);
+
+    float getLastAngle();
+
+    void on_actionLoadSquareRectangle_triggered();
+
+    void on_actionLoadRegOfInteres_triggered();
+
+    void on_slideShuterSpeedSmall_valueChanged(int value);
+
+    void on_actionToolPenArea_triggered();
+
+    void mouseCursorHand();
+
+    void mouseCursorCross();
+
+    void mouseCursorWait();
+
+    void mouseCursorReset();
+
+    void on_actionSend_to_XYZ_triggered();
+
+    void on_actionSaveCanvas_triggered();
+
+    void saveCalib(QString fileName);
+
+    bool saveCanvas(GraphicsView *tmpCanvas, QString fileName);
+
+    void on_actionExportPixelsSelected_triggered();
+
+    void on_pbLANConnect_clicked();
+
+    void on_pbLANTestConn_clicked();
+
+    void on_actionGenHypercube_triggered();
+
+    void on_actionValidCal_triggered();
 
 private:
     Ui::MainWindow *ui;

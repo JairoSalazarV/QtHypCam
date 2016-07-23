@@ -231,6 +231,9 @@
         <file>imagenInte/calLeft.png</file>
         <file>imagenInte/calBottom.png</file>
         <file>imagenInte/DoubleAxisDiff.png</file>
+        <file>imagenInte/WiFi.png</file>
+        <file>imagenInte/hypCube.png</file>
+        <file>imagenInte/validCal.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>
@@ -245,5 +248,6 @@
         <file>imagenInte/VerticalLineOff.png</file>
         <file>imagenInte/MouseSelOn.png</file>
         <file>imagenInte/MouseSelOff.png</file>
+        <file>imagenInte/toolSelect.png</file>
     </qresource>
 </RCC>

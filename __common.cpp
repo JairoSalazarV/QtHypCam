@@ -10,6 +10,176 @@
 #include <QFile>
 #include <QTextStream>
 
+#include <QFileInfo>
+
+QString funcRemoveFileNameFromPath( QString Path ){
+    return QFileInfo(Path).absolutePath();
+}
+
+void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
+
+    qDebug() << "W" << calibSettings->W;
+    qDebug() << "H" << calibSettings->H;
+
+    qDebug() << "bkgPath" << calibSettings->bkgPath;
+
+    qDebug() << "bigX" << calibSettings->bigX;
+    qDebug() << "bigY" << calibSettings->bigY;
+    qDebug() << "bigW" << calibSettings->bigW;
+    qDebug() << "bigH" << calibSettings->bigH;
+
+    qDebug() << "squareX" << calibSettings->squareX;
+    qDebug() << "squareY" << calibSettings->squareY;
+    qDebug() << "squareW" << calibSettings->squareW;
+    qDebug() << "squareH" << calibSettings->squareH;
+
+    qDebug() << "squarePixX: " << calibSettings->squarePixX;
+    qDebug() << "squarePixY: " << calibSettings->squarePixY;
+    qDebug() << "squarePixW: " << calibSettings->squarePixW;
+    qDebug() << "squarePixH: " << calibSettings->squarePixH;
+
+    qDebug() << "rightLinRegA: " << calibSettings->rightLinRegA;
+    qDebug() << "rightLinRegB: " << calibSettings->rightLinRegB;
+
+    qDebug() << "upLinRegA: " << calibSettings->upLinRegA;
+    qDebug() << "upLinRegB: " << calibSettings->upLinRegB;
+
+    qDebug() << "leftLinRegA: " << calibSettings->leftLinRegA;
+    qDebug() << "leftLinRegB: " << calibSettings->leftLinRegB;
+
+    qDebug() << "downLinRegA: " << calibSettings->downLinRegA;
+    qDebug() << "downLinRegB: " << calibSettings->downLinRegB;
+
+}
+
+bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
+
+
+    QFile *xmlFile = new QFile(_PATH_CALIBRATION_FILE);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening _PATH_CALIBRATION_FILE");
+        return false;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+                continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="bkgPath" )
+                doubAxisCal->bkgPath = xmlReader->readElementText();
+
+            if( xmlReader->name()=="W" )
+                doubAxisCal->W = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="H" )
+                doubAxisCal->H = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="bigX" )
+                doubAxisCal->bigX = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="bigY" )
+                doubAxisCal->bigY = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="bigW" )
+                doubAxisCal->bigW = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="bigH" )
+                doubAxisCal->bigH = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squareX" )
+                doubAxisCal->squareX = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="squareY" )
+                doubAxisCal->squareY = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="squareW" )
+                doubAxisCal->squareW = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="squareH" )
+                doubAxisCal->squareH = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squarePixX" )
+                doubAxisCal->squarePixX = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixY" )
+                doubAxisCal->squarePixY = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixW" )
+                doubAxisCal->squarePixW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixH" )
+                doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="rightLinRegA" )
+                doubAxisCal->rightLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="rightLinRegB" )
+                doubAxisCal->rightLinRegB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="upLinRegA" )
+                doubAxisCal->upLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="upLinRegB" )
+                doubAxisCal->upLinRegB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="leftLinRegA" )
+                doubAxisCal->leftLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="leftLinRegB" )
+                doubAxisCal->leftLinRegB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="downLinRegA" )
+                doubAxisCal->downLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="downLinRegB" )
+                doubAxisCal->downLinRegB = xmlReader->readElementText().toFloat(0);
+
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("settings.xml Parse Error",xmlReader->errorString());
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    /*
+    qDebug() << "doubAxisCal->bkgPath: " << doubAxisCal->bkgPath;
+
+    qDebug() << "doubAxisCal->W: " << doubAxisCal->W;
+    qDebug() << "doubAxisCal->H: " << doubAxisCal->H;
+
+    qDebug() << "doubAxisCal->bigX: " << doubAxisCal->bigX;
+    qDebug() << "doubAxisCal->bigY: " << doubAxisCal->bigY;
+    qDebug() << "doubAxisCal->bigW: " << doubAxisCal->bigW;
+    qDebug() << "doubAxisCal->bigH: " << doubAxisCal->bigH;
+
+    qDebug() << "doubAxisCal->squareX: " << doubAxisCal->squareX;
+    qDebug() << "doubAxisCal->squareY: " << doubAxisCal->squareY;
+    qDebug() << "doubAxisCal->squareW: " << doubAxisCal->squareW;
+    qDebug() << "doubAxisCal->squareH: " << doubAxisCal->squareH;
+
+    qDebug() << "doubAxisCal->squarePixX: " << doubAxisCal->squarePixX;
+    qDebug() << "doubAxisCal->squarePixY: " << doubAxisCal->squarePixY;
+    qDebug() << "doubAxisCal->squarePixW: " << doubAxisCal->squarePixW;
+    qDebug() << "doubAxisCal->squarePixH: " << doubAxisCal->squarePixH;
+
+    qDebug() << "doubAxisCal->rightLinRegA: " << doubAxisCal->rightLinRegA;
+    qDebug() << "doubAxisCal->rightLinRegB: " << doubAxisCal->rightLinRegB;
+
+    qDebug() << "doubAxisCal->upLinRegA: " << doubAxisCal->upLinRegA;
+    qDebug() << "doubAxisCal->upLinRegB: " << doubAxisCal->upLinRegB;
+
+    qDebug() << "doubAxisCal->rightLinRegA: " << doubAxisCal->rightLinRegA;
+    qDebug() << "doubAxisCal->rightLinRegB: " << doubAxisCal->rightLinRegB;
+
+    qDebug() << "doubAxisCal->leftLinRegA: " << doubAxisCal->leftLinRegA;
+    qDebug() << "doubAxisCal->leftLinRegB: " << doubAxisCal->leftLinRegB;
+
+    qDebug() << "doubAxisCal->downLinRegA: " << doubAxisCal->downLinRegA;
+    qDebug() << "doubAxisCal->downLinRegA: " << doubAxisCal->downLinRegB;
+    */
+
+
+    return true;
+}
 
 void funcTransPix( calcAndCropSnap *calStruct, int w, int h, int W, int H ){
     //Extrapolate dimensions
@@ -265,6 +435,13 @@ QString readAllFile( QString filePath ){
     return tmpStream.readAll();
 }
 
+QString readFileParam(QString fileName){
+    QString tmpFileContain = readAllFile(fileName);
+    tmpFileContain = tmpFileContain.trimmed();
+    tmpFileContain.replace("\n","");
+    return tmpFileContain;
+}
+
 bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
 
     QFile *xmlFile = new QFile( fileName );
@@ -284,27 +461,27 @@ bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement) {
 
-            if( xmlReader->name()=="width" )
-                squareParam->width = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="W" )
+                squareParam->canvasW = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="height" )
-                squareParam->height = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="H" )
+                squareParam->canvasH = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="x1" )
-                squareParam->x1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x" )
+                squareParam->rectX = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="y1" )
-                squareParam->y1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y" )
+                squareParam->rectY = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="x2" )
-                squareParam->x2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="w" )
+                squareParam->rectW = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="y2" )
-                squareParam->y2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="h" )
+                squareParam->rectH = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
-        funcShowMsg("raspcamSettings.xml Parse Error",xmlReader->errorString());
+        funcShowMsg("Parse Error",xmlReader->errorString());
         return false;
     }
     xmlReader->clear();
@@ -355,6 +532,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Saturation = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ShutterSpeed" )
                 raspcamSettings->ShutterSpeed = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="ShutterSpeedSmall" )
+                raspcamSettings->ShutterSpeedSmall = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ISO" )
                 raspcamSettings->ISO = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ExposureCompensation" )
@@ -365,6 +544,16 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Red = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Green" )
                 raspcamSettings->Green = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Denoise" )
+                raspcamSettings->Denoise = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="ColorBalance" )
+                raspcamSettings->ColorBalance = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Preview" )
+                raspcamSettings->Preview = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="OneShot" )
+                raspcamSettings->OneShot = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TriggerTime" )
+                raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -632,13 +821,44 @@ linearRegresion *funcCalcLinReg( float *X ){
     return linReg;
 }
 
+linearRegresion* funcLinearRegression( double *X, double *Y, int numItems ){
+    linearRegresion *linReg = (linearRegresion*)malloc(sizeof(linearRegresion));
+    double mX=0.0, mY=0.0, aux1=0.0, aux2=0.0;
+    int i;
+    //Mean
+    for(i=0;i<numItems;i++)
+    {
+        mX += X[i];
+        mY += Y[i];
+    }
+    mX /= (double)numItems;
+    mY /= (double)numItems;
+    //funcShowMsg("mX,mY",QString::number(mX)+", "+QString::number(mY));
+    //
+    for(i=0;i<numItems;i++)
+    {
+        aux1 += (X[i]-mX)*(Y[i]-mY);
+        aux2 += (X[i]-mX)*(X[i]-mX);
+    }    
+    linReg->b   = aux1 / aux2;
+    linReg->a   = mY-(linReg->b*mX);
+
+    //printf("linReg->b: %lf \n",linReg->b);
+    //printf("aux1: %lf \n",aux1);
+    //printf("aux2: %lf \n",aux2);
+    //printf("mX: %lf \n",mX);
+    //printf("mY: %lf \n",mY);
+
+    //
+    return linReg;
+}
 
 
 bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory){
     QFile DummyFile(directory);
     if(DummyFile.open(QIODevice::WriteOnly)) {
         qint64 bytesWritten = DummyFile.write(reinterpret_cast<const char*>(dataPtr), datasize);
-        if (bytesWritten < datasize) {
+        if (bytesWritten < (qint64)datasize) {
             return false;
         }
         DummyFile.close();
@@ -646,3 +866,24 @@ bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directo
     return true;
 }
 
+
+
+void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett ){
+    diffPix->rightY = (float)calSett->rightLinRegA  + ( (float)calSett->rightLinRegB    * (float)diffPix->x );
+    diffPix->upY    = (float)calSett->upLinRegA     + ( (float)calSett->upLinRegB       * (float)diffPix->x );
+    diffPix->leftY  = (float)calSett->leftLinRegA   + ( (float)calSett->leftLinRegB     * (float)diffPix->x );
+    diffPix->downY  = (float)calSett->downLinRegA   + ( (float)calSett->downLinRegB     * (float)diffPix->x );
+
+    qDebug() << "inside: funcSourcePixToDiffPix";
+    qDebug() << "x: " << diffPix->x;
+
+    qDebug() << "calSett->rightLinRegA: " << calSett->rightLinRegA;
+    qDebug() << "calSett->rightLinRegB: " << calSett->rightLinRegB;
+    qDebug() << "calSett->rightY: " << diffPix->rightY;
+
+}
+
+
+double funcDet2x2(double **M){
+    return (M[0][0] * M[1][1]) - (M[1][0]*M[0][1]);
+}

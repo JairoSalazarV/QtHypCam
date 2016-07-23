@@ -21,7 +21,13 @@ SOURCES += main.cpp\
     selcolor.cpp \
     customrect.cpp \
     showancalchrres.cpp \
-    gencalibxml.cpp
+    gencalibxml.cpp \
+    rotationfrm.cpp \
+    recparamfrm.cpp \
+    generatehypercube.cpp \
+    validatecalibration.cpp \
+    customQMatrix4x3.cpp \
+    customQMatrix3x3.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -32,12 +38,22 @@ HEADERS  += mainwindow.h \
     selcolor.h \
     customrect.h \
     showancalchrres.h \
-    gencalibxml.h
+    gencalibxml.h \
+    rotationfrm.h \
+    recparamfrm.h \
+    generatehypercube.h \
+    validatecalibration.h \
+    customQMatrix4x3.h \
+    customQMatrix3x3.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
     showancalchrres.ui \
-    gencalibxml.ui
+    gencalibxml.ui \
+    rotationfrm.ui \
+    recparamfrm.ui \
+    generatehypercube.ui \
+    validatecalibration.ui
 
 RESOURCES += \
     lstImgs.qrc
