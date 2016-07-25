@@ -12,6 +12,7 @@ public:
     customLineParameters parameters;
     customLine(QPoint p1, QPoint p2, QPen pen);
     QAction *showContMenuLine(QPoint pos);
+    void refreshTooltip();
 
 protected:    
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);

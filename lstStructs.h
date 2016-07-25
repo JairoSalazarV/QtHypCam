@@ -36,6 +36,21 @@
     #define _PATH_REGION_OF_INTERES         "./XML/regionOfInteres.xml"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
+    #define _PATH_CALIB                     "./settings/Calib/"
+    #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
+
+    #define _PATH_LIMIT_R                     "./settings/Calib/limR.hypcam"
+    #define _PATH_LIMIT_U                     "./settings/Calib/limU.hypcam"
+    #define _PATH_LIMIT_L                     "./settings/Calib/limL.hypcam"
+    #define _PATH_LIMIT_D                     "./settings/Calib/limD.hypcam"
+
+    #define _RIGHT  1
+    #define _UP     2
+    #define _LEFT   3
+    #define _DOWN   4
+
+    #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
+    #define _ERROR_FILE                     "~UnknowError"
 
 
 

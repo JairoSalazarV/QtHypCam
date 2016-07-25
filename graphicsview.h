@@ -26,6 +26,12 @@ class GraphicsView : public QGraphicsView
 
         void identifyMaximumWavelenght(QPoint pos, int type);
 
+        void save(QString fileName);
+
+        void disableScrolls();
+
+        void enableScrolls();
+
         void funcDisplayPixelProperties(QMouseEvent *e);
 
         void funcTestCalibration();

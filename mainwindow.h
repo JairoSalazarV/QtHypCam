@@ -305,6 +305,8 @@ private slots:
 
     void on_actionValidCal_triggered();
 
+    void on_actionValCal_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

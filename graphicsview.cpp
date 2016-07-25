@@ -41,6 +41,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if(request->text()=="Display information")
                 funcDisplayPixelProperties(e);
 
+            if(request->text()=="Save view")
+                this->save(_PATH_CUSTOM_GV_DEFAULT);
+
             if(request->text()=="By wavelenght")
                 funcTestCalibration();
 
@@ -120,18 +123,16 @@ void GraphicsView::funcShowWavelenLines(int type){
     //Calculates line positions
     //..
     int rS, rX, gX, bX, offset;
-    offset = 140;
+    offset = 0;
     rS = round( a + (b*0.0) );//it is a
     rX = round( a + (b*(float)_RED_WAVELENGHT) );
     gX = round( a + (b*(float)_GREEN_WAVELENGHT) );
     bX = round( a + (b*(float)_BLUE_WAVELENGHT) );
 
-    if(offset!=0){
-        rS += offset;
-        rX += offset;
-        gX += offset;
-        bX += offset;
-    }
+    rS += offset;
+    rX += offset;
+    gX += offset;
+    bX += offset;
 
     //bX = 927;
     //gX = 981;
@@ -241,6 +242,24 @@ float GraphicsView::funcCalcWavelen( int pixX, int type ){
     return ((float)pixX - a) / b;
 }
 
+void GraphicsView::save(QString fileName){
+    this->disableScrolls();
+    QPixmap tmpPix = QPixmap::grabWidget(this);
+    tmpPix.save(fileName);
+    this->enableScrolls();
+    funcShowMsg(" ","GV seved successfully");
+}
+
+void GraphicsView::disableScrolls(){
+    this->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    this->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+}
+
+void GraphicsView::enableScrolls(){
+    this->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+    this->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
+}
+
 void GraphicsView::funcDisplayPixelProperties(QMouseEvent *e)
 {
     //Get the position clicked into scene
@@ -299,6 +318,7 @@ QAction *GraphicsView::showContextMenuLine(QPoint pos){
 
     //xmenu->addAction( "By wavelenght" );
     xmenu->addAction( "Display information" );
+    xmenu->addAction( "Save view" );
 
 
 

@@ -6,8 +6,10 @@
 #include <lstStructs.h>
 #include <QDesktopServices>
 #include <customQMatrix4x3.h>
+#include <customQMatrix3x3.h>
 
-//#include <QMatrix4x4>
+#include <QMatrix4x4>
+#include <QVector4D>
 
 bool isExportable = false;
 
@@ -359,29 +361,129 @@ void genCalibXML::on_pbGenCal_clicked()
         //..
         tmpOffsetX = abs(sourceX - auxSqX);
         tmpOffsetY = abs(sourceY - auxSqY);
-        customQMatrix4x3 rDoubLinReg;
-
-        QVector3D tmpVal;
-
+        customQMatrix4x4 rightMultLinReg;
+        QVector4D tmpVal;
         //Source
         tmpVal.setX(1);
         tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
         tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        rDoubLinReg.setRow(0,tmpVal);
+        tmpVal.setW(0.0);
+        rightMultLinReg.setRow(0,tmpVal);
         //Blue
         tmpVal.setY(calibPoints.blueRight.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
         tmpVal.setZ(calibPoints.blueRight.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        rDoubLinReg.setRow(1,tmpVal);
+        tmpVal.setW((qreal)_BLUE_WAVELENGHT);        
+        rightMultLinReg.setRow(1,tmpVal);
         //Green
         tmpVal.setY(calibPoints.greenRight.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
         tmpVal.setZ(calibPoints.greenRight.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        rDoubLinReg.setRow(2,tmpVal);
+        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
+        rightMultLinReg.setRow(2,tmpVal);
         //Red
         tmpVal.setY(calibPoints.redRight.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
         tmpVal.setZ(calibPoints.redRight.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        rDoubLinReg.setRow(3,tmpVal);
-        //It calculates linear regression
-        rDoubLinReg.isMultLinReg();
+        tmpVal.setW((qreal)_RED_WAVELENGHT);
+        rightMultLinReg.setRow(3,tmpVal);
+        //It calculates multi linear regression
+        customQMatrix4x3 rightMultiLinRegRes = mulLinRegXYW(rightMultLinReg);
+        rightMultiLinRegRes.print("rightMultiLinRegRes: ");
+
+        //Up
+        //..
+        int sqLeftDownCornerX, sqLeftDownCornerY;
+        sqLeftDownCornerX = auxSqX;
+        sqLeftDownCornerY = auxSqY + calibPoints.squareH;
+        tmpOffsetX = abs(sqLeftDownCornerX - sourceX);
+        tmpOffsetY = abs(sqLeftDownCornerY - sourceY);
+        customQMatrix4x4 upMultLinReg;
+        //Source
+        tmpVal.setX(1);
+        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
+        tmpVal.setW(0.0);
+        upMultLinReg.setRow(0,tmpVal);
+        //Blue
+        tmpVal.setY(calibPoints.blueUp.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.blueUp.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
+        tmpVal.setW((qreal)_BLUE_WAVELENGHT);
+        upMultLinReg.setRow(1,tmpVal);
+        //Green
+        tmpVal.setY(calibPoints.greenUp.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.greenUp.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
+        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
+        upMultLinReg.setRow(2,tmpVal);
+        //Red
+        tmpVal.setY(calibPoints.redUp.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.redUp.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
+        tmpVal.setW((qreal)_RED_WAVELENGHT);
+        upMultLinReg.setRow(3,tmpVal);
+        //It calculates multi linear regression
+        customQMatrix4x3 upMultiLinRegRes = mulLinRegXYW(upMultLinReg);
+        upMultiLinRegRes.print("upMultiLinRegRes: ");
+
+        //Left
+        //..
+        int sqRightUpCornerX, sqRightUpCornerY;
+        sqRightUpCornerX = auxSqX + calibPoints.squareW;
+        sqRightUpCornerY = auxSqY;
+        tmpOffsetX = abs(sqRightUpCornerX - sourceX);
+        tmpOffsetY = abs(sourceY - sqRightUpCornerY);
+        customQMatrix4x4 leftMultLinReg;
+        //Source
+        tmpVal.setX(1);
+        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW(0.0);
+        leftMultLinReg.setRow(0,tmpVal);
+        //Blue
+        tmpVal.setY(calibPoints.blueLeft.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.blueLeft.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW((qreal)_BLUE_WAVELENGHT);
+        leftMultLinReg.setRow(1,tmpVal);
+        //Green
+        tmpVal.setY(calibPoints.greenLeft.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.greenLeft.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
+        leftMultLinReg.setRow(2,tmpVal);
+        //Red
+        tmpVal.setY(calibPoints.redLeft.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.redLeft.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW((qreal)_RED_WAVELENGHT);
+        leftMultLinReg.setRow(3,tmpVal);
+        //It calculates multi linear regression
+        customQMatrix4x3 leftMultiLinRegRes = mulLinRegXYW(leftMultLinReg);
+        leftMultiLinRegRes.print("leftMultiLinRegRes: ");
+
+        //Down
+        //..
+        tmpOffsetX = abs(sourceX - auxSqX);
+        tmpOffsetY = abs(sourceY - auxSqY);
+        customQMatrix4x4 downMultLinReg;
+        //Source
+        tmpVal.setX(1);
+        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW(0.0);
+        downMultLinReg.setRow(0,tmpVal);
+        //Blue
+        tmpVal.setY(calibPoints.blueDown.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.blueDown.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW((qreal)_BLUE_WAVELENGHT);
+        downMultLinReg.setRow(1,tmpVal);
+        //Green
+        tmpVal.setY(calibPoints.greenDown.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.greenDown.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
+        downMultLinReg.setRow(2,tmpVal);
+        //Red
+        tmpVal.setY(calibPoints.redDown.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
+        tmpVal.setZ(calibPoints.redDown.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
+        tmpVal.setW((qreal)_RED_WAVELENGHT);
+        downMultLinReg.setRow(3,tmpVal);
+        //It calculates multi linear regression
+        customQMatrix4x3 downMultiLinRegRes = mulLinRegXYW(downMultLinReg);
+        downMultiLinRegRes.print("downMultiLinRegRes: ");
+
 
         /*
 
@@ -583,6 +685,73 @@ void genCalibXML::on_pbGenCal_clicked()
         funcShowMsg("Lack","Calibrations points incomplete");
     }
 
+}
+
+customQMatrix4x3 genCalibXML::mulLinRegXYW(customQMatrix4x4 X)
+{
+    //X={1,x,y,wavelength}
+    QVector4D tmpY;
+    QVector3D tmpBeta;
+    customQMatrix4x3 mulLinReg;
+    customQMatrix4x3 tmpX;
+
+    //Wavelength
+    //..
+    tmpX.setRow(0,X.getRowCells(1,1,2,3));
+    tmpX.setRow(1,X.getRowCells(2,1,2,3));
+    tmpX.setRow(2,X.getRowCells(3,1,2,3));
+    tmpX.setRow(3,X.getRowCells(4,1,2,3));
+    tmpY = X.getCol1Index(4);
+    //tmpX.print("tmpX wave:");
+    tmpBeta = multipleLinearRegression(tmpX, tmpY);
+    mulLinReg.setRow(0,tmpBeta);
+    //X-axis
+    //..
+    tmpX.setRow(0,X.getRowCells(1,1,3,4));
+    tmpX.setRow(1,X.getRowCells(2,1,3,4));
+    tmpX.setRow(2,X.getRowCells(3,1,3,4));
+    tmpX.setRow(3,X.getRowCells(4,1,3,4));
+    tmpY = X.getCol1Index(2);
+    //tmpX.print("tmpX x:");
+    tmpBeta = multipleLinearRegression(tmpX, tmpY);
+    mulLinReg.setRow(1,tmpBeta);
+    //Y-axis
+    //..
+    tmpX.setRow(0,X.getRowCells(1,1,2,4));
+    tmpX.setRow(1,X.getRowCells(2,1,2,4));
+    tmpX.setRow(2,X.getRowCells(3,1,2,4));
+    tmpX.setRow(3,X.getRowCells(4,1,2,4));
+    tmpY = X.getCol1Index(3);
+    //tmpX.print("tmpX y:");
+    tmpBeta = multipleLinearRegression(tmpX, tmpY);
+    mulLinReg.setRow(2,tmpBeta);
+    //XY Simple Linear Regression
+    //..
+    double slrX[4], slrY[4];
+    slrX[0] = X.getCell(1,2);   slrY[0] = X.getCell(1,3);
+    slrX[1] = X.getCell(2,2);   slrY[1] = X.getCell(2,3);
+    slrX[2] = X.getCell(3,2);   slrY[2] = X.getCell(3,3);
+    slrX[3] = X.getCell(4,2);   slrY[3] = X.getCell(4,3);
+    linearRegresion tmpSlr = funcLinearRegression(slrX,slrY,4);
+    tmpBeta.setX(tmpSlr.a);
+    tmpBeta.setY(tmpSlr.b);
+    tmpBeta.setZ(0);
+    mulLinReg.setRow(3,tmpBeta);
+
+    //Finishes
+    return mulLinReg;
+}
+
+QVector3D genCalibXML::multipleLinearRegression( customQMatrix4x3 X, QVector4D y )
+{
+    QVector3D B;
+    QMatrix3x4 Xt = X.transposed();//X'
+    customQMatrix3x3 Xprod;
+    Xprod = matMultiply(&Xt,&X);//(X'X)
+    Xprod = Xprod.inverted();//(X'X)-1
+    QMatrix3x4 H = matMultiply(&Xprod,&Xt);//H = (X'X)-1 X'
+    B = matMultiply(&H,&y);
+    return B;
 }
 
 lstCalibFileNames genCalibXML::fillLstCalibPoints(){

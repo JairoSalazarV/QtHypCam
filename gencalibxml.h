@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <__common.h>
 #include <customQMatrix4x3.h>
+#include <customQMatrix4x4.h>
 
 namespace Ui {
 class genCalibXML;
@@ -83,8 +84,11 @@ private slots:
 
     void on_pbGenCal_clicked();
 
-    lstCalibFileNames fillLstCalibPoints();
+    customQMatrix4x3 mulLinRegXYW(customQMatrix4x4 X);
 
+    QVector3D multipleLinearRegression( customQMatrix4x3 X, QVector4D y );
+
+    lstCalibFileNames fillLstCalibPoints();
 
     void on_pbFiles_clicked();
 

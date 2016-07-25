@@ -23,6 +23,8 @@ public:
 
     bool saveSquareAs(QString fileName);
 
+    void refreshTooltip();
+
 public slots:
     QAction *showContMenuLine(QPoint pos);
 

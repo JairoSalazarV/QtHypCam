@@ -1,8 +1,24 @@
 #include "customQMatrix4x3.h"
-#include "customQMatrix3x3.h"
+//#include "customQMatrix3x3.h"
+
+
+/*
+customQMatrix4x3::customQMatrix4x3(){
+
+}
+*/
+
+qreal customQMatrix4x3::getCell(int r, int c){//1 index
+    return this->operator ()(c-1,r-1);
+}
+
+void customQMatrix4x3::setCell(int r, int c, qreal val){//1 index
+    this->operator ()(c-1,r-1) = val;
+}
 
 void customQMatrix4x3::setRow(int index, QVector3D values)
 {
+    //0-index
     this->operator ()(0,index) = values.x();
     this->operator ()(1,index) = values.y();
     this->operator ()(2,index) = values.z();
@@ -17,30 +33,14 @@ QVector3D customQMatrix4x3::getRow(int index)
     return row;
 }
 
-
-QMatrix3x3 customQMatrix4x3::det3x3()
+QVector4D customQMatrix4x3::getCol1Index(int index)
 {
-
-}
-
-QMatrix3x3 customQMatrix4x3::inver3x3()
-{
-
-}
-
-customQMatrix3x3 customQMatrix4x3::multiply(QMatrix3x4 *M1, customQMatrix4x3 *M2)
-{
-    customQMatrix3x3 auxP;
-    int i, j, c;
-    for(j=0;j<3;j++){
-        for(i=0;i<3;i++){
-            auxP.operator ()(j,i) = 0;
-            for(c=0;c<4;c++){
-                auxP.operator ()(j,i) += M1->operator ()(c,i) * M2->operator ()(j,c);
-            }
-        }
-    }
-    return auxP;
+    QVector4D row;
+    row.setX( getCell(1,index) );
+    row.setX( getCell(2,index) );
+    row.setX( getCell(3,index) );
+    row.setX( getCell(4,index) );
+    return row;
 }
 
 
@@ -72,11 +72,10 @@ void customQMatrix4x3::print(QString title)
 void customQMatrix4x3::isMultLinReg()
 {
     //X(X'X)-1X'
-    this->print("Original");
-    QMatrix3x4 auxT = this->transposed();//X'
-    customQMatrix3x3 auxP = this->multiply( &auxT, this );
-    auxP.print("Product");
-    auxP = auxP.inverted();
+    //QMatrix3x4 auxT = this->transposed();//X'
+    //customQMatrix3x3 auxP = this->multiply3x4x3( &auxT, this );//(X'X)
+    //auxP = auxP.inverted();//(X'X)-1
+
 
 
 

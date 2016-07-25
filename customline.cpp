@@ -12,6 +12,13 @@ customLine::customLine(QPoint p1, QPoint p2, QPen pen)
     setFlag(QGraphicsItem::ItemIsFocusable);
     //setAcceptHoverEvents(true);
     //setAcceptTouchEvents(true);
+    refreshTooltip();
+}
+
+void customLine::refreshTooltip(){
+    QString tt;
+    tt.append("("+ QString::number(this->x()) +","+ QString::number(this->y()) +")");
+    this->setToolTip(tt);
 }
 
 void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
@@ -106,4 +113,5 @@ void customLine::keyPressEvent(QKeyEvent *event){
         }
         update();
     }
+    refreshTooltip();
 }

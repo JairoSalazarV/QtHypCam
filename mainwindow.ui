@@ -947,6 +947,7 @@ QSlider::handle:horizontal {
    <addaction name="actionLoadCanvas"/>
    <addaction name="actionDrawToolbar"/>
    <addaction name="actionDoubAxisDiff"/>
+   <addaction name="actionValCal"/>
    <addaction name="actionValidCal"/>
    <addaction name="actionGenHypercube"/>
   </widget>
@@ -1181,6 +1182,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Validate calibration</string>
+   </property>
+  </action>
+  <action name="actionValCal">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/ojo.png</normaloff>:/new/icons/imagenInte/ojo.png</iconset>
+   </property>
+   <property name="text">
+    <string>valCal</string>
+   </property>
+   <property name="toolTip">
+    <string>Check calibration points and lines</string>
    </property>
   </action>
  </widget>

@@ -38,6 +38,7 @@
 #include <recparamfrm.h>
 //#include <generatehypercube.h>
 #include <validatecalibration.h>
+#include <selwathtocheck.h>
 
 
 
@@ -86,7 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->actionValidCal->trigger();
+    //ui->actionValidCal->trigger();
 
     funcObtSettings( lstSettings );
 
@@ -2042,17 +2043,23 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     calStruct.y2 = e->y();
     ui->pbSpecCut->setEnabled(true);
     qDeleteAll(tmpCanvas->scene()->items());
-    int x1, y1, x2, y2;
+    int x1, y1, x2, y2, w, h;
     x1 = (calStruct.x1<=e->x())?calStruct.x1:e->x();
     x2 = (calStruct.x1>=e->x())?calStruct.x1:e->x();
     y1 = (calStruct.y1<=e->y())?calStruct.y1:e->y();
     y2 = (calStruct.y1>=e->y())?calStruct.y1:e->y();
-    customRect* tmpRect = new customRect(QPoint(x1,y1),QPoint(x2-x1,y2-y1));
+    w  = abs(x2-x1);
+    h  = abs(y2-y1);
+    QPoint p1, p2;
+    p1.setX(x1);   p1.setY(y1);
+    p2.setX(w);    p2.setY(h);
+    customRect* tmpRect = new customRect(p1,p2);
+    tmpRect->mapToScene(p1.x(),p1.y(),p2.x(),p2.y());
     //customRect* tmpRect = new customRect(this);
-    tmpRect->parameters.W = canvasCalib->width();
-    tmpRect->parameters.H = canvasCalib->height();
+    tmpRect->parameters.W = canvasCalib->scene()->width();
+    tmpRect->parameters.H = canvasCalib->scene()->height();
     tmpRect->setPen( QPen(Qt::red) );
-    tmpCanvas->scene()->addItem(tmpRect);
+    tmpCanvas->scene()->addItem(tmpRect);    
     tmpRect->setFocus();
     tmpRect->parameters.movible = true;
     tmpRect->parameters.canvas = tmpCanvas;
@@ -2978,11 +2985,9 @@ void MainWindow::DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor col
 void MainWindow::reloadImage2Display(){
     //Load image to display
     QPixmap pix(_PATH_DISPLAY_IMAGE);
-    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
-    //qDebug() << "width: "<< pix.width();
-    //qDebug() << "height: "<< pix.height();
+    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);    
     //It creates the scene to be loaded into Layout
-    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());    
     canvasCalib->setBackgroundBrush(QBrush(Qt::black));
     canvasCalib->setBackgroundBrush(pix);    
     canvasCalib->setScene( sceneCalib );
@@ -2990,6 +2995,10 @@ void MainWindow::reloadImage2Display(){
     canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     canvasCalib->update();
+    //qDebug() << "CanvasSceneW: "<< canvasCalib->scene()->width();
+    //qDebug() << "CanvasSceneH: "<< canvasCalib->scene()->height();
+    //qDebug() << "CanvasW: "<< canvasCalib->width();
+    //qDebug() << "CanvasH: "<< canvasCalib->height();
 }
 
 void MainWindow::on_actionLoadCanvas_triggered()
@@ -3300,4 +3309,11 @@ void MainWindow::on_actionValidCal_triggered()
     validateCalibration *frmValCal = new validateCalibration(this);
     frmValCal->setModal(false);
     frmValCal->show();
+}
+
+void MainWindow::on_actionValCal_triggered()
+{
+    selWathToCheck *tmpFrm = new selWathToCheck(this);
+    tmpFrm->setModal(false);
+    tmpFrm->show();
 }

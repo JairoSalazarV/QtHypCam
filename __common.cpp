@@ -12,6 +12,12 @@
 
 #include <QFileInfo>
 
+#include <customQMatrix3x3.h>
+#include <customQMatrix4x3.h>
+
+#include <QDesktopServices>
+#include <QFileDialog>
+
 QString funcRemoveFileNameFromPath( QString Path ){
     return QFileInfo(Path).absolutePath();
 }
@@ -430,9 +436,34 @@ QImage funcRotateImage(QString filePath, float rotAngle){
 
 QString readAllFile( QString filePath ){
     QFile tmpFile(filePath);
-    tmpFile.open(QIODevice::ReadOnly);
-    QTextStream tmpStream(&tmpFile);
-    return tmpStream.readAll();
+    if( tmpFile.exists() )
+    {
+        tmpFile.open(QIODevice::ReadOnly);
+        QTextStream tmpStream(&tmpFile);
+        return tmpStream.readAll();
+    }
+    else
+    {
+        return _ERROR_FILE_NOTEXISTS;
+    }
+    return _ERROR_FILE;
+}
+
+int fileIsValid(QString fileContain)
+{
+    if( fileContain.isEmpty() )
+    {
+        return -1;
+    }
+    if( fileContain.contains(_ERROR_FILE) )
+    {
+        return -2;
+    }
+    if( fileContain.contains(_ERROR_FILE_NOTEXISTS) )
+    {
+        return -3;
+    }
+    return 1;
 }
 
 QString readFileParam(QString fileName){
@@ -640,6 +671,20 @@ void funcShowMsg(QString title, QString msg){
     yesNoMsgBox.exec();
 }
 
+void funcShowFileError(int error, QString fileName){
+    switch(error){
+        case -1:
+            funcShowMsg("ERROR","Empty file: " + fileName);
+            break;
+        case -2:
+            funcShowMsg("ERROR","Unknow error in file: " + fileName);
+            break;
+        case -3:
+            funcShowMsg("ERROR","File does not exists: " + fileName);
+            break;
+    }
+}
+
 void funcPrintFirst(int n, int max, char *buffer){
   QString Items;
   int i;
@@ -821,8 +866,18 @@ linearRegresion *funcCalcLinReg( float *X ){
     return linReg;
 }
 
-linearRegresion* funcLinearRegression( double *X, double *Y, int numItems ){
-    linearRegresion *linReg = (linearRegresion*)malloc(sizeof(linearRegresion));
+linearRegresion funcLinearRegression( double *X, double *Y, int numItems ){
+
+    if(false)
+    {
+        for(int i=0; i<numItems; i++)
+        {
+            printf("%lf, %lf\n",X[i],Y[i]);
+        }
+    }
+
+
+    linearRegresion linReg;
     double mX=0.0, mY=0.0, aux1=0.0, aux2=0.0;
     int i;
     //Mean
@@ -840,8 +895,8 @@ linearRegresion* funcLinearRegression( double *X, double *Y, int numItems ){
         aux1 += (X[i]-mX)*(Y[i]-mY);
         aux2 += (X[i]-mX)*(X[i]-mX);
     }    
-    linReg->b   = aux1 / aux2;
-    linReg->a   = mY-(linReg->b*mX);
+    linReg.b   = aux1 / aux2;
+    linReg.a   = mY-(linReg.b*mX);
 
     //printf("linReg->b: %lf \n",linReg->b);
     //printf("aux1: %lf \n",aux1);
@@ -887,3 +942,83 @@ void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSe
 double funcDet2x2(double **M){
     return (M[0][0] * M[1][1]) - (M[1][0]*M[0][1]);
 }
+
+
+customQMatrix3x3 matMultiply(QMatrix3x4 *M1, QMatrix4x3 *M2)
+{
+    int M, N, C;
+    M = 3;
+    C = 4;
+    N = 3;
+    customQMatrix3x3 auxP;
+    int i, j, c;
+    for(j=0;j<M;j++)
+    {
+        for(i=0;i<N;i++)
+        {
+            auxP.operator ()(j,i) = 0;
+            for(c=0;c<C;c++)
+            {
+                auxP.operator ()(j,i) += M1->operator ()(c,i) * M2->operator ()(j,c);
+            }
+        }
+    }
+    return auxP;
+}
+
+QMatrix3x4 matMultiply(customQMatrix3x3 *M1, QMatrix3x4 *M2)
+{
+    //MxC x CxN
+    int M, N, C;
+    M = 3;
+    C = 3;
+    N = 4;
+    QMatrix3x4 auxP;
+    int i, j, c;
+    for(i=0;i<M;i++)//Final Row
+    {
+        for(j=0;j<N;j++)//Final Col
+        {
+            auxP.operator ()(j,i) = 0;
+            for(c=0;c<C;c++)//Calc col
+            {
+                auxP.operator ()(j,i) += M1->operator ()(c,i) * M2->operator ()(j,c);
+            }
+        }
+    }
+    return auxP;
+}
+
+QVector3D matMultiply(QMatrix3x4 *M1, QVector4D *M2)
+{
+    QVector3D res;
+    int items;
+    double acum;
+    items = 3;
+    for( int i=0; i<items; i++ )
+    {
+        acum = 0.0;
+        acum += (M1->operator ()(0,i) * M2->x());
+        acum += (M1->operator ()(1,i) * M2->y());
+        acum += (M1->operator ()(2,i) * M2->z());
+        acum += (M1->operator ()(3,i) * M2->w());
+        if(i==0)res.setX(acum);
+        if(i==1)res.setY(acum);
+        if(i==2)res.setZ(acum);
+    }
+    return res;
+}
+
+
+void funcOpenFolder(QString path){
+    QDesktopServices::openUrl(QUrl(path));
+}
+
+
+
+
+
+
+
+
+

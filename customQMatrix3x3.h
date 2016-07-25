@@ -2,14 +2,20 @@
 #define CUSTOMQMATRIX3x3_H
 
 
-#include <QMatrix3x3>
+//#include <QMatrix3x3>
+//#include <QMatrix4x3>
 #include <QVector3D>
-#include <QGenericMatrix>
+//#include <QGenericMatrix>
+#include <QMatrix2x2>
+//#include <__common.h>
+//#include <QMatrix3x4>
+//#include "customQMatrix4x3.h"
+
+
 
 class customQMatrix3x3 : public QMatrix3x3
 {
     public:
-        //explicit customQGenericMatrix();
 
         qreal getCell(int r, int c);
 

@@ -42,8 +42,13 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     H = tmpPix.height();
     w = rect->parameters.canvas->width();
     h = rect->parameters.canvas->height();
+    //qDebug() << "Canvas w: " << w;
+    //qDebug() << "Canvas h: " << h;
+    //qDebug() << "x1: " << globalCalStruct.x1;
+    //qDebug() << "y1: " << globalCalStruct.y1;
+    //qDebug() << "x2: " << globalCalStruct.x2;
+    //qDebug() << "y2: " << globalCalStruct.y2;
     //Extrapolate dimensions
-
     globalCalStruct.X1 = round( ((float)W/(float)w)*(float)globalCalStruct.x1 );
     globalCalStruct.Y1 = round( ((float)H/(float)h)*(float)globalCalStruct.y1 );
     globalCalStruct.X2 = round( ((float)W/(float)w)*(float)globalCalStruct.x2 );
@@ -84,6 +89,9 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
 
     //Update lines
     //..
+    globalRedLine   = new customLine(QPoint(0,0),QPoint(0,0),QPen(Qt::red));
+    globalGreenLine = new customLine(QPoint(0,0),QPoint(0,0),QPen(Qt::green));
+    globalBlueLine  = new customLine(QPoint(0,0),QPoint(0,0),QPen(Qt::blue));
     drawSensitivities();
 
 }
@@ -179,6 +187,15 @@ void showAnCalChrRes::updColSenVert(){
 
     //Draw RGB peaks
     //..
+    //Draw RGB peaks
+    //..
+    addLine2CanvasInPos(false,yR,Qt::red);
+    globalRedLine = globalTmpLine;
+    addLine2CanvasInPos(false,yG,Qt::green);
+    globalGreenLine = globalTmpLine;
+    addLine2CanvasInPos(false,yB,Qt::blue);
+    globalBlueLine = globalTmpLine;
+    /*
     QPoint p1,p2;
     p1.setY(0);
     p1.setX(0);
@@ -203,6 +220,9 @@ void showAnCalChrRes::updColSenVert(){
     globalRedLine = redPeak;
     globalGreenLine = greenPeak;
     globalBlueLine = bluePeak;
+    */
+
+
 }
 
 
@@ -295,6 +315,13 @@ void showAnCalChrRes::updColSenHoriz(){
 
     //Draw RGB peaks
     //..
+    addLine2CanvasInPos(true,xR,Qt::red);
+    globalRedLine = globalTmpLine;
+    addLine2CanvasInPos(true,xG,Qt::green);
+    globalGreenLine = globalTmpLine;
+    addLine2CanvasInPos(true,xB,Qt::blue);
+    globalBlueLine = globalTmpLine;
+    /*
     QPoint p1,p2;
     p1.setX(0);
     p1.setY(0);
@@ -319,6 +346,7 @@ void showAnCalChrRes::updColSenHoriz(){
     globalRedLine = redPeak;
     globalGreenLine = greenPeak;
     globalBlueLine = bluePeak;
+    */
 }
 
 void showAnCalChrRes::on_chbBlue_clicked()
@@ -337,6 +365,37 @@ void showAnCalChrRes::on_chbRed_clicked()
 }
 
 void showAnCalChrRes::drawRGBPeakLines(){
+
+    //Red    
+    if(ui->chbRedLine->isChecked())
+    {
+        globalRedLine->setVisible(true);
+    }
+    else
+    {
+        globalRedLine->setVisible(false);
+    }
+    //Green
+    if(ui->chbGreenLine->isChecked())
+    {
+        globalGreenLine->setVisible(true);
+    }
+    else
+    {
+        globalGreenLine->setVisible(false);
+    }
+    //Blue
+    if(ui->chbBlueLine->isChecked())
+    {
+        globalBlueLine->setVisible(true);
+    }
+    else
+    {
+        globalBlueLine->setVisible(false);
+    }
+
+
+    /*
     ui->canvasCroped->scene()->clear();
     drawSensitivities();
     if(ui->chbRedLine->isChecked()){
@@ -348,6 +407,17 @@ void showAnCalChrRes::drawRGBPeakLines(){
     if(ui->chbBlueLine->isChecked()){
         ui->canvasCroped->scene()->addItem(globalBlueLine);
     }
+    */
+
+    /*
+    addLine2CanvasInPos(true,xR,Qt::red);
+    globalRedLine = globalTmpLine;
+    addLine2CanvasInPos(true,xG,Qt::green);
+    globalRedLine = globalTmpLine;
+    addLine2CanvasInPos(true,xB,Qt::blue);
+    globalRedLine = globalTmpLine;
+    */
+
 }
 
 void showAnCalChrRes::drawSensitivities(){
@@ -424,23 +494,27 @@ void showAnCalChrRes::addLine2CanvasInPos(bool vertical, int pos, Qt::GlobalColo
     if(vertical){
         qDebug() << "vPos: " << pos;
         QPoint p1(0,0);
-        QPoint p2(0,ui->canvasCroped->height());
+        QPoint p2(0,ui->canvasCroped->scene()->height());
         //p1.setX(pos);
         //p2.setX(pos);
-        customLine *tmpLine = new customLine(p1,p2,QPen(color));
-        tmpLine->setX(pos);
-        globalTmpLine = tmpLine;
+        customLine *tmpLine = new customLine(p1,p2,QPen(color));        
         ui->canvasCroped->scene()->addItem(tmpLine);
+        tmpLine->setX(pos);
+        tmpLine->mapToScene(p1.x(),p1.y(),1,p2.y());
+        globalTmpLine = tmpLine;
+        tmpLine->refreshTooltip();
     }else{//Horizontal
         qDebug() << "hPos: " << pos;
         QPoint p1(0,0);
-        QPoint p2(ui->canvasCroped->width(),0);
+        QPoint p2(ui->canvasCroped->scene()->width(),0);
         //p1.setY(pos);
         //p2.setY(pos);
-        customLine *tmpLine = new customLine(p1,p2,QPen(color));
-        tmpLine->setY(pos);
-        globalTmpLine = tmpLine;
+        customLine *tmpLine = new customLine(p1,p2,QPen(color));        
         ui->canvasCroped->scene()->addItem(tmpLine);
+        tmpLine->setY(pos);
+        tmpLine->mapToScene(p1.x(),p1.y(),1,p2.y());
+        globalTmpLine = tmpLine;
+        tmpLine->refreshTooltip();
     }
     ui->canvasCroped->update();
 }
@@ -490,18 +564,35 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     }else{
         //Obtain line positions
         //..
-        int rPos,gPos,bPos;
+        int rPos=0,gPos=0,bPos=0;
         if(globalIsHoriz){
             rPos = globalCalStruct.X1 + globalRedLine->x();
             gPos = globalCalStruct.X1 + globalGreenLine->x();
             bPos = globalCalStruct.X1 + globalBlueLine->x();
         }else{
-            rPos = ui->canvasCroped->height() - globalRedLine->y();
-            gPos = ui->canvasCroped->height() - globalGreenLine->y();
-            bPos = ui->canvasCroped->height() - globalBlueLine->y();
-            rPos += globalCalStruct.Y1;
-            gPos += globalCalStruct.Y1;
-            bPos += globalCalStruct.Y1;
+            //rPos = globalCalStruct.Y1 - globalRedLine->y();
+            //gPos = globalCalStruct.Y1 - globalGreenLine->y();
+            //bPos = globalCalStruct.Y1 - globalBlueLine->y();
+            //rPos = ui->canvasCroped->scene()->height() - globalRedLine->y();
+            //gPos = ui->canvasCroped->scene()->height() - globalGreenLine->y();
+            //bPos = ui->canvasCroped->scene()->height() - globalBlueLine->y();
+            rPos += globalCalStruct.Y1 + globalRedLine->y();
+            gPos += globalCalStruct.Y1 + globalGreenLine->y();
+            bPos += globalCalStruct.Y1 + globalBlueLine->y();
+
+            /*
+            qDebug() << "SceneH: " << ui->canvasCroped->scene()->height();
+            qDebug() << "SceneW: " << ui->canvasCroped->scene()->width();
+            qDebug() << "rY: " << globalRedLine->y();
+            qDebug() << "gY: " << globalGreenLine->y();
+            qDebug() << "bY: " << globalBlueLine->y();
+            qDebug() << "Y1: " << globalCalStruct.Y1;
+            qDebug() << "rPos" << rPos;
+            qDebug() << "gPos" << gPos;
+            qDebug() << "bPos" << bPos;
+            */
+
+
         }
         //File contain
         //..
@@ -518,7 +609,7 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     if(saveFile(fileName,coordinates)){
         //Save canvas background path
         saveFile(_PATH_CALBKG,globalRect->parameters.backgroundPath);
-        funcShowMsg("Setting saved successfully","");
+        funcShowMsg(" ","Setting saved successfully");
     }else{
         funcShowMsg("ERROR","Saving setting-file");
     }
@@ -561,7 +652,7 @@ void showAnCalChrRes::on_pbSaveScene_clicked()
     //Save Graphicsview's scene
     QPixmap pixMap = QPixmap::grabWidget(ui->canvasCroped);
     if(pixMap.save(fileName)){
-        funcShowMsg("Image saved successfully","");
+        funcShowMsg(" ","Image saved successfully");
     }else{
         funcShowMsg("ERROR","Saving image");
     }
@@ -581,4 +672,9 @@ void showAnCalChrRes::on_chbGreenLine_clicked()
 void showAnCalChrRes::on_chbBlueLine_clicked()
 {
     drawRGBPeakLines();
+}
+
+void showAnCalChrRes::on_pbInFolder_clicked()
+{
+    funcOpenFolder("./settings/Calib/");
 }

@@ -17,6 +17,8 @@ customRect::customRect(QPoint p1, QPoint p2)
     setFlag(QGraphicsItem::ItemIsFocusable);
     setAcceptHoverEvents(true);
     setAcceptTouchEvents(true);
+    this->refreshTooltip();
+
 }
 
 
@@ -101,10 +103,19 @@ void customRect::keyPressEvent(QKeyEvent *event){
                 break;
             }
         }
+        this->refreshTooltip();
         this->update();
     }
 }
 
+void customRect::refreshTooltip(){
+    QString tt;
+    qreal x,y,w,h;
+    this->rect().getRect(&x,&y,&w,&h);
+    tt.append("(" + QString::number(x) + ", " + QString::number(y) + "):");
+    tt.append("(" + QString::number(w)+ ", " + QString::number(h) + ")");
+    this->setToolTip(tt);
+}
 
 void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
     //Remark line

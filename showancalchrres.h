@@ -51,6 +51,8 @@ private slots:
 
     void on_chbBlueLine_clicked();
 
+    void on_pbInFolder_clicked();
+
 private:
     Ui::showAnCalChrRes *ui;
 };

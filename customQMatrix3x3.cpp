@@ -1,7 +1,8 @@
-#include "customQMatrix3x3.h"
-#include <QVector3D>
-#include <QMatrix2x2>
 #include <__common.h>
+#include <customQMatrix3x3.h>
+
+
+
 
 qreal customQMatrix3x3::getCell(int r, int c){//1 index
     return this->operator ()(c-1,r-1);
@@ -60,7 +61,7 @@ double customQMatrix3x3::detSub2x2(int col)
 
 double customQMatrix3x3::determinant()
 {
-    QVector3D row0, row1, row2;
+    QVector3D row0;
     row0 = this->getRow(0);
     return  (row0.x() * detSub2x2(0) ) -
             (row0.y() * detSub2x2(1) ) +

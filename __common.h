@@ -10,6 +10,8 @@
 
     #include <highgui.h>
 
+    #include <customQMatrix3x3.h>
+
     double funcDet2x2(double **M);
 
     void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett );
@@ -21,6 +23,8 @@
     void funcObtSettings( structSettings * lstSettings);
 
     void funcShowMsg( QString title, QString msg );
+
+    void funcShowFileError(int error, QString fileName);
 
     void funcPrintFirst(int n, int max, char *buffer);
 
@@ -44,6 +48,8 @@
 
     QString readAllFile( QString filePath );
 
+    int fileIsValid(QString fileContain);
+
     QString readFileParam(QString fileName);
 
     bool funGetSquareXML( QString fileName, squareAperture *squareParam );
@@ -54,7 +60,7 @@
 
     linearRegresion *funcCalcLinReg(float *X);
 
-    linearRegresion* funcLinearRegression(double *X, double *Y, int numItems );
+    linearRegresion funcLinearRegression(double *X, double *Y, int numItems );
 
     QImage funcRotateImage(QString filePath, float rotAngle);
 
@@ -64,6 +70,12 @@
 
     QString funcRemoveFileNameFromPath( QString Path );
 
+    customQMatrix3x3 matMultiply(QMatrix3x4 *M1, QMatrix4x3 *M2);
+    QMatrix3x4 matMultiply(customQMatrix3x3 *M1, QMatrix3x4 *M2);
+    QVector3D matMultiply(QMatrix3x4 *M1, QVector4D *M2);
+
+
+    void funcOpenFolder(QString path);
 
 
     //inline int align(int size, int align);
