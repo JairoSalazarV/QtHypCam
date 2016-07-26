@@ -111,8 +111,9 @@
         int             squarePixY;
         int             squarePixW;
         int             squarePixH;
+        float           minWavelength;
+        float           maxWavelength;
         strAllLinReg    LR;
-        strLimits       limits;
     }lstDoubleAxisCalibration;
 
     typedef struct lstCalibFileNames{

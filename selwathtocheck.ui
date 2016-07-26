@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
-    <height>401</height>
+    <width>291</width>
+    <height>385</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>271</width>
+     <width>291</width>
      <height>181</height>
     </rect>
    </property>
@@ -35,7 +35,7 @@
   <widget class="QCheckBox" name="checkBoxCentroids">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>15</x>
      <y>190</y>
      <width>95</width>
      <height>26</height>
@@ -48,7 +48,7 @@
   <widget class="QCheckBox" name="checkBoxHorizLR">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>15</x>
      <y>220</y>
      <width>121</width>
      <height>26</height>
@@ -61,7 +61,7 @@
   <widget class="QCheckBox" name="checkBoxVertLR">
    <property name="geometry">
     <rect>
-     <x>140</x>
+     <x>157</x>
      <y>220</y>
      <width>121</width>
      <height>26</height>
@@ -74,8 +74,8 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>14</x>
-     <y>350</y>
+     <x>23</x>
+     <y>320</y>
      <width>241</width>
      <height>36</height>
     </rect>
@@ -120,40 +120,27 @@
   <widget class="QCheckBox" name="checkBoxLimits">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>190</y>
-     <width>95</width>
-     <height>26</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Limits</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBoxResolution">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
+     <x>15</x>
      <y>250</y>
-     <width>151</width>
+     <width>121</width>
      <height>26</height>
     </rect>
    </property>
    <property name="text">
-    <string>Spectral resolution</string>
+    <string>Limits defined</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBoxResolution_2">
+  <widget class="QCheckBox" name="checkBoxLimitsCalculated">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>280</y>
-     <width>151</width>
+     <x>157</x>
+     <y>251</y>
+     <width>141</width>
      <height>26</height>
     </rect>
    </property>
    <property name="text">
-    <string>GIF by slides</string>
+    <string>Limits calculated</string>
    </property>
   </widget>
  </widget>

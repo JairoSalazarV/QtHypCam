@@ -106,9 +106,37 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="squarePixH" )
                 doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
 
-            //if( xmlReader->name()=="rightLinRegA" )
-            //    doubAxisCal->rightLinRegA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="horizontalA" )
+                doubAxisCal->LR.horizA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="horizontalB" )
+                doubAxisCal->LR.horizB = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="verticalA" )
+                doubAxisCal->LR.vertA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="verticalB" )
+                doubAxisCal->LR.vertB = xmlReader->readElementText().toFloat(0);
 
+            if( xmlReader->name()=="waveHorizA" )
+                doubAxisCal->LR.waveHorizA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="waveHorizB" )
+                doubAxisCal->LR.waveHorizB = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="waveVertA" )
+                doubAxisCal->LR.waveVertA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="waveVertB" )
+                doubAxisCal->LR.waveVertB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="deltaHorizA" )
+                doubAxisCal->LR.deltaHorizA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="deltaHorizB" )
+                doubAxisCal->LR.deltaHorizB = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="deltaVertA" )
+                doubAxisCal->LR.deltaVertA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="deltaVertB" )
+                doubAxisCal->LR.deltaVertB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="minWavelength" )
+                doubAxisCal->minWavelength = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="maxWavelength" )
+                doubAxisCal->maxWavelength = xmlReader->readElementText().toFloat(0);
 
         }
     }

@@ -481,11 +481,45 @@ strLimits genCalibXML::getLimitsFromHDD(){
 
 }
 
+QVector2D genCalibXML::getWavelengthFrontiers()
+{
+    QVector2D fontier;
+    strLimits limits = getLimitsFromHDD();
+    float waveRight, waveUp, waveLeft, waveDown;
+    float waveLimInf, waveLimSup;
+    strAllLinReg linRegRes = getAllLR();
+
+    //It obtains direction of the final limit
+    //..
+    //Min
+    waveRight   = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.rightInf) );
+    waveUp      = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.upInf) );
+    waveLeft    = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.leftInf) );
+    waveDown    = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.downInf) );
+    waveLimInf  = (waveRight > waveUp)?waveRight:waveUp;
+    waveLimInf  = (waveLimInf > waveLeft)?waveLimInf:waveLeft;
+    waveLimInf  = (waveLimInf > waveDown)?waveLimInf:waveDown;
+    //Max
+    waveRight   = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.rightSup) );
+    waveUp      = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.upSup) );
+    waveLeft    = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.leftSup) );
+    waveDown    = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.downSup) );
+    waveLimSup  = (waveRight < waveUp)?waveRight:waveUp;
+    waveLimSup  = (waveLimSup < waveLeft)?waveLimSup:waveLeft;
+    waveLimSup  = (waveLimSup < waveDown)?waveLimSup:waveDown;
+
+    //Set and return
+    //..
+    fontier.setX(waveLimInf);
+    fontier.setY(waveLimSup);
+    return fontier;
+}
+
 void genCalibXML::on_pbGenCal_clicked()
 {
     if( isExportable )
     {
-        lstCalibFileNames calibPoints = fillLstCalibPoints();
+        //lstCalibFileNames calibPoints = fillLstCalibPoints();
         QString newFileCon = "";
 
         QString sourcePath = readFileParam(_PATH_CALBKG);
@@ -530,6 +564,16 @@ void genCalibXML::on_pbGenCal_clicked()
         //..
         strAllLinReg linRegRes = getAllLR();
 
+        //Obtains limits from HDD
+        //..
+        QString minWavelength, maxWavelength;
+        QVector2D waveLim;
+        waveLim = getWavelengthFrontiers();
+        minWavelength = QString::number(waveLim.x());
+        maxWavelength = QString::number(waveLim.y());
+
+        //Square aperture as percentage
+        //..
         double xs,ys,ws,hs;
         xs = (double)sqApert->rectX / (double)sqApert->canvasW;
         ys = (double)sqApert->rectY / (double)sqApert->canvasH;
@@ -540,40 +584,43 @@ void genCalibXML::on_pbGenCal_clicked()
 
         newFileCon.append("<calib>\n");
 
-            newFileCon.append("    <bkgPath>"+ sourcePath                                   + "</bkgPath>\n");
+            newFileCon.append("    <bkgPath>"+ sourcePath                                       + "</bkgPath>\n");
 
             newFileCon.append("    <origin>(0,0)=(left,up)</origin>\n");
 
-            newFileCon.append("    <W>"+ QString::number(_BIG_WIDTH)                        + "</W>\n");
-            newFileCon.append("    <H>"+ QString::number(_BIG_HEIGHT)                       + "</H>\n");
+            newFileCon.append("    <W>"+ QString::number(_BIG_WIDTH)                            + "</W>\n");
+            newFileCon.append("    <H>"+ QString::number(_BIG_HEIGHT)                           + "</H>\n");
 
-            newFileCon.append("    <bigX>"+ QString::number( xB )                           + "</bigX>\n");
-            newFileCon.append("    <bigY>"+ QString::number( yB )                           + "</bigY>\n");
-            newFileCon.append("    <bigW>"+ QString::number( wB )                           + "</bigW>\n");
-            newFileCon.append("    <bigH>"+ QString::number( hB )                           + "</bigH>\n");
+            newFileCon.append("    <bigX>"+ QString::number( xB )                               + "</bigX>\n");
+            newFileCon.append("    <bigY>"+ QString::number( yB )                               + "</bigY>\n");
+            newFileCon.append("    <bigW>"+ QString::number( wB )                               + "</bigW>\n");
+            newFileCon.append("    <bigH>"+ QString::number( hB )                               + "</bigH>\n");
 
-            newFileCon.append("    <squareX>"+ QString::number( xs )                        + "</squareX>\n");
-            newFileCon.append("    <squareY>"+ QString::number( ys )                        + "</squareY>\n");
-            newFileCon.append("    <squareW>"+ QString::number( ws )                        + "</squareW>\n");
-            newFileCon.append("    <squareH>"+ QString::number( hs )                        + "</squareH>\n");
+            newFileCon.append("    <squareX>"+ QString::number( xs )                            + "</squareX>\n");
+            newFileCon.append("    <squareY>"+ QString::number( ys )                            + "</squareY>\n");
+            newFileCon.append("    <squareW>"+ QString::number( ws )                            + "</squareW>\n");
+            newFileCon.append("    <squareH>"+ QString::number( hs )                            + "</squareH>\n");
 
-            newFileCon.append("    <squarePixX>"+ QString::number( auxSqX )                 + "</squarePixX>\n");
-            newFileCon.append("    <squarePixY>"+ QString::number( auxSqY )                 + "</squarePixY>\n");
-            newFileCon.append("    <squarePixW>"+ QString::number( auxSqW )                 + "</squarePixW>\n");
-            newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )                 + "</squarePixH>\n");
+            newFileCon.append("    <squarePixX>"+ QString::number( auxSqX )                     + "</squarePixX>\n");
+            newFileCon.append("    <squarePixY>"+ QString::number( auxSqY )                     + "</squarePixY>\n");
+            newFileCon.append("    <squarePixW>"+ QString::number( auxSqW )                     + "</squarePixW>\n");
+            newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )                     + "</squarePixH>\n");
 
-            newFileCon.append("    <horizontalA>"+ QString::number( linRegRes.horizA )      + "</horizontalA>\n");
-            newFileCon.append("    <horizontalB>"+ QString::number( linRegRes.horizB )      + "</horizontalB>\n");
-            newFileCon.append("    <verticalA>"+ QString::number( linRegRes.vertA )         + "</verticalA>\n");
-            newFileCon.append("    <verticalB>"+ QString::number( linRegRes.vertB )         + "</verticalB>\n");
-            newFileCon.append("    <waveHorizA>"+ QString::number( linRegRes.waveHorizA )   + "</waveHorizA>\n");
-            newFileCon.append("    <waveHorizB>"+ QString::number( linRegRes.waveHorizB )   + "</waveHorizB>\n");
-            newFileCon.append("    <waveVertA>"+ QString::number( linRegRes.waveVertA )     + "</waveVertA>\n");
-            newFileCon.append("    <waveVertB>"+ QString::number( linRegRes.waveVertB )     + "</waveVertB>\n");
-            newFileCon.append("    <deltaHorizA>"+ QString::number( linRegRes.deltaHorizA )  + "</deltaHorizA>\n");
-            newFileCon.append("    <deltaHorizB>"+ QString::number( linRegRes.deltaHorizB )  + "</deltaHorizB>\n");
-            newFileCon.append("    <deltaVertA>"+ QString::number( linRegRes.deltaVertA )    + "</deltaVertA>\n");
-            newFileCon.append("    <deltaVertB>"+ QString::number( linRegRes.deltaVertB )    + "</deltaVertB>\n");
+            newFileCon.append("    <horizontalA>"+ QString::number( linRegRes.horizA )          + "</horizontalA>\n");
+            newFileCon.append("    <horizontalB>"+ QString::number( linRegRes.horizB )          + "</horizontalB>\n");
+            newFileCon.append("    <verticalA>"+ QString::number( linRegRes.vertA )             + "</verticalA>\n");
+            newFileCon.append("    <verticalB>"+ QString::number( linRegRes.vertB )             + "</verticalB>\n");
+            newFileCon.append("    <waveHorizA>"+ QString::number( linRegRes.waveHorizA )       + "</waveHorizA>\n");
+            newFileCon.append("    <waveHorizB>"+ QString::number( linRegRes.waveHorizB )       + "</waveHorizB>\n");
+            newFileCon.append("    <waveVertA>"+ QString::number( linRegRes.waveVertA )         + "</waveVertA>\n");
+            newFileCon.append("    <waveVertB>"+ QString::number( linRegRes.waveVertB )         + "</waveVertB>\n");
+            newFileCon.append("    <deltaHorizA>"+ QString::number( linRegRes.deltaHorizA )     + "</deltaHorizA>\n");
+            newFileCon.append("    <deltaHorizB>"+ QString::number( linRegRes.deltaHorizB )     + "</deltaHorizB>\n");
+            newFileCon.append("    <deltaVertA>"+ QString::number( linRegRes.deltaVertA )       + "</deltaVertA>\n");
+            newFileCon.append("    <deltaVertB>"+ QString::number( linRegRes.deltaVertB )       + "</deltaVertB>\n");
+
+            newFileCon.append("    <minWavelength>"   + minWavelength                           + "</minWavelength>\n");
+            newFileCon.append("    <maxWavelength>"   + maxWavelength                           + "</maxWavelength>\n");
 
         newFileCon.append("</calib>\n");
 

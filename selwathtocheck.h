@@ -16,15 +16,18 @@ public:
     ~selWathToCheck();
 
 private slots:
+
     void fillLabelImg(QString imgPath);
 
     void drawCentroid(QString file, Qt::GlobalColor color );
+
+    void showLimitCalculated();
 
     void drawLinearRegression(bool horizontal);
 
     void drawAllLimits();
 
-    void drawLimit(QString fileName, int side);
+    void drawLimit(int side);
 
     void drawAllCentoides();
 

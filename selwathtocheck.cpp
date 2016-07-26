@@ -9,9 +9,12 @@
 #include <QGraphicsLineItem>
 #include <customline.h>
 
-#include <gencalibxml.h>
+//#include <gencalibxml.h>
 
 GraphicsView *globalGvValCal;
+
+lstDoubleAxisCalibration doubAxisCalib;
+lstDoubleAxisCalibration *daCalib;
 
 selWathToCheck::selWathToCheck(QWidget *parent) :
     QDialog(parent),
@@ -21,6 +24,8 @@ selWathToCheck::selWathToCheck(QWidget *parent) :
 
     fillLabelImg(_PATH_DISPLAY_IMAGE);
 
+    daCalib = &doubAxisCalib;
+    funcGetCalibration(daCalib);
 
 }
 
@@ -45,23 +50,38 @@ void selWathToCheck::fillLabelImg(QString imgPath){
 void selWathToCheck::on_pbCentroids_clicked()
 {
 
-    showGV();
-
     //Centroides
     if( ui->checkBoxCentroids->isChecked() )
+    {
+        showGV();
         drawAllCentoides();
+    }
 
     //Limits
     if( ui->checkBoxLimits->isChecked() )
+    {
+        showGV();
         drawAllLimits();
+    }
 
     //Horizontal Linear Regression
     if( ui->checkBoxHorizLR->isChecked() )
+    {
+        showGV();
         drawLinearRegression(true);
+    }
 
     //Vertical Linear Regression
     if( ui->checkBoxVertLR->isChecked() )
+    {
+        showGV();
         drawLinearRegression(false);
+    }
+
+    //Show limits calculated
+    if( ui->checkBoxLimitsCalculated->isChecked() ){
+        showLimitCalculated();
+    }
 
 
 
@@ -71,18 +91,26 @@ void selWathToCheck::on_pbCentroids_clicked()
     //gvValCal->funcShowWavelenLines(1);
 }
 
+void selWathToCheck::showLimitCalculated()
+{
+    QString msg;
+    msg = QString::number(daCalib->minWavelength) + "nm to " + QString::number(daCalib->maxWavelength) + "nm";
+    funcShowMsg("Spectral range", msg);
+}
+
+
 void selWathToCheck::drawLinearRegression(bool horizontal){
 
-    genCalibXML tmpGenCal;
+    //genCalibXML tmpGenCal;
 
-    lstCalibFileNames calibPoints = tmpGenCal.fillLstCalibPoints();
-    strAllLinReg linRegRes = tmpGenCal.calcAllLinReg(&calibPoints);
+    //lstCalibFileNames calibPoints = tmpGenCal.fillLstCalibPoints();
+    //strAllLinReg linRegRes = tmpGenCal.calcAllLinReg(&calibPoints);
 
     double a, b;
     if( horizontal )
     {
-        a = linRegRes.horizA;
-        b = linRegRes.horizB;
+        a = daCalib->LR.horizA;
+        b = daCalib->LR.horizB;
         int y;
         for(int x=1; x<globalGvValCal->scene()->width(); x++)
         {
@@ -92,8 +120,8 @@ void selWathToCheck::drawLinearRegression(bool horizontal){
     }
     else
     {
-        a = linRegRes.vertA;
-        b = linRegRes.vertB;
+        a = daCalib->LR.vertA;
+        b = daCalib->LR.vertB;
         int x;
         for(int y=1; y<globalGvValCal->scene()->height(); y++)
         {
@@ -106,43 +134,51 @@ void selWathToCheck::drawLinearRegression(bool horizontal){
 
 void selWathToCheck::drawAllLimits()
 {
-    drawLimit(_PATH_LIMIT_R,_RIGHT);
-    drawLimit(_PATH_LIMIT_L,_LEFT);
+    drawLimit(_RIGHT);
+    drawLimit(_LEFT);
 
-    drawLimit(_PATH_LIMIT_U,_UP);
-    drawLimit(_PATH_LIMIT_D,_DOWN);
+    drawLimit(_UP);
+    drawLimit(_DOWN);
 
 }
 
-void selWathToCheck::drawLimit(QString fileName, int side){
+void selWathToCheck::drawLimit(int side){
 
     QString limSource = readAllFile(_PATH_LIMIT_S);
-
-    genCalibXML tmpGenCal;
-
-    QString limit;
-    limit = readAllFile(fileName);
-    if( fileIsValid(limit) < 1 )
-    {
-        funcShowFileError(fileIsValid(limit),fileName);
-        return (void)NULL;
-    }
     qreal limInf, limSup;
+    QString limit;
+    switch(side)
+    {
+        case _RIGHT:
+            limit = readAllFile(_PATH_LIMIT_R);
+            break;
+        case _UP:
+            limit = readAllFile(_PATH_LIMIT_U);
+            break;
+        case _LEFT:
+            limit = readAllFile(_PATH_LIMIT_L);
+            break;
+        case _DOWN:
+            limit = readAllFile(_PATH_LIMIT_D);
+            break;
+    }
     limInf = limit.split(",").at(2).toInt(0);
     limSup = limit.split(",").at(0).toInt(0);
+
+
     customLine *limInfLine;
     customLine *limSupLine;
     int len1, len2;
     double wavelenghtInf, wavelenghtSup;
-    strAllLinReg calibLR = tmpGenCal.getAllLR();
+    //strAllLinReg calibLR = tmpGenCal.getAllLR();
     if(side == _RIGHT || side == _LEFT)
     {
         len1            = abs(limSource.split(",").at(0).toInt(0) - limInf);
-        len2            = abs(limSource.split(",").at(0).toInt(0) - limSup);
+        len2            = abs(limSource.split(",").at(0).toInt(0) - limSup);        
         limInfLine      = new customLine(QPoint(limInf,0),QPoint(limInf,globalGvValCal->scene()->height()),QPen(Qt::blue));
         limSupLine      = new customLine(QPoint(limSup,0),QPoint(limSup,globalGvValCal->scene()->height()),QPen(Qt::red));
-        wavelenghtInf   = calibLR.deltaHorizA + (calibLR.deltaHorizB * (double)len1);
-        wavelenghtSup   = calibLR.deltaHorizA + (calibLR.deltaHorizB * (double)len2);
+        wavelenghtInf   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len1);
+        wavelenghtSup   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len2);
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
         limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
@@ -152,8 +188,8 @@ void selWathToCheck::drawLimit(QString fileName, int side){
         len2            = abs(limSource.split(",").at(1).toInt(0) - limSup);
         limInfLine      = new customLine(QPoint(0,limInf),QPoint(globalGvValCal->scene()->width(),limInf),QPen(Qt::blue));
         limSupLine      = new customLine(QPoint(0,limSup),QPoint(globalGvValCal->scene()->width(),limSup),QPen(Qt::red));
-        wavelenghtInf   = calibLR.deltaVertA + (calibLR.deltaVertB * (double)len1);
-        wavelenghtSup   = calibLR.deltaVertA + (calibLR.deltaVertB * (double)len2);
+        wavelenghtInf   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len1);
+        wavelenghtSup   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len2);
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
         limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
