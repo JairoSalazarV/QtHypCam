@@ -9,6 +9,8 @@
 #include <QGraphicsLineItem>
 #include <customline.h>
 
+#include <gencalibxml.h>
+
 GraphicsView *globalGvValCal;
 
 selWathToCheck::selWathToCheck(QWidget *parent) :
@@ -47,14 +49,19 @@ void selWathToCheck::on_pbCentroids_clicked()
 
     //Centroides
     if( ui->checkBoxCentroids->isChecked() )
-    {
         drawAllCentoides();
-    }
 
     //Limits
-    if( ui->checkBoxLimits->isChecked() ){
+    if( ui->checkBoxLimits->isChecked() )
         drawAllLimits();
-    }
+
+    //Horizontal Linear Regression
+    if( ui->checkBoxHorizLR->isChecked() )
+        drawLinearRegression(true);
+
+    //Vertical Linear Regression
+    if( ui->checkBoxVertLR->isChecked() )
+        drawLinearRegression(false);
 
 
 
@@ -62,6 +69,38 @@ void selWathToCheck::on_pbCentroids_clicked()
     //Listen mouse events
     //connect( gvValCal, SIGNAL(signalMouseReleased(QMouseEvent)), this, SLOT(mousePresed(QMouseEvent)) );
     //gvValCal->funcShowWavelenLines(1);
+}
+
+void selWathToCheck::drawLinearRegression(bool horizontal){
+
+    genCalibXML tmpGenCal;
+
+    lstCalibFileNames calibPoints = tmpGenCal.fillLstCalibPoints();
+    strAllLinReg linRegRes = tmpGenCal.calcAllLinReg(&calibPoints);
+
+    double a, b;
+    if( horizontal )
+    {
+        a = linRegRes.horizA;
+        b = linRegRes.horizB;
+        int y;
+        for(int x=1; x<globalGvValCal->scene()->width(); x++)
+        {
+           y = floor( a + (b*x) );
+           globalGvValCal->scene()->addEllipse((qreal)x,(qreal)y,1,1,QPen(Qt::magenta));
+        }
+    }
+    else
+    {
+        a = linRegRes.vertA;
+        b = linRegRes.vertB;
+        int x;
+        for(int y=1; y<globalGvValCal->scene()->height(); y++)
+        {
+           x = floor( a + (b*y) );
+           globalGvValCal->scene()->addEllipse((qreal)x,(qreal)y,1,1,QPen(Qt::cyan));
+        }
+    }
 }
 
 
@@ -72,9 +111,15 @@ void selWathToCheck::drawAllLimits()
 
     drawLimit(_PATH_LIMIT_U,_UP);
     drawLimit(_PATH_LIMIT_D,_DOWN);
+
 }
 
 void selWathToCheck::drawLimit(QString fileName, int side){
+
+    QString limSource = readAllFile(_PATH_LIMIT_S);
+
+    genCalibXML tmpGenCal;
+
     QString limit;
     limit = readAllFile(fileName);
     if( fileIsValid(limit) < 1 )
@@ -87,19 +132,30 @@ void selWathToCheck::drawLimit(QString fileName, int side){
     limSup = limit.split(",").at(0).toInt(0);
     customLine *limInfLine;
     customLine *limSupLine;
+    int len1, len2;
+    double wavelenghtInf, wavelenghtSup;
+    strAllLinReg calibLR = tmpGenCal.getAllLR();
     if(side == _RIGHT || side == _LEFT)
     {
-        limInfLine = new customLine(QPoint(limInf,0),QPoint(limInf,globalGvValCal->scene()->height()),QPen(Qt::blue));
-        limSupLine = new customLine(QPoint(limSup,0),QPoint(limSup,globalGvValCal->scene()->height()),QPen(Qt::red));
-        //QGraphicsLineItem *limInf = new QGraphicsLineItem( loc2,0,loc2,globalGvValCal->scene()->height() );
-        //QGraphicsLineItem *limSup = new QGraphicsLineItem( loc1,0,loc1,globalGvValCal->scene()->height() );
+        len1            = abs(limSource.split(",").at(0).toInt(0) - limInf);
+        len2            = abs(limSource.split(",").at(0).toInt(0) - limSup);
+        limInfLine      = new customLine(QPoint(limInf,0),QPoint(limInf,globalGvValCal->scene()->height()),QPen(Qt::blue));
+        limSupLine      = new customLine(QPoint(limSup,0),QPoint(limSup,globalGvValCal->scene()->height()),QPen(Qt::red));
+        wavelenghtInf   = calibLR.deltaHorizA + (calibLR.deltaHorizB * (double)len1);
+        wavelenghtSup   = calibLR.deltaHorizA + (calibLR.deltaHorizB * (double)len2);
+        limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
+        limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
     if(side == _UP || side == _DOWN)
     {
-        limInfLine = new customLine(QPoint(0,limInf),QPoint(globalGvValCal->scene()->width(),limInf),QPen(Qt::blue));
-        limSupLine = new customLine(QPoint(0,limSup),QPoint(globalGvValCal->scene()->width(),limSup),QPen(Qt::red));
-        //QGraphicsLineItem *limInf = new QGraphicsLineItem( 0,loc1,globalGvValCal->scene()->width(),loc1 );
-        //QGraphicsLineItem *limSup = new QGraphicsLineItem( 0,loc2,globalGvValCal->scene()->width(),loc2 );
+        len1            = abs(limSource.split(",").at(1).toInt(0) - limInf);
+        len2            = abs(limSource.split(",").at(1).toInt(0) - limSup);
+        limInfLine      = new customLine(QPoint(0,limInf),QPoint(globalGvValCal->scene()->width(),limInf),QPen(Qt::blue));
+        limSupLine      = new customLine(QPoint(0,limSup),QPoint(globalGvValCal->scene()->width(),limSup),QPen(Qt::red));
+        wavelenghtInf   = calibLR.deltaVertA + (calibLR.deltaVertB * (double)len1);
+        wavelenghtSup   = calibLR.deltaVertA + (calibLR.deltaVertB * (double)len2);
+        limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
+        limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
     globalGvValCal->scene()->addItem(limInfLine);
     globalGvValCal->scene()->addItem(limSupLine);
@@ -112,20 +168,20 @@ void selWathToCheck::drawAllCentoides(){
     drawCentroid("source",Qt::magenta);
 
     drawCentroid("bR",Qt::blue);
-    drawCentroid("rR",Qt::green);
-    drawCentroid("gR",Qt::red);
+    drawCentroid("gR",Qt::green);
+    drawCentroid("rR",Qt::red);
 
     drawCentroid("bU",Qt::blue);
-    drawCentroid("rU",Qt::green);
-    drawCentroid("gU",Qt::red);
+    drawCentroid("gU",Qt::green);
+    drawCentroid("rU",Qt::red);
 
     drawCentroid("bL",Qt::blue);
-    drawCentroid("rL",Qt::green);
-    drawCentroid("gL",Qt::red);
+    drawCentroid("gL",Qt::green);
+    drawCentroid("rL",Qt::red);
 
     drawCentroid("bD",Qt::blue);
-    drawCentroid("rD",Qt::green);
-    drawCentroid("gD",Qt::red);
+    drawCentroid("gD",Qt::green);
+    drawCentroid("rD",Qt::red);
 }
 
 void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color)

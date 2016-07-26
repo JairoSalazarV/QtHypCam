@@ -16,7 +16,16 @@ class genCalibXML : public QDialog
 
 public:
     explicit genCalibXML(QWidget *parent = 0);
+
     ~genCalibXML();
+
+    lstCalibFileNames fillLstCalibPoints();
+
+    strAllLinReg calcAllLinReg(lstCalibFileNames *centroids);
+
+    strAllLinReg getAllLR();
+
+    strLimits getLimitsFromHDD();
 
 private slots:
 
@@ -82,13 +91,11 @@ private slots:
 
     void on_pbRedRightDown_clicked();
 
-    void on_pbGenCal_clicked();
+    void on_pbGenCal_clicked();    
 
     customQMatrix4x3 mulLinRegXYW(customQMatrix4x4 X);
 
-    QVector3D multipleLinearRegression( customQMatrix4x3 X, QVector4D y );
-
-    lstCalibFileNames fillLstCalibPoints();
+    QVector3D multipleLinearRegression( customQMatrix4x3 X, QVector4D y );    
 
     void on_pbFiles_clicked();
 

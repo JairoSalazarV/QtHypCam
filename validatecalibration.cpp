@@ -35,7 +35,7 @@ validateCalibration::validateCalibration(QWidget *parent) :
 
     //Listen mouse events
     //connect( gvValCal, SIGNAL(signalMouseReleased(QMouseEvent)), this, SLOT(mousePresed(QMouseEvent)) );
-    gvValCal->funcShowWavelenLines(1);
+    //gvValCal->funcShowWavelenLines(1);
 
 
 }

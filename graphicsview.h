@@ -15,14 +15,14 @@ class GraphicsView : public QGraphicsView
 
         QAction *showContextMenuLine(QPoint pos);
 
-        void funcShowWavelenLines(int type);
+        //void funcShowWavelenLines(int type);
 
     private:
-        float funcCalcWavelen(int pixX , int type);
+        //float funcCalcWavelen(int pixX , int type);
 
-        void funcShowWavelen(QPoint pos, int type);
+        //void funcShowWavelen(QPoint pos, int type);
 
-        void identifyMinimumWavelenght(QPoint pos, int type);
+        //void identifyMinimumWavelenght(QPoint pos, int type);
 
         void identifyMaximumWavelenght(QPoint pos, int type);
 
@@ -34,7 +34,7 @@ class GraphicsView : public QGraphicsView
 
         void funcDisplayPixelProperties(QMouseEvent *e);
 
-        void funcTestCalibration();
+        //void funcTestCalibration();
 
         void mousePressEvent(QMouseEvent *e);
 

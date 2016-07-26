@@ -14,7 +14,7 @@
 
     double funcDet2x2(double **M);
 
-    void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett );
+    //void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett );
 
     void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings);
 

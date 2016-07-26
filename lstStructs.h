@@ -39,10 +39,11 @@
     #define _PATH_CALIB                     "./settings/Calib/"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
 
-    #define _PATH_LIMIT_R                     "./settings/Calib/limR.hypcam"
-    #define _PATH_LIMIT_U                     "./settings/Calib/limU.hypcam"
-    #define _PATH_LIMIT_L                     "./settings/Calib/limL.hypcam"
-    #define _PATH_LIMIT_D                     "./settings/Calib/limD.hypcam"
+    #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
+    #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"
+    #define _PATH_LIMIT_L                   "./settings/Calib/limL.hypcam"
+    #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
+    #define _PATH_LIMIT_S                   "./settings/Calib/sourceHalogen.hypcam"
 
     #define _RIGHT  1
     #define _UP     2
@@ -53,6 +54,33 @@
     #define _ERROR_FILE                     "~UnknowError"
 
 
+    typedef struct strAllLinReg{
+        double horizA;
+        double horizB;
+        double vertA;
+        double vertB;
+        double waveHorizA;
+        double waveHorizB;
+        double waveVertA;
+        double waveVertB;
+        double deltaHorizA;
+        double deltaHorizB;
+        double deltaVertA;
+        double deltaVertB;
+    }strAllLinReg;
+
+    typedef struct strLimits{
+        int rightInf;
+        int rightSup;
+        int upInf;
+        int upSup;
+        int leftInf;
+        int leftSup;
+        int downInf;
+        int downSup;
+        int sourceX;
+        int sourceY;
+    }strLimits;
 
     typedef struct strDiffPix{
         int x;
@@ -69,28 +97,22 @@
 
     typedef struct lstDoubleAxisCalibration{
         QString bkgPath;
-        int     W;
-        int     H;
-        float   bigX;
-        float   bigY;
-        float   bigW;
-        float   bigH;
-        float   squareX;
-        float   squareY;
-        float   squareW;
-        float   squareH;
-        int     squarePixX;
-        int     squarePixY;
-        int     squarePixW;
-        int     squarePixH;
-        float   rightLinRegA;
-        float   rightLinRegB;
-        float   upLinRegA;
-        float   upLinRegB;
-        float   leftLinRegA;
-        float   leftLinRegB;
-        float   downLinRegA;
-        float   downLinRegB;
+        int             W;
+        int             H;
+        float           bigX;
+        float           bigY;
+        float           bigW;
+        float           bigH;
+        float           squareX;
+        float           squareY;
+        float           squareW;
+        float           squareH;
+        int             squarePixX;
+        int             squarePixY;
+        int             squarePixW;
+        int             squarePixH;
+        strAllLinReg    LR;
+        strLimits       limits;
     }lstDoubleAxisCalibration;
 
     typedef struct lstCalibFileNames{

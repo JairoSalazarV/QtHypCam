@@ -2,7 +2,7 @@
 #define SELWATHTOCHECK_H
 
 #include <QDialog>
-
+#include <lstStructs.h>
 namespace Ui {
 class selWathToCheck;
 }
@@ -19,6 +19,8 @@ private slots:
     void fillLabelImg(QString imgPath);
 
     void drawCentroid(QString file, Qt::GlobalColor color );
+
+    void drawLinearRegression(bool horizontal);
 
     void drawAllLimits();
 

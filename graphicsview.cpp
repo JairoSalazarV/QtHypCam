@@ -44,13 +44,14 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if(request->text()=="Save view")
                 this->save(_PATH_CUSTOM_GV_DEFAULT);
 
-            if(request->text()=="By wavelenght")
-                funcTestCalibration();
+            //if(request->text()=="By wavelenght")
+                //funcTestCalibration();
 
+            /*
             if(request->text()=="rightShowWavelenght")
                 funcShowWavelen(e->screenPos().toPoint(), 1);
             if(request->text()=="rightDrawWavelenght")
-                funcShowWavelenLines(1);
+                //funcShowWavelenLines(1);
             if(request->text()=="rightMinWavelenght")
                 identifyMinimumWavelenght(e->screenPos().toPoint(), 1);
             if(request->text()=="rightMaxWavelenght")
@@ -59,7 +60,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if(request->text()=="upShowWavelenght")
                 funcShowWavelen(e->screenPos().toPoint(), 2);
             if(request->text()=="upDrawWavelenght")
-                funcShowWavelenLines(2);
+                //funcShowWavelenLines(2);
             if(request->text()=="upMinWavelenght")
                 identifyMinimumWavelenght(e->screenPos().toPoint(), 2);
             if(request->text()=="upMaxWavelenght")
@@ -68,7 +69,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if(request->text()=="leftShowWavelenght")
                 funcShowWavelen(e->screenPos().toPoint(), 3);
             if(request->text()=="leftDrawWavelenght")
-                funcShowWavelenLines(3);
+                //funcShowWavelenLines(3);
             if(request->text()=="leftMinWavelenght")
                 identifyMinimumWavelenght(e->screenPos().toPoint(), 3);
             if(request->text()=="leftMaxWavelenght")
@@ -77,11 +78,12 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if(request->text()=="downShowWavelenght")
                 funcShowWavelen(e->screenPos().toPoint(), 4);
             if(request->text()=="downDrawWavelenght")
-                funcShowWavelenLines(4);
+                //funcShowWavelenLines(4);
             if(request->text()=="downMinWavelenght")
                 identifyMinimumWavelenght(e->screenPos().toPoint(), 4);
             if(request->text()=="downMaxWavelenght")
                 identifyMaximumWavelenght(e->screenPos().toPoint(), 4);
+            */
 
         }
     }
@@ -90,6 +92,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
 
 }
 
+/*
 void GraphicsView::funcShowWavelenLines(int type){
 
     //Gets camera calibration from .XML
@@ -178,7 +181,9 @@ void GraphicsView::funcShowWavelenLines(int type){
     this->update();
 
 }
+*/
 
+/*
 void GraphicsView::funcShowWavelen(QPoint pos, int type){
     float wavelenght;
     int val;
@@ -197,7 +202,9 @@ void GraphicsView::funcShowWavelen(QPoint pos, int type){
     wavelenght = funcCalcWavelen( val, type );
     funcShowMsg("max avelenght",QString::number(wavelenght) +" | x: "+QString::number(pos.x()));
 }
+*/
 
+/*
 void GraphicsView::identifyMinimumWavelenght(QPoint pos, int type){
     float wavelenght;
     wavelenght = funcCalcWavelen( pos.x(), type );
@@ -209,7 +216,9 @@ void GraphicsView::identifyMaximumWavelenght(QPoint pos, int type){
     wavelenght = funcCalcWavelen( pos.x(), type );
     funcShowMsg("max avelenght",QString::number(wavelenght));
 }
+*/
 
+/*
 float GraphicsView::funcCalcWavelen( int pixX, int type ){
     //Gets camera calibration from .XML
     //..
@@ -241,6 +250,7 @@ float GraphicsView::funcCalcWavelen( int pixX, int type ){
     }
     return ((float)pixX - a) / b;
 }
+*/
 
 void GraphicsView::save(QString fileName){
     this->disableScrolls();
@@ -272,7 +282,7 @@ void GraphicsView::funcDisplayPixelProperties(QMouseEvent *e)
     funcShowMsg("Pixel properties", tmpProp);
 }
 
-
+/*
 void GraphicsView::funcTestCalibration()
 {
 
@@ -306,12 +316,8 @@ void GraphicsView::funcTestCalibration()
         exit(0);
 
     }
-
-
-
-
-
 }
+*/
 
 QAction *GraphicsView::showContextMenuLine(QPoint pos){
     QMenu *xmenu = new QMenu();
@@ -321,7 +327,7 @@ QAction *GraphicsView::showContextMenuLine(QPoint pos){
     xmenu->addAction( "Save view" );
 
 
-
+    /*
     xmenu->addSeparator();
     QMenu* submenu2  = xmenu->addMenu( "Identify" );
     QMenu* submenu21 = submenu2->addMenu( "Right" );
@@ -348,7 +354,7 @@ QAction *GraphicsView::showContextMenuLine(QPoint pos){
     submenu24->addAction( "downShowWavelenght" );
     submenu24->addAction( "downMinWavelenght" );
     submenu24->addAction( "downMaxWavelenght" );
-
+    */
 
     //submenu2->addAction( "Green centroid" );
     //submenu2->addAction( "Blue centroid" );

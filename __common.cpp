@@ -44,18 +44,6 @@ void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
     qDebug() << "squarePixW: " << calibSettings->squarePixW;
     qDebug() << "squarePixH: " << calibSettings->squarePixH;
 
-    qDebug() << "rightLinRegA: " << calibSettings->rightLinRegA;
-    qDebug() << "rightLinRegB: " << calibSettings->rightLinRegB;
-
-    qDebug() << "upLinRegA: " << calibSettings->upLinRegA;
-    qDebug() << "upLinRegB: " << calibSettings->upLinRegB;
-
-    qDebug() << "leftLinRegA: " << calibSettings->leftLinRegA;
-    qDebug() << "leftLinRegB: " << calibSettings->leftLinRegB;
-
-    qDebug() << "downLinRegA: " << calibSettings->downLinRegA;
-    qDebug() << "downLinRegB: " << calibSettings->downLinRegB;
-
 }
 
 bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
@@ -118,25 +106,9 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="squarePixH" )
                 doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="rightLinRegA" )
-                doubAxisCal->rightLinRegA = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="rightLinRegB" )
-                doubAxisCal->rightLinRegB = xmlReader->readElementText().toFloat(0);
+            //if( xmlReader->name()=="rightLinRegA" )
+            //    doubAxisCal->rightLinRegA = xmlReader->readElementText().toFloat(0);
 
-            if( xmlReader->name()=="upLinRegA" )
-                doubAxisCal->upLinRegA = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="upLinRegB" )
-                doubAxisCal->upLinRegB = xmlReader->readElementText().toFloat(0);
-
-            if( xmlReader->name()=="leftLinRegA" )
-                doubAxisCal->leftLinRegA = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="leftLinRegB" )
-                doubAxisCal->leftLinRegB = xmlReader->readElementText().toFloat(0);
-
-            if( xmlReader->name()=="downLinRegA" )
-                doubAxisCal->downLinRegA = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="downLinRegB" )
-                doubAxisCal->downLinRegB = xmlReader->readElementText().toFloat(0);
 
         }
     }
@@ -923,6 +895,7 @@ bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directo
 
 
 
+/*
 void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett ){
     diffPix->rightY = (float)calSett->rightLinRegA  + ( (float)calSett->rightLinRegB    * (float)diffPix->x );
     diffPix->upY    = (float)calSett->upLinRegA     + ( (float)calSett->upLinRegB       * (float)diffPix->x );
@@ -937,6 +910,7 @@ void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSe
     qDebug() << "calSett->rightY: " << diffPix->rightY;
 
 }
+*/
 
 
 double funcDet2x2(double **M){

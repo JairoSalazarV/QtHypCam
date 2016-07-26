@@ -10,6 +10,7 @@
 
 #include <QMatrix4x4>
 #include <QVector4D>
+#include <QMatrix4x2>
 
 bool isExportable = false;
 
@@ -296,6 +297,190 @@ void genCalibXML::on_pbRedRightDown_clicked()
     funcGetFilePath(ui->pbRedRightDown);
 }
 
+strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids)
+{
+    strAllLinReg linRegRes;
+    double pointsX[7];
+    double pointsY[7];
+
+    //Horizontal
+    //..
+    pointsX[0] = (double)centroids->redLeft.split(",").at(0).toInt(0);
+    pointsX[1] = (double)centroids->greenLeft.split(",").at(0).toInt(0);
+    pointsX[2] = (double)centroids->blueLeft.split(",").at(0).toInt(0);
+    pointsX[3] = (double)centroids->source.split(",").at(0).toInt(0);
+    pointsX[4] = (double)centroids->redRight.split(",").at(0).toInt(0);
+    pointsX[5] = (double)centroids->greenRight.split(",").at(0).toInt(0);
+    pointsX[6] = (double)centroids->blueRight.split(",").at(0).toInt(0);
+    pointsY[0] = (double)centroids->redLeft.split(",").at(1).toInt(0);
+    pointsY[1] = (double)centroids->greenLeft.split(",").at(1).toInt(0);
+    pointsY[2] = (double)centroids->blueLeft.split(",").at(1).toInt(0);
+    pointsY[3] = (double)centroids->source.split(",").at(1).toInt(0);
+    pointsY[4] = (double)centroids->redRight.split(",").at(1).toInt(0);
+    pointsY[5] = (double)centroids->greenRight.split(",").at(1).toInt(0);
+    pointsY[6] = (double)centroids->blueRight.split(",").at(1).toInt(0);
+    linearRegresion horB = funcLinearRegression( pointsX, pointsY, 7 );
+    linRegRes.horizA = horB.a;
+    linRegRes.horizB = horB.b;
+
+    //Vertical
+    //..
+    pointsX[0] = (double)centroids->redDown.split(",").at(1).toInt(0);
+    pointsX[1] = (double)centroids->greenDown.split(",").at(1).toInt(0);
+    pointsX[2] = (double)centroids->blueDown.split(",").at(1).toInt(0);
+    pointsX[3] = (double)centroids->source.split(",").at(1).toInt(0);
+    pointsX[4] = (double)centroids->redUp.split(",").at(1).toInt(0);
+    pointsX[5] = (double)centroids->greenUp.split(",").at(1).toInt(0);
+    pointsX[6] = (double)centroids->blueUp.split(",").at(1).toInt(0);    
+    pointsY[0] = (double)centroids->redDown.split(",").at(0).toInt(0);
+    pointsY[1] = (double)centroids->greenDown.split(",").at(0).toInt(0);
+    pointsY[2] = (double)centroids->blueDown.split(",").at(0).toInt(0);
+    pointsY[3] = (double)centroids->source.split(",").at(0).toInt(0);
+    pointsY[4] = (double)centroids->redUp.split(",").at(0).toInt(0);
+    pointsY[5] = (double)centroids->greenUp.split(",").at(0).toInt(0);
+    pointsY[6] = (double)centroids->blueUp.split(",").at(0).toInt(0);
+    linearRegresion verB = funcLinearRegression( pointsX, pointsY, 7 );
+    linRegRes.vertA = verB.a;
+    linRegRes.vertB = verB.b;
+
+    //Wavelength horizontal
+    //..
+    double auxL, auxR, aux;
+    aux  = centroids->source.split(",").at(0).toFloat(0);
+    //Delta blue X
+    auxL = (double)abs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
+    auxR = (double)abs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
+    pointsX[0] = (double)_BLUE_WAVELENGHT;
+    pointsY[0] = (auxL+auxR) / 2.0;
+    //Delta green X
+    auxL = (double)abs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
+    auxR = (double)abs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
+    pointsX[1] = (double)_GREEN_WAVELENGHT;
+    pointsY[1] = (auxL+auxR) / 2.0;
+    //Delta red X
+    auxL = (double)abs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
+    auxR = (double)abs(aux - centroids->redRight.split(",").at(0).toFloat(0));
+    pointsX[2] = (double)_RED_WAVELENGHT;
+    pointsY[2] = (auxL+auxR) / 2.0;
+    //Delta source X
+    pointsX[3] = 0.0;
+    pointsY[3] = 0.0;
+    linearRegresion waveXB = funcLinearRegression( pointsX, pointsY, 4 );
+    linRegRes.waveHorizA = waveXB.a;
+    linRegRes.waveHorizB = waveXB.b;
+
+    //Wavelength vertical
+    //..
+    double auxU, auxD;
+    aux         = centroids->source.split(",").at(1).toFloat(0);
+    //Delta blue X
+    auxU        = (double)abs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
+    auxD        = (double)abs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
+    pointsX[0]  = (double)_BLUE_WAVELENGHT;
+    pointsY[0]  = (auxU+auxD) / 2.0;
+    //Delta green X
+    auxU        = (double)abs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
+    auxD        = (double)abs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
+    pointsX[1]  = (double)_GREEN_WAVELENGHT;
+    pointsY[1]  = (auxU+auxD) / 2.0;
+    //Delta red X
+    auxU        = (double)abs(aux - centroids->redUp.split(",").at(1).toFloat(0));
+    auxD        = (double)abs(aux - centroids->redDown.split(",").at(1).toFloat(0));
+    pointsX[2]  = (double)_RED_WAVELENGHT;
+    pointsY[2]  = (auxU+auxD) / 2.0;
+    //Delta source X
+    pointsX[3]  = 0.0;
+    pointsY[3]  = 0.0;
+    linearRegresion waveYB = funcLinearRegression( pointsX, pointsY, 4 );
+    linRegRes.waveVertA = waveYB.a;
+    linRegRes.waveVertB = waveYB.b;
+
+    //Delta horizontal
+    //..
+    aux  = centroids->source.split(",").at(0).toFloat(0);
+    //Delta blue X
+    auxL = (double)abs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
+    auxR = (double)abs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
+    pointsY[0] = (double)_BLUE_WAVELENGHT;
+    pointsX[0] = (auxL+auxR) / 2.0;
+    //Delta green X
+    auxL = (double)abs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
+    auxR = (double)abs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
+    pointsY[1] = (double)_GREEN_WAVELENGHT;
+    pointsX[1] = (auxL+auxR) / 2.0;
+    //Delta red X
+    auxL = (double)abs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
+    auxR = (double)abs(aux - centroids->redRight.split(",").at(0).toFloat(0));
+    pointsY[2] = (double)_RED_WAVELENGHT;
+    pointsX[2] = (auxL+auxR) / 2.0;
+    //Delta source X
+    pointsX[3] = 0.0;
+    pointsY[3] = 0.0;
+    linearRegresion deltaXB = funcLinearRegression( pointsX, pointsY, 4 );
+    linRegRes.deltaHorizA = deltaXB.a;
+    linRegRes.deltaHorizB = deltaXB.b;
+
+    //Delta vertical
+    //..
+    aux         = centroids->source.split(",").at(1).toFloat(0);
+    //Delta blue X
+    auxU        = (double)abs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
+    auxD        = (double)abs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
+    pointsY[0]  = (double)_BLUE_WAVELENGHT;
+    pointsX[0]  = (auxU+auxD) / 2.0;
+    //Delta green X
+    auxU        = (double)abs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
+    auxD        = (double)abs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
+    pointsY[1]  = (double)_GREEN_WAVELENGHT;
+    pointsX[1]  = (auxU+auxD) / 2.0;
+    //Delta red X
+    auxU        = (double)abs(aux - centroids->redUp.split(",").at(1).toFloat(0));
+    auxD        = (double)abs(aux - centroids->redDown.split(",").at(1).toFloat(0));
+    pointsY[2]  = (double)_RED_WAVELENGHT;
+    pointsX[2]  = (auxU+auxD) / 2.0;
+    //Delta source X
+    pointsY[3]  = 0.0;
+    pointsX[3]  = 0.0;
+    linearRegresion deltaYB = funcLinearRegression( pointsX, pointsY, 4 );
+    linRegRes.deltaVertA = deltaYB.a;
+    linRegRes.deltaVertB = deltaYB.b;
+
+    return linRegRes;
+}
+
+strAllLinReg genCalibXML::getAllLR(){
+    lstCalibFileNames calibPoints = fillLstCalibPoints();
+    return calcAllLinReg(&calibPoints);
+}
+
+strLimits genCalibXML::getLimitsFromHDD(){
+    QString aux;
+    strLimits limits;
+
+    aux = readAllFile(_PATH_LIMIT_R);
+    limits.rightInf = aux.split(",").at(2).toInt(0);
+    limits.rightSup = aux.split(",").at(0).toInt(0);
+
+    aux = readAllFile(_PATH_LIMIT_U);
+    limits.upInf = aux.split(",").at(2).toInt(0);
+    limits.upSup = aux.split(",").at(0).toInt(0);
+
+    aux = readAllFile(_PATH_LIMIT_L);
+    limits.leftInf = aux.split(",").at(2).toInt(0);
+    limits.leftSup = aux.split(",").at(0).toInt(0);
+
+    aux = readAllFile(_PATH_LIMIT_D);
+    limits.downInf = aux.split(",").at(2).toInt(0);
+    limits.downSup = aux.split(",").at(0).toInt(0);
+
+    aux = readAllFile(_PATH_LIMIT_S);
+    limits.sourceX = aux.split(",").at(0).toInt(0);
+    limits.sourceY = aux.split(",").at(1).toInt(0);
+
+    return limits;
+
+}
+
 void genCalibXML::on_pbGenCal_clicked()
 {
     if( isExportable )
@@ -341,203 +526,10 @@ void genCalibXML::on_pbGenCal_clicked()
         auxSqX -= auxBigX;
         auxSqY -= auxBigY;
 
-        //Translate centroids to the left-up corner of the square aperture
-        //..
-        int sourceX, sourceY, tmpOffsetX, tmpOffsetY;
-        sourceX = calibPoints.source.split(",").at(0).toFloat(0);
-        sourceY = calibPoints.source.split(",").at(1).toFloat(0);
-        //tmpOffsetX = abs( squareLeftCornerX - auxSqX );
-        //tmpOffsetY = abs( squareLeftCornerY - auxSqY );
-        //qDebug() << "tmpOffsetX: " << tmpOffsetX;
-        //qDebug() << "tmpOffsetY: " << tmpOffsetY;
-
-
         //Calculates linear regressions
         //..
-        double pointsX[4];
-        double pointsY[4];
+        strAllLinReg linRegRes = getAllLR();
 
-        //Right
-        //..
-        tmpOffsetX = abs(sourceX - auxSqX);
-        tmpOffsetY = abs(sourceY - auxSqY);
-        customQMatrix4x4 rightMultLinReg;
-        QVector4D tmpVal;
-        //Source
-        tmpVal.setX(1);
-        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW(0.0);
-        rightMultLinReg.setRow(0,tmpVal);
-        //Blue
-        tmpVal.setY(calibPoints.blueRight.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.blueRight.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_BLUE_WAVELENGHT);        
-        rightMultLinReg.setRow(1,tmpVal);
-        //Green
-        tmpVal.setY(calibPoints.greenRight.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.greenRight.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
-        rightMultLinReg.setRow(2,tmpVal);
-        //Red
-        tmpVal.setY(calibPoints.redRight.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.redRight.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_RED_WAVELENGHT);
-        rightMultLinReg.setRow(3,tmpVal);
-        //It calculates multi linear regression
-        customQMatrix4x3 rightMultiLinRegRes = mulLinRegXYW(rightMultLinReg);
-        rightMultiLinRegRes.print("rightMultiLinRegRes: ");
-
-        //Up
-        //..
-        int sqLeftDownCornerX, sqLeftDownCornerY;
-        sqLeftDownCornerX = auxSqX;
-        sqLeftDownCornerY = auxSqY + calibPoints.squareH;
-        tmpOffsetX = abs(sqLeftDownCornerX - sourceX);
-        tmpOffsetY = abs(sqLeftDownCornerY - sourceY);
-        customQMatrix4x4 upMultLinReg;
-        //Source
-        tmpVal.setX(1);
-        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
-        tmpVal.setW(0.0);
-        upMultLinReg.setRow(0,tmpVal);
-        //Blue
-        tmpVal.setY(calibPoints.blueUp.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.blueUp.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
-        tmpVal.setW((qreal)_BLUE_WAVELENGHT);
-        upMultLinReg.setRow(1,tmpVal);
-        //Green
-        tmpVal.setY(calibPoints.greenUp.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.greenUp.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
-        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
-        upMultLinReg.setRow(2,tmpVal);
-        //Red
-        tmpVal.setY(calibPoints.redUp.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.redUp.split(",").at(1).toFloat(0) + (float)tmpOffsetY);
-        tmpVal.setW((qreal)_RED_WAVELENGHT);
-        upMultLinReg.setRow(3,tmpVal);
-        //It calculates multi linear regression
-        customQMatrix4x3 upMultiLinRegRes = mulLinRegXYW(upMultLinReg);
-        upMultiLinRegRes.print("upMultiLinRegRes: ");
-
-        //Left
-        //..
-        int sqRightUpCornerX, sqRightUpCornerY;
-        sqRightUpCornerX = auxSqX + calibPoints.squareW;
-        sqRightUpCornerY = auxSqY;
-        tmpOffsetX = abs(sqRightUpCornerX - sourceX);
-        tmpOffsetY = abs(sourceY - sqRightUpCornerY);
-        customQMatrix4x4 leftMultLinReg;
-        //Source
-        tmpVal.setX(1);
-        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW(0.0);
-        leftMultLinReg.setRow(0,tmpVal);
-        //Blue
-        tmpVal.setY(calibPoints.blueLeft.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.blueLeft.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_BLUE_WAVELENGHT);
-        leftMultLinReg.setRow(1,tmpVal);
-        //Green
-        tmpVal.setY(calibPoints.greenLeft.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.greenLeft.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
-        leftMultLinReg.setRow(2,tmpVal);
-        //Red
-        tmpVal.setY(calibPoints.redLeft.split(",").at(0).toFloat(0) + (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.redLeft.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_RED_WAVELENGHT);
-        leftMultLinReg.setRow(3,tmpVal);
-        //It calculates multi linear regression
-        customQMatrix4x3 leftMultiLinRegRes = mulLinRegXYW(leftMultLinReg);
-        leftMultiLinRegRes.print("leftMultiLinRegRes: ");
-
-        //Down
-        //..
-        tmpOffsetX = abs(sourceX - auxSqX);
-        tmpOffsetY = abs(sourceY - auxSqY);
-        customQMatrix4x4 downMultLinReg;
-        //Source
-        tmpVal.setX(1);
-        tmpVal.setY(calibPoints.source.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.source.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW(0.0);
-        downMultLinReg.setRow(0,tmpVal);
-        //Blue
-        tmpVal.setY(calibPoints.blueDown.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.blueDown.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_BLUE_WAVELENGHT);
-        downMultLinReg.setRow(1,tmpVal);
-        //Green
-        tmpVal.setY(calibPoints.greenDown.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.greenDown.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_GREEN_WAVELENGHT);
-        downMultLinReg.setRow(2,tmpVal);
-        //Red
-        tmpVal.setY(calibPoints.redDown.split(",").at(0).toFloat(0) - (float)tmpOffsetX);
-        tmpVal.setZ(calibPoints.redDown.split(",").at(1).toFloat(0) - (float)tmpOffsetY);
-        tmpVal.setW((qreal)_RED_WAVELENGHT);
-        downMultLinReg.setRow(3,tmpVal);
-        //It calculates multi linear regression
-        customQMatrix4x3 downMultiLinRegRes = mulLinRegXYW(downMultLinReg);
-        downMultiLinRegRes.print("downMultiLinRegRes: ");
-
-
-        /*
-
-        //Up
-        //..
-        int sqLeftDownCornerX, sqLeftDownCornerY;
-        sqLeftDownCornerX = auxSqX;
-        sqLeftDownCornerY = auxSqY + calibPoints.squareH;
-        tmpOffsetX = abs(sqLeftDownCornerX - sourceX);
-        tmpOffsetY = abs(sqLeftDownCornerY - sourceY);
-        pointsY[0] = calibPoints.source.split(",").at(1).toDouble(0) + (double)tmpOffsetY;
-        pointsY[1] = calibPoints.blueUp.split(",").at(1).toDouble(0) + (double)tmpOffsetY;
-        pointsY[2] = calibPoints.greenUp.split(",").at(1).toDouble(0) + (double)tmpOffsetY;
-        pointsY[3] = calibPoints.redUp.split(",").at(1).toDouble(0) + (double)tmpOffsetY;
-        linearRegresion *upLinReg = funcLinearRegression(pointsX,pointsY,4);
-        qDebug() << "upLinReg: ";
-        qDebug() << "upLinReg->a: " << upLinReg->a;
-        qDebug() << "upLinReg->b: " << upLinReg->b;
-
-        //Left
-        //..
-        int sqRightUpCornerX, sqRightUpCornerY;
-        sqRightUpCornerX = auxSqX + calibPoints.squareW;
-        sqRightUpCornerY = auxSqY;
-        tmpOffsetX = abs(sqRightUpCornerX - sourceX);
-        tmpOffsetY = abs(sourceY - sqRightUpCornerY);
-        pointsX[0] = 0.0;
-        pointsY[0] = calibPoints.source.split(",").at(0).toDouble(0) + (double)tmpOffsetX;
-        pointsY[1] = calibPoints.blueLeft.split(",").at(0).toDouble(0) + (double)tmpOffsetX;
-        pointsY[2] = calibPoints.greenLeft.split(",").at(0).toDouble(0) + (double)tmpOffsetX;
-        pointsY[3] = calibPoints.redLeft.split(",").at(0).toDouble(0) + (double)tmpOffsetX;
-        linearRegresion *leftLinReg = funcLinearRegression(pointsX,pointsY,4);
-        qDebug() << "leftLinReg: ";
-        qDebug() << "leftLinReg->a: " << leftLinReg->a;
-        qDebug() << "leftLinReg->b: " << leftLinReg->b;
-
-        //Down
-        //..
-        tmpOffsetX = abs(sourceX - auxSqX);
-        tmpOffsetY = abs(sourceY - auxSqY);
-        pointsY[0] = calibPoints.source.split(",").at(1).toDouble(0) - (double)tmpOffsetY;
-        pointsY[1] = calibPoints.blueDown.split(",").at(1).toDouble(0) - (double)tmpOffsetY;
-        pointsY[2] = calibPoints.greenDown.split(",").at(1).toDouble(0) - (double)tmpOffsetY;
-        pointsY[3] = calibPoints.redDown.split(",").at(1).toDouble(0) - (double)tmpOffsetY;
-        linearRegresion *downLinReg = funcLinearRegression(pointsX,pointsY,4);
-        qDebug() << "downLinReg: ";
-        qDebug() << "downLinReg->a: " << downLinReg->a;
-        qDebug() << "downLinReg->b: " << downLinReg->b;
-
-
-        */
-
-
-        /*
         double xs,ys,ws,hs;
         xs = (double)sqApert->rectX / (double)sqApert->canvasW;
         ys = (double)sqApert->rectY / (double)sqApert->canvasH;
@@ -548,45 +540,40 @@ void genCalibXML::on_pbGenCal_clicked()
 
         newFileCon.append("<calib>\n");
 
-            newFileCon.append("    <bkgPath>"+ sourcePath                           + "</bkgPath>\n");
+            newFileCon.append("    <bkgPath>"+ sourcePath                                   + "</bkgPath>\n");
 
             newFileCon.append("    <origin>(0,0)=(left,up)</origin>\n");
 
-            newFileCon.append("    <W>"+ QString::number(_BIG_WIDTH)                + "</W>\n");
-            newFileCon.append("    <H>"+ QString::number(_BIG_HEIGHT)               + "</H>\n");
+            newFileCon.append("    <W>"+ QString::number(_BIG_WIDTH)                        + "</W>\n");
+            newFileCon.append("    <H>"+ QString::number(_BIG_HEIGHT)                       + "</H>\n");
 
-            newFileCon.append("    <bigX>"+ QString::number( xB )                   + "</bigX>\n");
-            newFileCon.append("    <bigY>"+ QString::number( yB )                   + "</bigY>\n");
-            newFileCon.append("    <bigW>"+ QString::number( wB )                   + "</bigW>\n");
-            newFileCon.append("    <bigH>"+ QString::number( hB )                   + "</bigH>\n");
+            newFileCon.append("    <bigX>"+ QString::number( xB )                           + "</bigX>\n");
+            newFileCon.append("    <bigY>"+ QString::number( yB )                           + "</bigY>\n");
+            newFileCon.append("    <bigW>"+ QString::number( wB )                           + "</bigW>\n");
+            newFileCon.append("    <bigH>"+ QString::number( hB )                           + "</bigH>\n");
 
-            newFileCon.append("    <squareX>"+ QString::number( xs )                + "</squareX>\n");
-            newFileCon.append("    <squareY>"+ QString::number( ys )                + "</squareY>\n");
-            newFileCon.append("    <squareW>"+ QString::number( ws )                + "</squareW>\n");
-            newFileCon.append("    <squareH>"+ QString::number( hs )                + "</squareH>\n");
+            newFileCon.append("    <squareX>"+ QString::number( xs )                        + "</squareX>\n");
+            newFileCon.append("    <squareY>"+ QString::number( ys )                        + "</squareY>\n");
+            newFileCon.append("    <squareW>"+ QString::number( ws )                        + "</squareW>\n");
+            newFileCon.append("    <squareH>"+ QString::number( hs )                        + "</squareH>\n");
 
-            //newFileCon.append("    <sourceX>"+ calibPoints.source.split(",").at(0)  + "</sourceX>\n");
-            //newFileCon.append("    <sourceY>"+ calibPoints.source.split(",").at(1)  + "</sourceY>\n");
+            newFileCon.append("    <squarePixX>"+ QString::number( auxSqX )                 + "</squarePixX>\n");
+            newFileCon.append("    <squarePixY>"+ QString::number( auxSqY )                 + "</squarePixY>\n");
+            newFileCon.append("    <squarePixW>"+ QString::number( auxSqW )                 + "</squarePixW>\n");
+            newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )                 + "</squarePixH>\n");
 
-            newFileCon.append("    <squarePixX>"+ QString::number( auxSqX )         + "</squarePixX>\n");
-            newFileCon.append("    <squarePixY>"+ QString::number( auxSqY )         + "</squarePixY>\n");
-            newFileCon.append("    <squarePixW>"+ QString::number( auxSqW )         + "</squarePixW>\n");
-            newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )         + "</squarePixH>\n");
-            //newFileCon.append("    <squarePixBigX>"+ QString::number( auxBigX )     + "</squarePixBigX>\n");
-            //newFileCon.append("    <squarePixBigY>"+ QString::number( auxBigY )     + "</squarePixBigY>\n");
-
-            newFileCon.append("    <rightLinRegA>"+ QString::number(rightLinReg->a) + "</rightLinRegA>\n");
-            newFileCon.append("    <rightLinRegB>"+ QString::number(rightLinReg->b) + "</rightLinRegB>\n");
-            newFileCon.append("    <upLinRegA>"   + QString::number(upLinReg->a)    + "</upLinRegA>\n");
-            newFileCon.append("    <upLinRegB>"   + QString::number(upLinReg->b)    + "</upLinRegB>\n");
-            newFileCon.append("    <leftLinRegA>" + QString::number(leftLinReg->a)  + "</leftLinRegA>\n");
-            newFileCon.append("    <leftLinRegB>" + QString::number(leftLinReg->b)  + "</leftLinRegB>\n");
-            newFileCon.append("    <downLinRegA>" + QString::number(downLinReg->a)  + "</downLinRegA>\n");
-            newFileCon.append("    <downLinRegB>" + QString::number(downLinReg->b)  + "</downLinRegB>\n");
-
-
-
-
+            newFileCon.append("    <horizontalA>"+ QString::number( linRegRes.horizA )      + "</horizontalA>\n");
+            newFileCon.append("    <horizontalB>"+ QString::number( linRegRes.horizB )      + "</horizontalB>\n");
+            newFileCon.append("    <verticalA>"+ QString::number( linRegRes.vertA )         + "</verticalA>\n");
+            newFileCon.append("    <verticalB>"+ QString::number( linRegRes.vertB )         + "</verticalB>\n");
+            newFileCon.append("    <waveHorizA>"+ QString::number( linRegRes.waveHorizA )   + "</waveHorizA>\n");
+            newFileCon.append("    <waveHorizB>"+ QString::number( linRegRes.waveHorizB )   + "</waveHorizB>\n");
+            newFileCon.append("    <waveVertA>"+ QString::number( linRegRes.waveVertA )     + "</waveVertA>\n");
+            newFileCon.append("    <waveVertB>"+ QString::number( linRegRes.waveVertB )     + "</waveVertB>\n");
+            newFileCon.append("    <deltaHorizA>"+ QString::number( linRegRes.deltaHorizA )  + "</deltaHorizA>\n");
+            newFileCon.append("    <deltaHorizB>"+ QString::number( linRegRes.deltaHorizB )  + "</deltaHorizB>\n");
+            newFileCon.append("    <deltaVertA>"+ QString::number( linRegRes.deltaVertA )    + "</deltaVertA>\n");
+            newFileCon.append("    <deltaVertB>"+ QString::number( linRegRes.deltaVertB )    + "</deltaVertB>\n");
 
         newFileCon.append("</calib>\n");
 
@@ -594,13 +581,13 @@ void genCalibXML::on_pbGenCal_clicked()
         //Save file
         if( saveFile(_PATH_CALIBRATION_FILE,newFileCon) )
         {
-            funcShowMsg("Success","File saved");
+            funcShowMsg(" ","File saved");
         }
         else
         {
             funcShowMsg("ERROR","Saving file");
         }
-        */
+
 
 
 
