@@ -265,6 +265,8 @@ private slots:
 
     void on_actionLoadCanvas_triggered();
 
+    void loadImageIntoCanvasEdit(QString fileName, bool ask);
+
     void on_actionApplyThreshold_triggered();
 
     void applyThreshol2Scene(QString threshold);

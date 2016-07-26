@@ -37,7 +37,7 @@
 #include <rotationfrm.h>
 #include <recparamfrm.h>
 //#include <generatehypercube.h>
-#include <validatecalibration.h>
+//#include <validatecalibration.h>
 #include <selwathtocheck.h>
 
 
@@ -202,6 +202,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progBar->setVisible(false);
 
     disableAllToolBars();
+
+    loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
 
 }
 
@@ -3015,19 +3017,31 @@ void MainWindow::on_actionLoadCanvas_triggered()
         return (void)NULL;
     }
 
+    loadImageIntoCanvasEdit(auxQstring, true);
+
+
+}
+
+void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
     //Create a copy of the image selected
     //..
-    QImage origImg(auxQstring);
+    QImage origImg(fileName);
     origImg.save(_PATH_DISPLAY_IMAGE);
 
     //Rotate if requires
     //..
-    if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
-        float rotAngle = getLastAngle();
-        doImgRotation( rotAngle );
-        globaIsRotated = true;
-    }else{
-        globaIsRotated = false;
+    if(ask)
+    {
+        if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 )
+        {
+            float rotAngle = getLastAngle();
+            doImgRotation( rotAngle );
+            globaIsRotated = true;
+        }
+        else
+        {
+            globaIsRotated = false;
+        }
     }
 
     //Refresh image in scene
@@ -3045,6 +3059,9 @@ void MainWindow::on_actionLoadCanvas_triggered()
     ui->toolBarDraw->setEnabled(true);
     ui->toolBarDraw->setVisible(true);
     //ui->slide2AxCalThre->setEnabled(true);
+
+
+    reloadImage2Display();
 }
 
 void MainWindow::on_actionApplyThreshold_triggered()
@@ -3306,9 +3323,9 @@ void MainWindow::on_actionGenHypercube_triggered()
 
 void MainWindow::on_actionValidCal_triggered()
 {
-    validateCalibration *frmValCal = new validateCalibration(this);
-    frmValCal->setModal(false);
-    frmValCal->show();
+    //validateCalibration *frmValCal = new validateCalibration(this);
+    //frmValCal->setModal(false);
+    //frmValCal->show();
 }
 
 void MainWindow::on_actionValCal_triggered()

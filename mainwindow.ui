@@ -948,7 +948,6 @@ QSlider::handle:horizontal {
    <addaction name="actionDrawToolbar"/>
    <addaction name="actionDoubAxisDiff"/>
    <addaction name="actionValCal"/>
-   <addaction name="actionValidCal"/>
    <addaction name="actionGenHypercube"/>
   </widget>
   <action name="actionExit">
