@@ -93,7 +93,9 @@ private slots:
 
     QVector2D getWavelengthFrontiers();
 
-    void on_pbGenCal_clicked();    
+    void on_pbGenCal_clicked();
+
+    QVector2D calcSpectralResolution();
 
     customQMatrix4x3 mulLinRegXYW(customQMatrix4x4 X);
 

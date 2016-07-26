@@ -80,6 +80,7 @@ void selWathToCheck::on_pbCentroids_clicked()
 
     //Show limits calculated
     if( ui->checkBoxLimitsCalculated->isChecked() ){
+        showGV();
         showLimitCalculated();
     }
 
@@ -93,9 +94,71 @@ void selWathToCheck::on_pbCentroids_clicked()
 
 void selWathToCheck::showLimitCalculated()
 {
-    QString msg;
-    msg = QString::number(daCalib->minWavelength) + "nm to " + QString::number(daCalib->maxWavelength) + "nm";
-    funcShowMsg("Spectral range", msg);
+    //Show wavelength limits
+    //..
+    //QString msg;
+    //msg = QString::number(daCalib->minWavelength) + "nm to " + QString::number(daCalib->maxWavelength) + "nm";
+    //funcShowMsg("Spectral range", msg);
+
+    //Prepare to display borders as lines
+    //..
+    QString source;
+    customLine *minLine;
+    customLine *maxLine;
+    int x, y, sX, sY, min, max, W, H;
+    W = globalGvValCal->scene()->width();
+    H = globalGvValCal->scene()->height();
+    min = round(daCalib->LR.waveHorizA +( daCalib->LR.waveHorizB * daCalib->minWavelength ));
+    max = round(daCalib->LR.waveHorizA +( daCalib->LR.waveHorizB * daCalib->maxWavelength ));
+    source = readAllFile(_PATH_LIMIT_S);
+    sX = source.split(",").at(0).toInt(0);
+    sY = source.split(",").at(1).toInt(0);
+
+    //Right
+    x = sX+min;
+    minLine = new customLine(QPoint(x,0),QPoint(x,H),QPen(Qt::blue));
+    minLine->setToolTip( QString::number(daCalib->minWavelength) + "nm" );
+    x = sX+max;
+    maxLine = new customLine(QPoint(x,0),QPoint(x,W),QPen(Qt::red));
+    maxLine->setToolTip( QString::number(daCalib->maxWavelength) + "nm" );
+    globalGvValCal->scene()->addItem(minLine);
+    globalGvValCal->scene()->addItem(maxLine);
+
+    //Left
+    x = sX-min;
+    minLine = new customLine(QPoint(x,0),QPoint(x,H),QPen(Qt::blue));
+    minLine->setToolTip( QString::number(daCalib->minWavelength) + "nm" );
+    x = sX-max;
+    maxLine = new customLine(QPoint(x,0),QPoint(x,W),QPen(Qt::red));
+    maxLine->setToolTip( QString::number(daCalib->maxWavelength) + "nm" );
+    globalGvValCal->scene()->addItem(minLine);
+    globalGvValCal->scene()->addItem(maxLine);
+
+    //Up
+    min = round(daCalib->LR.waveVertA +( daCalib->LR.waveVertB * daCalib->minWavelength ));
+    max = round(daCalib->LR.waveVertA +( daCalib->LR.waveVertB * daCalib->maxWavelength ));
+    y = sY-min;
+    minLine = new customLine(QPoint(0,y),QPoint(W,y),QPen(Qt::blue));
+    minLine->setToolTip( QString::number(daCalib->minWavelength) + "nm" );
+    y = sY-max;
+    maxLine = new customLine(QPoint(0,y),QPoint(W,y),QPen(Qt::red));
+    maxLine->setToolTip( QString::number(daCalib->maxWavelength) + "nm" );
+    globalGvValCal->scene()->addItem(minLine);
+    globalGvValCal->scene()->addItem(maxLine);
+
+    //Down
+    y = sY+min;
+    minLine = new customLine(QPoint(0,y),QPoint(W,y),QPen(Qt::blue));
+    minLine->setToolTip( QString::number(daCalib->minWavelength) + "nm" );
+    y = sY+max;
+    maxLine = new customLine(QPoint(0,y),QPoint(W,y),QPen(Qt::red));
+    maxLine->setToolTip( QString::number(daCalib->maxWavelength) + "nm" );
+    globalGvValCal->scene()->addItem(minLine);
+    globalGvValCal->scene()->addItem(maxLine);
+
+    drawCentroid(_PATH_LIMIT_S,Qt::magenta);
+
+
 }
 
 
@@ -225,7 +288,14 @@ void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color)
     const int len = 15;
 
     QString fileContain;
-    fileContain = readAllFile(_PATH_CALIB + file + ".hypcam");
+    if(file == _PATH_LIMIT_S)
+    {
+        fileContain = readAllFile(_PATH_LIMIT_S);
+    }
+    else
+    {
+        fileContain = readAllFile(_PATH_CALIB + file + ".hypcam");
+    }
     if( fileContain.contains(_ERROR_FILE_NOTEXISTS) || fileContain.contains(_ERROR_FILE) ){
         qDebug() << fileContain;
         return (void)NULL;

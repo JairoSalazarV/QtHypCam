@@ -580,6 +580,17 @@ void genCalibXML::on_pbGenCal_clicked()
         ws = (double)sqApert->rectW / (double)sqApert->canvasW;
         hs = (double)sqApert->rectH / (double)sqApert->canvasH;
 
+        //Calculate MIN num of bands
+        //..
+        QVector2D spectralResolution;
+        spectralResolution = calcSpectralResolution();
+        QString maxNumBand, minSpecRes;
+        maxNumBand  = QString::number(spectralResolution.x());
+        minSpecRes  = QString::number(spectralResolution.y());
+
+
+
+
         newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
 
         newFileCon.append("<calib>\n");
@@ -619,8 +630,11 @@ void genCalibXML::on_pbGenCal_clicked()
             newFileCon.append("    <deltaVertA>"+ QString::number( linRegRes.deltaVertA )       + "</deltaVertA>\n");
             newFileCon.append("    <deltaVertB>"+ QString::number( linRegRes.deltaVertB )       + "</deltaVertB>\n");
 
-            newFileCon.append("    <minWavelength>"   + minWavelength                           + "</minWavelength>\n");
-            newFileCon.append("    <maxWavelength>"   + maxWavelength                           + "</maxWavelength>\n");
+            newFileCon.append("    <minWavelength>"     + minWavelength                         + "</minWavelength>\n");
+            newFileCon.append("    <maxWavelength>"     + maxWavelength                         + "</maxWavelength>\n");
+            newFileCon.append("    <maxNumBand>"        + maxNumBand                            + "</maxNumBand>\n");
+            newFileCon.append("    <minSpecRes>"        + minSpecRes                            + "</minSpecRes>\n");
+
 
         newFileCon.append("</calib>\n");
 
@@ -719,6 +733,40 @@ void genCalibXML::on_pbGenCal_clicked()
         funcShowMsg("Lack","Calibrations points incomplete");
     }
 
+}
+
+QVector2D genCalibXML::calcSpectralResolution()
+{
+    QVector2D results;
+    int minPixel, maxPixel, deltaHoriz, deltaVert, numPixels;
+    QVector2D waveLim;
+    strAllLinReg LR = getAllLR();    
+    waveLim = getWavelengthFrontiers();
+    float waveRange;
+
+    //Horizontal number of pixels
+    minPixel    = round(LR.waveHorizA + (LR.waveHorizB * waveLim.x()));
+    maxPixel    = round(LR.waveHorizA + (LR.waveHorizB * waveLim.y()));
+    deltaHoriz  = abs(minPixel-maxPixel);
+    qDebug() << "Pixel Horiz range: " << minPixel << " to " << maxPixel;
+
+    //Vertical number of pixels
+    minPixel    = round(LR.waveVertA + (LR.waveVertB * waveLim.x()));
+    maxPixel    = round(LR.waveVertA + (LR.waveVertB * waveLim.y()));
+    deltaVert   = abs(minPixel-maxPixel);
+    qDebug() << "Pixel Vert range: " << minPixel << " to " << maxPixel;
+
+    qDebug() << "Wave range: " << waveLim.x() << " to " << waveLim.y();
+
+
+    //It concludes
+    waveRange = abs(waveLim.x()-waveLim.y());
+    numPixels = (deltaHoriz < deltaVert)?deltaHoriz:deltaVert;
+
+    results.setX((float)numPixels);
+    results.setY((float)numPixels/waveRange);
+
+    return results;
 }
 
 customQMatrix4x3 genCalibXML::mulLinRegXYW(customQMatrix4x4 X)
