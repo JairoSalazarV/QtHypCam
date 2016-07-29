@@ -44,6 +44,31 @@ void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
     qDebug() << "squarePixW: " << calibSettings->squarePixW;
     qDebug() << "squarePixH: " << calibSettings->squarePixH;
 
+    qDebug() << "squareUsablePixX: " << calibSettings->squareUsableX;
+    qDebug() << "squareUsablePixY: " << calibSettings->squareUsableY;
+    qDebug() << "squareUsablePixW: " << calibSettings->squareUsableW;
+    qDebug() << "squareUsablePixH: " << calibSettings->squareUsableH;
+
+    qDebug() << "horizontalA: " << calibSettings->LR.horizA;
+    qDebug() << "horizontalB: " << calibSettings->LR.horizB;
+    qDebug() << "verticalA: " << calibSettings->LR.vertA;
+    qDebug() << "verticalB: " << calibSettings->LR.vertB;
+
+    qDebug() << "waveHorizA: " << calibSettings->LR.waveHorizA;
+    qDebug() << "waveHorizB: " << calibSettings->LR.waveHorizB;
+    qDebug() << "waveVertA: " << calibSettings->LR.waveVertA;
+    qDebug() << "waveVertB: " << calibSettings->LR.waveVertB;
+
+    qDebug() << "deltaHorizA: " << calibSettings->LR.deltaHorizA;
+    qDebug() << "deltaHorizB: " << calibSettings->LR.deltaHorizB;
+    qDebug() << "deltaVertA: " << calibSettings->LR.deltaVertA;
+    qDebug() << "deltaVertB: " << calibSettings->LR.deltaVertB;
+
+    qDebug() << "minWavelength: " << calibSettings->minWavelength;
+    qDebug() << "maxWavelength: " << calibSettings->maxWavelength;
+    qDebug() << "maxNumBand: " << calibSettings->maxNumBands;
+    qDebug() << "minSpecRes: " << calibSettings->minSpecRes;
+
 }
 
 bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
@@ -106,6 +131,15 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="squarePixH" )
                 doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
 
+            if( xmlReader->name()=="squareUsablePixX" )
+                doubAxisCal->squareUsableX = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squareUsablePixY" )
+                doubAxisCal->squareUsableY = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squareUsablePixW" )
+                doubAxisCal->squareUsableW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squareUsablePixH" )
+                doubAxisCal->squareUsableH = xmlReader->readElementText().toInt(0);
+
             if( xmlReader->name()=="horizontalA" )
                 doubAxisCal->LR.horizA = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="horizontalB" )
@@ -137,6 +171,10 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
                 doubAxisCal->minWavelength = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="maxWavelength" )
                 doubAxisCal->maxWavelength = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="maxNumBand" )
+                doubAxisCal->maxNumBands = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="minSpecRes" )
+                doubAxisCal->minSpecRes = xmlReader->readElementText().toFloat(0);
 
         }
     }

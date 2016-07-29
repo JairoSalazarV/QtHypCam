@@ -234,6 +234,9 @@
         <file>imagenInte/WiFi.png</file>
         <file>imagenInte/hypCube.png</file>
         <file>imagenInte/validCal.png</file>
+        <file>imagenInte/squareUsable.png</file>
+        <file>imagenInte/squareSmall.png</file>
+        <file>imagenInte/squareBig.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

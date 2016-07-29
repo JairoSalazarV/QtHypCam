@@ -25,6 +25,8 @@
 
 #include <QFormLayout>
 
+#include <selwathtocheck.h>
+
 //OpenCV
 #include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -90,6 +92,21 @@ MainWindow::MainWindow(QWidget *parent) :
     //ui->actionValidCal->trigger();
 
     funcObtSettings( lstSettings );
+
+    /*
+    int algo = 4;
+    int *p;
+    p = &algo;
+    qDebug() << "bool: " << sizeof(bool);
+    qDebug() << "char: " << sizeof(char);
+    qDebug() << "int8: " << sizeof(u_int8_t);
+    qDebug() << "int: " << sizeof(int);
+    qDebug() << "int*: " << sizeof(p);
+    printf("Puntero %p\n",p);
+    printf("Puntero %d\n",p);
+    printf("Puntero %d\n",*p);
+    */
+
 
     /*
     //Fill IP prefix
@@ -3333,4 +3350,21 @@ void MainWindow::on_actionValCal_triggered()
     selWathToCheck *tmpFrm = new selWathToCheck(this);
     tmpFrm->setModal(false);
     tmpFrm->show();
+}
+
+void MainWindow::on_actionSquareUsable_triggered()
+{
+    //Read Calibration
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    selWathToCheck *checkCalib = new selWathToCheck(this);
+    checkCalib->showSqUsable(
+                                daCalib.squareUsableX,
+                                daCalib.squareUsableY,
+                                daCalib.squareUsableW,
+                                daCalib.squareUsableH,
+                                Qt::magenta
+                            );
+
 }

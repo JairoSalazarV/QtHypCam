@@ -309,6 +309,8 @@ private slots:
 
     void on_actionValCal_triggered();
 
+    void on_actionSquareUsable_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

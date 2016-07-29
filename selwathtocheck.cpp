@@ -8,6 +8,7 @@
 #include <QDesktopWidget>
 #include <QGraphicsLineItem>
 #include <customline.h>
+#include <customrect.h>
 
 //#include <gencalibxml.h>
 
@@ -26,12 +27,26 @@ selWathToCheck::selWathToCheck(QWidget *parent) :
 
     daCalib = &doubAxisCalib;
     funcGetCalibration(daCalib);
+    //funcPrintCalibration(daCalib);
+
+
+    ui->douubleSpinWave->setMinimum(daCalib->minWavelength);
+    ui->douubleSpinWave->setMaximum(daCalib->maxWavelength);
 
 }
 
 selWathToCheck::~selWathToCheck()
 {
     delete ui;
+}
+
+void selWathToCheck::showSqUsable(int x, int y, int w, int h , Qt::GlobalColor color)
+{
+    showGV();
+    customRect *tmpRect = new customRect(QPoint(x,y),QPoint(w,h));
+    tmpRect->setPen(QPen(color));
+    globalGvValCal->scene()->addItem(tmpRect);
+    globalGvValCal->update();
 }
 
 void selWathToCheck::fillLabelImg(QString imgPath){
@@ -49,39 +64,45 @@ void selWathToCheck::fillLabelImg(QString imgPath){
 
 void selWathToCheck::on_pbCentroids_clicked()
 {
-
+    showGV();
     //Centroides
     if( ui->checkBoxCentroids->isChecked() )
     {
-        showGV();
+        //showGV();
         drawAllCentoides();
     }
 
     //Limits
     if( ui->checkBoxLimits->isChecked() )
     {
-        showGV();
+        //showGV();
         drawAllLimits();
     }
 
     //Horizontal Linear Regression
     if( ui->checkBoxHorizLR->isChecked() )
     {
-        showGV();
+        //showGV();
         drawLinearRegression(true);
     }
 
     //Vertical Linear Regression
     if( ui->checkBoxVertLR->isChecked() )
     {
-        showGV();
+        //showGV();
         drawLinearRegression(false);
     }
 
     //Show limits calculated
     if( ui->checkBoxLimitsCalculated->isChecked() ){
-        showGV();
+        //showGV();
         showLimitCalculated();
+    }
+
+    //Show wavelength simulation
+    if( ui->checkBoxWavelength->isChecked() ){
+        //showGV();
+        showWavelengthSimulation();
     }
 
 
@@ -91,6 +112,100 @@ void selWathToCheck::on_pbCentroids_clicked()
     //connect( gvValCal, SIGNAL(signalMouseReleased(QMouseEvent)), this, SLOT(mousePresed(QMouseEvent)) );
     //gvValCal->funcShowWavelenLines(1);
 }
+
+void selWathToCheck::showWavelengthSimulation()
+{
+
+    strDiffProj diffProj;
+
+    //Get usable area
+    int x1, y1, w, h;
+    x1 = daCalib->squareUsableX;
+    y1 = daCalib->squareUsableY;
+    w = daCalib->squareUsableW;
+    h = daCalib->squareUsableH;
+
+    //Display the areas usable an the correspondign reflected area for selected wavelenght
+    //..
+    int x, y;
+    y = daCalib->squareUsableY;
+    for(x=x1;x<=(x1+w);x++)
+    {
+        //Obtains diffraction projection
+        diffProj.x = x;
+        diffProj.y = y;
+        calcDiffProj( &diffProj );
+        drawDiffProj( &diffProj );
+    }
+    globalGvValCal->update();
+}
+
+void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
+{
+    double wave;
+    int offsetX, offsetY;
+    int origX, origY;
+    wave = ui->douubleSpinWave->value();
+
+    origX   = diffProj->x;
+    origY   = diffProj->y;
+    offsetX = abs( daCalib->squareUsableX - origX );
+    offsetY = abs( daCalib->squareUsableY - origY );
+
+    //It calculates the jump
+    int jumpX, jumpY;
+    jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * wave));
+    jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * wave));
+
+    //Right and Left (horizontal)
+    diffProj->rx = origX + jumpX;
+    diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)diffProj->rx)) + offsetY;
+    diffProj->lx = origX - jumpX;
+    diffProj->ly = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)diffProj->lx)) + offsetY;
+
+    //Up
+    diffProj->ux = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY-jumpY)) ) + offsetX;
+
+    //Down
+    diffProj->dx = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY+jumpY)) ) + offsetX;
+
+    //Fits the original "y"
+    diffProj->y  = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)origX)) + offsetY;
+    diffProj->x  = floor(daCalib->LR.vertA + (daCalib->LR.vertB * (double)origY)) + offsetX;
+    diffProj->uy = diffProj->y - jumpY;
+    diffProj->dy = diffProj->y + jumpY;
+
+}
+
+void selWathToCheck::drawDiffProj(strDiffProj *diffProj)
+{
+    //Zero
+    QGraphicsEllipseItem *zeroPoint = new QGraphicsEllipseItem(diffProj->x,diffProj->y,1,1);
+    zeroPoint->setPen(QPen(Qt::cyan));
+    globalGvValCal->scene()->addItem(zeroPoint);
+
+    //Right
+    QGraphicsEllipseItem *rightPoint = new QGraphicsEllipseItem(diffProj->rx,diffProj->ry,1,1);
+    rightPoint->setPen(QPen(Qt::red));
+    globalGvValCal->scene()->addItem(rightPoint);
+
+    //Left
+    QGraphicsEllipseItem *leftPoint = new QGraphicsEllipseItem(diffProj->lx,diffProj->ly,1,1);
+    leftPoint->setPen(QPen(Qt::green));
+    globalGvValCal->scene()->addItem(leftPoint);
+
+    //Up
+    QGraphicsEllipseItem *upPoint = new QGraphicsEllipseItem(diffProj->ux,diffProj->uy,1,1);
+    upPoint->setPen(QPen(Qt::blue));
+    globalGvValCal->scene()->addItem(upPoint);
+
+    //Down
+    QGraphicsEllipseItem *downPoint = new QGraphicsEllipseItem(diffProj->dx,diffProj->dy,1,1);
+    downPoint->setPen(QPen(Qt::yellow));
+    globalGvValCal->scene()->addItem(downPoint);
+
+}
+
 
 void selWathToCheck::showLimitCalculated()
 {

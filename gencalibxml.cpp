@@ -297,48 +297,59 @@ void genCalibXML::on_pbRedRightDown_clicked()
     funcGetFilePath(ui->pbRedRightDown);
 }
 
-strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids)
+strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, int y1)
 {
     strAllLinReg linRegRes;
     double pointsX[7];
     double pointsY[7];
 
+    //qDebug() << "a:x1: " << x1;
+    //qDebug() << "a:y1: " << y1;
+
+    //Offset
+    double offsetX, offsetY;
+    offsetX                     = (double)x1 - centroids->source.split(",").at(0).toFloat(0);
+    offsetY                     = (double)y1 - centroids->source.split(",").at(1).toFloat(0);
+
     //Horizontal
     //..
-    pointsX[0] = (double)centroids->redLeft.split(",").at(0).toInt(0);
-    pointsX[1] = (double)centroids->greenLeft.split(",").at(0).toInt(0);
-    pointsX[2] = (double)centroids->blueLeft.split(",").at(0).toInt(0);
-    pointsX[3] = (double)centroids->source.split(",").at(0).toInt(0);
-    pointsX[4] = (double)centroids->redRight.split(",").at(0).toInt(0);
-    pointsX[5] = (double)centroids->greenRight.split(",").at(0).toInt(0);
-    pointsX[6] = (double)centroids->blueRight.split(",").at(0).toInt(0);
-    pointsY[0] = (double)centroids->redLeft.split(",").at(1).toInt(0);
-    pointsY[1] = (double)centroids->greenLeft.split(",").at(1).toInt(0);
-    pointsY[2] = (double)centroids->blueLeft.split(",").at(1).toInt(0);
-    pointsY[3] = (double)centroids->source.split(",").at(1).toInt(0);
-    pointsY[4] = (double)centroids->redRight.split(",").at(1).toInt(0);
-    pointsY[5] = (double)centroids->greenRight.split(",").at(1).toInt(0);
-    pointsY[6] = (double)centroids->blueRight.split(",").at(1).toInt(0);
+    pointsX[0] = offsetX + (double)centroids->redLeft.split(",").at(0).toInt(0);
+    pointsX[1] = offsetX + (double)centroids->greenLeft.split(",").at(0).toInt(0);
+    pointsX[2] = offsetX + (double)centroids->blueLeft.split(",").at(0).toInt(0);
+    pointsX[3] = offsetX + (double)centroids->source.split(",").at(0).toInt(0);
+    pointsX[4] = offsetX + (double)centroids->redRight.split(",").at(0).toInt(0);
+    pointsX[5] = offsetX + (double)centroids->greenRight.split(",").at(0).toInt(0);
+    pointsX[6] = offsetX + (double)centroids->blueRight.split(",").at(0).toInt(0);
+
+    pointsY[0] = offsetY + (double)centroids->redLeft.split(",").at(1).toInt(0);
+    pointsY[1] = offsetY + (double)centroids->greenLeft.split(",").at(1).toInt(0);
+    pointsY[2] = offsetY + (double)centroids->blueLeft.split(",").at(1).toInt(0);
+    pointsY[3] = offsetY + (double)centroids->source.split(",").at(1).toInt(0);
+    pointsY[4] = offsetY + (double)centroids->redRight.split(",").at(1).toInt(0);
+    pointsY[5] = offsetY + (double)centroids->greenRight.split(",").at(1).toInt(0);
+    pointsY[6] = offsetY + (double)centroids->blueRight.split(",").at(1).toInt(0);
+
     linearRegresion horB = funcLinearRegression( pointsX, pointsY, 7 );
     linRegRes.horizA = horB.a;
     linRegRes.horizB = horB.b;
 
     //Vertical
     //..
-    pointsX[0] = (double)centroids->redDown.split(",").at(1).toInt(0);
-    pointsX[1] = (double)centroids->greenDown.split(",").at(1).toInt(0);
-    pointsX[2] = (double)centroids->blueDown.split(",").at(1).toInt(0);
-    pointsX[3] = (double)centroids->source.split(",").at(1).toInt(0);
-    pointsX[4] = (double)centroids->redUp.split(",").at(1).toInt(0);
-    pointsX[5] = (double)centroids->greenUp.split(",").at(1).toInt(0);
-    pointsX[6] = (double)centroids->blueUp.split(",").at(1).toInt(0);    
-    pointsY[0] = (double)centroids->redDown.split(",").at(0).toInt(0);
-    pointsY[1] = (double)centroids->greenDown.split(",").at(0).toInt(0);
-    pointsY[2] = (double)centroids->blueDown.split(",").at(0).toInt(0);
-    pointsY[3] = (double)centroids->source.split(",").at(0).toInt(0);
-    pointsY[4] = (double)centroids->redUp.split(",").at(0).toInt(0);
-    pointsY[5] = (double)centroids->greenUp.split(",").at(0).toInt(0);
-    pointsY[6] = (double)centroids->blueUp.split(",").at(0).toInt(0);
+    pointsX[0] = offsetX + (double)centroids->redDown.split(",").at(1).toInt(0);
+    pointsX[1] = offsetX + (double)centroids->greenDown.split(",").at(1).toInt(0);
+    pointsX[2] = offsetX + (double)centroids->blueDown.split(",").at(1).toInt(0);
+    pointsX[3] = offsetX + (double)centroids->source.split(",").at(1).toInt(0);
+    pointsX[4] = offsetX + (double)centroids->redUp.split(",").at(1).toInt(0);
+    pointsX[5] = offsetX + (double)centroids->greenUp.split(",").at(1).toInt(0);
+    pointsX[6] = offsetX + (double)centroids->blueUp.split(",").at(1).toInt(0);
+
+    pointsY[0] = offsetY + (double)centroids->redDown.split(",").at(0).toInt(0);
+    pointsY[1] = offsetY + (double)centroids->greenDown.split(",").at(0).toInt(0);
+    pointsY[2] = offsetY + (double)centroids->blueDown.split(",").at(0).toInt(0);
+    pointsY[3] = offsetY + (double)centroids->source.split(",").at(0).toInt(0);
+    pointsY[4] = offsetY + (double)centroids->redUp.split(",").at(0).toInt(0);
+    pointsY[5] = offsetY + (double)centroids->greenUp.split(",").at(0).toInt(0);
+    pointsY[6] = offsetY + (double)centroids->blueUp.split(",").at(0).toInt(0);
     linearRegresion verB = funcLinearRegression( pointsX, pointsY, 7 );
     linRegRes.vertA = verB.a;
     linRegRes.vertB = verB.b;
@@ -450,7 +461,8 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids)
 
 strAllLinReg genCalibXML::getAllLR(){
     lstCalibFileNames calibPoints = fillLstCalibPoints();
-    return calcAllLinReg(&calibPoints);
+    QVector2D sqUsableCorner = getSqUsableIni();
+    return calcAllLinReg( &calibPoints, sqUsableCorner.x(), sqUsableCorner.y() );
 }
 
 strLimits genCalibXML::getLimitsFromHDD(){
@@ -546,9 +558,7 @@ void genCalibXML::on_pbGenCal_clicked()
             funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
             return (void)false;
         }
-
         //Calculates the position expected in the received image
-        //..
         int auxSqX, auxSqY, auxSqW, auxSqH, auxBigX, auxBigY;
         auxSqX  = round((float)_BIG_WIDTH  * ((float)sqApert->rectX / (float)sqApert->canvasW));
         auxSqY  = round((float)_BIG_HEIGHT * ((float)sqApert->rectY / (float)sqApert->canvasH));
@@ -559,6 +569,24 @@ void genCalibXML::on_pbGenCal_clicked()
         //In reference to the final position
         auxSqX -= auxBigX;
         auxSqY -= auxBigY;
+
+        //Usable area
+        //..
+        squareAperture *sqUsable = (squareAperture*)malloc(sizeof(squareAperture));
+        if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
+        {
+            funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
+            return (void)false;
+        }
+        //Calculates the position expected in the received image
+        int auxSqUsableX, auxSqUsableY, auxSqUsableW, auxSqUsableH;
+        float areaInterW, areaInterH;
+        areaInterW = (float)_BIG_WIDTH * wB;
+        areaInterH = (float)_BIG_HEIGHT * hB;
+        auxSqUsableX  = round((float)areaInterW * ((float)sqUsable->rectX / (float)sqUsable->canvasW));
+        auxSqUsableY  = round((float)areaInterH * ((float)sqUsable->rectY / (float)sqUsable->canvasH));
+        auxSqUsableW  = round((float)areaInterW * ((float)sqUsable->rectW / (float)sqUsable->canvasW));
+        auxSqUsableH  = round((float)areaInterH * ((float)sqUsable->rectH / (float)sqUsable->canvasH));
 
         //Calculates linear regressions
         //..
@@ -616,6 +644,13 @@ void genCalibXML::on_pbGenCal_clicked()
             newFileCon.append("    <squarePixY>"+ QString::number( auxSqY )                     + "</squarePixY>\n");
             newFileCon.append("    <squarePixW>"+ QString::number( auxSqW )                     + "</squarePixW>\n");
             newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )                     + "</squarePixH>\n");
+
+            newFileCon.append("    <squareUsablePixX>"+ QString::number( auxSqUsableX )         + "</squareUsablePixX>\n");
+            newFileCon.append("    <squareUsablePixY>"+ QString::number( auxSqUsableY )         + "</squareUsablePixY>\n");
+            newFileCon.append("    <squareUsablePixW>"+ QString::number( auxSqUsableW )         + "</squareUsablePixW>\n");
+            newFileCon.append("    <squareUsablePixH>"+ QString::number( auxSqUsableH )         + "</squareUsablePixH>\n");
+            //newFileCon.append("    <squareUsableX1>"+ QString::number( auxSqUsableX1 )          + "</squareUsableX1>\n");
+            //newFileCon.append("    <squareUsableY1>"+ QString::number( auxSqUsableY1 )          + "</squareUsableY1>\n");
 
             newFileCon.append("    <horizontalA>"+ QString::number( linRegRes.horizA )          + "</horizontalA>\n");
             newFileCon.append("    <horizontalB>"+ QString::number( linRegRes.horizB )          + "</horizontalB>\n");
@@ -735,12 +770,53 @@ void genCalibXML::on_pbGenCal_clicked()
 
 }
 
+QVector2D genCalibXML::getSqUsableIni(){
+
+    QVector2D result;
+    result.setX(-1);
+    result.setY(-1);
+
+
+    //Region of interes
+    //..
+    squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
+    {
+        funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
+        return result;
+    }
+    double wB,hB;
+    wB = (double)regOfInteres->rectW / (double)regOfInteres->canvasW;
+    hB = (double)regOfInteres->rectH / (double)regOfInteres->canvasH;
+
+    //Usable area
+    //..
+    squareAperture *sqUsable = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
+    {
+        funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
+        return result;
+    }
+    //Calculates the position expected in the received image
+    int auxSqUsableX, auxSqUsableY;//, auxSqUsableW, auxSqUsableH;
+    float areaInterW, areaInterH;
+    areaInterW = (float)_BIG_WIDTH * wB;
+    areaInterH = (float)_BIG_HEIGHT * hB;
+    auxSqUsableX  = round((float)areaInterW * ((float)sqUsable->rectX / (float)sqUsable->canvasW));
+    auxSqUsableY  = round((float)areaInterH * ((float)sqUsable->rectY / (float)sqUsable->canvasH));
+    //auxSqUsableW  = round((float)areaInterW * ((float)sqUsable->rectW / (float)sqUsable->canvasW));
+    //auxSqUsableH  = round((float)areaInterH * ((float)sqUsable->rectH / (float)sqUsable->canvasH));
+    result.setX(auxSqUsableX);
+    result.setY(auxSqUsableY);
+    return result;
+}
+
 QVector2D genCalibXML::calcSpectralResolution()
 {
     QVector2D results;
     int minPixel, maxPixel, deltaHoriz, deltaVert, numPixels;
     QVector2D waveLim;
-    strAllLinReg LR = getAllLR();    
+    strAllLinReg LR = getAllLR();
     waveLim = getWavelengthFrontiers();
     float waveRange;
 

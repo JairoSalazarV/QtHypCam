@@ -15,11 +15,21 @@ public:
     explicit selWathToCheck(QWidget *parent = 0);
     ~selWathToCheck();
 
+    void showSqUsable(int x, int y, int w, int h, Qt::GlobalColor color);
+
+    void showGV();
+
 private slots:
 
     void fillLabelImg(QString imgPath);
 
     void drawCentroid(QString file, Qt::GlobalColor color );
+
+    void showWavelengthSimulation();
+
+    void calcDiffProj(strDiffProj *diffProj);
+
+    void drawDiffProj(strDiffProj *diffProj);
 
     void showLimitCalculated();
 
@@ -29,9 +39,7 @@ private slots:
 
     void drawLimit(int side);
 
-    void drawAllCentoides();
-
-    void showGV();
+    void drawAllCentoides();    
 
     void on_pbCentroids_clicked();
 

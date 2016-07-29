@@ -28,11 +28,13 @@
     #define _BLUE_WAVELENGHT 438
 
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
+    //#define _PATH_LAST_PREVIEW              "./tmpImages/lastPeview.png"
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
     #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"    
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
     #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"
+    #define _PATH_SQUARE_USABLE             "./XML/squareUsable.xml"
     #define _PATH_REGION_OF_INTERES         "./XML/regionOfInteres.xml"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
@@ -53,6 +55,18 @@
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"
 
+    typedef struct strDiffProj{
+        int x;
+        int y;
+        int rx;
+        int ry;
+        int ux;
+        int uy;
+        int lx;
+        int ly;
+        int dx;
+        int dy;
+    }strDiffProj;
 
     typedef struct strAllLinReg{
         double horizA;
@@ -111,8 +125,14 @@
         int             squarePixY;
         int             squarePixW;
         int             squarePixH;
+        int             squareUsableX;      //Respect to the snapshot
+        int             squareUsableY;      //Respect to the snapshot
+        int             squareUsableW;      //Respect to the snapshot
+        int             squareUsableH;      //Respect to the snapshot
         float           minWavelength;
         float           maxWavelength;
+        int             maxNumBands;
+        double          minSpecRes;
         strAllLinReg    LR;
     }lstDoubleAxisCalibration;
 

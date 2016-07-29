@@ -923,8 +923,9 @@ QSlider::handle:horizontal {
    <addaction name="actionToolPenArea"/>
    <addaction name="actionRotateImg"/>
    <addaction name="actionApplyThreshold"/>
-   <addaction name="actionLoadSquareRectangle"/>
    <addaction name="actionLoadRegOfInteres"/>
+   <addaction name="actionLoadSquareRectangle"/>
+   <addaction name="actionSquareUsable"/>
    <addaction name="actionSend_to_XYZ"/>
    <addaction name="actionSaveCanvas"/>
    <addaction name="actionExportPixelsSelected"/>
@@ -1090,7 +1091,7 @@ QSlider::handle:horizontal {
   <action name="actionLoadSquareRectangle">
    <property name="icon">
     <iconset resource="lstImgs.qrc">
-     <normaloff>:/new/icons/imagenInte/bullet.gif</normaloff>:/new/icons/imagenInte/bullet.gif</iconset>
+     <normaloff>:/new/icons/imagenInte/squareSmall.png</normaloff>:/new/icons/imagenInte/squareSmall.png</iconset>
    </property>
    <property name="text">
     <string>loadSquareRectangle</string>
@@ -1102,7 +1103,7 @@ QSlider::handle:horizontal {
   <action name="actionLoadRegOfInteres">
    <property name="icon">
     <iconset resource="lstImgs.qrc">
-     <normaloff>:/new/icons/imagenInte/image-x-generic.png</normaloff>:/new/icons/imagenInte/image-x-generic.png</iconset>
+     <normaloff>:/new/icons/imagenInte/squareBig.png</normaloff>:/new/icons/imagenInte/squareBig.png</iconset>
    </property>
    <property name="text">
     <string>loadRegOfInteres</string>
@@ -1193,6 +1194,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Check calibration points and lines</string>
+   </property>
+  </action>
+  <action name="actionSquareUsable">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/squareUsable.png</normaloff>:/new/icons/imagenInte/squareUsable.png</iconset>
+   </property>
+   <property name="text">
+    <string>squareUsable</string>
+   </property>
+   <property name="toolTip">
+    <string>Select square aperture usable</string>
    </property>
   </action>
  </widget>

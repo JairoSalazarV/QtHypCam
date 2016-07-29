@@ -40,6 +40,7 @@ QAction *customRect::showContMenuLine(QPoint pos){
     xmenu->addSeparator();
     QMenu* submenu3 = xmenu->addMenu( "Save as" );
     submenu3->addAction( "Square aperture" );
+    submenu3->addAction( "Square usable" );
     submenu3->addAction( "Region of interes" );
 
     xmenu->addSeparator();
@@ -182,7 +183,11 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             saveSquareAs(_PATH_SQUARE_APERTURE);
-
+        }
+        if(a->text()=="Square usable"){
+            //Define usable area
+            //..
+            saveSquareAs(_PATH_SQUARE_USABLE);
         }
         if(a->text()=="Region of interes"){
             //Call the centroid
@@ -224,7 +229,8 @@ bool customRect::saveSquareAs(QString fileName){
     tmpContain.append("\t<w>"+ QString::number( this->rect().width() ) +"</w>\n");
     tmpContain.append("\t<h>"+ QString::number( this->rect().height() ) +"</h>\n");
     tmpContain.append("</Variables>");
-    if( !saveFile( fileName, tmpContain ) ){
+    if( !saveFile( fileName, tmpContain ) )
+    {
         funcShowMsg("ERROR","Saving rectangle");
         return false;
     }

@@ -21,7 +21,7 @@ public:
 
     lstCalibFileNames fillLstCalibPoints();
 
-    strAllLinReg calcAllLinReg(lstCalibFileNames *centroids);
+    strAllLinReg calcAllLinReg(lstCalibFileNames *centroids, int x1, int y1);
 
     strAllLinReg getAllLR();
 
@@ -94,6 +94,8 @@ private slots:
     QVector2D getWavelengthFrontiers();
 
     void on_pbGenCal_clicked();
+
+    QVector2D getSqUsableIni();
 
     QVector2D calcSpectralResolution();
 
