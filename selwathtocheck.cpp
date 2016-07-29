@@ -129,14 +129,44 @@ void selWathToCheck::showWavelengthSimulation()
     //..
     int x, y;
     y = daCalib->squareUsableY;
+
+    //Horizontales
     for(x=x1;x<=(x1+w);x++)
     {
-        //Obtains diffraction projection
+        //Horizontal
         diffProj.x = x;
         diffProj.y = y;
         calcDiffProj( &diffProj );
         drawDiffProj( &diffProj );
+
+        diffProj.x = x;
+        diffProj.y = y + daCalib->squareUsableH;
+        calcDiffProj( &diffProj );
+        drawDiffProj( &diffProj );
+
     }
+
+    //Verticales
+    x = daCalib->squareUsableX;
+    for(y=y1;y<=(y1+h);y++)
+    {
+        //Horizontal
+        diffProj.x = x;
+        diffProj.y = y;
+        calcDiffProj( &diffProj );
+        drawDiffProj( &diffProj );
+
+        diffProj.x = x + daCalib->squareUsableW;
+        diffProj.y = y;
+        calcDiffProj( &diffProj );
+        drawDiffProj( &diffProj );
+
+    }
+
+
+
+
+
     globalGvValCal->update();
 }
 
@@ -157,11 +187,11 @@ void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
     jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * wave));
     jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * wave));
 
-    //Right and Left (horizontal)
-    diffProj->rx = origX + jumpX;
-    diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)diffProj->rx)) + offsetY;
-    diffProj->lx = origX - jumpX;
-    diffProj->ly = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)diffProj->lx)) + offsetY;
+    //Right
+    diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX + jumpX))) + offsetY;
+
+    //Left
+    diffProj->ly = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX - jumpX))) + offsetY;
 
     //Up
     diffProj->ux = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY-jumpY)) ) + offsetX;
@@ -172,6 +202,9 @@ void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
     //Fits the original "y"
     diffProj->y  = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)origX)) + offsetY;
     diffProj->x  = floor(daCalib->LR.vertA + (daCalib->LR.vertB * (double)origY)) + offsetX;
+
+    diffProj->rx = diffProj->x + jumpX;
+    diffProj->lx = diffProj->x - jumpX;
     diffProj->uy = diffProj->y - jumpY;
     diffProj->dy = diffProj->y + jumpY;
 
