@@ -305,11 +305,19 @@ private slots:
 
     void on_actionGenHypercube_triggered();
 
+    void createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDoubleAxisCalibration *daCalib );
+
+    void insertItemIntoRow(int **Hrow, int row, int col);
+
+    QList<double> getWavesChoised();
+
     void on_actionValidCal_triggered();
 
     void on_actionValCal_triggered();
 
     void on_actionSquareUsable_triggered();
+
+    void on_actionChoseWavelength_triggered();
 
 private:
     Ui::MainWindow *ui;

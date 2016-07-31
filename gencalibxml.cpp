@@ -840,7 +840,7 @@ QVector2D genCalibXML::calcSpectralResolution()
     numPixels = (deltaHoriz < deltaVert)?deltaHoriz:deltaVert;
 
     results.setX((float)numPixels);
-    results.setY((float)numPixels/waveRange);
+    results.setY(waveRange/(float)numPixels);
 
     return results;
 }

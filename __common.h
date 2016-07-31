@@ -36,6 +36,10 @@
 
     void QtDelay( unsigned int ms );
 
+    int xyToIndex(int x, int y, int w);
+
+    int *indexToxy( int index, int w, int h );
+
     int funcShowMsgYesNo( QString title, QString msg );
 
     bool funcGetRaspParamFromXML(structRaspcamSettings *raspcamSettings , QString filePath);
@@ -76,6 +80,8 @@
 
 
     void funcOpenFolder(QString path);
+
+    void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
 
 
     //inline int align(int size, int align);

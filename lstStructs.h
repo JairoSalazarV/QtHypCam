@@ -39,6 +39,8 @@
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
     #define _PATH_CALIB                     "./settings/Calib/"
+    #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
+    #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
 
     #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
@@ -55,6 +57,17 @@
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"
 
+    typedef struct pixel{
+        int x;
+        int y;
+    }pixel;
+
+    typedef struct voxel{
+        int x;
+        int y;
+        int l;
+    }voxel;
+
     typedef struct strDiffProj{
         int x;
         int y;
@@ -66,6 +79,7 @@
         int ly;
         int dx;
         int dy;
+        double wavelength;
     }strDiffProj;
 
     typedef struct strAllLinReg{

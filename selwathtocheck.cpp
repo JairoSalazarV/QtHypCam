@@ -117,65 +117,69 @@ void selWathToCheck::showWavelengthSimulation()
 {
 
     strDiffProj diffProj;
+    diffProj.wavelength = ui->douubleSpinWave->value();
 
     //Get usable area
-    int x1, y1, w, h;
-    x1 = daCalib->squareUsableX;
-    y1 = daCalib->squareUsableY;
-    w = daCalib->squareUsableW;
-    h = daCalib->squareUsableH;
+    //int x1, y1, w, h;
+    //x1 = daCalib->squareUsableX;
+    //y1 = daCalib->squareUsableY;
+    //w = daCalib->squareUsableW;
+    //h = daCalib->squareUsableH;
 
     //Display the areas usable an the correspondign reflected area for selected wavelenght
     //..
     int x, y;
-    y = daCalib->squareUsableY;
+    //y = daCalib->squareUsableY;
+
+    QImage tmpImg( _PATH_DISPLAY_IMAGE );
 
     //Horizontales
-    for(x=x1;x<=(x1+w);x++)
+    for(x=1;x<=daCalib->squareUsableW;x++)
     {
         //Horizontal
         diffProj.x = x;
-        diffProj.y = y;
-        calcDiffProj( &diffProj );
+        diffProj.y = 1;//Row 1
+        calcDiffProj( &diffProj, daCalib );              
         drawDiffProj( &diffProj );
 
         diffProj.x = x;
-        diffProj.y = y + daCalib->squareUsableH;
-        calcDiffProj( &diffProj );
+        diffProj.y = daCalib->squareUsableH;//row h
+        calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
 
     }
+
 
     //Verticales
-    x = daCalib->squareUsableX;
-    for(y=y1;y<=(y1+h);y++)
+    //x = daCalib->squareUsableX;
+    for(y=1;y<=daCalib->squareUsableH;y++)
     {
         //Horizontal
-        diffProj.x = x;
+        diffProj.x = 1;//Column 1
         diffProj.y = y;
-        calcDiffProj( &diffProj );
-        drawDiffProj( &diffProj );
+        calcDiffProj( &diffProj, daCalib );
+        drawDiffProj( &diffProj );        
 
-        diffProj.x = x + daCalib->squareUsableW;
+        diffProj.x = daCalib->squareUsableW;
         diffProj.y = y;
-        calcDiffProj( &diffProj );
+        calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
 
     }
 
 
+    tmpImg.save("./tmpImages/deleteTest.png");
 
 
 
     globalGvValCal->update();
 }
 
+/*
 void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
 {
-    double wave;
     int offsetX, offsetY;
     int origX, origY;
-    wave = ui->douubleSpinWave->value();
 
     origX   = diffProj->x;
     origY   = diffProj->y;
@@ -184,8 +188,8 @@ void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
 
     //It calculates the jump
     int jumpX, jumpY;
-    jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * wave));
-    jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * wave));
+    jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * diffProj->wavelength));
+    jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * diffProj->wavelength));
 
     //Right
     diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX + jumpX))) + offsetY;
@@ -209,6 +213,7 @@ void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
     diffProj->dy = diffProj->y + jumpY;
 
 }
+*/
 
 void selWathToCheck::drawDiffProj(strDiffProj *diffProj)
 {

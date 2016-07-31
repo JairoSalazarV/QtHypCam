@@ -27,7 +27,7 @@ private slots:
 
     void showWavelengthSimulation();
 
-    void calcDiffProj(strDiffProj *diffProj);
+    //void calcDiffProj(strDiffProj *diffProj);
 
     void drawDiffProj(strDiffProj *diffProj);
 

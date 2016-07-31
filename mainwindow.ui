@@ -949,6 +949,7 @@ QSlider::handle:horizontal {
    <addaction name="actionDrawToolbar"/>
    <addaction name="actionDoubAxisDiff"/>
    <addaction name="actionValCal"/>
+   <addaction name="actionChoseWavelength"/>
    <addaction name="actionGenHypercube"/>
   </widget>
   <action name="actionExit">
@@ -1206,6 +1207,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Select square aperture usable</string>
+   </property>
+  </action>
+  <action name="actionChoseWavelength">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/hypChose.png</normaloff>:/new/icons/imagenInte/hypChose.png</iconset>
+   </property>
+   <property name="text">
+    <string>choseWavelength</string>
+   </property>
+   <property name="toolTip">
+    <string>Chose wavelengths to extract</string>
    </property>
   </action>
  </widget>

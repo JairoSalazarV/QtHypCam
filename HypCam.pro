@@ -28,7 +28,8 @@ SOURCES += main.cpp\
     customQMatrix4x3.cpp \
     customQMatrix3x3.cpp \
     customQMatrix4x4.cpp \
-    selwathtocheck.cpp
+    selwathtocheck.cpp \
+    chosewavetoextract.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -46,7 +47,8 @@ HEADERS  += mainwindow.h \
     customQMatrix4x3.h \
     customQMatrix3x3.h \
     customQMatrix4x4.h \
-    selwathtocheck.h
+    selwathtocheck.h \
+    chosewavetoextract.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -55,7 +57,8 @@ FORMS    += mainwindow.ui \
     rotationfrm.ui \
     recparamfrm.ui \
     generatehypercube.ui \
-    selwathtocheck.ui
+    selwathtocheck.ui \
+    chosewavetoextract.ui
 
 RESOURCES += \
     lstImgs.qrc

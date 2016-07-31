@@ -42,6 +42,7 @@
 //#include <validatecalibration.h>
 #include <selwathtocheck.h>
 
+#include <chosewavetoextract.h>
 
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
@@ -3336,6 +3337,164 @@ void MainWindow::on_pbLANTestConn_clicked()
 void MainWindow::on_actionGenHypercube_triggered()
 {
 
+    mouseCursorWait();
+
+    //Get original image
+    //..
+    int N, M;
+    QImage img( _PATH_DISPLAY_IMAGE );
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+    M = img.width() * img.height();
+
+
+    //Creates and fills H
+    // ..
+    //Creates containers
+    int hypW, hypH, hypL;
+    QList<double> lstChoises;
+    pixel **Hcol;
+    int **Hrow;
+
+    lstChoises  = getWavesChoised();
+    hypW        = daCalib.squareUsableW;
+    hypH        = daCalib.squareUsableH;
+    hypL        = lstChoises.count();
+    N           = hypW * hypH * hypL;//Voxels
+
+    //Reserves Memory for H
+    //..
+    Hcol        = (pixel**)malloc(N*sizeof(pixel*));
+    for(int n=0; n<N; n++)
+    {
+        Hcol[n] = (pixel*)malloc(5*sizeof(pixel));
+    }
+
+    Hrow        = (int**)malloc(M*sizeof(int*));
+    for(int m=0; m<M; m++)
+    {
+        Hrow[m]     = (int*)malloc(sizeof(int));
+        Hrow[m][0]  = 0;
+    }
+
+    //It creates H
+    //..
+    createsHColAndHrow( Hcol, Hrow, &img, &daCalib );
+
+
+    /*
+    unsigned int acum, maxRepeted;
+    acum = 0;
+    maxRepeted=0;
+    for( int m=0; m<M; m++ )
+    {
+        if( Hrow[m][0] > 0 )
+        {
+            acum += Hrow[m][0];
+            if( maxRepeted < (unsigned int)Hrow[m][0] )
+            {
+                maxRepeted = Hrow[m][0];
+            }
+        }
+    }
+    qDebug() << "acum: "            << acum;
+    qDebug() << "maxRepeted: "      << maxRepeted;
+    qDebug() << "M: "               << M;
+    qDebug() << "N: "               << N;
+    qDebug() << "hypW: "            << hypW;
+    qDebug() << "hypH: "            << hypH;
+    qDebug() << "hypL: "            << hypL;
+    */
+
+
+
+    mouseCursorReset();
+
+}
+
+void MainWindow::createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDoubleAxisCalibration *daCalib )
+{
+    //Prepares variables and constants
+    //..
+    int hypW, hypH, hypL, idVoxel, index;
+    QList<double> lstChoises;
+    strDiffProj Pj;
+    lstChoises  = getWavesChoised();
+    hypW        = daCalib->squareUsableW;
+    hypH        = daCalib->squareUsableH;
+    hypL        = lstChoises.count();
+
+    //Fill Hcol
+    //..
+    idVoxel = 0;
+    for(int len=1; len<=hypL; len++)
+    {
+        Pj.wavelength = lstChoises.at(len-1);
+        for(int row=1; row<=hypH; row++)
+        {
+            for(int col=1; col<=hypW; col++)
+            {
+                //Obtain diffraction projection for the acutual wavelength
+                Pj.x = col;
+                Pj.y = row;
+                calcDiffProj(&Pj,daCalib);
+                //Creates a new item in the c-th Hcol
+                Hcol[idVoxel][0].x = Pj.x;//Zero
+                Hcol[idVoxel][0].y = Pj.y;
+                Hcol[idVoxel][1].x = Pj.rx;//Right
+                Hcol[idVoxel][1].y = Pj.ry;
+                Hcol[idVoxel][2].x = Pj.ux;//Up
+                Hcol[idVoxel][2].y = Pj.uy;
+                Hcol[idVoxel][3].x = Pj.lx;//Left
+                Hcol[idVoxel][3].y = Pj.ly;
+                Hcol[idVoxel][4].x = Pj.dx;//Down
+                Hcol[idVoxel][4].y = Pj.dy;
+                //Creates new item in Hrow
+                index = xyToIndex( Hcol[idVoxel][0].x, Hcol[idVoxel][0].y, img->width() );
+                insertItemIntoRow(Hrow,index,idVoxel);
+
+                index = xyToIndex( Hcol[idVoxel][1].x, Hcol[idVoxel][1].y, img->width() );
+                insertItemIntoRow(Hrow,index,idVoxel);
+
+                index = xyToIndex( Hcol[idVoxel][2].x, Hcol[idVoxel][2].y, img->width() );
+                insertItemIntoRow(Hrow,index,idVoxel);
+
+                index = xyToIndex( Hcol[idVoxel][3].x, Hcol[idVoxel][3].y, img->width() );
+                insertItemIntoRow(Hrow,index,idVoxel);
+
+                index = xyToIndex( Hcol[idVoxel][4].x, Hcol[idVoxel][4].y, img->width() );
+                insertItemIntoRow(Hrow,index,idVoxel);
+
+                idVoxel++;
+            }
+        }
+    }
+}
+
+void MainWindow::insertItemIntoRow(int **Hrow, int row, int col)
+{
+    int actualPos;
+    actualPos = Hrow[row][0]+1;
+    Hrow[row] = (int*)realloc(Hrow[row],((actualPos+1)*sizeof(int)));
+    Hrow[row][actualPos] = col;
+    Hrow[row][0]++;
+}
+
+QList<double> MainWindow::getWavesChoised()
+{
+    QList<double> wavelengths;
+    QString waves;
+    waves = readFileParam(_PATH_WAVE_CHOISES);
+    QList<QString> choises;
+    choises = waves.split(",");
+    Q_FOREACH(const QString choise, choises)
+    {
+        if( !choise.isEmpty() && choise != " " && choise!="\n" )
+        {
+            wavelengths.append(choise.toDouble(0));
+        }
+    }
+    return wavelengths;
 }
 
 void MainWindow::on_actionValidCal_triggered()
@@ -3367,4 +3526,10 @@ void MainWindow::on_actionSquareUsable_triggered()
                                 Qt::magenta
                             );
 
+}
+
+void MainWindow::on_actionChoseWavelength_triggered()
+{
+    choseWaveToExtract *form = new choseWaveToExtract(this);
+    form->show();
 }

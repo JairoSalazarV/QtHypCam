@@ -489,6 +489,11 @@ QString readAllFile( QString filePath ){
 
 int fileIsValid(QString fileContain)
 {
+    // return:
+    //  1: exists and it is not empty
+    // -1: empty file
+    // -2: error reading
+    // -3: it does note exist
     if( fileContain.isEmpty() )
     {
         return -1;
@@ -821,6 +826,11 @@ void QtDelay( unsigned int ms ){
     }
 }
 
+int xyToIndex( int x, int y, int w)
+{
+    return ((y-1)*w) + x;
+}
+
 
 int funcShowMsgYesNo( QString title, QString msg ){
     //int integerValue = 10;
@@ -1055,7 +1065,43 @@ void funcOpenFolder(QString path){
 }
 
 
+void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
+{
+    //int offsetX, offsetY;
+    int origX, origY;
 
+    origX   = diffProj->x + daCalib->squareUsableX;
+    origY   = diffProj->y + daCalib->squareUsableY;
+    //offsetX = abs( daCalib->squareUsableX - origX );
+    //offsetY = abs( daCalib->squareUsableY - origY );
+
+    //It calculates the jump
+    int jumpX, jumpY;
+    jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * diffProj->wavelength));
+    jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * diffProj->wavelength));
+
+    //Right
+    diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX + jumpX))) + diffProj->y;
+
+    //Left
+    diffProj->ly = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX - jumpX))) + diffProj->y;
+
+    //Up
+    diffProj->ux = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY-jumpY)) ) + diffProj->x;
+
+    //Down
+    diffProj->dx = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY+jumpY)) ) + diffProj->x;
+
+    //Fits the original "y"
+    diffProj->y  = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)origX)) + diffProj->y;
+    diffProj->x  = floor(daCalib->LR.vertA + (daCalib->LR.vertB * (double)origY)) + diffProj->x;
+
+    diffProj->rx = diffProj->x + jumpX;
+    diffProj->lx = diffProj->x - jumpX;
+    diffProj->uy = diffProj->y - jumpY;
+    diffProj->dy = diffProj->y + jumpY;
+
+}
 
 
 
