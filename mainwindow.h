@@ -331,6 +331,8 @@ private slots:
 
     void on_actionFittFunction_triggered();
 
+    void on_actionShow_hypercube_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

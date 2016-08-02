@@ -199,9 +199,11 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             {
                 QList<QString> lstSensitivities;
                 lstSensitivities = xmlReader->readElementText().split(",");
-                doubAxisCal->sensitivity = (int*)malloc(lstSensitivities.count()*sizeof(int));
+                doubAxisCal->sensitivity = (double*)malloc(lstSensitivities.count()*sizeof(double));
                 for(i=0; i<lstSensitivities.count(); i++)
-                    doubAxisCal->sensitivity[i] = lstSensitivities.at(i).toInt(0);
+                {
+                    doubAxisCal->sensitivity[i] = lstSensitivities.at(i).toDouble(0);
+                }
             }
 
         }
@@ -1132,7 +1134,21 @@ void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
 }
 
 
-
+void funcClearDirFolder(QString path)
+{
+    QDir dir(path);
+    if (dir.exists())
+    {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst))
+        {
+            QFile::remove(info.absoluteFilePath());
+        }
+    }
+    else
+    {
+        dir.mkdir(path);
+    }
+}
 
 
 

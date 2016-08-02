@@ -3427,25 +3427,19 @@ bool MainWindow::generatesHypcube(int numIterations, int sensor){
 
 
     //Get hash to the corresponding sensitivity
-    QList<int> sensitivity;
+    QList<double> sensitivity;
     for(i=0; i<lstChoises.count(); i++)
     {
-        //qDebug() << "lstChoises.at(i): " << lstChoises.at(i);
-        //qDebug() << "daCalib.minWavelength: " << daCalib.minWavelength;
-        //qDebug() << "daCalib.minSpecRes: " << daCalib.minSpecRes;
         aux = floor( (lstChoises.at(i) - daCalib.minWavelength ) / (double)daCalib.minSpecRes );
         sensitivity.append( daCalib.sensitivity[aux] );
     }
     int j, l, pixByImage;
     pixByImage = daCalib.squareUsableW * daCalib.squareUsableH;    
-    //qDebug() << "pixByImage: " << pixByImage;
-    //qDebug() << "N: " << N;
-    //qDebug() << "sensitivity.count(): " << sensitivity.count();
     i=0;
     for(l=0; l<sensitivity.count();l++)
     {
         for(j=0; j<pixByImage; j++)
-        {
+        {            
             f[i] /= sensitivity.at(l);
             i++;
         }
@@ -3792,5 +3786,78 @@ void MainWindow::on_actionFittFunction_triggered()
     //Save
     saveFile(_PATH_HALOGEN_FUNCTION,function);
     tmpImg.save(_PATH_AUX_IMG);
+
+    funcShowMsg("Function saved successfully",_PATH_HALOGEN_FUNCTION);
+
+}
+
+void MainWindow::on_actionShow_hypercube_triggered()
+{
+    //Select images
+    //..
+    QString originFileName;
+    originFileName = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select hypercube..."),
+                                                        "./Hypercubes/",
+                                                        "(*.hypercube);;"
+                                                     );
+    qDebug() << originFileName;
+    if( originFileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    //Extracts information about the hypercube
+    //..
+    QString qstringHypercube;
+    QList<QString> hypItems;
+    QList<double> waves;
+    qstringHypercube = readFileParam( originFileName );
+    hypItems = qstringHypercube.split(",");
+    QString dateTime;
+    int W, H, L, l;
+    dateTime = hypItems.at(0);  hypItems.removeAt(0);
+    W = hypItems.at(0).toInt(0);         hypItems.removeAt(0);
+    H = hypItems.at(0).toInt(0);         hypItems.removeAt(0);
+    L = hypItems.at(0).toInt(0);         hypItems.removeAt(0);
+    for(l=0;l<L;l++)
+    {
+        waves.append( hypItems.at(0).toDouble(0) );
+        hypItems.removeAt(0);
+    }
+
+    //Generates the images into a tmpImage
+    //..
+    funcClearDirFolder(_PATH_TMP_HYPCUBES);
+    QString tmpFileName;
+    QList<QImage> hypercube;
+    QImage tmpImg(W,H,QImage::Format_Grayscale8);
+    char tmpVal;
+    int col, row;
+    for( l=0; l<L; l++ )
+    {
+        for( col=0; col<W; col++ )
+        {
+            for( row=0; row<H; row++ )
+            {
+                tmpVal = (hypItems.at(0).toDouble(0)<255.0)?(char)ceil(hypItems.at(0).toDouble(0)):(char)255;
+                hypItems.removeAt(0);
+                tmpImg.setPixel(col,row,tmpVal);
+            }
+        }
+        tmpFileName = _PATH_TMP_HYPCUBES + QString::number(waves.at(l)) + ".png";
+        tmpImg.save(tmpFileName);
+        hypercube.append(tmpImg);
+    }
+
+
+
+
+
+
+
+
+
 
 }

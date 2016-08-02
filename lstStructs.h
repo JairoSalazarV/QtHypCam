@@ -65,6 +65,8 @@
     #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
     #define _PATH_LIMIT_S                   "./settings/Calib/sourceHalogen.hypcam"
 
+    #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
+
     #define _EXTENTION                      ".hypcam"
 
     #define _RIGHT  1
@@ -172,7 +174,7 @@
         int             maxNumBands;
         double          minSpecRes;
         strAllLinReg    LR;
-        int            *sensitivity;
+        double          *sensitivity;
     }lstDoubleAxisCalibration;
 
     typedef struct lstCalibFileNames{

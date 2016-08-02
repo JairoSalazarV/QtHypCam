@@ -952,6 +952,7 @@ QSlider::handle:horizontal {
    <addaction name="actionChoseWavelength"/>
    <addaction name="actionFittFunction"/>
    <addaction name="actionGenHypercube"/>
+   <addaction name="actionShow_hypercube"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -1232,6 +1233,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Select an image and fits its line</string>
+   </property>
+  </action>
+  <action name="actionShow_hypercube">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/newProject.png</normaloff>:/new/icons/imagenInte/newProject.png</iconset>
+   </property>
+   <property name="text">
+    <string>Show hypercube</string>
+   </property>
+   <property name="toolTip">
+    <string>Show hypercube</string>
    </property>
   </action>
  </widget>

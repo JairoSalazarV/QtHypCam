@@ -32,7 +32,7 @@
 
     bool funcIsIP( std::string ipCandidate );
 
-    int connectSocket( structCamSelected *camSelected );
+    int connectSocket( structCamSelected *camSelected );    
 
     void QtDelay( unsigned int ms );
 
@@ -80,6 +80,8 @@
 
 
     void funcOpenFolder(QString path);
+
+    void funcClearDirFolder(QString path);
 
     void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
 
