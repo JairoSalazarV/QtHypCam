@@ -238,6 +238,7 @@
         <file>imagenInte/squareSmall.png</file>
         <file>imagenInte/squareBig.png</file>
         <file>imagenInte/hypChose.png</file>
+        <file>imagenInte/fitt.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

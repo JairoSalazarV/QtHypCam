@@ -28,7 +28,7 @@
     #define _BLUE_WAVELENGHT 438
 
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
-    //#define _PATH_LAST_PREVIEW              "./tmpImages/lastPeview.png"
+    //#define _PATH_LAST_PREVIEW            "./tmpImages/lastPeview.png"
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
     #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"    
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
@@ -42,6 +42,22 @@
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
+    #define _PATH_HALOGEN_FUNCTION          "./settings/halogenFunction.hypcam"
+
+    #define _PATH_RED_RESPONSE              "./settings/Calib/responses/redResponse.hypcam"
+    #define _PATH_GREEN_RESPONSE            "./settings/Calib/responses/greenResponse.hypcam"
+    #define _PATH_BLUE_RESPONSE             "./settings/Calib/responses/blueResponse.hypcam"
+
+    #define _PATH_RED_SENSITIV              "./settings/Calib/responses/redSensivility.hypcam"
+    #define _PATH_GREEN_SENSITIV            "./settings/Calib/responses/greenSensivility.hypcam"
+    #define _PATH_BLUE_SENSITIV             "./settings/Calib/responses/blueSensivility.hypcam"
+
+    #define _PATH_RED_SENS_NORM             "./settings/Calib/responses/redSensivilityNorm.hypcam"
+    #define _PATH_GREEN_SENS_NORM           "./settings/Calib/responses/greenSensivilityNorm.hypcam"
+    #define _PATH_BLUE_SENS_NORM            "./settings/Calib/responses/blueSensivilityNorm.hypcam"
+
+    #define _PATH_HALOGEN_IRRADIATION       "./settings/Calib/responses/halogenIrradiation.hypcam"
+    #define _PATH_RGB_SENSIVILITIES         "./settings/Calib/responses/sensitivities.hypcam"
 
     #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
     #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"
@@ -49,10 +65,17 @@
     #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
     #define _PATH_LIMIT_S                   "./settings/Calib/sourceHalogen.hypcam"
 
+    #define _EXTENTION                      ".hypcam"
+
     #define _RIGHT  1
     #define _UP     2
     #define _LEFT   3
     #define _DOWN   4
+
+    #define _RED    1
+    #define _GREEN  2
+    #define _BLUE   3
+    #define _RGB    7
 
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"
@@ -60,6 +83,7 @@
     typedef struct pixel{
         int x;
         int y;
+        int index;
     }pixel;
 
     typedef struct voxel{
@@ -148,6 +172,7 @@
         int             maxNumBands;
         double          minSpecRes;
         strAllLinReg    LR;
+        int            *sensitivity;
     }lstDoubleAxisCalibration;
 
     typedef struct lstCalibFileNames{

@@ -23,11 +23,15 @@ private slots:
 
     void fillLabelImg(QString imgPath);
 
-    void drawCentroid(QString file, Qt::GlobalColor color );
+    void drawCentroid(QString file, Qt::GlobalColor color , QImage *img);
+
+    //void showSensitivitiesArea();
 
     void showWavelengthSimulation();
 
     //void calcDiffProj(strDiffProj *diffProj);
+
+    void drawDiffProjIntoImage(QImage *img, strDiffProj *diffProj);
 
     void drawDiffProj(strDiffProj *diffProj);
 

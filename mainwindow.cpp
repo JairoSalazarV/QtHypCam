@@ -43,7 +43,7 @@
 #include <selwathtocheck.h>
 
 #include <chosewavetoextract.h>
-
+#include <QRgb>
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -3336,17 +3336,44 @@ void MainWindow::on_pbLANTestConn_clicked()
 
 void MainWindow::on_actionGenHypercube_triggered()
 {
+    QTime timeStamp;
+    timeStamp.start();
+
+
+    if( generatesHypcube(12,_RGB) )
+    {
+        QString time;
+        time = timeToQString( timeStamp.elapsed() );
+        qDebug() << time;
+        funcShowMsg(" ", "Hypercube exported successfully");
+    }
+    //exit(2);
+
+}
+
+bool MainWindow::generatesHypcube(int numIterations, int sensor){
+
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(
+                                                this,
+                                                tr("Save Hypercube as..."),
+                                                "./Hypercubes/",
+                                                tr("Documents (*.hypercube)")
+                                            );
+    if( fileName.isEmpty() )
+    {
+        return false;
+    }
 
     mouseCursorWait();
 
     //Get original image
     //..
-    int N, M;
+    int i, aux, N, M;
     QImage img( _PATH_DISPLAY_IMAGE );
     lstDoubleAxisCalibration daCalib;
     funcGetCalibration(&daCalib);
     M = img.width() * img.height();
-
 
     //Creates and fills H
     // ..
@@ -3381,42 +3408,225 @@ void MainWindow::on_actionGenHypercube_triggered()
     //..
     createsHColAndHrow( Hcol, Hrow, &img, &daCalib );
 
-
-    /*
-    unsigned int acum, maxRepeted;
-    acum = 0;
-    maxRepeted=0;
-    for( int m=0; m<M; m++ )
+    //It creates image to proccess
+    //..
+    double *g, *gTmp, *f, *fKPlusOne;
+    gTmp        = (double*)malloc(M*sizeof(double));
+    fKPlusOne   = (double*)malloc(N*sizeof(double));
+    g           = serializeImageToProccess( img, sensor );//g
+    f           = createsF0(Hcol, g, N);//f0
+    for( i=0; i<numIterations; i++ )
     {
-        if( Hrow[m][0] > 0 )
+        createsGTmp( gTmp, g, Hrow, f, M );//(Hf)m
+        improveF( fKPlusOne, Hcol, f, gTmp, N );
+        memcpy(f,fKPlusOne,(N*sizeof(double)));
+    }
+
+    //Demosaicing hypercube
+    //..
+
+
+    //Get hash to the corresponding sensitivity
+    QList<int> sensitivity;
+    for(i=0; i<lstChoises.count(); i++)
+    {
+        //qDebug() << "lstChoises.at(i): " << lstChoises.at(i);
+        //qDebug() << "daCalib.minWavelength: " << daCalib.minWavelength;
+        //qDebug() << "daCalib.minSpecRes: " << daCalib.minSpecRes;
+        aux = floor( (lstChoises.at(i) - daCalib.minWavelength ) / (double)daCalib.minSpecRes );
+        sensitivity.append( daCalib.sensitivity[aux] );
+    }
+    int j, l, pixByImage;
+    pixByImage = daCalib.squareUsableW * daCalib.squareUsableH;    
+    //qDebug() << "pixByImage: " << pixByImage;
+    //qDebug() << "N: " << N;
+    //qDebug() << "sensitivity.count(): " << sensitivity.count();
+    i=0;
+    for(l=0; l<sensitivity.count();l++)
+    {
+        for(j=0; j<pixByImage; j++)
         {
-            acum += Hrow[m][0];
-            if( maxRepeted < (unsigned int)Hrow[m][0] )
-            {
-                maxRepeted = Hrow[m][0];
-            }
+            f[i] /= sensitivity.at(l);
+            i++;
         }
     }
-    qDebug() << "acum: "            << acum;
-    qDebug() << "maxRepeted: "      << maxRepeted;
-    qDebug() << "M: "               << M;
-    qDebug() << "N: "               << N;
-    qDebug() << "hypW: "            << hypW;
-    qDebug() << "hypH: "            << hypH;
-    qDebug() << "hypL: "            << hypL;
-    */
 
+    //Save hypercube
+    //..
+    //Format: Date,W,H,L,l1,...,lL,pix_1_l1,pix_2_l1,...pix_n_l1,pix_1_l2,pix_2_l2,...pix_n_l2,...,pix_1_L,pix_2_L,...pix_n_L
 
+    QString hypercube;
+    QDateTime dateTime = QDateTime::currentDateTime();
+    hypercube.append(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+    hypercube.append(","+QString::number(daCalib.squareUsableW));
+    hypercube.append(","+QString::number(daCalib.squareUsableH));
+    hypercube.append(","+QString::number(sensitivity.count()));
+    for(l=0; l<sensitivity.count(); l++)
+    {
+        hypercube.append(","+QString::number(lstChoises.at(l)));
+    }
+    N = hypW * hypH * hypL;//Voxels
+    for(i=0; i<N; i++)
+    {
+        hypercube.append(","+QString::number(f[i]));
+    }
+    fileName.replace(".hypercube","");
+    saveFile(fileName+".hypercube",hypercube);
 
     mouseCursorReset();
 
+
+
+
+
+
+
+
+
+    if(false)
+    {
+        double min, max;
+        int minPos, maxPos;
+        min = 9999;
+        max = -1;
+
+        for(int n=0; n<N; n++)
+        {
+            if(min > fKPlusOne[n])
+            {
+                min = fKPlusOne[n];
+                minPos = n;
+            }
+            if(max < fKPlusOne[n])
+            {
+                max = fKPlusOne[n];
+                maxPos = n;
+            }
+            printf("fKPlusOne[%d] | %lf\n",n,fKPlusOne[n]);
+        }
+        printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
+        fflush(stdout);
+    }
+
+
+
+
+
+    return true;
+
+}
+
+void MainWindow::improveF( double *fKPlusOne, pixel **Hcol, double *f, double *gTmp, int N )
+{
+    int n;
+    double avgMeasure;//average measure
+    double relevance;//How relevant it is respect to all voxels overlaped
+    double numProj;//It is integer but is used double to evit many cast operations
+    numProj = 5.0;
+    for( n=0; n<N; n++ )
+    {
+        //fKPlusOne[n]    = 0.0;
+        avgMeasure      = f[n] / numProj;
+        //qDebug() << "n: " << n << " | avgMeasure: " << avgMeasure;
+
+        relevance       = gTmp[Hcol[n][0].index] +
+                          gTmp[Hcol[n][1].index] +
+                          gTmp[Hcol[n][2].index] +
+                          gTmp[Hcol[n][3].index] +
+                          gTmp[Hcol[n][4].index];
+        //qDebug() << "relevance: " << relevance;
+
+        fKPlusOne[n]    = avgMeasure * relevance;
+        //qDebug() << "fKPlusOne[" << n << "]: " << fKPlusOne[n];
+
+    }
+
+}
+
+void MainWindow::createsGTmp(double *gTmp, double *g, int **Hrow, double *f, int M)
+{
+    int m, n;
+    for( m=0; m<M; m++ )
+    {
+        gTmp[m] = 0.0;
+        if( Hrow[m][0] > 0 )
+        {
+            for( n=1; n<=Hrow[m][0]; n++ )
+            {
+                gTmp[m] += f[Hrow[m][n]];
+            }
+            gTmp[m] = ( g[m] > 0 && gTmp[m] > 0 )?(g[m]/gTmp[m]):0;
+        }
+    }
+}
+
+
+double *MainWindow::createsF0(pixel **Hcol, double *g, int N)
+{
+    double *f;
+    f = (double*)malloc(N*sizeof(double));
+    for( int n=0; n<N; n++ )
+    {
+        f[n] = g[Hcol[n][0].index] +//Zero
+               g[Hcol[n][1].index] +//Right
+               g[Hcol[n][2].index] +//Up
+               g[Hcol[n][3].index] +//Left
+               g[Hcol[n][4].index]; //Down
+        //qDebug() << "f[" << n << "]: " << f[n];
+    }
+    return f;
+}
+
+double *MainWindow::serializeImageToProccess(QImage img, int sensor)
+{
+    int M, m;
+    double *g;
+    M = img.width() * img.height();
+    g = (double*)malloc( M * sizeof(double) );
+
+    QRgb rgb;
+    m=0;
+    for( int r=0; r<img.height(); r++ )
+    {
+        for( int c=0; c<img.width(); c++ )
+        {
+            if( sensor == _RED )
+            {
+                rgb     = img.pixel(QPoint(c,r));
+                g[m]    = (double)qRed(rgb);
+            }
+            else
+            {
+                if( sensor == _RGB )
+                {
+                    rgb     = img.pixel(QPoint(c,r));
+                    g[m]    = (double)(qRed(rgb) + qGreen(rgb) + qBlue(rgb));
+                }
+                else
+                {
+                    if( sensor == _GREEN )
+                    {
+                        rgb     = img.pixel(QPoint(c,r));
+                        g[m]    = (double)qGreen(rgb);
+                    }
+                    else
+                    {   //_BLUE
+                        rgb     = img.pixel(QPoint(c,r));
+                        g[m]    = (double)qBlue(rgb);
+                    }
+                }
+            }
+            m++;
+        }
+    }
+    return g;
 }
 
 void MainWindow::createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDoubleAxisCalibration *daCalib )
 {
     //Prepares variables and constants
     //..
-    int hypW, hypH, hypL, idVoxel, index;
+    int hypW, hypH, hypL, idVoxel;
     QList<double> lstChoises;
     strDiffProj Pj;
     lstChoises  = getWavesChoised();
@@ -3439,31 +3649,32 @@ void MainWindow::createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDo
                 Pj.y = row;
                 calcDiffProj(&Pj,daCalib);
                 //Creates a new item in the c-th Hcol
-                Hcol[idVoxel][0].x = Pj.x;//Zero
-                Hcol[idVoxel][0].y = Pj.y;
-                Hcol[idVoxel][1].x = Pj.rx;//Right
-                Hcol[idVoxel][1].y = Pj.ry;
-                Hcol[idVoxel][2].x = Pj.ux;//Up
-                Hcol[idVoxel][2].y = Pj.uy;
-                Hcol[idVoxel][3].x = Pj.lx;//Left
-                Hcol[idVoxel][3].y = Pj.ly;
-                Hcol[idVoxel][4].x = Pj.dx;//Down
-                Hcol[idVoxel][4].y = Pj.dy;
+                Hcol[idVoxel][0].x      = Pj.x;//Zero
+                Hcol[idVoxel][0].y      = Pj.y;
+                Hcol[idVoxel][0].index  = xyToIndex( Hcol[idVoxel][0].x, Hcol[idVoxel][0].y, img->width() );
+
+                Hcol[idVoxel][1].x      = Pj.rx;//Right
+                Hcol[idVoxel][1].y      = Pj.ry;
+                Hcol[idVoxel][1].index  = xyToIndex( Hcol[idVoxel][1].x, Hcol[idVoxel][1].y, img->width() );
+
+                Hcol[idVoxel][2].x      = Pj.ux;//Up
+                Hcol[idVoxel][2].y      = Pj.uy;
+                Hcol[idVoxel][2].index  = xyToIndex( Hcol[idVoxel][2].x, Hcol[idVoxel][2].y, img->width() );
+
+                Hcol[idVoxel][3].x      = Pj.lx;//Left
+                Hcol[idVoxel][3].y      = Pj.ly;
+                Hcol[idVoxel][3].index  = xyToIndex( Hcol[idVoxel][3].x, Hcol[idVoxel][3].y, img->width() );
+
+                Hcol[idVoxel][4].x      = Pj.dx;//Down
+                Hcol[idVoxel][4].y      = Pj.dy;
+                Hcol[idVoxel][4].index  = xyToIndex( Hcol[idVoxel][4].x, Hcol[idVoxel][4].y, img->width() );
+
                 //Creates new item in Hrow
-                index = xyToIndex( Hcol[idVoxel][0].x, Hcol[idVoxel][0].y, img->width() );
-                insertItemIntoRow(Hrow,index,idVoxel);
-
-                index = xyToIndex( Hcol[idVoxel][1].x, Hcol[idVoxel][1].y, img->width() );
-                insertItemIntoRow(Hrow,index,idVoxel);
-
-                index = xyToIndex( Hcol[idVoxel][2].x, Hcol[idVoxel][2].y, img->width() );
-                insertItemIntoRow(Hrow,index,idVoxel);
-
-                index = xyToIndex( Hcol[idVoxel][3].x, Hcol[idVoxel][3].y, img->width() );
-                insertItemIntoRow(Hrow,index,idVoxel);
-
-                index = xyToIndex( Hcol[idVoxel][4].x, Hcol[idVoxel][4].y, img->width() );
-                insertItemIntoRow(Hrow,index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][0].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][1].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][2].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][3].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][4].index,idVoxel);
 
                 idVoxel++;
             }
@@ -3532,4 +3743,54 @@ void MainWindow::on_actionChoseWavelength_triggered()
 {
     choseWaveToExtract *form = new choseWaveToExtract(this);
     form->show();
+}
+
+void MainWindow::on_actionFittFunction_triggered()
+{
+    //Select images
+    //..
+    QString originFileName;
+    originFileName = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select image origin..."),
+                                                        "./tmpImages/",
+                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg *.gif);;"
+                                                     );
+    if( originFileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    //Obtains dots
+    //..
+    int row, col, min, minPos, val, i;
+    QRgb pixel;
+    QImage img(originFileName);
+    QImage tmpImg(originFileName);
+    QString function;
+    function = QString::number(img.height());
+    i = 0;
+    for( col=0; col<img.width(); col++ )
+    {
+        min     = 900;
+        minPos  = 0;
+        for( row=0; row<img.height(); row++ )
+        {
+            pixel   = img.pixel(col,row);
+            val     = qRed(pixel)+qGreen(pixel)+qBlue(pixel);
+            if( val < min )
+            {
+                min     = val;
+                minPos  = row;
+            }
+            tmpImg.setPixelColor(QPoint(col,minPos),Qt::white);
+        }
+        function.append(","+QString::number(img.height()-minPos));
+        tmpImg.setPixelColor(QPoint(col,minPos),Qt::magenta);
+        i++;
+    }
+    //Save
+    saveFile(_PATH_HALOGEN_FUNCTION,function);
+    tmpImg.save(_PATH_AUX_IMG);
+
 }

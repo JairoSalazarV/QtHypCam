@@ -22,6 +22,24 @@ QString funcRemoveFileNameFromPath( QString Path ){
     return QFileInfo(Path).absolutePath();
 }
 
+
+QString timeToQString( unsigned int totMilli )
+{
+    unsigned int h          = round(totMilli/(1000*60*60));
+    totMilli                = totMilli - (h*(1000*60*60));
+    unsigned int m          = round(totMilli/(1000*60));
+    totMilli                = totMilli - (m*(1000*60));
+    unsigned int s          = round(totMilli/1000);
+    unsigned int u          = totMilli - (s*1000);
+    QString timeElapsed     = "HH:MM:SS:U( ";
+    timeElapsed            += (h>9)?QString::number(h)+":":"0"+QString::number(h)+":";
+    timeElapsed            += (m>9)?QString::number(m)+":":"0"+QString::number(m)+":";
+    timeElapsed            += (s>9)?QString::number(s)+":":"0"+QString::number(s)+":";
+    timeElapsed            += QString::number(u);
+    timeElapsed            += " )";
+    return timeElapsed;
+}
+
 void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
 
     qDebug() << "W" << calibSettings->W;
@@ -73,6 +91,7 @@ void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
 
 bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
 
+    int i;
 
     QFile *xmlFile = new QFile(_PATH_CALIBRATION_FILE);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
@@ -175,6 +194,15 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
                 doubAxisCal->maxNumBands = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="minSpecRes" )
                 doubAxisCal->minSpecRes = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="sensitivities" )
+            {
+                QList<QString> lstSensitivities;
+                lstSensitivities = xmlReader->readElementText().split(",");
+                doubAxisCal->sensitivity = (int*)malloc(lstSensitivities.count()*sizeof(int));
+                for(i=0; i<lstSensitivities.count(); i++)
+                    doubAxisCal->sensitivity[i] = lstSensitivities.at(i).toInt(0);
+            }
 
         }
     }

@@ -83,6 +83,8 @@
 
     void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
 
+    QString timeToQString(unsigned int totMilli);
+
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);

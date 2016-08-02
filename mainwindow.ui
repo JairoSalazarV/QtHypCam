@@ -950,6 +950,7 @@ QSlider::handle:horizontal {
    <addaction name="actionDoubAxisDiff"/>
    <addaction name="actionValCal"/>
    <addaction name="actionChoseWavelength"/>
+   <addaction name="actionFittFunction"/>
    <addaction name="actionGenHypercube"/>
   </widget>
   <action name="actionExit">
@@ -1219,6 +1220,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Chose wavelengths to extract</string>
+   </property>
+  </action>
+  <action name="actionFittFunction">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/fitt.png</normaloff>:/new/icons/imagenInte/fitt.png</iconset>
+   </property>
+   <property name="text">
+    <string>FittFunction</string>
+   </property>
+   <property name="toolTip">
+    <string>Select an image and fits its line</string>
    </property>
   </action>
  </widget>

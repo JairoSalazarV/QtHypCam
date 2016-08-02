@@ -95,6 +95,10 @@ private slots:
 
     void on_pbGenCal_clicked();
 
+    QString obtainSensitivities(lstDoubleAxisCalibration *daCalibGenCal);
+
+    QList<double> getNormedFunction( QString fileName );
+
     QVector2D getSqUsableIni();
 
     QVector2D calcSpectralResolution();

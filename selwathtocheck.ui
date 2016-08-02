@@ -166,6 +166,19 @@
     <string>Wavelength</string>
    </property>
   </widget>
+  <widget class="QCheckBox" name="checkBoxSensSamples">
+   <property name="geometry">
+    <rect>
+     <x>157</x>
+     <y>190</y>
+     <width>131</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sensitivities</string>
+   </property>
+  </widget>
  </widget>
  <resources>
   <include location="lstImgs.qrc"/>

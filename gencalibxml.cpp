@@ -12,10 +12,9 @@
 #include <QVector4D>
 #include <QMatrix4x2>
 
+#include <QRgb>
+
 bool isExportable = false;
-
-
-
 
 
 genCalibXML::genCalibXML(QWidget *parent) :
@@ -25,9 +24,7 @@ genCalibXML::genCalibXML(QWidget *parent) :
     ui->setupUi(this);    
     autoLoadCentroids();
 
-
     disableButtons();
-
 
 }
 
@@ -531,6 +528,8 @@ void genCalibXML::on_pbGenCal_clicked()
 {
     if( isExportable )
     {
+        QApplication::setOverrideCursor(Qt::WaitCursor);
+
         //lstCalibFileNames calibPoints = fillLstCalibPoints();
         QString newFileCon = "";
 
@@ -616,9 +615,24 @@ void genCalibXML::on_pbGenCal_clicked()
         maxNumBand  = QString::number(spectralResolution.x());
         minSpecRes  = QString::number(spectralResolution.y());
 
+        //Obtains sensivities
+        //..
+        QString sensitivities;
+        lstDoubleAxisCalibration daCalibGenCal;        
+        daCalibGenCal.LR = getAllLR();
+        daCalibGenCal.maxNumBands   = spectralResolution.x();
+        daCalibGenCal.minSpecRes    = spectralResolution.y();
+        daCalibGenCal.minWavelength = waveLim.x();
+        daCalibGenCal.maxWavelength = waveLim.y();
+        daCalibGenCal.squareUsableX = auxSqUsableX;
+        daCalibGenCal.squareUsableY = auxSqUsableY;
+        daCalibGenCal.squareUsableW = auxSqUsableW;
+        daCalibGenCal.squareUsableH = auxSqUsableH;
+        sensitivities = obtainSensitivities(&daCalibGenCal);
 
 
-
+        //It creates the XML file
+        //..
         newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
 
         newFileCon.append("<calib>\n");
@@ -670,9 +684,14 @@ void genCalibXML::on_pbGenCal_clicked()
             newFileCon.append("    <maxNumBand>"        + maxNumBand                            + "</maxNumBand>\n");
             newFileCon.append("    <minSpecRes>"        + minSpecRes                            + "</minSpecRes>\n");
 
+            newFileCon.append("    <sensitivities>"     + sensitivities                         + "</sensitivities>\n");
+
+
+
 
         newFileCon.append("</calib>\n");
 
+        QApplication::restoreOverrideCursor();
 
         //Save file
         if( saveFile(_PATH_CALIBRATION_FILE,newFileCon) )
@@ -684,90 +703,264 @@ void genCalibXML::on_pbGenCal_clicked()
             funcShowMsg("ERROR","Saving file");
         }
 
-
-
-
-
-
-
-        /*
-        double xs,ys,ws,hs;
-        xs = (double)sqApert->rectX / (double)sqApert->canvasW;
-        ys = (double)sqApert->rectY / (double)sqApert->canvasH;
-        ws = (double)sqApert->rectW / (double)sqApert->canvasW;
-        hs = (double)sqApert->rectH / (double)sqApert->canvasH;
-
-        newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
-
-        newFileCon.append("<calib>\n");
-
-            newFileCon.append("    <bkgPath>"+ sourcePath               +"</bkgPath>\n");
-
-            newFileCon.append("    <origin>(0,0)=(left,up)</origin>\n");
-
-            newFileCon.append("    <W>"+ QString::number(_BIG_WIDTH)                        +"</W>\n");
-            newFileCon.append("    <H>"+ QString::number(_BIG_HEIGHT)                       +"</H>\n");
-
-            newFileCon.append("    <source>"+ calibPoints.source                            +"</source>\n");
-
-            newFileCon.append("    <bigX>"+ QString::number( xB )                           +"</bigX>\n");
-            newFileCon.append("    <bigY>"+ QString::number( yB )                           +"</bigY>\n");
-            newFileCon.append("    <bigW>"+ QString::number( wB )                           +"</bigW>\n");
-            newFileCon.append("    <bigH>"+ QString::number( hB )                           +"</bigH>\n");
-
-            newFileCon.append("    <squareX>"+ QString::number( xs )                        +"</squareX>\n");
-            newFileCon.append("    <squareY>"+ QString::number( ys )                        +"</squareY>\n");
-            newFileCon.append("    <squareW>"+ QString::number( ws )                        +"</squareW>\n");
-            newFileCon.append("    <squareH>"+ QString::number( hs )                        +"</squareH>\n");
-
-            newFileCon.append("    <bRD>"+ calibPoints.blueRightDown                        +"</bRD>\n");
-            newFileCon.append("    <bR>" + calibPoints.blueRight                            +"</bR>\n");
-            newFileCon.append("    <bRU>"+ calibPoints.blueRightUp                          +"</bRU>\n");
-            newFileCon.append("    <bU>" + calibPoints.blueUp                               +"</bU>\n");
-            newFileCon.append("    <bLU>"+ calibPoints.blueLeftUp                           +"</bLU>\n");
-            newFileCon.append("    <bL>" + calibPoints.blueLeft                             +"</bL>\n");
-            newFileCon.append("    <bLD>"+ calibPoints.blueLeftDown                         +"</bLD>\n");
-            newFileCon.append("    <bD>" + calibPoints.blueDown                             +"</bD>\n");
-
-            newFileCon.append("    <gRD>"+ calibPoints.greenRightDown                       +"</gRD>\n");
-            newFileCon.append("    <gR>" + calibPoints.greenRight                           +"</gR>\n");
-            newFileCon.append("    <gRU>"+ calibPoints.greenRightUp                         +"</gRU>\n");
-            newFileCon.append("    <gU>" + calibPoints.greenUp                              +"</gU>\n");
-            newFileCon.append("    <gLU>"+ calibPoints.greenLeftUp                          +"</gLU>\n");
-            newFileCon.append("    <gL>" + calibPoints.greenLeft                            +"</gL>\n");
-            newFileCon.append("    <gLD>"+ calibPoints.greenLeftDown                        +"</gLD>\n");
-            newFileCon.append("    <gD>" + calibPoints.greenDown                            +"</gD>\n");
-
-            newFileCon.append("    <rRD>"+ calibPoints.redRightDown                         +"</rRD>\n");
-            newFileCon.append("    <rR>" + calibPoints.redRight                             +"</rR>\n");
-            newFileCon.append("    <rRU>"+ calibPoints.redRightUp                           +"</rRU>\n");
-            newFileCon.append("    <rU>" + calibPoints.redUp                                +"</rU>\n");
-            newFileCon.append("    <rLU>"+ calibPoints.redLeftUp                            +"</rLU>\n");
-            newFileCon.append("    <rL>" + calibPoints.redLeft                              +"</rL>\n");
-            newFileCon.append("    <rLD>"+ calibPoints.redLeftDown                          +"</rLD>\n");
-            newFileCon.append("    <rD>" + calibPoints.redDown                              +"</rD>\n");
-
-
-        newFileCon.append("</calib>\n");
-
-
-        //Save file
-        if( saveFile(_PATH_CALIBRATION_FILE,newFileCon) )
-        {
-            funcShowMsg("Success","File saved");
-        }
-        else
-        {
-            funcShowMsg("ERROR","Saving file");
-        }
-        */
-
     }
     else
     {
         funcShowMsg("Lack","Calibrations points incomplete");
     }
 
+}
+
+QString genCalibXML::obtainSensitivities(lstDoubleAxisCalibration *daCalibGenCal)
+{    
+    //It is required offsets because, the calcDiffProj was created to
+    //manage coordinates based on square aperture and apply a transformation
+    //that moves the centroide's coordinates by applying LR.
+    int offsetX, offsetY;
+    offsetX = 2;
+    offsetY = 5;
+
+    //Get source centroide
+    //..
+    QString sourceHalogen;
+    QVector2D origin;
+    sourceHalogen = readFileParam( _PATH_LIMIT_S );
+    origin.setX( sourceHalogen.split(",").at(0).toInt(0) - daCalibGenCal->squareUsableX - offsetX );
+    origin.setY( sourceHalogen.split(",").at(1).toInt(0) - daCalibGenCal->squareUsableY - offsetY );
+
+    //Account all sensitivities
+    //..
+    double actWave;
+    strDiffProj diffProj;    
+    QImage img( _PATH_DISPLAY_IMAGE );
+    QImage imgMod( _PATH_DISPLAY_IMAGE );
+    QRgb tmpPix;
+    int r, c, tmpX, tmpY, numWaves, range;
+    double response[4][daCalibGenCal->maxNumBands];
+    double sensitiv[4][daCalibGenCal->maxNumBands];
+    double sensNorm[3][daCalibGenCal->maxNumBands];
+
+    memset(response[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(response[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(response[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(response[3],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+
+    memset(sensitiv[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(sensitiv[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(sensitiv[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(sensitiv[3],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+
+    memset(sensNorm[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(sensNorm[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    memset(sensNorm[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+
+    range = 3;
+    for( r=origin.y()-range; r<=origin.y()+range; r++ )
+    {
+        for( c=origin.x()-range; c<=origin.x()+range; c++ )
+        {
+            actWave     = daCalibGenCal->minWavelength;            
+            numWaves = 0;
+            while( actWave < daCalibGenCal->maxWavelength )
+            {
+
+                //Calculates the projection
+                //..
+                diffProj.x          = c;
+                diffProj.y          = r;
+                diffProj.wavelength = actWave;
+                calcDiffProj(&diffProj, daCalibGenCal);
+
+                //Accumulates diffraction values sensed
+                //..
+                tmpPix = img.pixel( diffProj.rx, diffProj.ry );//Right
+                response[0][numWaves] += (double)qRed(tmpPix);
+                response[1][numWaves] += (double)qGreen(tmpPix);
+                response[2][numWaves] += (double)qBlue(tmpPix);
+                //qDebug() << "right \t r: " << qRed(tmpPix)<< "\tg: " << qGreen(tmpPix)<< "\tb: " << qBlue(tmpPix);
+
+                tmpPix = img.pixel( diffProj.ux, diffProj.uy );//Up
+                response[0][numWaves] += (double)qRed(tmpPix);
+                response[1][numWaves] += (double)qGreen(tmpPix);
+                response[2][numWaves] += (double)qBlue(tmpPix);
+                //qDebug() << "Up \t r: " << qRed(tmpPix)<< "\tg: " << qGreen(tmpPix)<< "\tb: " << qBlue(tmpPix);
+
+                tmpPix = img.pixel( diffProj.lx, diffProj.ly );//Left
+                response[0][numWaves] += (double)qRed(tmpPix);
+                response[1][numWaves] += (double)qGreen(tmpPix);
+                response[2][numWaves] += (double)qBlue(tmpPix);
+                //qDebug() << "Left \t r: " << qRed(tmpPix)<< "\tg: " << qGreen(tmpPix)<< "\tb: " << qBlue(tmpPix);
+
+                tmpPix = img.pixel( diffProj.dx, diffProj.dy );//Down
+                response[0][numWaves] += (double)qRed(tmpPix);
+                response[1][numWaves] += (double)qGreen(tmpPix);
+                response[2][numWaves] += (double)qBlue(tmpPix);
+                //qDebug() << "Down \t r: " << qRed(tmpPix)<< "\tg: " << qGreen(tmpPix)<< "\tb: " << qBlue(tmpPix);
+                //qDebug() << "";
+
+                //Draw into the real image
+                //..
+                tmpX = diffProj.x; tmpY = diffProj.y;
+                imgMod.setPixelColor(tmpX,tmpY,Qt::magenta);
+
+                tmpX = diffProj.rx; tmpY = diffProj.ry;
+                imgMod.setPixelColor(tmpX,tmpY,Qt::red);
+
+                tmpX = diffProj.ux; tmpY = diffProj.uy;
+                imgMod.setPixelColor(tmpX,tmpY,Qt::green);
+
+                tmpX = diffProj.lx; tmpY = diffProj.ly;
+                imgMod.setPixelColor(tmpX,tmpY,Qt::blue);
+
+                tmpX = diffProj.dx; tmpY = diffProj.dy;
+                imgMod.setPixelColor(tmpX,tmpY,Qt::yellow);
+
+                actWave += daCalibGenCal->minSpecRes;
+                numWaves++;
+
+                //img.save(_PATH_AUX_IMG);
+                //exit(2);
+
+            }
+        }
+    }
+
+    //Get halogen function
+    //..
+    QList<double> halogenFunction;
+    halogenFunction = getNormedFunction( _PATH_HALOGEN_FUNCTION );
+
+    //It calcultes the average sensitivities
+    //..
+    QString sensitivities;
+    QString redResponse, greenResponse, blueResponse;
+    QString redSensivility, greenSensivility, blueSensivility;
+    QString redSenNorm, greenSenNorm, blueSenNorm;
+    QString halogenIrradiance;
+    int i, repeated, idWave;
+    idWave = round(daCalibGenCal->minWavelength);
+    repeated = (1+(range*2))*(1+(range*2))*4;
+    for(i=0; i<numWaves; i++)
+    {
+        response[0][i]      = ((double)response[0][i] / (double)repeated) / 255.0;
+        response[1][i]      = ((double)response[1][i] / (double)repeated) / 255.0;
+        response[2][i]      = ((double)response[2][i] / (double)repeated) / 255.0;
+        response[3][i]      = response[0][i] + response[1][i] + response[2][i];
+
+        sensitiv[0][i]      = response[0][i] / halogenFunction.at(idWave+i);
+        sensitiv[1][i]      = response[1][i] / halogenFunction.at(idWave+i);
+        sensitiv[2][i]      = response[2][i] / halogenFunction.at(idWave+i);
+        sensitiv[3][i]      = sensitiv[0][i] + sensitiv[1][i] + sensitiv[2][i];
+
+        sensNorm[0][i]      = sensitiv[0][i] / sensitiv[3][i];
+        sensNorm[1][i]      = sensitiv[1][i] / sensitiv[3][i];
+        sensNorm[2][i]      = sensitiv[2][i] / sensitiv[3][i];
+
+        if(i==0)
+        {
+            redResponse         = QString::number(response[0][i]);
+            greenResponse       = QString::number(response[1][i]);
+            blueResponse        = QString::number(response[2][i]);
+
+            redSensivility      = QString::number(sensitiv[0][i]);
+            greenSensivility    = QString::number(sensitiv[1][i]);
+            blueSensivility     = QString::number(sensitiv[2][i]);
+
+            sensitivities       = QString::number(sensitiv[0][i]+sensitiv[1][i]+sensitiv[2][i]);
+
+            redSenNorm          = QString::number(sensNorm[0][i]);
+            greenSenNorm        = QString::number(sensNorm[1][i]);
+            blueSenNorm         = QString::number(sensNorm[2][i]);
+
+            halogenIrradiance   = QString::number(halogenFunction.at(idWave+i));
+        }
+        else
+        {
+            redResponse.append(","+QString::number(response[0][i]));
+            greenResponse.append(","+QString::number(response[1][i]));
+            blueResponse.append(","+QString::number(response[2][i]));
+
+            redSensivility.append(","+QString::number(sensitiv[0][i]));
+            greenSensivility.append(","+QString::number(sensitiv[1][i]));
+            blueSensivility.append(","+QString::number(sensitiv[2][i]));
+
+            sensitivities.append(","+QString::number(sensitiv[0][i]+sensitiv[1][i]+sensitiv[2][i]));
+
+            redSenNorm.append(","+QString::number(sensNorm[0][i]));
+            greenSenNorm.append(","+QString::number(sensNorm[1][i]));
+            blueSenNorm.append(","+QString::number(sensNorm[2][i]));
+
+            halogenIrradiance.append(","+QString::number(halogenFunction.at(idWave+i)));
+        }
+    }
+    //Save backup
+    saveFile(_PATH_RED_RESPONSE,redResponse);
+    saveFile(_PATH_GREEN_RESPONSE,greenResponse);
+    saveFile(_PATH_BLUE_RESPONSE,blueResponse);
+
+    saveFile(_PATH_RED_SENSITIV,redSensivility);
+    saveFile(_PATH_GREEN_SENSITIV,greenSensivility);
+    saveFile(_PATH_BLUE_SENSITIV,blueSensivility);
+
+    saveFile(_PATH_RGB_SENSIVILITIES,sensitivities);
+
+    saveFile(_PATH_RED_SENS_NORM,redSenNorm);
+    saveFile(_PATH_GREEN_SENS_NORM,greenSenNorm);
+    saveFile(_PATH_BLUE_SENS_NORM,blueSenNorm);
+
+    saveFile(_PATH_HALOGEN_IRRADIATION,halogenIrradiance);
+
+    imgMod.save(_PATH_AUX_IMG);
+
+
+
+    /*
+    actWave = minWave;    
+    diffProj.x = origin.x();
+    diffProj.y = origin.y();
+
+    numWaves = 0;
+    int tmpSens;
+    while( actWave < (maxWave-specRes) ){
+        diffProj.wavelength = actWave;
+        calcDiffProj(&diffProj, daCalibGenPix);
+        tmpPix = img.pixel( diffProj.x, diffProj.y );
+        sensit[0][numWaves] = qRed(tmpPix);
+        sensit[1][numWaves] = qGreen(tmpPix);
+        sensit[2][numWaves] = qBlue(tmpPix);
+
+        img.setPixel( diffProj.x, diffProj.y, Qt::magenta );
+        tmpSens = sensit[0][numWaves] + sensit[1][numWaves] + sensit[2][numWaves];
+        if( numWaves == 0 )sensitivities = QString::number(tmpSens);
+        else sensitivities.append("," + QString::number(tmpSens));
+
+
+        actWave += specRes;
+        numWaves++;
+    }
+    img.save(_PATH_AUX_IMG);
+    */
+
+    //qDebug() << "sensitivities: " << sensitivities;
+    return sensitivities;
+}
+
+QList<double> genCalibXML::getNormedFunction( QString fileName )
+{
+    QString contain;
+    contain = readFileParam(fileName);
+    QList<QString> irradiation;
+    QList<double> function;
+    irradiation = contain.split(",");
+    int i;
+    double max;
+    max = irradiation.at(0).toDouble(0);
+    irradiation.removeAt(0);
+    for(i=0;i<irradiation.count();i++)
+    {
+        function.append(irradiation.at(i).toDouble(0) / max );
+    }
+    return function;
 }
 
 QVector2D genCalibXML::getSqUsableIni(){
@@ -839,7 +1032,7 @@ QVector2D genCalibXML::calcSpectralResolution()
     waveRange = abs(waveLim.x()-waveLim.y());
     numPixels = (deltaHoriz < deltaVert)?deltaHoriz:deltaVert;
 
-    results.setX((float)numPixels);
+    results.setX((float)(numPixels+1));
     results.setY(waveRange/(float)numPixels);
 
     return results;

@@ -10,6 +10,8 @@
 #include <customline.h>
 #include <customrect.h>
 
+#include <QVector2D>
+
 //#include <gencalibxml.h>
 
 GraphicsView *globalGvValCal;
@@ -105,6 +107,14 @@ void selWathToCheck::on_pbCentroids_clicked()
         showWavelengthSimulation();
     }
 
+    /*
+    //Area to calculate sensitivities
+    if( ui->checkBoxSensSamples->isChecked() )
+    {
+        showSensitivitiesArea();
+    }
+    */
+
 
 
 
@@ -112,6 +122,23 @@ void selWathToCheck::on_pbCentroids_clicked()
     //connect( gvValCal, SIGNAL(signalMouseReleased(QMouseEvent)), this, SLOT(mousePresed(QMouseEvent)) );
     //gvValCal->funcShowWavelenLines(1);
 }
+
+/*
+void selWathToCheck::showSensitivitiesArea()
+{
+    QString sourceHalogen;
+    QVector2D origin;
+    sourceHalogen = readFileParam( _PATH_LIMIT_S );
+    origin.setX( sourceHalogen.split(",").at(0).toInt(0) );
+    origin.setY( sourceHalogen.split(",").at(1).toInt(0) );
+
+
+
+
+
+
+}
+*/
 
 void selWathToCheck::showWavelengthSimulation()
 {
@@ -141,11 +168,13 @@ void selWathToCheck::showWavelengthSimulation()
         diffProj.y = 1;//Row 1
         calcDiffProj( &diffProj, daCalib );              
         drawDiffProj( &diffProj );
+        drawDiffProjIntoImage(&tmpImg,&diffProj);
 
         diffProj.x = x;
         diffProj.y = daCalib->squareUsableH;//row h
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
+        drawDiffProjIntoImage(&tmpImg,&diffProj);
 
     }
 
@@ -158,19 +187,18 @@ void selWathToCheck::showWavelengthSimulation()
         diffProj.x = 1;//Column 1
         diffProj.y = y;
         calcDiffProj( &diffProj, daCalib );
-        drawDiffProj( &diffProj );        
+        drawDiffProj( &diffProj );
+        drawDiffProjIntoImage(&tmpImg,&diffProj);
 
         diffProj.x = daCalib->squareUsableW;
         diffProj.y = y;
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
+        drawDiffProjIntoImage(&tmpImg,&diffProj);
 
     }
 
-
-    tmpImg.save("./tmpImages/deleteTest.png");
-
-
+    tmpImg.save(_PATH_AUX_IMG);
 
     globalGvValCal->update();
 }
@@ -214,6 +242,26 @@ void selWathToCheck::calcDiffProj(strDiffProj *diffProj)
 
 }
 */
+
+void selWathToCheck::drawDiffProjIntoImage(QImage *img, strDiffProj *diffProj)
+{
+    //Zero
+    img->setPixelColor(diffProj->x,diffProj->y,Qt::magenta);
+
+    //Right
+    img->setPixelColor(diffProj->rx,diffProj->ry,Qt::red);
+
+    //Up
+    img->setPixelColor(diffProj->ux,diffProj->uy,Qt::blue);
+
+    //Left
+    img->setPixelColor(diffProj->lx,diffProj->ly,Qt::green);
+
+    //Down
+    img->setPixelColor(diffProj->dx,diffProj->dy,Qt::yellow);
+
+}
+
 
 void selWathToCheck::drawDiffProj(strDiffProj *diffProj)
 {
@@ -309,7 +357,8 @@ void selWathToCheck::showLimitCalculated()
     globalGvValCal->scene()->addItem(minLine);
     globalGvValCal->scene()->addItem(maxLine);
 
-    drawCentroid(_PATH_LIMIT_S,Qt::magenta);
+    QImage img(_PATH_DISPLAY_IMAGE);
+    drawCentroid(_PATH_LIMIT_S,Qt::magenta,&img);
 
 
 }
@@ -417,26 +466,35 @@ void selWathToCheck::drawLimit(int side){
 }
 
 void selWathToCheck::drawAllCentoides(){
-    drawCentroid("source",Qt::magenta);
+    QImage img( _PATH_DISPLAY_IMAGE );
+    if( funcShowMsgYesNo("Alert","Draw halogen?") )
+    {
+        drawCentroid("sourceHalogen",Qt::yellow,&img);
+    }
+    else
+    {
+        drawCentroid("source",Qt::magenta,&img);
 
-    drawCentroid("bR",Qt::blue);
-    drawCentroid("gR",Qt::green);
-    drawCentroid("rR",Qt::red);
+        drawCentroid("bR",Qt::blue,&img);
+        drawCentroid("gR",Qt::green,&img);
+        drawCentroid("rR",Qt::red,&img);
 
-    drawCentroid("bU",Qt::blue);
-    drawCentroid("gU",Qt::green);
-    drawCentroid("rU",Qt::red);
+        drawCentroid("bU",Qt::blue,&img);
+        drawCentroid("gU",Qt::green,&img);
+        drawCentroid("rU",Qt::red,&img);
 
-    drawCentroid("bL",Qt::blue);
-    drawCentroid("gL",Qt::green);
-    drawCentroid("rL",Qt::red);
+        drawCentroid("bL",Qt::blue,&img);
+        drawCentroid("gL",Qt::green,&img);
+        drawCentroid("rL",Qt::red,&img);
 
-    drawCentroid("bD",Qt::blue);
-    drawCentroid("gD",Qt::green);
-    drawCentroid("rD",Qt::red);
+        drawCentroid("bD",Qt::blue,&img);
+        drawCentroid("gD",Qt::green,&img);
+        drawCentroid("rD",Qt::red,&img);
+    }
+    img.save(_PATH_AUX_IMG);
 }
 
-void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color)
+void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color, QImage *img)
 {
     const int len = 15;
 
@@ -474,6 +532,13 @@ void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color)
     globalGvValCal->scene()->addItem(horLine);
     globalGvValCal->scene()->addItem(verLine);
     globalGvValCal->update();
+
+    //Draw int real image
+    int c, r;
+    for( r=y-len; r<y+len; r++ )
+        img->setPixelColor(x,r,color);
+    for( c=x-len; c<x+len; c++ )
+        img->setPixelColor(c,y,color);
 
 }
 

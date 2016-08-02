@@ -305,6 +305,16 @@ private slots:
 
     void on_actionGenHypercube_triggered();
 
+    bool generatesHypcube(int numIterations, int sensor);
+
+    void improveF(double *fKPlusOne, pixel **Hcol, double *f, double *gTmp, int N );
+
+    void createsGTmp(double *gTmp, double *g, int **Hrow, double *f, int M);
+
+    double *createsF0(pixel **Hcol, double *g, int N);
+
+    double *serializeImageToProccess(QImage img, int sensor);
+
     void createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDoubleAxisCalibration *daCalib );
 
     void insertItemIntoRow(int **Hrow, int row, int col);
@@ -318,6 +328,8 @@ private slots:
     void on_actionSquareUsable_triggered();
 
     void on_actionChoseWavelength_triggered();
+
+    void on_actionFittFunction_triggered();
 
 private:
     Ui::MainWindow *ui;
