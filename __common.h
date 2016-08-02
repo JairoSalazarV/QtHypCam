@@ -68,6 +68,8 @@
 
     QImage funcRotateImage(QString filePath, float rotAngle);
 
+    void funcQStringToSensitivities(QString txt, QList<double> *p);
+
     void funcTransPix(calcAndCropSnap *calStruct , int w, int h, int W, int H);
 
     bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory);

@@ -21,6 +21,9 @@ public:
     ~choseWaveToExtract();    
 
 private slots:
+
+    void addByStep();
+
     void on_pbAdd_clicked();
 
     void switchSelected( QTableWidget *tableOrig, QTableWidget *tableDest);
@@ -32,6 +35,10 @@ private slots:
     void on_pbAddAll_clicked();
 
     void on_pbRemove_clicked();
+
+    void on_tableOptions_doubleClicked(const QModelIndex &index);
+
+    void on_tableChoises_doubleClicked(const QModelIndex &index);
 
 private:
     Ui::choseWaveToExtract *ui;

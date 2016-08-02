@@ -305,7 +305,9 @@ private slots:
 
     void on_actionGenHypercube_triggered();
 
-    bool generatesHypcube(int numIterations, int sensor);
+    bool generatesHypcube(int numIterations, QString fileName);
+
+    double *calculatesF(int iterations, int sensor, lstDoubleAxisCalibration *daCalib);
 
     void improveF(double *fKPlusOne, pixel **Hcol, double *f, double *gTmp, int N );
 
@@ -332,6 +334,8 @@ private slots:
     void on_actionFittFunction_triggered();
 
     void on_actionShow_hypercube_triggered();
+
+    void extractsHyperCube(QString originFileName);
 
 private:
     Ui::MainWindow *ui;

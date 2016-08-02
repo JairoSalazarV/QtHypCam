@@ -3336,22 +3336,6 @@ void MainWindow::on_pbLANTestConn_clicked()
 
 void MainWindow::on_actionGenHypercube_triggered()
 {
-    QTime timeStamp;
-    timeStamp.start();
-
-
-    if( generatesHypcube(12,_RGB) )
-    {
-        QString time;
-        time = timeToQString( timeStamp.elapsed() );
-        qDebug() << time;
-        funcShowMsg(" ", "Hypercube exported successfully");
-    }
-    //exit(2);
-
-}
-
-bool MainWindow::generatesHypcube(int numIterations, int sensor){
 
     QString fileName;
     fileName = QFileDialog::getSaveFileName(
@@ -3362,17 +3346,170 @@ bool MainWindow::generatesHypcube(int numIterations, int sensor){
                                             );
     if( fileName.isEmpty() )
     {
-        return false;
+        return (void)NULL;
     }
+
+
+    QTime timeStamp;
+    timeStamp.start();
+
+
+    if( generatesHypcube(15, fileName) )
+    {
+        //Extracts hypercube
+        extractsHyperCube(fileName);
+        //Show time to extract files
+        QString time;
+        time = timeToQString( timeStamp.elapsed() );
+        qDebug() << time;
+        //Inform to the user
+        funcShowMsg(" ", "Hypercube exported successfully");
+    }
+    //exit(2);
+
+}
+
+bool MainWindow::generatesHypcube(int numIterations, QString fileName){
+
+
 
     mouseCursorWait();
 
+    int i, l, aux, N;
+    double *F, *fRed, *fGreen, *fBlue;
+    QList<double> lstChoises;
+    int hypW, hypH, hypL;
+    lstDoubleAxisCalibration daCalib;    
+    lstChoises  = getWavesChoised();
+    funcGetCalibration(&daCalib);
+
+    hypW        = daCalib.squareUsableW;
+    hypH        = daCalib.squareUsableH;
+    hypL        = lstChoises.count();
+    N           = hypW * hypH * hypL;//Voxels
+
+    F           = (double*)malloc(N*sizeof(double));
+    fRed        = calculatesF(numIterations,_RED,&daCalib);
+    fGreen      = calculatesF(numIterations,_GREEN,&daCalib);
+    fBlue       = calculatesF(numIterations,_BLUE,&daCalib);
+
+    //Demosaicing hypercube
+    //..
+    //Get hash to the corresponding sensitivity
+    QList<double> Sr;
+    QList<double> Sg;
+    QList<double> Sb;
+    for(l=0; l<hypL; l++)
+    {        
+        aux = ((floor(lstChoises.at(l)) - floor(daCalib.minWavelength) )==0)?0:floor( (floor(lstChoises.at(l)) - floor(daCalib.minWavelength) ) / (double)daCalib.minSpecRes );
+        Sr.append( daCalib.Sr.at(aux)  );
+        Sg.append( daCalib.Sg.at(aux) );
+        Sb.append( daCalib.Sb.at(aux) );
+    }
+    int j, pixByImage;
+    double min, max;
+    int minPos, maxPos;
+    min = 9999;
+    max = -1;
+    pixByImage = daCalib.squareUsableW * daCalib.squareUsableH;    
+    i=0;
+    for(l=0; l<hypL;l++)
+    {
+        for(j=0; j<pixByImage; j++)
+        {
+            F[i]    = (fRed[i]+fGreen[i]+fBlue[i]) / (Sr.at(l)+Sg.at(l)+Sb.at(l));
+            if(min>F[i])
+            {
+                min     = F[i];
+                minPos  = i;
+            }
+            if(max<F[i])
+            {
+                max     = F[i];
+                maxPos  = i;
+            }
+            i++;
+        }
+    }
+    printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
+    fflush(stdout);
+
+    //Save hypercube
+    //..
+    //Format: Date,W,H,L,l1,...,lL,pix_1_l1,pix_2_l1,...pix_n_l1,pix_1_l2,pix_2_l2,...pix_n_l2,...,pix_1_L,pix_2_L,...pix_n_L
+    QString hypercube;
+    QDateTime dateTime = QDateTime::currentDateTime();
+    hypercube.append(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+    hypercube.append(","+QString::number(daCalib.squareUsableW));
+    hypercube.append(","+QString::number(daCalib.squareUsableH));
+    hypercube.append(","+QString::number(lstChoises.count()));
+    for(l=0; l<lstChoises.count(); l++)
+    {
+        hypercube.append(","+QString::number(lstChoises.at(l)));
+    }
+    N = hypW * hypH * hypL;//Voxels
+    for(i=0; i<N; i++)
+    {
+        hypercube.append(","+QString::number(F[i]));
+    }
+    fileName.replace(".hypercube","");
+    saveFile(fileName+".hypercube",hypercube);
+
+
+
+
+
+
+    mouseCursorReset();
+
+
+
+
+
+    /*
+
+    if(false)
+    {
+        double min, max;
+        int minPos, maxPos;
+        min = 9999;
+        max = -1;
+
+        for(int n=0; n<N; n++)
+        {
+            if(min > F[n])
+            {
+                min = F[n];
+                minPos = n;
+            }
+            if(max < F[n])
+            {
+                max = F[n];
+                maxPos = n;
+            }
+           //    printf("F[%d] | %lf\n",n,F[n]);
+        }
+        printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
+        fflush(stdout);
+    }
+    */
+
+
+
+
+
+
+
+    return true;
+
+}
+
+double *MainWindow::calculatesF(int numIterations, int sensor, lstDoubleAxisCalibration *daCalib)
+{
     //Get original image
     //..
-    int i, aux, N, M;
+    int i, N, M;
     QImage img( _PATH_DISPLAY_IMAGE );
-    lstDoubleAxisCalibration daCalib;
-    funcGetCalibration(&daCalib);
     M = img.width() * img.height();
 
     //Creates and fills H
@@ -3384,8 +3521,8 @@ bool MainWindow::generatesHypcube(int numIterations, int sensor){
     int **Hrow;
 
     lstChoises  = getWavesChoised();
-    hypW        = daCalib.squareUsableW;
-    hypH        = daCalib.squareUsableH;
+    hypW        = daCalib->squareUsableW;
+    hypH        = daCalib->squareUsableH;
     hypL        = lstChoises.count();
     N           = hypW * hypH * hypL;//Voxels
 
@@ -3406,7 +3543,7 @@ bool MainWindow::generatesHypcube(int numIterations, int sensor){
 
     //It creates H
     //..
-    createsHColAndHrow( Hcol, Hrow, &img, &daCalib );
+    createsHColAndHrow( Hcol, Hrow, &img, daCalib );
 
     //It creates image to proccess
     //..
@@ -3422,93 +3559,12 @@ bool MainWindow::generatesHypcube(int numIterations, int sensor){
         memcpy(f,fKPlusOne,(N*sizeof(double)));
     }
 
-    //Demosaicing hypercube
-    //..
-
-
-    //Get hash to the corresponding sensitivity
-    QList<double> sensitivity;
-    for(i=0; i<lstChoises.count(); i++)
-    {
-        aux = floor( (lstChoises.at(i) - daCalib.minWavelength ) / (double)daCalib.minSpecRes );
-        sensitivity.append( daCalib.sensitivity[aux] );
-    }
-    int j, l, pixByImage;
-    pixByImage = daCalib.squareUsableW * daCalib.squareUsableH;    
-    i=0;
-    for(l=0; l<sensitivity.count();l++)
-    {
-        for(j=0; j<pixByImage; j++)
-        {            
-            f[i] /= sensitivity.at(l);
-            i++;
-        }
-    }
-
-    //Save hypercube
-    //..
-    //Format: Date,W,H,L,l1,...,lL,pix_1_l1,pix_2_l1,...pix_n_l1,pix_1_l2,pix_2_l2,...pix_n_l2,...,pix_1_L,pix_2_L,...pix_n_L
-
-    QString hypercube;
-    QDateTime dateTime = QDateTime::currentDateTime();
-    hypercube.append(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
-    hypercube.append(","+QString::number(daCalib.squareUsableW));
-    hypercube.append(","+QString::number(daCalib.squareUsableH));
-    hypercube.append(","+QString::number(sensitivity.count()));
-    for(l=0; l<sensitivity.count(); l++)
-    {
-        hypercube.append(","+QString::number(lstChoises.at(l)));
-    }
-    N = hypW * hypH * hypL;//Voxels
-    for(i=0; i<N; i++)
-    {
-        hypercube.append(","+QString::number(f[i]));
-    }
-    fileName.replace(".hypercube","");
-    saveFile(fileName+".hypercube",hypercube);
-
-    mouseCursorReset();
-
-
-
-
-
-
-
-
-
-    if(false)
-    {
-        double min, max;
-        int minPos, maxPos;
-        min = 9999;
-        max = -1;
-
-        for(int n=0; n<N; n++)
-        {
-            if(min > fKPlusOne[n])
-            {
-                min = fKPlusOne[n];
-                minPos = n;
-            }
-            if(max < fKPlusOne[n])
-            {
-                max = fKPlusOne[n];
-                maxPos = n;
-            }
-            printf("fKPlusOne[%d] | %lf\n",n,fKPlusOne[n]);
-        }
-        printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
-        fflush(stdout);
-    }
-
-
-
-
-
-    return true;
-
+    //It finishes
+    return f;
 }
+
+
+
 
 void MainWindow::improveF( double *fKPlusOne, pixel **Hcol, double *f, double *gTmp, int N )
 {
@@ -3808,6 +3864,17 @@ void MainWindow::on_actionShow_hypercube_triggered()
         return (void)NULL;
     }
 
+    //Generates hypercube
+    //..
+    extractsHyperCube(originFileName);
+
+    funcShowMsg("Hypercube extracted successfully",_PATH_TMP_HYPCUBES);
+
+
+}
+
+void MainWindow::extractsHyperCube(QString originFileName)
+{
     //Extracts information about the hypercube
     //..
     QString qstringHypercube;
@@ -3833,31 +3900,21 @@ void MainWindow::on_actionShow_hypercube_triggered()
     QString tmpFileName;
     QList<QImage> hypercube;
     QImage tmpImg(W,H,QImage::Format_Grayscale8);
-    char tmpVal;
+    int tmpVal;
     int col, row;
     for( l=0; l<L; l++ )
     {
-        for( col=0; col<W; col++ )
+        for( row=0; row<H; row++ )
         {
-            for( row=0; row<H; row++ )
+            for( col=0; col<W; col++ )
             {
                 tmpVal = (hypItems.at(0).toDouble(0)<255.0)?(char)ceil(hypItems.at(0).toDouble(0)):(char)255;
+                tmpImg.setPixelColor(QPoint(col,row),qGray(tmpVal,tmpVal,tmpVal));
                 hypItems.removeAt(0);
-                tmpImg.setPixel(col,row,tmpVal);
             }
         }
         tmpFileName = _PATH_TMP_HYPCUBES + QString::number(waves.at(l)) + ".png";
         tmpImg.save(tmpFileName);
         hypercube.append(tmpImg);
     }
-
-
-
-
-
-
-
-
-
-
 }

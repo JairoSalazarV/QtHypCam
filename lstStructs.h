@@ -150,7 +150,7 @@
     }strDiffPix;
 
     typedef struct lstDoubleAxisCalibration{
-        QString bkgPath;
+        QString         bkgPath;
         int             W;
         int             H;
         float           bigX;
@@ -174,7 +174,9 @@
         int             maxNumBands;
         double          minSpecRes;
         strAllLinReg    LR;
-        double          *sensitivity;
+        QList<double>   Sr;
+        QList<double>   Sg;
+        QList<double>   Sb;
     }lstDoubleAxisCalibration;
 
     typedef struct lstCalibFileNames{

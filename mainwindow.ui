@@ -949,10 +949,10 @@ QSlider::handle:horizontal {
    <addaction name="actionDrawToolbar"/>
    <addaction name="actionDoubAxisDiff"/>
    <addaction name="actionValCal"/>
-   <addaction name="actionChoseWavelength"/>
    <addaction name="actionFittFunction"/>
-   <addaction name="actionGenHypercube"/>
    <addaction name="actionShow_hypercube"/>
+   <addaction name="actionChoseWavelength"/>
+   <addaction name="actionGenHypercube"/>
   </widget>
   <action name="actionExit">
    <property name="text">

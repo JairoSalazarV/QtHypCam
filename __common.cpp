@@ -91,8 +91,6 @@ void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
 
 bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
 
-    int i;
-
     QFile *xmlFile = new QFile(_PATH_CALIBRATION_FILE);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -195,16 +193,12 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="minSpecRes" )
                 doubAxisCal->minSpecRes = xmlReader->readElementText().toFloat(0);
 
-            if( xmlReader->name()=="sensitivities" )
-            {
-                QList<QString> lstSensitivities;
-                lstSensitivities = xmlReader->readElementText().split(",");
-                doubAxisCal->sensitivity = (double*)malloc(lstSensitivities.count()*sizeof(double));
-                for(i=0; i<lstSensitivities.count(); i++)
-                {
-                    doubAxisCal->sensitivity[i] = lstSensitivities.at(i).toDouble(0);
-                }
-            }
+            if( xmlReader->name()=="Sr" )
+                funcQStringToSensitivities( xmlReader->readElementText(), &doubAxisCal->Sr );
+            if( xmlReader->name()=="Sg" )
+                funcQStringToSensitivities( xmlReader->readElementText(), &doubAxisCal->Sg );
+            if( xmlReader->name()=="Sb" )
+                funcQStringToSensitivities( xmlReader->readElementText(), &doubAxisCal->Sb );
 
         }
     }
@@ -214,45 +208,19 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
     xmlReader->clear();
     xmlFile->close();
 
-    /*
-    qDebug() << "doubAxisCal->bkgPath: " << doubAxisCal->bkgPath;
-
-    qDebug() << "doubAxisCal->W: " << doubAxisCal->W;
-    qDebug() << "doubAxisCal->H: " << doubAxisCal->H;
-
-    qDebug() << "doubAxisCal->bigX: " << doubAxisCal->bigX;
-    qDebug() << "doubAxisCal->bigY: " << doubAxisCal->bigY;
-    qDebug() << "doubAxisCal->bigW: " << doubAxisCal->bigW;
-    qDebug() << "doubAxisCal->bigH: " << doubAxisCal->bigH;
-
-    qDebug() << "doubAxisCal->squareX: " << doubAxisCal->squareX;
-    qDebug() << "doubAxisCal->squareY: " << doubAxisCal->squareY;
-    qDebug() << "doubAxisCal->squareW: " << doubAxisCal->squareW;
-    qDebug() << "doubAxisCal->squareH: " << doubAxisCal->squareH;
-
-    qDebug() << "doubAxisCal->squarePixX: " << doubAxisCal->squarePixX;
-    qDebug() << "doubAxisCal->squarePixY: " << doubAxisCal->squarePixY;
-    qDebug() << "doubAxisCal->squarePixW: " << doubAxisCal->squarePixW;
-    qDebug() << "doubAxisCal->squarePixH: " << doubAxisCal->squarePixH;
-
-    qDebug() << "doubAxisCal->rightLinRegA: " << doubAxisCal->rightLinRegA;
-    qDebug() << "doubAxisCal->rightLinRegB: " << doubAxisCal->rightLinRegB;
-
-    qDebug() << "doubAxisCal->upLinRegA: " << doubAxisCal->upLinRegA;
-    qDebug() << "doubAxisCal->upLinRegB: " << doubAxisCal->upLinRegB;
-
-    qDebug() << "doubAxisCal->rightLinRegA: " << doubAxisCal->rightLinRegA;
-    qDebug() << "doubAxisCal->rightLinRegB: " << doubAxisCal->rightLinRegB;
-
-    qDebug() << "doubAxisCal->leftLinRegA: " << doubAxisCal->leftLinRegA;
-    qDebug() << "doubAxisCal->leftLinRegB: " << doubAxisCal->leftLinRegB;
-
-    qDebug() << "doubAxisCal->downLinRegA: " << doubAxisCal->downLinRegA;
-    qDebug() << "doubAxisCal->downLinRegA: " << doubAxisCal->downLinRegB;
-    */
-
-
     return true;
+}
+
+void funcQStringToSensitivities(QString txt, QList<double> *p)
+{
+    int i;
+    QList<QString> lstSensitivities;
+    lstSensitivities = txt.split(",");
+    //p = (double*)malloc(lstSensitivities.count()*sizeof(double));
+    for(i=0; i<lstSensitivities.count(); i++)
+    {
+        p->append( lstSensitivities.at(i).toDouble(0) );
+    }
 }
 
 void funcTransPix( calcAndCropSnap *calStruct, int w, int h, int W, int H ){

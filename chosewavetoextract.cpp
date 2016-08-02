@@ -141,7 +141,36 @@ void choseWaveToExtract::on_pbRemoveAll_clicked()
 
 void choseWaveToExtract::on_pbAddAll_clicked()
 {
-    iniOptsAndChois(false);
+    if( ui->spinBoxStep->value() == 1 )
+    {
+        iniOptsAndChois(false);
+    }
+    else
+    {
+        addByStep();
+    }
+}
+
+void choseWaveToExtract::addByStep()
+{
+    float tmpWave;
+    tmpWave = daCalib.minWavelength;
+    QString options;
+    int row;
+
+
+    while( tmpWave < daCalib.maxWavelength )
+    {
+        row = 0;
+        while( ui->tableOptions->item(row,0)->text().toDouble(0) <= tmpWave )
+        {
+            row++;
+        }
+        ui->tableOptions->setCurrentCell(row-1,0);
+        ui->pbAdd->click();
+        tmpWave += (daCalib.minSpecRes * ui->spinBoxStep->value());
+    }
+    refreshOptChoi();
 }
 
 void choseWaveToExtract::on_pbAdd_clicked()
@@ -152,4 +181,16 @@ void choseWaveToExtract::on_pbAdd_clicked()
 void choseWaveToExtract::on_pbRemove_clicked()
 {
     switchSelected( ui->tableChoises, ui->tableOptions );
+}
+
+void choseWaveToExtract::on_tableOptions_doubleClicked(const QModelIndex &index)
+{    
+    index.isValid();
+    ui->pbAdd->click();    
+}
+
+void choseWaveToExtract::on_tableChoises_doubleClicked(const QModelIndex &index)
+{
+    index.isValid();
+    ui->pbRemove->click();
 }

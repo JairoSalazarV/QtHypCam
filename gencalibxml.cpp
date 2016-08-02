@@ -615,9 +615,9 @@ void genCalibXML::on_pbGenCal_clicked()
         maxNumBand  = QString::number(spectralResolution.x());
         minSpecRes  = QString::number(spectralResolution.y());
 
-        //Obtains sensivities
+        //Calculates the sensivities and save into HDD
         //..
-        QString sensitivities;
+        QString Sr, Sg, Sb;
         lstDoubleAxisCalibration daCalibGenCal;        
         daCalibGenCal.LR = getAllLR();
         daCalibGenCal.maxNumBands   = spectralResolution.x();
@@ -628,7 +628,10 @@ void genCalibXML::on_pbGenCal_clicked()
         daCalibGenCal.squareUsableY = auxSqUsableY;
         daCalibGenCal.squareUsableW = auxSqUsableW;
         daCalibGenCal.squareUsableH = auxSqUsableH;
-        sensitivities = obtainSensitivities(&daCalibGenCal);
+        calculateAndSaveSensitivities(&daCalibGenCal);
+        Sr = readFileParam( _PATH_RED_SENSITIV );
+        Sg = readFileParam( _PATH_GREEN_SENSITIV );
+        Sb = readFileParam( _PATH_BLUE_SENSITIV );
 
 
         //It creates the XML file
@@ -684,7 +687,9 @@ void genCalibXML::on_pbGenCal_clicked()
             newFileCon.append("    <maxNumBand>"        + maxNumBand                            + "</maxNumBand>\n");
             newFileCon.append("    <minSpecRes>"        + minSpecRes                            + "</minSpecRes>\n");
 
-            newFileCon.append("    <sensitivities>"     + sensitivities                         + "</sensitivities>\n");
+            newFileCon.append("    <Sr>"    + Sr                                                + "</Sr>\n");
+            newFileCon.append("    <Sg>"    + Sg                                                + "</Sg>\n");
+            newFileCon.append("    <Sb>"    + Sb                                                + "</Sb>\n");
 
 
 
@@ -711,7 +716,7 @@ void genCalibXML::on_pbGenCal_clicked()
 
 }
 
-QString genCalibXML::obtainSensitivities(lstDoubleAxisCalibration *daCalibGenCal)
+void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal)
 {    
     //It is required offsets because, the calcDiffProj was created to
     //manage coordinates based on square aperture and apply a transformation
@@ -912,37 +917,6 @@ QString genCalibXML::obtainSensitivities(lstDoubleAxisCalibration *daCalibGenCal
 
     imgMod.save(_PATH_AUX_IMG);
 
-
-
-    /*
-    actWave = minWave;    
-    diffProj.x = origin.x();
-    diffProj.y = origin.y();
-
-    numWaves = 0;
-    int tmpSens;
-    while( actWave < (maxWave-specRes) ){
-        diffProj.wavelength = actWave;
-        calcDiffProj(&diffProj, daCalibGenPix);
-        tmpPix = img.pixel( diffProj.x, diffProj.y );
-        sensit[0][numWaves] = qRed(tmpPix);
-        sensit[1][numWaves] = qGreen(tmpPix);
-        sensit[2][numWaves] = qBlue(tmpPix);
-
-        img.setPixel( diffProj.x, diffProj.y, Qt::magenta );
-        tmpSens = sensit[0][numWaves] + sensit[1][numWaves] + sensit[2][numWaves];
-        if( numWaves == 0 )sensitivities = QString::number(tmpSens);
-        else sensitivities.append("," + QString::number(tmpSens));
-
-
-        actWave += specRes;
-        numWaves++;
-    }
-    img.save(_PATH_AUX_IMG);
-    */
-
-    //qDebug() << "sensitivities: " << sensitivities;
-    return sensitivities;
 }
 
 QList<double> genCalibXML::getNormedFunction( QString fileName )
