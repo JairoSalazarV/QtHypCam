@@ -3048,6 +3048,7 @@ void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
 
     //Rotate if requires
     //..
+    ask = false;
     if(ask)
     {
         if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 )
@@ -3351,10 +3352,9 @@ void MainWindow::on_actionGenHypercube_triggered()
 
 
     QTime timeStamp;
-    timeStamp.start();
+    timeStamp.start();    
 
-
-    if( generatesHypcube(15, fileName) )
+    if( generatesHypcube(2, fileName) )
     {
         //Extracts hypercube
         extractsHyperCube(fileName);
@@ -3395,17 +3395,28 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
 
     //Demosaicing hypercube
     //..
+    fRed        = demosaiseF(fRed,hypW,hypH);
+    fGreen      = demosaiseF(fGreen,hypW,hypH);
+    fBlue       = demosaiseF(fBlue,hypW,hypH);
+
+
+
+
+    //Extracting spectral measure
+    //..
     //Get hash to the corresponding sensitivity
     QList<double> Sr;
     QList<double> Sg;
     QList<double> Sb;
     for(l=0; l<hypL; l++)
     {        
+        qDebug() << "Hola1" << l << " of "<< hypL << " size: " << daCalib.Sr.size();
         aux = ((floor(lstChoises.at(l)) - floor(daCalib.minWavelength) )==0)?0:floor( (floor(lstChoises.at(l)) - floor(daCalib.minWavelength) ) / (double)daCalib.minSpecRes );
         Sr.append( daCalib.Sr.at(aux)  );
         Sg.append( daCalib.Sg.at(aux) );
         Sb.append( daCalib.Sb.at(aux) );
     }
+    //qDebug() << "Hola13";
     int j, pixByImage;
     double min, max;
     int minPos, maxPos;
@@ -3503,6 +3514,51 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     return true;
 
 }
+
+
+double *MainWindow::demosaiseF(double *f, int W, int H)
+{
+    //Variables
+    int i, w, h;
+    double **aux;
+    aux     = (double**)malloc(W*sizeof(double*));
+    for(w=0;w<W;w++)
+    {
+        aux[w] = (double*)malloc(H*sizeof(double));
+    }
+
+    //Fill as 2D matrix
+    i=0;
+    for(w=0;w<W;w++)
+    {
+        for(h=0;h<H;h++)
+        {
+            aux[w][h] = f[i];
+            i++;
+        }
+    }
+
+    //Demosaize
+    i=0;
+    for(w=1;w<W-1;w++)
+    {
+        for(h=1;h<H-1;h++)
+        {
+            //f[i] = (
+            //            (aux[w-1][h-1]+aux[w][h-1]+aux[w+1][h-1]) +
+            //            (aux[w-1][h+1]+aux[w][h+1]+aux[w+1][h+1]) +
+            //            aux[w][h]
+            //        ) / 3.0;
+            f[i] = (
+                        (aux[w-1][h-1]+aux[w+1][h-1]) +
+                        (aux[w-1][h+1]+aux[w+1][h+1])
+                   ) / 2.0;
+            i++;
+        }
+    }
+    return f;
+}
+
 
 double *MainWindow::calculatesF(int numIterations, int sensor, lstDoubleAxisCalibration *daCalib)
 {
@@ -3902,13 +3958,16 @@ void MainWindow::extractsHyperCube(QString originFileName)
     QImage tmpImg(W,H,QImage::Format_Grayscale8);
     int tmpVal;
     int col, row;
+    double max, tmp;
+    max = vectorMaxQListQString(hypItems);
     for( l=0; l<L; l++ )
     {
         for( row=0; row<H; row++ )
         {
             for( col=0; col<W; col++ )
             {
-                tmpVal = (hypItems.at(0).toDouble(0)<255.0)?(char)ceil(hypItems.at(0).toDouble(0)):(char)255;
+                tmp     = hypItems.at(0).toDouble(0);
+                tmpVal  = (tmp<=0.0)?0:round( (tmp/max) * 255.0 );
                 tmpImg.setPixelColor(QPoint(col,row),qGray(tmpVal,tmpVal,tmpVal));
                 hypItems.removeAt(0);
             }
@@ -3917,4 +3976,33 @@ void MainWindow::extractsHyperCube(QString originFileName)
         tmpImg.save(tmpFileName);
         hypercube.append(tmpImg);
     }
+}
+
+void MainWindow::on_actionBilinear_interpolation_triggered()
+{
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(
+                                                this,
+                                                tr("Save Hypercube as..."),
+                                                _PATH_IMG_FILTERED,
+                                                tr("Images (*.png *.jpg *.jpeg *.gif *.BMP)")
+                                            );
+    if( fileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    mouseCursorWait();
+    QImage tmpImgOrig(_PATH_DISPLAY_IMAGE);
+    QImage imgBilInt;
+    imgBilInt = bilinearInterpolationQImage(tmpImgOrig);
+    fileName.replace(".png","");
+    imgBilInt.save(fileName+".png");
+    tmpImgOrig.save(fileName+"LastOrig.png");
+    mouseCursorReset();
+
+    funcShowMsg("Success","Bilinear interpolation applied");
+
+
+
 }

@@ -307,6 +307,8 @@ private slots:
 
     bool generatesHypcube(int numIterations, QString fileName);
 
+    double *demosaiseF(double *f, int W, int H);
+
     double *calculatesF(int iterations, int sensor, lstDoubleAxisCalibration *daCalib);
 
     void improveF(double *fKPlusOne, pixel **Hcol, double *f, double *gTmp, int N );
@@ -336,6 +338,8 @@ private slots:
     void on_actionShow_hypercube_triggered();
 
     void extractsHyperCube(QString originFileName);
+
+    void on_actionBilinear_interpolation_triggered();
 
 private:
     Ui::MainWindow *ui;

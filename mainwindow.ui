@@ -900,7 +900,20 @@ QSlider::handle:horizontal {
     </property>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuImage">
+    <property name="title">
+     <string>Image</string>
+    </property>
+    <widget class="QMenu" name="menuFilter">
+     <property name="title">
+      <string>Filter</string>
+     </property>
+     <addaction name="actionBilinear_interpolation"/>
+    </widget>
+    <addaction name="menuFilter"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuImage"/>
   </widget>
   <widget class="QToolBar" name="toolBarDraw">
    <property name="windowTitle">
@@ -1245,6 +1258,11 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Show hypercube</string>
+   </property>
+  </action>
+  <action name="actionBilinear_interpolation">
+   <property name="text">
+    <string>Bilinear interpolation</string>
    </property>
   </action>
  </widget>

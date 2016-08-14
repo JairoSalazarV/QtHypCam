@@ -13,7 +13,7 @@
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN 1024;
     #define _BIG_WIDTH 2592 //2592 | 640 | 320
-    #define _BIG_HEIGHT 1944 //1944 | 480 | 240    
+    #define _BIG_HEIGHT 1944 //1944 | 480 | 240
     #define _FRAME_THUMB_W 500
     #define _FRAME_THUMB_H 375
     #define _GRAPH_HEIGHT 440
@@ -39,6 +39,7 @@
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
     #define _PATH_CALIB                     "./settings/Calib/"
+    #define _PATH_IMG_FILTERED              "./tmpImages/Filtered/"
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"

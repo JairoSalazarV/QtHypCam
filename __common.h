@@ -14,6 +14,11 @@
 
     double funcDet2x2(double **M);
 
+    double vectorMax(double *vector, int len);
+    double vectorMaxQListQString(QList<QString> lst);
+
+    QImage bilinearInterpolationQImage(QImage img);
+
     //void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett );
 
     void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings);
