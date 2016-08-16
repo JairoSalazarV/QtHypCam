@@ -307,7 +307,10 @@ private slots:
 
     bool generatesHypcube(int numIterations, QString fileName);
 
-    double *demosaiseF(double *f, int H, int W);
+    double *demosaiseF2D(double *f, int L, int H, int W);
+    double *demosaiseF3D(double *f, int L, int H, int W);
+
+    double calcTrilinearInterpolation(double ***cube, trilinear *node);
 
     double *calculatesF(int iterations, int sensor, lstDoubleAxisCalibration *daCalib);
 

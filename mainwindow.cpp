@@ -3363,7 +3363,7 @@ void MainWindow::on_actionGenHypercube_triggered()
         time = timeToQString( timeStamp.elapsed() );
         qDebug() << time;
         //Inform to the user
-        funcShowMsg(" ", "Hypercube exported successfully\n"+time);
+        funcShowMsg(" ", "Hypercube exported successfully\n\n"+time);
     }
     //exit(2);
 
@@ -3397,9 +3397,18 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     //..
     if(true)
     {
-        fRed    = demosaiseF(fRed,hypH,hypW);
-        fGreen  = demosaiseF(fGreen,hypH,hypW);
-        fBlue   = demosaiseF(fBlue,hypH,hypW);
+        if(false)
+        {
+            fRed    = demosaiseF2D(fRed,hypL,hypH,hypW);
+            fGreen  = demosaiseF2D(fGreen,hypL,hypH,hypW);
+            fBlue   = demosaiseF2D(fBlue,hypL,hypH,hypW);
+        }
+        else
+        {
+            fRed    = demosaiseF3D(fRed,hypL,hypH,hypW);
+            fGreen  = demosaiseF3D(fGreen,hypL,hypH,hypW);
+            fBlue   = demosaiseF3D(fBlue,hypL,hypH,hypW);
+        }
     }
 
 
@@ -3519,91 +3528,218 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
 }
 
 
-double *MainWindow::demosaiseF(double *f, int H, int W)
+double *MainWindow::demosaiseF2D(double *f, int L, int H, int W)
 {
     //Variables
-    int i, w, h;
-    double **aux;
-    aux     = (double**)malloc(H*sizeof(double*));
-    for(h=0;h<H;h++)
+    int i, l, w, h;
+    double ***aux;
+    aux = (double***)malloc(L*sizeof(double**));
+    for(l=0;l<L;l++)
     {
-        aux[h] = (double*)malloc(W*sizeof(double));
+        aux[l] = (double**)malloc(H*sizeof(double*));
+        for(h=0;h<H;h++)
+        {
+            aux[l][h] = (double*)malloc(W*sizeof(double));
+        }
     }
 
-    //Fill as 2D matrix
+    //Fill as 3D matrix
     i=0;
-    for(h=0;h<H;h++)
+    for(l=0;l<L;l++)
     {
-        for(w=0;w<W;w++)
+        for(h=0;h<H;h++)
         {
-            aux[h][w] = f[i];
-            i++;
+            for(w=0;w<W;w++)
+            {
+                aux[l][h][w] = f[i];
+                i++;
+            }
         }
     }
 
     //Demosaize
     i=0;
-    for(h=0;h<H;h++)
+    for(l=0;l<L;l++)
     {
-        for(w=0;w<W;w++)
+        for(h=0;h<H;h++)
         {
-            if( h>0 && w>0 && h<H-1 && w<W-1 )
+            for(w=0;w<W;w++)
             {
-                f[i] = (    aux[h-1][w-1] +
-                            aux[h+1][w-1] +
-                            aux[h-1][w+1] +
-                            aux[h+1][w+1]
-                       ) / 4.0;
-            }
-            else
-            {
-                //ROWS
-                if( h==0 || h==(H-1) )
+                if( h>0 && w>0 && h<H-1 && w<W-1 )
                 {
-                    if(h==0)//First row
+                    f[i] = (    aux[l][h-1][w-1] +
+                                aux[l][h+1][w-1] +
+                                aux[l][h-1][w+1] +
+                                aux[l][h+1][w+1]
+                           ) / 4.0;
+                }
+                else
+                {
+                    //ROWS
+                    if( h==0 || h==(H-1) )
                     {
-                        if( w>0 && w<(W-1) )
-                            f[i] = ( aux[h+1][w-1] + aux[h+1][w+1]) / 2.0;
-                        else//Corners
-                        {
-                            if(w==0)//Up-Left
-                                f[i] = ( aux[h+1][w] + aux[h+1][w+1] + aux[h][w+1]) / 3.0;
-                            if(w==(W-1))//Up-Right
-                                f[i] = ( aux[h][w-1] + aux[h+1][w-1] + aux[h+1][w]) / 3.0;
-                        }
-                    }
-                    else
-                    {
-                        if(h==(H-1))//Last row
+                        if(h==0)//First row
                         {
                             if( w>0 && w<(W-1) )
-                                f[i] = ( aux[h-1][w-1] + aux[h-1][w+1]) / 2.0;
+                                f[i] = ( aux[l][h+1][w-1] + aux[l][h+1][w+1]) / 2.0;
                             else//Corners
                             {
-                                if(w==0)//Down-Left
-                                    f[i] = ( aux[h-1][w] + aux[h-1][w+1] + aux[h][w+1]) / 3.0;
-                                if(w==(W-1))//Down-Right
-                                    f[i] = ( aux[h][w-1] + aux[h-1][w-1] + aux[h-1][w]) / 3.0;
+                                if(w==0)//Up-Left
+                                    f[i] = ( aux[l][h+1][w] + aux[l][h+1][w+1] + aux[l][h][w+1]) / 3.0;
+                                if(w==(W-1))//Up-Right
+                                    f[i] = ( aux[l][h][w-1] + aux[l][h+1][w-1] + aux[l][h+1][w]) / 3.0;
                             }
                         }
                         else
                         {
-                            //COLS
-                            if( w==0 || w==(W-1) )
+                            if(h==(H-1))//Last row
                             {
-                                if(w==0)
-                                    f[i] = ( aux[h-1][w+1] + aux[h+1][w+1]) / 2.0;
-                                else
-                                    f[i] = ( aux[h-1][w-1] + aux[h+1][w-1]) / 2.0;
+                                if( w>0 && w<(W-1) )
+                                    f[i] = ( aux[l][h-1][w-1] + aux[l][h-1][w+1]) / 2.0;
+                                else//Corners
+                                {
+                                    if(w==0)//Down-Left
+                                        f[i] = ( aux[l][h-1][w] + aux[l][h-1][w+1] + aux[l][h][w+1]) / 3.0;
+                                    if(w==(W-1))//Down-Right
+                                        f[i] = ( aux[l][h][w-1] + aux[l][h-1][w-1] + aux[l][h-1][w]) / 3.0;
+                                }
+                            }
+                            else
+                            {
+                                //COLS
+                                if( w==0 || w==(W-1) )
+                                {
+                                    if(w==0)
+                                        f[i] = ( aux[l][h-1][w+1] + aux[l][h+1][w+1]) / 2.0;
+                                    else
+                                        f[i] = ( aux[l][h-1][w-1] + aux[l][h+1][w-1]) / 2.0;
+                                }
                             }
                         }
                     }
                 }
+                i++;
             }
-            i++;
         }
     }
+
+    //Free memory
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+             delete[] aux[l][h];
+        }
+        delete[] aux[l];
+    }
+    delete[] aux;
+
     return f;
+}
+
+
+double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
+{
+    //Variables
+    int i, l, w, h;
+    double ***aux;
+    aux     = (double***)malloc(L*sizeof(double**));
+    for(l=0;l<L;l++)
+    {
+        aux[l] = (double**)malloc(H*sizeof(double*));
+        for(h=0;h<H;h++)
+        {
+            aux[l][h] = (double*)malloc(W*sizeof(double));
+        }
+    }
+
+    //Fill as 3D matrix
+    i=0;
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+            for(w=0;w<W;w++)
+            {
+                aux[l][h][w] = f[i];
+                i++;
+            }
+        }
+    }
+
+    //Demosaize 3D
+    trilinear tmpNode;
+    tmpNode.L = L;
+    tmpNode.W = W;
+    tmpNode.H = H;
+    i=0;
+    for(tmpNode.l=0;tmpNode.l<L;tmpNode.l++)
+    {
+        for(tmpNode.h=0;tmpNode.h<H;tmpNode.h++)
+        {
+            for(tmpNode.w=0;tmpNode.w<W;tmpNode.w++)
+            {
+                f[i] = calcTrilinearInterpolation(aux, &tmpNode);
+                i++;
+            }
+        }
+    }
+
+    //Free memory
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+             delete[] aux[l][h];
+        }
+        delete[] aux[l];
+    }
+    delete[] aux;
+
+    //Finishes
+    return f;
+}
+
+
+double MainWindow::calcTrilinearInterpolation(double ***cube, trilinear *node)
+{
+    double result;
+    if(
+            node->l > 0 && node->l < node->L-1 &&
+            node->w > 0 && node->w < node->W-1 &&
+            node->h > 0 && node->h < node->H-1
+    )
+    {
+        if(true)
+        {
+            result = (  cube[node->l][node->h-1][node->w-1]     + cube[node->l][node->h-1][node->w+1]     +
+                        cube[node->l][node->h+1][node->w-1]     + cube[node->l][node->h+1][node->w+1]     +
+                        cube[node->l-1][node->h-1][node->w-1]   + cube[node->l-1][node->h-1][node->w+1]   +
+                        cube[node->l-1][node->h+1][node->w-1]   + cube[node->l-1][node->h+1][node->w+1]   +
+                        cube[node->l+1][node->h-1][node->w-1]   + cube[node->l+1][node->h-1][node->w+1]   +
+                        cube[node->l+1][node->h+1][node->w-1]   + cube[node->l+1][node->h+1][node->w+1]
+                     ) / 12.0;
+        }
+        else
+        {
+            result = (
+                        cube[node->l-1][node->h-1][node->w-1]   + cube[node->l-1][node->h-1][node->w+1]   +
+                        cube[node->l-1][node->h+1][node->w-1]   + cube[node->l-1][node->h+1][node->w+1]   +
+                        cube[node->l+1][node->h-1][node->w-1]   + cube[node->l+1][node->h-1][node->w+1]   +
+                        cube[node->l+1][node->h+1][node->w-1]   + cube[node->l+1][node->h+1][node->w+1]
+                     ) / 8.0;
+        }
+    }
+    else
+    {
+
+
+
+
+        result = cube[node->l][node->h][node->w];
+    }
+
+    return result;
 }
 
 
@@ -4001,12 +4137,13 @@ void MainWindow::extractsHyperCube(QString originFileName)
     //..
     funcClearDirFolder(_PATH_TMP_HYPCUBES);
     QString tmpFileName;
-    QList<QImage> hypercube;
+    //QList<QImage> hypercube;
     QImage tmpImg(W,H,QImage::Format_Grayscale8);
     int tmpVal;
     int col, row;
     double max, tmp;
     max = vectorMaxQListQString(hypItems);
+    qDebug() << "To norm max: " << max;
     for( l=0; l<L; l++ )
     {
         for( row=0; row<H; row++ )
@@ -4014,14 +4151,23 @@ void MainWindow::extractsHyperCube(QString originFileName)
             for( col=0; col<W; col++ )
             {
                 tmp     = hypItems.at(0).toDouble(0);
-                tmpVal  = (tmp<=0.0)?0:round( (tmp/max) * 255.0 );
+                if(true)//Normalize
+                {
+                    tmpVal  = (tmp<=0.0)?0:round( (tmp/max) * 255.0 );
+                }
+                else
+                {
+                    tmpVal = tmp;
+                }
                 tmpImg.setPixelColor(QPoint(col,row),qGray(tmpVal,tmpVal,tmpVal));
                 hypItems.removeAt(0);
             }
         }
+
         tmpFileName = _PATH_TMP_HYPCUBES + QString::number(waves.at(l)) + ".png";
         tmpImg.save(tmpFileName);
-        hypercube.append(tmpImg);
+        tmpImg.fill(Qt::black);
+        //hypercube.append(tmpImg);
     }
 }
 

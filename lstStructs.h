@@ -83,6 +83,17 @@
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"
 
+
+
+    typedef struct trilinear{
+        int l;
+        int L;
+        int w;
+        int W;
+        int h;
+        int H;
+    }trilinear;
+
     typedef struct pixel{
         int x;
         int y;
