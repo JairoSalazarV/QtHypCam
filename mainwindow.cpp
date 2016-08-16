@@ -3363,7 +3363,7 @@ void MainWindow::on_actionGenHypercube_triggered()
         time = timeToQString( timeStamp.elapsed() );
         qDebug() << time;
         //Inform to the user
-        funcShowMsg(" ", "Hypercube exported successfully");
+        funcShowMsg(" ", "Hypercube exported successfully\n"+time);
     }
     //exit(2);
 
@@ -3395,9 +3395,12 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
 
     //Demosaicing hypercube
     //..
-    fRed        = demosaiseF(fRed,hypW,hypH);
-    fGreen      = demosaiseF(fGreen,hypW,hypH);
-    fBlue       = demosaiseF(fBlue,hypW,hypH);
+    if(true)
+    {
+        fRed    = demosaiseF(fRed,hypH,hypW);
+        fGreen  = demosaiseF(fGreen,hypH,hypW);
+        fBlue   = demosaiseF(fBlue,hypH,hypW);
+    }
 
 
 
@@ -3410,7 +3413,7 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     QList<double> Sb;
     for(l=0; l<hypL; l++)
     {        
-        qDebug() << "Hola1" << l << " of "<< hypL << " size: " << daCalib.Sr.size();
+        //qDebug() << "Hola1" << l << " of "<< hypL << " size: " << daCalib.Sr.size();
         aux = ((floor(lstChoises.at(l)) - floor(daCalib.minWavelength) )==0)?0:floor( (floor(lstChoises.at(l)) - floor(daCalib.minWavelength) ) / (double)daCalib.minSpecRes );
         Sr.append( daCalib.Sr.at(aux)  );
         Sg.append( daCalib.Sg.at(aux) );
@@ -3516,43 +3519,87 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
 }
 
 
-double *MainWindow::demosaiseF(double *f, int W, int H)
+double *MainWindow::demosaiseF(double *f, int H, int W)
 {
     //Variables
     int i, w, h;
     double **aux;
-    aux     = (double**)malloc(W*sizeof(double*));
-    for(w=0;w<W;w++)
+    aux     = (double**)malloc(H*sizeof(double*));
+    for(h=0;h<H;h++)
     {
-        aux[w] = (double*)malloc(H*sizeof(double));
+        aux[h] = (double*)malloc(W*sizeof(double));
     }
 
     //Fill as 2D matrix
     i=0;
-    for(w=0;w<W;w++)
+    for(h=0;h<H;h++)
     {
-        for(h=0;h<H;h++)
+        for(w=0;w<W;w++)
         {
-            aux[w][h] = f[i];
+            aux[h][w] = f[i];
             i++;
         }
     }
 
     //Demosaize
     i=0;
-    for(w=1;w<W-1;w++)
+    for(h=0;h<H;h++)
     {
-        for(h=1;h<H-1;h++)
+        for(w=0;w<W;w++)
         {
-            //f[i] = (
-            //            (aux[w-1][h-1]+aux[w][h-1]+aux[w+1][h-1]) +
-            //            (aux[w-1][h+1]+aux[w][h+1]+aux[w+1][h+1]) +
-            //            aux[w][h]
-            //        ) / 3.0;
-            f[i] = (
-                        (aux[w-1][h-1]+aux[w+1][h-1]) +
-                        (aux[w-1][h+1]+aux[w+1][h+1])
-                   ) / 2.0;
+            if( h>0 && w>0 && h<H-1 && w<W-1 )
+            {
+                f[i] = (    aux[h-1][w-1] +
+                            aux[h+1][w-1] +
+                            aux[h-1][w+1] +
+                            aux[h+1][w+1]
+                       ) / 4.0;
+            }
+            else
+            {
+                //ROWS
+                if( h==0 || h==(H-1) )
+                {
+                    if(h==0)//First row
+                    {
+                        if( w>0 && w<(W-1) )
+                            f[i] = ( aux[h+1][w-1] + aux[h+1][w+1]) / 2.0;
+                        else//Corners
+                        {
+                            if(w==0)//Up-Left
+                                f[i] = ( aux[h+1][w] + aux[h+1][w+1] + aux[h][w+1]) / 3.0;
+                            if(w==(W-1))//Up-Right
+                                f[i] = ( aux[h][w-1] + aux[h+1][w-1] + aux[h+1][w]) / 3.0;
+                        }
+                    }
+                    else
+                    {
+                        if(h==(H-1))//Last row
+                        {
+                            if( w>0 && w<(W-1) )
+                                f[i] = ( aux[h-1][w-1] + aux[h-1][w+1]) / 2.0;
+                            else//Corners
+                            {
+                                if(w==0)//Down-Left
+                                    f[i] = ( aux[h-1][w] + aux[h-1][w+1] + aux[h][w+1]) / 3.0;
+                                if(w==(W-1))//Down-Right
+                                    f[i] = ( aux[h][w-1] + aux[h-1][w-1] + aux[h-1][w]) / 3.0;
+                            }
+                        }
+                        else
+                        {
+                            //COLS
+                            if( w==0 || w==(W-1) )
+                            {
+                                if(w==0)
+                                    f[i] = ( aux[h-1][w+1] + aux[h+1][w+1]) / 2.0;
+                                else
+                                    f[i] = ( aux[h-1][w-1] + aux[h+1][w-1]) / 2.0;
+                            }
+                        }
+                    }
+                }
+            }
             i++;
         }
     }

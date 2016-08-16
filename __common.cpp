@@ -81,9 +81,9 @@ QImage bilinearInterpolationQImage(QImage img)
             Q12 = img.pixel(x+1,y-1);
             Q21 = img.pixel(x-1,y+1);
             Q22 = img.pixel(x+1,y+1);
-            r = round( (((qRed(Q11)+qRed(Q12))/2) + ((qRed(Q21)+qRed(Q22))/2))/2 );
-            g = round( (((qGreen(Q11)+qGreen(Q12))/2) + ((qGreen(Q21)+qGreen(Q22))/2))/2 );
-            b = round( (((qBlue(Q11)+qBlue(Q12))/2) + ((qBlue(Q21)+qBlue(Q22))/2))/2 );
+            r = round( (qRed(Q11)+qRed(Q12)+qRed(Q21)+qRed(Q22)/4.0) );
+            g = round( (qGreen(Q11)+qGreen(Q12)+qGreen(Q21)+qGreen(Q22)/4.0) );
+            b = round( (qBlue(Q11)+qBlue(Q12)+qBlue(Q21)+qBlue(Q22)/4.0) );
             tmpPixel.setRed(r);
             tmpPixel.setGreen(g);
             tmpPixel.setBlue(b);
