@@ -3640,6 +3640,9 @@ double *MainWindow::demosaiseF2D(double *f, int L, int H, int W)
 
 double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
 {
+    f = demosaiseF2D(f,L,H,W);
+
+
     //Variables
     int i, l, w, h;
     double ***aux;
@@ -3653,7 +3656,7 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
         }
     }
 
-    //Fill as 3D matrix
+    //Fill a 3D matrix
     i=0;
     for(l=0;l<L;l++)
     {
@@ -3696,6 +3699,8 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
     }
     delete[] aux;
 
+
+
     //Finishes
     return f;
 }
@@ -3703,13 +3708,41 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
 
 double MainWindow::calcTrilinearInterpolation(double ***cube, trilinear *node)
 {
+
     double result;
+    if(node->l>0 && node->l<node->L-1)
+    {
+        //qDebug() << "l: " << node->l << " h: " << node->h << " w: " << node->w;
+        result = (
+                    cube[node->l-1][node->h][node->w] +
+                    cube[node->l+1][node->h][node->w]
+                 ) / 2.0;
+    }
+    else
+    {
+        if(node->l==0)
+        {
+            result = (
+                        cube[node->l][node->h][node->w] +
+                        cube[node->l+1][node->h][node->w]
+                     ) / 2.0;
+        }
+        else
+        {
+            result = (
+                        cube[node->l][node->h][node->w] +
+                        cube[node->l-1][node->h][node->w]
+                     ) / 2.0;
+        }
+    }
+
+    /*
     if(
             node->l > 0 && node->l < node->L-1 &&
             node->w > 0 && node->w < node->W-1 &&
             node->h > 0 && node->h < node->H-1
     )
-    {
+    {//BOUNDED BY THE MARGIN
         if(true)
         {
             result = (  cube[node->l][node->h-1][node->w-1]     + cube[node->l][node->h-1][node->w+1]     +
@@ -3732,12 +3765,10 @@ double MainWindow::calcTrilinearInterpolation(double ***cube, trilinear *node)
     }
     else
     {
-
-
-
-
         result = cube[node->l][node->h][node->w];
     }
+    */
+
 
     return result;
 }
@@ -4138,37 +4169,80 @@ void MainWindow::extractsHyperCube(QString originFileName)
     funcClearDirFolder(_PATH_TMP_HYPCUBES);
     QString tmpFileName;
     //QList<QImage> hypercube;
-    QImage tmpImg(W,H,QImage::Format_Grayscale8);
+    QImage tmpImg(W,H,QImage::Format_RGB32);
     int tmpVal;
     int col, row;
-    double max, tmp;
-    max = vectorMaxQListQString(hypItems);
-    qDebug() << "To norm max: " << max;
+    double tmp;
+    //max = vectorMaxQListQString(hypItems);
+    //qDebug() << "To norm max: " << max;
+
+    //Calculate the max cal for each wavelength
+    double max[L+1];
+    int i;
+    i=0;
+    max[L] = 0;
     for( l=0; l<L; l++ )
     {
+        max[l] = 0;
         for( row=0; row<H; row++ )
         {
             for( col=0; col<W; col++ )
             {
-                tmp     = hypItems.at(0).toDouble(0);
+                if(hypItems.at(i).toDouble(0)>max[l])
+                {
+                    max[l] = hypItems.at(i).toDouble(0);
+                }
+                if(hypItems.at(i).toDouble(0)>max[L])
+                {
+                    max[L] = hypItems.at(i).toDouble(0);
+                }
+                i++;
+            }
+        }
+    }
+
+    //Normalize and export image
+    //int tmpMax;
+    i=0;
+    for( l=0; l<L; l++ )
+    {
+        //tmpMax = 0;
+        //qDebug() << "max[l]: " << max[l];
+
+        for( row=0; row<H; row++ )
+        {
+            for( col=0; col<W; col++ )
+            {
+                tmp = hypItems.at(i).toDouble(0);
                 if(true)//Normalize
                 {
-                    tmpVal  = (tmp<=0.0)?0:round( (tmp/max) * 255.0 );
+                    //tmpVal  = (tmp<=0.0)?0:round( (tmp/max[l]) * 255.0 );
+                    tmpVal  = (tmp<=0.0)?0:round( (tmp/max[L]) * 255.0 );
                 }
                 else
                 {
                     tmpVal = tmp;
                 }
-                tmpImg.setPixelColor(QPoint(col,row),qGray(tmpVal,tmpVal,tmpVal));
-                hypItems.removeAt(0);
+                //tmpImg.setPixelColor(QPoint(col,row),qGray(tmpVal,tmpVal,tmpVal));
+                tmpImg.setPixelColor(QPoint(col,row),qRgb(tmpVal,tmpVal,tmpVal));
+
+                //if(tmpVal>tmpMax)
+                //{
+                //    tmpMax=tmpVal;
+                //}
+
+                i++;
             }
         }
+
+        //qDebug() << "tmpMax: " << tmpMax;
 
         tmpFileName = _PATH_TMP_HYPCUBES + QString::number(waves.at(l)) + ".png";
         tmpImg.save(tmpFileName);
         tmpImg.fill(Qt::black);
         //hypercube.append(tmpImg);
     }
+
 }
 
 void MainWindow::on_actionBilinear_interpolation_triggered()
