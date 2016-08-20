@@ -45,6 +45,12 @@
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
     #define _PATH_HALOGEN_FUNCTION          "./settings/halogenFunction.hypcam"
 
+    #define _PATH_SNAPSHOT_ZERO             "./tmpImages/Zero.png"
+    #define _PATH_SNAPSHOT_RIGHT            "./tmpImages/Right.png"
+    #define _PATH_SNAPSHOT_UP               "./tmpImages/Up.png"
+    #define _PATH_SNAPSHOT_LEFT             "./tmpImages/Left.png"
+    #define _PATH_SNAPSHOT_DOWN             "./tmpImages/Down.png"
+
     #define _PATH_RED_RESPONSE              "./settings/Calib/responses/redResponse.hypcam"
     #define _PATH_GREEN_RESPONSE            "./settings/Calib/responses/greenResponse.hypcam"
     #define _PATH_BLUE_RESPONSE             "./settings/Calib/responses/blueResponse.hypcam"

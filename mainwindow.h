@@ -66,7 +66,7 @@ private slots:
 
     void on_pbStartVideo_clicked();
 
-    unsigned char *funcGetRemoteImg(strReqImg *reqImg );
+    unsigned char *funcGetRemoteImg(strReqImg *reqImg , bool saveImg=false);
 
     unsigned char *funcObtVideo(unsigned char saveLocally);
 
@@ -101,6 +101,35 @@ private slots:
     void on_pbObtPar_clicked();
 
     bool funcSetCam( structRaspcamSettings *raspcamSettings );
+
+    void getRemoteImgByPartsAndSave(strReqImg *reqImg );
+
+    void calcRectangles(
+                            QList<QRect> *lstRect,
+                            strDiffProj  *p11Min,
+                            strDiffProj  *p12Min,
+                            strDiffProj  *p21Min,
+                            strDiffProj  *p22Min,
+                            strDiffProj  *p11Max,
+                            strDiffProj  *p12Max,
+                            strDiffProj  *p21Max,
+                            strDiffProj  *p22Max
+                       );
+
+    void calcDiffPoints(
+                            double wave,
+                            strDiffProj *p11,
+                            strDiffProj *p12,
+                            strDiffProj *p21,
+                            strDiffProj *p22,
+                            lstDoubleAxisCalibration *daCalib
+                       );
+
+    void getMaxCalibRect(QRect *rect , lstDoubleAxisCalibration *calib);
+
+    QString getFilenameForRecImg();
+
+    void updateDisplayImage();
 
     void on_pbSnapshot_clicked();
 

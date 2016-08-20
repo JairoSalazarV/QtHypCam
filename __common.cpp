@@ -18,6 +18,14 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 
+
+QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
+{
+    point->setX( round( calib->LR.horizA + (calib->LR.horizB * point->x()) ) );
+    point->setY( round( calib->LR.vertA + (calib->LR.vertB * point->y()) ) );
+    return point;
+}
+
 QString funcRemoveFileNameFromPath( QString Path ){
     return QFileInfo(Path).absolutePath();
 }

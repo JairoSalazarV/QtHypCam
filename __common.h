@@ -12,6 +12,8 @@
 
     #include <customQMatrix3x3.h>
 
+    QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib );
+
     double funcDet2x2(double **M);
 
     double vectorMax(double *vector, int len);

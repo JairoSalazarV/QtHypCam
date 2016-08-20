@@ -1142,7 +1142,7 @@ void MainWindow::on_pbStartVideo_clicked()
 }
 
 
-unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
+unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 
     //Open socket
     int sockfd = connectSocket( camSelected );
@@ -1180,8 +1180,12 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
 
     //Save a backup of the image received
     //..
-    if(!saveBinFile( (unsigned long)fileLen, tmpFile,_PATH_IMAGE_RECEIVED)){
-        qDebug()<< "ERROR: saving image-file received";
+    if( saveImg )
+    {
+        if(!saveBinFile( (unsigned long)fileLen, tmpFile,_PATH_IMAGE_RECEIVED))
+        {
+            qDebug()<< "ERROR: saving image-file received";
+        }
     }
 
     //Close socket and return
@@ -1313,7 +1317,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     }
 
     //It save the received image
-    funcGetRemoteImg( reqImg );
+    funcGetRemoteImg( reqImg, true );
     QImage tmpImg(_PATH_IMAGE_RECEIVED);
 
     //tmpImg.save("./Results/tmpCropFromSave.ppm");
@@ -1651,7 +1655,12 @@ void MainWindow::funcGetSnapshot()
         reqImg->needCut     = false;
         reqImg->imgCols     = _BIG_WIDTH;//2592 | 640
         reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480
+        //It saves image into HDD: _PATH_IMAGE_RECEIVED
+        funcGetRemoteImg( reqImg, true );
     }else{
+
+        getRemoteImgByPartsAndSave( reqImg );
+        /*
         if( !funGetSquareXML( _PATH_REGION_OF_INTERES, &reqImg->sqApSett ) ){
             funcShowMsg("ERROR","Loading squareAperture.xml");
             return (void)false;
@@ -1662,41 +1671,166 @@ void MainWindow::funcGetSnapshot()
         reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
         reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
         reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+        */
 
-        //qDebug() << "canvasW: " << reqImg->sqApSett.canvasW;
-        //qDebug() << "canvasH: " << reqImg->sqApSett.canvasH;
-        //qDebug() << "rectX: " << reqImg->sqApSett.rectX;
-        //qDebug() << "rectY: " << reqImg->sqApSett.rectY;
-        //qDebug() << "reqImg->imgCols: " << reqImg->imgCols;
-        //qDebug() << "reqImg->imgRows: " << reqImg->imgRows;
-
-        //return (void)true;
     }
 
-    //Require remote image
-    //...
-    //It saves image into HDD: _PATH_IMAGE_RECEIVED
-    funcGetRemoteImg( reqImg );
-    QImage tmpImg( _PATH_IMAGE_RECEIVED );
+    //Display image into qlabel
+    updateDisplayImage();
 
-    //Show snapshot
-    //..
-    QImage tmpThumb = tmpImg.scaledToHeight(_FRAME_THUMB_H);
-    tmpThumb = tmpThumb.scaledToWidth(_FRAME_THUMB_W);
-    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
-    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+}
 
-    //Save snapshot with a timestamp file-name generated automatically
+
+
+void MainWindow::getRemoteImgByPartsAndSave( strReqImg *reqImg )
+{
+
+    //Reading Calibration
     //..
-    QString tmpFileName = ui->txtSnapPath->text().trimmed();
-    tmpFileName.append(QString::number(time(NULL)));
-    tmpFileName.append(".RGB888");
-    QFile::copy(_PATH_IMAGE_RECEIVED, tmpFileName);
-    qDebug() << "tmpFileName: " << tmpFileName;
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+    reqImg->needCut         = true;    
+
+    //Deffining lower/upper limits
+    //..
+    strDiffProj p11Min, p12Min, p21Min, p22Min;
+    calcDiffPoints( daCalib.minWavelength, &p11Min, &p12Min, &p21Min, &p22Min, &daCalib );
+
+    strDiffProj p11Max, p12Max, p21Max, p22Max;
+    calcDiffPoints( daCalib.maxWavelength, &p11Max, &p12Max, &p21Max, &p22Max, &daCalib );
+
+    //Define que rectangle coordinates for zero, right, up, left, and down.
+    //..
+    QList<QRect> lstRect;
+    calcRectangles(
+                        &lstRect,
+                        &p11Min, &p12Min, &p21Min, &p22Min,
+                        &p11Max, &p12Max, &p21Max, &p22Max
+                  );
+
+
+
+
+
+
+
+
+
+
+
+    /*
+    //Obtaining the usable-area image
+    tmpRec.setX(daCalib.squareUsableX);
+    tmpRec.setY(daCalib.squareUsableY);
+    tmpRec.setWidth(daCalib.squareUsableW);
+    tmpRec.setHeight(daCalib.squareUsableH);
+    getMaxCalibRect( &tmpRec, &daCalib );
+    reqImg->imgCols         = tmpRec.width();
+    reqImg->imgRows         = tmpRec.height();
+    reqImg->sqApSett.rectX  = tmpRec.x();
+    reqImg->sqApSett.rectY  = tmpRec.y();
+    funcGetRemoteImg( reqImg, true );
+    //QImage zero( _PATH_DISPLAY_IMAGE );
+    */
+
 
 
 }
 
+void MainWindow::calcRectangles(
+                                    QList<QRect> *lstRect,
+                                    strDiffProj  *p11Min,
+                                    strDiffProj  *p12Min,
+                                    strDiffProj  *p21Min,
+                                    strDiffProj  *p22Min,
+                                    strDiffProj  *p11Max,
+                                    strDiffProj  *p12Max,
+                                    strDiffProj  *p21Max,
+                                    strDiffProj  *p22Max
+                               ){
+
+}
+
+void MainWindow::calcDiffPoints(
+                                    double wave,
+                                    strDiffProj *p11,
+                                    strDiffProj *p12,
+                                    strDiffProj *p21,
+                                    strDiffProj *p22,
+                                    lstDoubleAxisCalibration *daCalib
+                                ){
+
+    p11->wavelength = wave;
+    p12->wavelength = wave;
+    p21->wavelength = wave;
+    p22->wavelength = wave;
+
+    p11->x          = 1;                  //1-index
+    p11->y          = 1;                  //1-index
+    p12->x          = daCalib->squarePixW; //1-index
+    p12->y          = 1;                  //1-index
+    p21->x          = 1;                  //1-index
+    p21->y          = daCalib->squarePixH; //1-index
+    p22->x          = daCalib->squarePixW; //1-index
+    p22->y          = daCalib->squarePixH; //1-index
+
+    calcDiffProj( p11, daCalib );
+    calcDiffProj( p12, daCalib );
+    calcDiffProj( p21, daCalib );
+    calcDiffProj( p22, daCalib );
+
+}
+
+
+void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
+{
+    //It defines points in the rectangle
+    QPoint p11, p12, p21, p22;
+    p11.setX(rect->x());                    p11.setY(rect->y());
+    p12.setX(rect->x()+rect->width());      p12.setY(rect->y());
+    p21.setX(rect->x());                    p21.setY(rect->y()+rect->height());
+    p22.setX(rect->x()+rect->width());      p22.setY(rect->y()+rect->height());
+
+    //It calibrates rectangle
+    calibPoint( &p11, calib );      calibPoint( &p12, calib );
+    calibPoint( &p21, calib );      calibPoint( &p22, calib );
+
+    //Defines rectangle calibrated
+    int x1, y1, x2, y2, w, h;
+    x1 = (p11.x()<p21.x())?p11.x():p21.x();
+    y1 = (p11.y()<p12.y())?p11.y():p12.y();
+    x2 = (p12.x()>p22.x())?p12.x():p22.x();
+    y2 = (p21.y()>p22.y())?p21.y():p22.y();
+    w  = abs(x2 - x1);
+    h  = abs(y2 - y1);
+
+    //Set calibrated rectangle
+    rect->setX(x1);
+    rect->setY(y1);
+    rect->setWidth(w);
+    rect->setHeight(h);
+
+}
+
+QString MainWindow::getFilenameForRecImg()
+{
+    QString tmpFileName = ui->txtSnapPath->text().trimmed();
+    tmpFileName.append(QString::number(time(NULL)));
+    tmpFileName.append(".RGB888");
+    QFile::copy(_PATH_IMAGE_RECEIVED, tmpFileName);
+    return tmpFileName;
+}
+
+void MainWindow::updateDisplayImage()
+{
+    //Show snapshot
+    //..
+    QImage tmpImg( _PATH_IMAGE_RECEIVED );
+    QImage tmpThumb = tmpImg.scaledToHeight(_FRAME_THUMB_H);
+    tmpThumb = tmpThumb.scaledToWidth(_FRAME_THUMB_W);
+    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
+    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+}
 
 void MainWindow::on_pbSnapshot_clicked()
 {
