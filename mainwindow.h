@@ -102,8 +102,9 @@ private slots:
 
     bool funcSetCam( structRaspcamSettings *raspcamSettings );
 
-    void getRemoteImgByPartsAndSave(strReqImg *reqImg );
+    //void getRemoteImgByPartsAndSave(strReqImg *reqImg );
 
+    /*
     void calcRectangles(
                             QList<QRect> *lstRect,
                             strDiffProj  *p11Min,
@@ -115,6 +116,9 @@ private slots:
                             strDiffProj  *p21Max,
                             strDiffProj  *p22Max
                        );
+                       */
+
+    void mergeSnapshot(QImage *diff, QImage *aper, lstDoubleAxisCalibration *daCalib );
 
     void calcDiffPoints(
                             double wave,
@@ -129,7 +133,7 @@ private slots:
 
     QString getFilenameForRecImg();
 
-    void updateDisplayImage();
+    void updateDisplayImageReceived();
 
     void on_pbSnapshot_clicked();
 
@@ -372,6 +376,14 @@ private slots:
     void extractsHyperCube(QString originFileName);
 
     void on_actionBilinear_interpolation_triggered();
+
+    void on_slideSquareShuterSpeedSmall_valueChanged(int value);    
+
+    void on_slideSquareShuterSpeed_valueChanged(int value);
+
+    void refreshSquareShootSpeed();
+
+    void on_pbCopyShutter_clicked();
 
 private:
     Ui::MainWindow *ui;

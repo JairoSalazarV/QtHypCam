@@ -663,6 +663,10 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Contrast = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Saturation" )
                 raspcamSettings->Saturation = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="SquareShutterSpeed" )
+                raspcamSettings->SquareShutterSpeed = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="SquareShutterSpeedSmall" )
+                raspcamSettings->SquareShutterSpeedSmall = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ShutterSpeed" )
                 raspcamSettings->ShutterSpeed = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ShutterSpeedSmall" )

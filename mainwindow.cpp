@@ -549,10 +549,15 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     //ui->slideSaturation->setValue( raspcamSettings->Saturation );
     //ui->labelSaturation->setText( "Saturation: " + QString::number(raspcamSettings->Saturation) );
 
-    //ShuterSpeed
+    //SquareShuterSpeed
+    ui->slideSquareShuterSpeed->setValue( raspcamSettings->SquareShutterSpeed );
+    ui->slideSquareShuterSpeedSmall->setValue( raspcamSettings->SquareShutterSpeedSmall );
+    ui->labelSquareShuterSpeed->setText( "Square Shuter Speed: " + QString::number(raspcamSettings->SquareShutterSpeed+raspcamSettings->SquareShutterSpeedSmall) );
+
+    //DiffractionShuterSpeed
     ui->slideShuterSpeed->setValue( raspcamSettings->ShutterSpeed );
     ui->slideShuterSpeedSmall->setValue( raspcamSettings->ShutterSpeedSmall );
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed+raspcamSettings->ShutterSpeedSmall) );
+    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed+raspcamSettings->ShutterSpeedSmall) );
 
     //ISO
     ui->slideISO->setValue( raspcamSettings->ISO );
@@ -713,7 +718,7 @@ bool MainWindow::funcReceiveFile(
             ui->progBar->setValue(i);
             bzero(bufferRead,frameBodyLen);
             n = read(sockfd,bufferRead,frameBodyLen);
-            qDebug() << "n: " << n;
+            //qDebug() << "n: " << n;
             if(n!=(int)frameBodyLen&&i<(int)numMsgs){
                 qDebug() << "ERROR, message " << i << "WRONG";
                 return false;
@@ -1216,6 +1221,7 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
     //raspSett.Red                   = ui->slideRed->value();
     //raspSett.Saturation            = ui->slideSaturation->value();
     //raspSett.Sharpness             = ui->slideSharpness->value();
+    raspSett.SquareShutterSpeed    = ui->slideSquareShuterSpeed->value() + ui->slideSquareShuterSpeedSmall->value();
     raspSett.ShutterSpeed          = ui->slideShuterSpeed->value() + ui->slideShuterSpeedSmall->value();
     raspSett.Denoise = (ui->cbDenoise->isChecked())?1:0;
     raspSett.ColorBalance = (ui->cbColorBalance->isChecked())?1:0;
@@ -1288,6 +1294,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     if( ui->cbThumbPreview->isChecked() )
     {
         reqImg->needCut     = false;
+        reqImg->squApert    = false;
         reqImg->imgCols     = _FRAME_THUMB_W;
         reqImg->imgRows     = _FRAME_THUMB_H;
     }
@@ -1296,6 +1303,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
         if( ui->cbFullPhoto->isChecked() )
         {
             reqImg->needCut = false;
+            reqImg->squApert= false;
             reqImg->imgCols = _BIG_WIDTH;
             reqImg->imgRows = _BIG_HEIGHT;
         }
@@ -1307,11 +1315,18 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
                 return false;
             }
             reqImg->needCut     = true;
+            reqImg->squApert    = true;
             //Calculate real number of columns of the required photo
-            reqImg->imgCols         = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-            reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
             reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
             reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+            reqImg->sqApSett.rectW  = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
+            reqImg->sqApSett.rectH  = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+
+            //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
+            //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
+            //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
+            //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
+
 
         }
     }
@@ -1441,7 +1456,8 @@ void MainWindow::on_pbSaveImage_clicked()
 
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
 {
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value + ui->slideShuterSpeedSmall->value()) );
+    QString qstrVal = QString::number(value + ui->slideShuterSpeedSmall->value());
+    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + qstrVal );
 }
 
 void MainWindow::on_slideISO_valueChanged(int value)
@@ -1533,6 +1549,8 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     //newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
     newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
     newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
+    newFileCon.append("    <SquareShutterSpeed>"+ QString::number( ui->slideSquareShuterSpeed->value() ) +"</SquareShutterSpeed>\n");
+    newFileCon.append("    <SquareShutterSpeedSmall>"+ QString::number( ui->slideSquareShuterSpeedSmall->value() ) +"</SquareShutterSpeedSmall>\n");
     newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
     newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
@@ -1638,16 +1656,20 @@ void MainWindow::funcGetSnapshot()
 
     mouseCursorWait();
 
+    //Getting calibration
+    //..
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
     //Save path
     //..
     saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
 
-
     //Set required image's settings
     //..
-    strReqImg *reqImg   = (strReqImg*)malloc(sizeof(strReqImg));
-    reqImg->idMsg       = (unsigned char)7;
-    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );    
+    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    reqImg->idMsg           = (unsigned char)7;
+    reqImg->raspSett        = funcFillSnapshotSettings( reqImg->raspSett );
 
     //Define photo's region
     //..
@@ -1658,85 +1680,79 @@ void MainWindow::funcGetSnapshot()
         //It saves image into HDD: _PATH_IMAGE_RECEIVED
         funcGetRemoteImg( reqImg, true );
     }else{
+        //Requesting image by parts
+        //..
+        //Diffraction
+        reqImg->needCut  = true;
+        reqImg->squApert = true;
+        reqImg->raspSett.SquareShutterSpeed      = ui->slideShuterSpeed->value();
+        reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
+        reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)_BIG_WIDTH );
+        reqImg->sqApSett.rectY  = round( daCalib.bigY * (double)_BIG_HEIGHT );
+        reqImg->sqApSett.rectW  = round( daCalib.bigW * (double)_BIG_WIDTH );
+        reqImg->sqApSett.rectH  = round( daCalib.bigH * (double)_BIG_HEIGHT );
+        //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
+        //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
+        //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
+        //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
+        funcGetRemoteImg( reqImg, true );
+        QImage imgDiff( _PATH_IMAGE_RECEIVED );
+        imgDiff.save(_PATH_SNAPSHOT_DIFFRACTION);
 
-        getRemoteImgByPartsAndSave( reqImg );
-        /*
-        if( !funGetSquareXML( _PATH_REGION_OF_INTERES, &reqImg->sqApSett ) ){
-            funcShowMsg("ERROR","Loading squareAperture.xml");
-            return (void)false;
-        }
-        reqImg->needCut     = true;
-        //Calculate real number of columns of the required photo
-        reqImg->imgCols         = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-        reqImg->imgRows         = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
-        reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-        reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
-        */
+        //Aperture
+        reqImg->raspSett.SquareShutterSpeed      = ui->slideSquareShuterSpeed->value();
+        reqImg->raspSett.SquareShutterSpeedSmall = ui->slideSquareShuterSpeedSmall->value();
+        reqImg->sqApSett.rectX  = round( daCalib.squareX * (double)_BIG_WIDTH );;
+        reqImg->sqApSett.rectY  = round( daCalib.squareY * (double)_BIG_HEIGHT );
+        reqImg->sqApSett.rectW  = round( daCalib.squareW * (double)_BIG_WIDTH );;
+        reqImg->sqApSett.rectH  = round( daCalib.squareH * (double)_BIG_HEIGHT );
+        //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
+        //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
+        //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
+        //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
+        funcGetRemoteImg( reqImg, true );
+        QImage imgAperture( _PATH_IMAGE_RECEIVED );
+        imgAperture.save(_PATH_SNAPSHOT_APERTURE);
+
+        //Merge Diffraction and Aperture
+        mergeSnapshot(&imgDiff, &imgAperture, &daCalib);
 
     }
 
     //Display image into qlabel
-    updateDisplayImage();
+    updateDisplayImageReceived();
 
 }
 
+void MainWindow::mergeSnapshot(QImage *diff, QImage *aper, lstDoubleAxisCalibration *daCalib )
+{
+    int x1, y1;
+    int row, col;
+
+    x1 = daCalib->squarePixX;
+    y1 = daCalib->squarePixY;
+
+    for(row=0;row<aper->height();row++)
+    {
+        for(col=0;col<aper->width();col++)
+        {
+            diff->setPixel(x1+col,y1+row,aper->pixel(col,row));
+        }
+    }
+
+    diff->save( _PATH_DISPLAY_IMAGE );
+}
 
 
+/*
 void MainWindow::getRemoteImgByPartsAndSave( strReqImg *reqImg )
 {
-
-    //Reading Calibration
-    //..
-    lstDoubleAxisCalibration daCalib;
-    funcGetCalibration(&daCalib);
-    reqImg->needCut         = true;    
-
-    //Deffining lower/upper limits
-    //..
-    strDiffProj p11Min, p12Min, p21Min, p22Min;
-    calcDiffPoints( daCalib.minWavelength, &p11Min, &p12Min, &p21Min, &p22Min, &daCalib );
-
-    strDiffProj p11Max, p12Max, p21Max, p22Max;
-    calcDiffPoints( daCalib.maxWavelength, &p11Max, &p12Max, &p21Max, &p22Max, &daCalib );
-
-    //Define que rectangle coordinates for zero, right, up, left, and down.
-    //..
-    QList<QRect> lstRect;
-    calcRectangles(
-                        &lstRect,
-                        &p11Min, &p12Min, &p21Min, &p22Min,
-                        &p11Max, &p12Max, &p21Max, &p22Max
-                  );
-
-
-
-
-
-
-
-
-
-
-
-    /*
-    //Obtaining the usable-area image
-    tmpRec.setX(daCalib.squareUsableX);
-    tmpRec.setY(daCalib.squareUsableY);
-    tmpRec.setWidth(daCalib.squareUsableW);
-    tmpRec.setHeight(daCalib.squareUsableH);
-    getMaxCalibRect( &tmpRec, &daCalib );
-    reqImg->imgCols         = tmpRec.width();
-    reqImg->imgRows         = tmpRec.height();
-    reqImg->sqApSett.rectX  = tmpRec.x();
-    reqImg->sqApSett.rectY  = tmpRec.y();
+    //It saves image into HDD: _PATH_IMAGE_RECEIVED
     funcGetRemoteImg( reqImg, true );
-    //QImage zero( _PATH_DISPLAY_IMAGE );
-    */
-
-
-
 }
+*/
 
+/*
 void MainWindow::calcRectangles(
                                     QList<QRect> *lstRect,
                                     strDiffProj  *p11Min,
@@ -1750,6 +1766,7 @@ void MainWindow::calcRectangles(
                                ){
 
 }
+*/
 
 void MainWindow::calcDiffPoints(
                                     double wave,
@@ -1821,15 +1838,22 @@ QString MainWindow::getFilenameForRecImg()
     return tmpFileName;
 }
 
-void MainWindow::updateDisplayImage()
+void MainWindow::updateDisplayImageReceived()
 {
     //Show snapshot
     //..
-    QImage tmpImg( _PATH_IMAGE_RECEIVED );
-    QImage tmpThumb = tmpImg.scaledToHeight(_FRAME_THUMB_H);
-    tmpThumb = tmpThumb.scaledToWidth(_FRAME_THUMB_W);
+    QImage tmpImg( _PATH_DISPLAY_IMAGE );
+    int maxW, maxH;
+    maxW = (_FRAME_THUMB_W<tmpImg.width())?_FRAME_THUMB_W:tmpImg.width();
+    maxH = (_FRAME_THUMB_H<tmpImg.height())?_FRAME_THUMB_H:tmpImg.height();
+    QImage tmpThumb = tmpImg.scaledToHeight(maxH);
+    tmpThumb = tmpThumb.scaledToWidth(maxW);
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
     ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+    //Update view
+    //..
+    auxQstring = _PATH_DISPLAY_IMAGE;
+    loadImageIntoCanvasEdit(auxQstring, true);
 }
 
 void MainWindow::on_pbSnapshot_clicked()
@@ -3321,7 +3345,8 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
 
 void MainWindow::on_slideShuterSpeedSmall_valueChanged(int value)
 {
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value + ui->slideShuterSpeed->value()) );
+    QString qstrVal = QString::number(value + ui->slideShuterSpeed->value());
+    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + qstrVal );
 }
 
 void MainWindow::on_actionToolPenArea_triggered()
@@ -4406,4 +4431,33 @@ void MainWindow::on_actionBilinear_interpolation_triggered()
 
 
 
+}
+
+void MainWindow::on_slideSquareShuterSpeedSmall_valueChanged(int value)
+{
+    value = value;
+    refreshSquareShootSpeed();
+}
+
+void MainWindow::on_slideSquareShuterSpeed_valueChanged(int value)
+{
+    value = value;
+    refreshSquareShootSpeed();
+}
+
+void MainWindow::refreshSquareShootSpeed()
+{
+    QString qstrVal = QString::number(
+                                        ui->slideSquareShuterSpeedSmall->value() +
+                                        ui->slideSquareShuterSpeed->value()
+                                     );
+    ui->labelSquareShuterSpeed->setText( "Square Shuter Speed: " + qstrVal );
+}
+
+
+
+void MainWindow::on_pbCopyShutter_clicked()
+{
+    ui->slideSquareShuterSpeed->setValue( ui->slideShuterSpeed->value() );
+    ui->slideSquareShuterSpeedSmall->setValue( ui->slideShuterSpeedSmall->value() );
 }
