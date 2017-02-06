@@ -356,18 +356,21 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     double auxL, auxR, aux;
     aux  = centroids->source.split(",").at(0).toFloat(0);
     //Delta blue X
-    auxL = (double)abs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
-    auxR = (double)abs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
+    //auxL = (double)abs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
+    auxL = (double)fabs( aux - centroids->blueLeft.split(",").at(0).toFloat(0) );
+
+
+    auxR = (double)fabs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
     pointsX[0] = (double)_BLUE_WAVELENGHT;
     pointsY[0] = (auxL+auxR) / 2.0;
     //Delta green X
-    auxL = (double)abs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
-    auxR = (double)abs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
+    auxL = (double)fabs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
+    auxR = (double)fabs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
     pointsX[1] = (double)_GREEN_WAVELENGHT;
     pointsY[1] = (auxL+auxR) / 2.0;
     //Delta red X
-    auxL = (double)abs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
-    auxR = (double)abs(aux - centroids->redRight.split(",").at(0).toFloat(0));
+    auxL = (double)fabs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
+    auxR = (double)fabs(aux - centroids->redRight.split(",").at(0).toFloat(0));
     pointsX[2] = (double)_RED_WAVELENGHT;
     pointsY[2] = (auxL+auxR) / 2.0;
     //Delta source X
@@ -382,18 +385,18 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     double auxU, auxD;
     aux         = centroids->source.split(",").at(1).toFloat(0);
     //Delta blue X
-    auxU        = (double)abs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
-    auxD        = (double)abs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
+    auxD        = (double)fabs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
     pointsX[0]  = (double)_BLUE_WAVELENGHT;
     pointsY[0]  = (auxU+auxD) / 2.0;
     //Delta green X
-    auxU        = (double)abs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
-    auxD        = (double)abs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
+    auxD        = (double)fabs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
     pointsX[1]  = (double)_GREEN_WAVELENGHT;
     pointsY[1]  = (auxU+auxD) / 2.0;
     //Delta red X
-    auxU        = (double)abs(aux - centroids->redUp.split(",").at(1).toFloat(0));
-    auxD        = (double)abs(aux - centroids->redDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->redUp.split(",").at(1).toFloat(0));
+    auxD        = (double)fabs(aux - centroids->redDown.split(",").at(1).toFloat(0));
     pointsX[2]  = (double)_RED_WAVELENGHT;
     pointsY[2]  = (auxU+auxD) / 2.0;
     //Delta source X
@@ -407,18 +410,18 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //..
     aux  = centroids->source.split(",").at(0).toFloat(0);
     //Delta blue X
-    auxL = (double)abs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
-    auxR = (double)abs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
+    auxL = (double)fabs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
+    auxR = (double)fabs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
     pointsY[0] = (double)_BLUE_WAVELENGHT;
     pointsX[0] = (auxL+auxR) / 2.0;
     //Delta green X
-    auxL = (double)abs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
-    auxR = (double)abs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
+    auxL = (double)fabs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
+    auxR = (double)fabs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
     pointsY[1] = (double)_GREEN_WAVELENGHT;
     pointsX[1] = (auxL+auxR) / 2.0;
     //Delta red X
-    auxL = (double)abs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
-    auxR = (double)abs(aux - centroids->redRight.split(",").at(0).toFloat(0));
+    auxL = (double)fabs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
+    auxR = (double)fabs(aux - centroids->redRight.split(",").at(0).toFloat(0));
     pointsY[2] = (double)_RED_WAVELENGHT;
     pointsX[2] = (auxL+auxR) / 2.0;
     //Delta source X
@@ -432,18 +435,18 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //..
     aux         = centroids->source.split(",").at(1).toFloat(0);
     //Delta blue X
-    auxU        = (double)abs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
-    auxD        = (double)abs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
+    auxD        = (double)fabs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
     pointsY[0]  = (double)_BLUE_WAVELENGHT;
     pointsX[0]  = (auxU+auxD) / 2.0;
     //Delta green X
-    auxU        = (double)abs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
-    auxD        = (double)abs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
+    auxD        = (double)fabs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
     pointsY[1]  = (double)_GREEN_WAVELENGHT;
     pointsX[1]  = (auxU+auxD) / 2.0;
     //Delta red X
-    auxU        = (double)abs(aux - centroids->redUp.split(",").at(1).toFloat(0));
-    auxD        = (double)abs(aux - centroids->redDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->redUp.split(",").at(1).toFloat(0));
+    auxD        = (double)fabs(aux - centroids->redDown.split(",").at(1).toFloat(0));
     pointsY[2]  = (double)_RED_WAVELENGHT;
     pointsX[2]  = (auxU+auxD) / 2.0;
     //Delta source X
@@ -559,12 +562,12 @@ void genCalibXML::on_pbGenCal_clicked()
         }
         //Calculates the position expected in the received image
         int auxSqX, auxSqY, auxSqW, auxSqH, auxBigX, auxBigY;
-        auxSqX  = round((float)_BIG_WIDTH  * ((float)sqApert->rectX / (float)sqApert->canvasW));
-        auxSqY  = round((float)_BIG_HEIGHT * ((float)sqApert->rectY / (float)sqApert->canvasH));
-        auxSqW  = round((float)_BIG_WIDTH  * ((float)sqApert->rectW / (float)sqApert->canvasW));
-        auxSqH  = round((float)_BIG_HEIGHT * ((float)sqApert->rectH / (float)sqApert->canvasH));
-        auxBigX = round((float)_BIG_WIDTH  * ((float)regOfInteres->rectX / (float)regOfInteres->canvasW));
-        auxBigY = round((float)_BIG_HEIGHT * ((float)regOfInteres->rectY / (float)regOfInteres->canvasH));
+        auxSqX  = round((float)camRes->width  * ((float)sqApert->rectX / (float)sqApert->canvasW));
+        auxSqY  = round((float)camRes->height * ((float)sqApert->rectY / (float)sqApert->canvasH));
+        auxSqW  = round((float)camRes->width  * ((float)sqApert->rectW / (float)sqApert->canvasW));
+        auxSqH  = round((float)camRes->height * ((float)sqApert->rectH / (float)sqApert->canvasH));
+        auxBigX = round((float)camRes->width  * ((float)regOfInteres->rectX / (float)regOfInteres->canvasW));
+        auxBigY = round((float)camRes->height * ((float)regOfInteres->rectY / (float)regOfInteres->canvasH));
         //In reference to the final position
         auxSqX -= auxBigX;
         auxSqY -= auxBigY;
@@ -580,8 +583,8 @@ void genCalibXML::on_pbGenCal_clicked()
         //Calculates the position expected in the received image
         int auxSqUsableX, auxSqUsableY, auxSqUsableW, auxSqUsableH;
         float areaInterW, areaInterH;
-        areaInterW = (float)_BIG_WIDTH * wB;
-        areaInterH = (float)_BIG_HEIGHT * hB;
+        areaInterW = (float)camRes->width * wB;
+        areaInterH = (float)camRes->height * hB;
         auxSqUsableX  = round((float)areaInterW * ((float)sqUsable->rectX / (float)sqUsable->canvasW));
         auxSqUsableY  = round((float)areaInterH * ((float)sqUsable->rectY / (float)sqUsable->canvasH));
         auxSqUsableW  = round((float)areaInterW * ((float)sqUsable->rectW / (float)sqUsable->canvasW));
@@ -644,8 +647,8 @@ void genCalibXML::on_pbGenCal_clicked()
 
             newFileCon.append("    <origin>(0,0)=(left,up)</origin>\n");
 
-            newFileCon.append("    <W>"+ QString::number(_BIG_WIDTH)                            + "</W>\n");
-            newFileCon.append("    <H>"+ QString::number(_BIG_HEIGHT)                           + "</H>\n");
+            newFileCon.append("    <W>"+ QString::number(camRes->width)                            + "</W>\n");
+            newFileCon.append("    <H>"+ QString::number(camRes->height)                           + "</H>\n");
 
             newFileCon.append("    <bigX>"+ QString::number( xB )                               + "</bigX>\n");
             newFileCon.append("    <bigY>"+ QString::number( yB )                               + "</bigY>\n");
@@ -967,8 +970,8 @@ QVector2D genCalibXML::getSqUsableIni(){
     //Calculates the position expected in the received image
     int auxSqUsableX, auxSqUsableY;//, auxSqUsableW, auxSqUsableH;
     float areaInterW, areaInterH;
-    areaInterW = (float)_BIG_WIDTH * wB;
-    areaInterH = (float)_BIG_HEIGHT * hB;
+    areaInterW = (float)camRes->width * wB;
+    areaInterH = (float)camRes->height * hB;
     auxSqUsableX  = round((float)areaInterW * ((float)sqUsable->rectX / (float)sqUsable->canvasW));
     auxSqUsableY  = round((float)areaInterH * ((float)sqUsable->rectY / (float)sqUsable->canvasH));
     //auxSqUsableW  = round((float)areaInterW * ((float)sqUsable->rectW / (float)sqUsable->canvasW));
@@ -1003,7 +1006,7 @@ QVector2D genCalibXML::calcSpectralResolution()
 
 
     //It concludes
-    waveRange = abs(waveLim.x()-waveLim.y());
+    waveRange = fabs(waveLim.x()-waveLim.y());
     numPixels = (deltaHoriz < deltaVert)?deltaHoriz:deltaVert;
 
     results.setX((float)(numPixels+1));

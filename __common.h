@@ -8,7 +8,8 @@
     #include <QEventLoop>
     #include <QCoreApplication>
 
-    #include <highgui.h>
+    //#include <highgui.h>
+    #include <opencv2/highgui/highgui.hpp>
 
     #include <customQMatrix3x3.h>
 
@@ -55,7 +56,7 @@
 
     bool saveFile( QString fileName, QString contain );
 
-    IplImage *funcGetImgFromCam(int usb, int stabMs );
+    //IplImage *funcGetImgFromCam(int usb, int stabMs );
 
     QString readAllFile( QString filePath );
 
@@ -101,6 +102,12 @@
     //IplImage *QImageToIplImage(const QImage * qImage);
     //QImage *IplImageToQImage(const IplImage * iplImage, uchar **data,
     //                         double mini, double maxi);
+
+
+    //
+    //Variable area
+    //
+    static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
 
 
 #endif // __COMMON_H

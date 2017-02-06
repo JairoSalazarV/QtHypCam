@@ -28,8 +28,20 @@
 #include <selwathtocheck.h>
 
 //OpenCV
-#include <highgui.h>
+//#include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio.hpp>
+
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/core/core.hpp>
+
+
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+
+
 
 //Custom
 #include <customline.h>
@@ -44,6 +56,8 @@
 
 #include <chosewavetoextract.h>
 #include <QRgb>
+
+
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -592,6 +606,11 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     if( raspcamSettings->ColorBalance )ui->cbColorBalance->setChecked(true);
     else ui->cbColorBalance->setChecked(false);
 
+    //CAMERA RESOLUTION
+    if( raspcamSettings->CameraMp == 5 )ui->radioRes5Mp->setChecked(true);
+    else ui->radioRes8Mp->setChecked(true);
+
+
 
 }
 
@@ -751,7 +770,7 @@ bool MainWindow::funcReceiveFile(
 }
 
 void MainWindow::funcActivateProgBar(){
-    mouseCursorReset();
+    //mouseCursorReset();
     ui->progBar->setVisible(true);
     ui->progBar->setValue(0);
     ui->progBar->update();
@@ -1304,8 +1323,8 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
         {
             reqImg->needCut = false;
             reqImg->squApert= false;
-            reqImg->imgCols = _BIG_WIDTH;
-            reqImg->imgRows = _BIG_HEIGHT;
+            reqImg->imgCols = camRes->width;
+            reqImg->imgRows = camRes->height;
         }
         else
         {
@@ -1317,10 +1336,10 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
             reqImg->needCut     = true;
             reqImg->squApert    = true;
             //Calculate real number of columns of the required photo
-            reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-            reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
-            reqImg->sqApSett.rectW  = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)_BIG_WIDTH);
-            reqImg->sqApSett.rectH  = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)_BIG_HEIGHT);
+            reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
+            reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
+            reqImg->sqApSett.rectW  = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
+            reqImg->sqApSett.rectH  = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
 
             //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
             //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
@@ -1531,6 +1550,22 @@ void MainWindow::on_pbSaveRaspParam_clicked()
 }
 
 bool MainWindow::saveRaspCamSettings( QString tmpName ){
+
+    //Conditional variables
+    //
+
+    //Resolution
+    int tmpResInMp = -1;
+    if( ui->radioRes5Mp->isChecked() )
+    {
+        tmpResInMp = 5;
+    }
+    else
+    {
+        tmpResInMp = 8;
+    }
+
+
     //Prepare file contain
     //..
     QString newFileCon = "";
@@ -1554,6 +1589,7 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
     newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
+    newFileCon.append("    <CameraMp>"+ QString::number( tmpResInMp ) +"</CameraMp>\n");
     newFileCon.append("</settings>");
     //Save
     //..
@@ -1654,8 +1690,6 @@ bool MainWindow::funcSetCam( structRaspcamSettings *raspcamSettings ){
 void MainWindow::funcGetSnapshot()
 {
 
-    mouseCursorWait();
-
     //Getting calibration
     //..
     lstDoubleAxisCalibration daCalib;
@@ -1675,10 +1709,13 @@ void MainWindow::funcGetSnapshot()
     //..
     if( ui->cbFullPhoto->isChecked() ){
         reqImg->needCut     = false;
-        reqImg->imgCols     = _BIG_WIDTH;//2592 | 640
-        reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480
+        reqImg->imgCols     = camRes->width;//2592 | 640
+        reqImg->imgRows     = camRes->height;//1944 | 480
         //It saves image into HDD: _PATH_IMAGE_RECEIVED
         funcGetRemoteImg( reqImg, true );
+        QImage imgAperture( _PATH_IMAGE_RECEIVED );
+        imgAperture.save( _PATH_DISPLAY_IMAGE );
+
     }else{
         //Requesting image by parts
         //..
@@ -1687,10 +1724,10 @@ void MainWindow::funcGetSnapshot()
         reqImg->squApert = true;
         reqImg->raspSett.SquareShutterSpeed      = ui->slideShuterSpeed->value();
         reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
-        reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)_BIG_WIDTH );
-        reqImg->sqApSett.rectY  = round( daCalib.bigY * (double)_BIG_HEIGHT );
-        reqImg->sqApSett.rectW  = round( daCalib.bigW * (double)_BIG_WIDTH );
-        reqImg->sqApSett.rectH  = round( daCalib.bigH * (double)_BIG_HEIGHT );
+        reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)camRes->width );
+        reqImg->sqApSett.rectY  = round( daCalib.bigY * (double)camRes->height );
+        reqImg->sqApSett.rectW  = round( daCalib.bigW * (double)camRes->width );
+        reqImg->sqApSett.rectH  = round( daCalib.bigH * (double)camRes->height );
         //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
         //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
         //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
@@ -1702,10 +1739,10 @@ void MainWindow::funcGetSnapshot()
         //Aperture
         reqImg->raspSett.SquareShutterSpeed      = ui->slideSquareShuterSpeed->value();
         reqImg->raspSett.SquareShutterSpeedSmall = ui->slideSquareShuterSpeedSmall->value();
-        reqImg->sqApSett.rectX  = round( daCalib.squareX * (double)_BIG_WIDTH );;
-        reqImg->sqApSett.rectY  = round( daCalib.squareY * (double)_BIG_HEIGHT );
-        reqImg->sqApSett.rectW  = round( daCalib.squareW * (double)_BIG_WIDTH );;
-        reqImg->sqApSett.rectH  = round( daCalib.squareH * (double)_BIG_HEIGHT );
+        reqImg->sqApSett.rectX  = round( daCalib.squareX * (double)camRes->width );;
+        reqImg->sqApSett.rectY  = round( daCalib.squareY * (double)camRes->height );
+        reqImg->sqApSett.rectW  = round( daCalib.squareW * (double)camRes->width );;
+        reqImg->sqApSett.rectH  = round( daCalib.squareH * (double)camRes->height );
         //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
         //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
         //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
@@ -1861,8 +1898,12 @@ void MainWindow::on_pbSnapshot_clicked()
     ui->pbStartVideo->setEnabled(false);
 
 
+    mouseCursorWait();
+
+    camRes = getCamRes();
     funcGetSnapshot();
 
+    mouseCursorReset();
 
     ui->pbStartVideo->setEnabled(true);
 }
@@ -2141,6 +2182,7 @@ void MainWindow::on_pbSaveBigSquare_clicked()
 
 void MainWindow::on_pbSpecSnapshot_clicked()
 {
+    /*
     //Turn on camera
     //..
     CvCapture* usbCam  = cvCreateCameraCapture( ui->sbSpecUsb->value() );
@@ -2163,7 +2205,9 @@ void MainWindow::on_pbSpecSnapshot_clicked()
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
-            cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
+
+            cv::imwrite( tmpName.toStdString(), cv::cvarrToMat(imgRot) );
+            //cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
         }
         //Create canvas
         //Display accum
@@ -2207,7 +2251,7 @@ void MainWindow::on_pbSpecSnapshot_clicked()
     //Reset lines
     funcUpdateColorSensibilities();
     funcDrawLines(0,0,0,0);
-
+    */
 }
 
 void MainWindow::funcBeginRect(QMouseEvent* e){
@@ -2500,6 +2544,7 @@ void MainWindow::on_pbViewBack_clicked()
 
 void MainWindow::on_pbSnapCal_clicked()
 {
+    /*
     QString imgCropPath = "./snapshots/tmp/calibCrop.png";
 
     //Get image from camera
@@ -2507,7 +2552,9 @@ void MainWindow::on_pbSnapCal_clicked()
     QString imgPath = "./snapshots/tmp/calib.png";
     if( _USE_CAM ){
         IplImage *imgCal = funcGetImgFromCam( ui->sbSpecUsb->value(), 500 );
-        cv::imwrite( imgPath.toStdString(), cv::Mat(imgCal, true) );
+
+        cv::imwrite( imgPath.toStdString(), cv::cvarrToMat(imgCal) );
+        //cv::imwrite( imgPath.toStdString(), cv::Mat(imgCal, true) );
     }
 
     //Cut image
@@ -2551,6 +2598,7 @@ void MainWindow::on_pbSnapCal_clicked()
                                     QPen( QColor( tmpColor ) )
                              );
     wavelen->show();
+    */
 }
 
 
@@ -4460,4 +4508,31 @@ void MainWindow::on_pbCopyShutter_clicked()
 {
     ui->slideSquareShuterSpeed->setValue( ui->slideShuterSpeed->value() );
     ui->slideSquareShuterSpeedSmall->setValue( ui->slideShuterSpeedSmall->value() );
+}
+
+
+cameraResolution* MainWindow::getCamRes()
+{
+    //cameraResolution* camRes;
+    //camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
+
+    if( ui->radioRes5Mp->isChecked() )
+    {
+        //#define _BIG_WIDTH 2592 //2592 | 640 | 320
+        //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
+        camRes->width    = 2592;
+        camRes->height   = 1944;
+    }
+    else
+    {
+        if( ui->radioRes8Mp->isChecked() )
+        {
+            //https://www.raspberrypi.org/forums/viewtopic.php?t=145815
+            camRes->width    = 3240;
+            camRes->height   = 2464;
+        }
+    }
+
+    return camRes;
+
 }

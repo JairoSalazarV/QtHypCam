@@ -385,6 +385,8 @@ private slots:
 
     void on_pbCopyShutter_clicked();
 
+    cameraResolution* getCamRes();
+
 private:
     Ui::MainWindow *ui;
 };

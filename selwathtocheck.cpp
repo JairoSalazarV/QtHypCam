@@ -402,7 +402,7 @@ void selWathToCheck::drawAllLimits()
     drawLimit(_RIGHT);
     drawLimit(_LEFT);
 
-    drawLimit(_UP);
+    drawLimit(_ABOVE);
     drawLimit(_DOWN);
 
 }
@@ -417,7 +417,7 @@ void selWathToCheck::drawLimit(int side){
         case _RIGHT:
             limit = readAllFile(_PATH_LIMIT_R);
             break;
-        case _UP:
+        case _ABOVE:
             limit = readAllFile(_PATH_LIMIT_U);
             break;
         case _LEFT:
@@ -438,8 +438,8 @@ void selWathToCheck::drawLimit(int side){
     //strAllLinReg calibLR = tmpGenCal.getAllLR();
     if(side == _RIGHT || side == _LEFT)
     {
-        len1            = abs(limSource.split(",").at(0).toInt(0) - limInf);
-        len2            = abs(limSource.split(",").at(0).toInt(0) - limSup);        
+        len1            = fabs((float)limSource.split(",").at(0).toInt(0) - limInf);
+        len2            = fabs((float)limSource.split(",").at(0).toInt(0) - limSup);
         limInfLine      = new customLine(QPoint(limInf,0),QPoint(limInf,globalGvValCal->scene()->height()),QPen(Qt::blue));
         limSupLine      = new customLine(QPoint(limSup,0),QPoint(limSup,globalGvValCal->scene()->height()),QPen(Qt::red));
         wavelenghtInf   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len1);
@@ -447,10 +447,10 @@ void selWathToCheck::drawLimit(int side){
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
         limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
-    if(side == _UP || side == _DOWN)
+    if(side == _ABOVE || side == _DOWN)
     {
-        len1            = abs(limSource.split(",").at(1).toInt(0) - limInf);
-        len2            = abs(limSource.split(",").at(1).toInt(0) - limSup);
+        len1            = fabs((float)limSource.split(",").at(1).toInt(0) - limInf);
+        len2            = fabs((float)limSource.split(",").at(1).toInt(0) - limSup);
         limInfLine      = new customLine(QPoint(0,limInf),QPoint(globalGvValCal->scene()->width(),limInf),QPen(Qt::blue));
         limSupLine      = new customLine(QPoint(0,limSup),QPoint(globalGvValCal->scene()->width(),limSup),QPen(Qt::red));
         wavelenghtInf   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len1);

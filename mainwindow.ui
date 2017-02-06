@@ -68,7 +68,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QWidget" name="layoutWidget1">
        <property name="geometry">
         <rect>
          <x>20</x>
@@ -145,7 +145,7 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <widget class="QWidget" name="layoutWidget">
+      <widget class="QWidget" name="layoutWidget2">
        <property name="geometry">
         <rect>
          <x>9</x>
@@ -423,7 +423,7 @@
        <string>./snapshots/</string>
       </property>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget3">
       <property name="geometry">
        <rect>
         <x>21</x>
@@ -739,6 +739,45 @@
         <normaloff>:/new/icons/imagenInte/anterior.png</normaloff>:/new/icons/imagenInte/anterior.png</iconset>
       </property>
      </widget>
+     <widget class="QGroupBox" name="groupResolution">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>100</y>
+        <width>131</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Camera Resolution</string>
+      </property>
+      <widget class="QRadioButton" name="radioRes5Mp">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>29</y>
+         <width>51</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>5Mp</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="radioRes8Mp">
+       <property name="geometry">
+        <rect>
+         <x>70</x>
+         <y>29</y>
+         <width>51</width>
+         <height>26</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>8Mp</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_6">
      <attribute name="title">
@@ -749,7 +788,7 @@
      <attribute name="title">
       <string>Spectrometer</string>
      </attribute>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget4">
       <property name="geometry">
        <rect>
         <x>2</x>
@@ -848,7 +887,7 @@ QSlider::handle:horizontal {
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
+     <widget class="QWidget" name="layoutWidget5">
       <property name="geometry">
        <rect>
         <x>100</x>
@@ -997,7 +1036,7 @@ QSlider::handle:horizontal {
      <x>0</x>
      <y>0</y>
      <width>964</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

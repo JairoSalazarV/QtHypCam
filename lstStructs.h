@@ -12,15 +12,15 @@
 
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN 1024;
-    #define _BIG_WIDTH 2592 //2592 | 640 | 320
-    #define _BIG_HEIGHT 1944 //1944 | 480 | 240
+    //#define _BIG_WIDTH 2592 //2592 | 640 | 320
+    //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
     #define _FRAME_THUMB_W 500
     #define _FRAME_THUMB_H 375
     #define _GRAPH_HEIGHT 440
     #define _GRAPH_CALIB_HEIGHT 590    
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _AUTOCONNECT true
+    #define _AUTOCONNECT false
     #define PI 3.14159265
 
     #define _RED_WAVELENGHT 618
@@ -81,7 +81,7 @@
     #define _EXTENTION                      ".hypcam"
 
     #define _RIGHT  1
-    #define _UP     2
+    #define _ABOVE  2
     #define _LEFT   3
     #define _DOWN   4
 
@@ -115,6 +115,11 @@
         int y;
         int l;
     }voxel;
+
+    typedef struct cameraResolution{
+        int width;
+        int height;
+    }cameraResolution;
 
     typedef struct strDiffProj{
         int x;
@@ -347,6 +352,7 @@
         u_int8_t      TriggerTime;            // Seconds before to take a photo
         u_int8_t      Denoise;                // 0v1: Denoise efx
         u_int8_t      ColorBalance;           // 0v1: ColorBalance efx
+        u_int8_t      CameraMp;               // 5: 5Mp | 8:8Mp
     }structRaspcamSettings;
 
     typedef struct squareAperture{
@@ -402,6 +408,11 @@
     }CIELab;
 
     const unsigned int streamLen = sizeof(frameStruct);
+
+
+
+
+
 
 
 

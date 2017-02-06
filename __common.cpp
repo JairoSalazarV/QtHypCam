@@ -468,6 +468,7 @@ colorAnalyseResult *funcAnalizeImage( QImage *img ){
     */
 }
 
+/*
 IplImage *funcGetImgFromCam( int usb, int stabMs ){
     //Turn on camera
     //..
@@ -492,7 +493,10 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
-            cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
+
+            //cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
+            cv::imwrite( tmpName.toStdString(), cv::cvarrToMat(imgRot) );
+
             cvReleaseCapture(&usbCam);
             return imgRot;
         }else{
@@ -505,6 +509,7 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
     cvReleaseCapture(&usbCam);
     return tmpCam;
 }
+*/
 
 bool saveFile( QString fileName, QString contain ){
     QFile file(fileName);
@@ -691,6 +696,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->OneShot = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="TriggerTime" )
                 raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="CameraMp" )
+                raspcamSettings->CameraMp = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {

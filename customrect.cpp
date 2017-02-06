@@ -119,6 +119,10 @@ void customRect::refreshTooltip(){
 }
 
 void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
+
+    //cameraResolution tmpCamRes;
+
+
     //Remark line
     event->accept();
     QPen backPen = this->pen();
@@ -204,12 +208,12 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
         }
 
         if(a->text()=="Auto-width"){
-            int tmpH = round( (float)this->rect().width() * ((float)_BIG_HEIGHT/(float)_BIG_WIDTH) );
+            int tmpH = round( (float)this->rect().width() * ((float)camRes->height/(float)camRes->width) );
             this->setRect(this->rect().x(),this->rect().y(),this->rect().width(),tmpH);
         }
 
         if(a->text()=="Auto-height"){
-            int tmpW = round( (float)this->rect().height() * ((float)_BIG_WIDTH/(float)_BIG_HEIGHT) );
+            int tmpW = round( (float)this->rect().height() * ((float)camRes->width/(float)camRes->height) );
             this->setRect(this->rect().x(),this->rect().y(),tmpW,this->rect().height());
         }
 

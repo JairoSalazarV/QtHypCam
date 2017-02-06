@@ -66,6 +66,8 @@ RESOURCES += \
 
 
 INCLUDEPATH += /usr/local/include/opencv
+INCLUDEPATH += /usr/local/include/opencv2
+
 #LIBS += -L/usr/local/lib
 LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
 
