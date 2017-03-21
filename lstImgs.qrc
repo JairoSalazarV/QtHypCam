@@ -239,6 +239,7 @@
         <file>imagenInte/squareBig.png</file>
         <file>imagenInte/hypChose.png</file>
         <file>imagenInte/fitt.png</file>
+        <file>imagenInte/slide.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>
@@ -254,5 +255,6 @@
         <file>imagenInte/MouseSelOn.png</file>
         <file>imagenInte/MouseSelOff.png</file>
         <file>imagenInte/toolSelect.png</file>
+        <file>imagenInte/slide.png</file>
     </qresource>
 </RCC>

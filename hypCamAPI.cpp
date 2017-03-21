@@ -8,6 +8,57 @@
 #include <math.h>
 
 #include <QDebug>
+#include <qrgb.h>
+
+u_int8_t funcSaveGrayImage( QString fileName, uchar** color, int numRows, int numCols )
+{    
+    //Validate fileName
+    if( fileName.isEmpty() )
+    {
+        qDebug() << "grayImg fileName empty";
+        return 0;
+    }
+
+    //Copy data into QImage
+    QImage tmpImg(numCols, numRows, QImage::Format_RGB32);
+    for (int i=0; i<numRows; i++)
+    {
+        for (int j=0; j<numCols; j++)
+        {
+            tmpImg.setPixel(j, i, qRgb(color[i][j],color[i][j],color[i][j]));
+        }
+    }
+
+    //Save image
+    tmpImg.save(fileName);
+
+    //Return if success
+    return 1;
+
+}
+
+void funcRGBImageToArray( uchar** r, uchar** g, uchar** b, QImage* img )
+{
+    //
+    //Copy data into array
+    //
+    QRgb tmpPix;
+    for(int row=0; row<img->height(); row++)
+    {
+        for(int col=0; col<img->width(); col++)
+        {
+            tmpPix  = img->pixel(col,row);
+            r[row][col] = qRed( tmpPix );
+            g[row][col] = qGreen( tmpPix );
+            b[row][col] = qBlue( tmpPix );
+        }
+    }
+}
+
+
+
+
+
 
 void funcValCam( std::string IP, int portno, camSettings *tmpCamSett ){
     int sockfd, n, tmpFrameLen;

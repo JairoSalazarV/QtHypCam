@@ -41,6 +41,8 @@
 //#include <opencv2/imgproc/imgproc.hpp>
 //#include <opencv2/highgui/highgui.hpp>
 
+#include <hypCamAPI.h>
+
 
 
 //Custom
@@ -57,6 +59,10 @@
 #include <chosewavetoextract.h>
 #include <QRgb>
 
+#include <slidehypcam.h>
+
+#include <QtSerialPort/QSerialPort>
+#include <slidehypcam.h>
 
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
@@ -236,6 +242,8 @@ MainWindow::MainWindow(QWidget *parent) :
     disableAllToolBars();
 
     loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
+
+
 
 }
 
@@ -1081,14 +1089,15 @@ void MainWindow::on_pbConnect_clicked()
         qDebug() << "CurrentRow: " << QString::number(rowSelected);
         if(rowSelected >= 0){
             if( camSelected->isConnected ){
-                qDebug() << "Disconnect";
+                qDebug() << "Disconnecting";
                 camSelected->isConnected = false;
                 camSelected->tcpPort = 0;
                 memset(camSelected->IP,'\0',sizeof(camSelected->IP));
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/right.gif") );
                 ui->pbSnapshot->setEnabled(false);
+                ui->pbGetSlideCube->setEnabled(false);
             }else{
-                qDebug() << "Connect: ";
+                qDebug() << "Connecting: ";
                 camSelected->isConnected = true;
                 camSelected->tcpPort = lstSettings->tcpPort;
                 memcpy(
@@ -1098,6 +1107,7 @@ void MainWindow::on_pbConnect_clicked()
                       );                
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/close.png") );
                 ui->pbSnapshot->setEnabled(true);
+                ui->pbGetSlideCube->setEnabled(true);
                 qDebug() << "IP->: " << QString((char*)camSelected->IP);
                 //Save last IP
                 saveFile( "./settings/lastIp.hypcam", QString((char*)camSelected->IP) );
@@ -1166,13 +1176,13 @@ void MainWindow::on_pbStartVideo_clicked()
 }
 
 
-unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
+//unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
+bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 
     //Open socket
     int sockfd = connectSocket( camSelected );
     unsigned char bufferRead[frameBodyLen];
     qDebug() << "Socket opened";
-
     //Require photo size
     //QtDelay(5);
     ::write(sockfd,reqImg,sizeof(strReqImg));
@@ -1184,6 +1194,7 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
         qDebug() << "Camera OK";
     }else{//Do nothing becouse camera is not accessible
         qDebug() << "ERROR turning on the camera";
+        return false;
     }
 
     //Receive photo's size
@@ -1214,7 +1225,8 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 
     //Close socket and return
     ::close(sockfd);
-    return tmpFile;
+    //return tmpFile;
+    return true;
 }
 
 structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSettings raspSett ){
@@ -1233,18 +1245,18 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
                 ui->cbExposure->currentText().toStdString().c_str(),
                 sizeof(raspSett.Exposure)
           );
-    //raspSett.ExposureCompensation  = ui->slideExpComp->value();
-    //raspSett.Format                = ( ui->rbFormat1->isChecked() )?1:2;
-    //raspSett.Green                 = ui->slideGreen->value();
-    raspSett.ISO                   = ui->slideISO->value();
-    //raspSett.Red                   = ui->slideRed->value();
-    //raspSett.Saturation            = ui->slideSaturation->value();
-    //raspSett.Sharpness             = ui->slideSharpness->value();
-    raspSett.SquareShutterSpeed    = ui->slideSquareShuterSpeed->value() + ui->slideSquareShuterSpeedSmall->value();
-    raspSett.ShutterSpeed          = ui->slideShuterSpeed->value() + ui->slideShuterSpeedSmall->value();
-    raspSett.Denoise = (ui->cbDenoise->isChecked())?1:0;
-    raspSett.ColorBalance = (ui->cbColorBalance->isChecked())?1:0;
-    raspSett.TriggerTime = ui->slideTriggerTime->value();
+    //raspSett.ExposureCompensation     = ui->slideExpComp->value();
+    //raspSett.Format                   = ( ui->rbFormat1->isChecked() )?1:2;
+    //raspSett.Green                    = ui->slideGreen->value();
+    raspSett.ISO                        = ui->slideISO->value();
+    //raspSett.Red                      = ui->slideRed->value();
+    //raspSett.Saturation               = ui->slideSaturation->value();
+    //raspSett.Sharpness                = ui->slideSharpness->value();
+    raspSett.SquareShutterSpeed         = ui->slideSquareShuterSpeed->value() + ui->slideSquareShuterSpeedSmall->value();
+    raspSett.ShutterSpeed               = ui->slideShuterSpeed->value() + ui->slideShuterSpeedSmall->value();
+    raspSett.Denoise                    = (ui->cbDenoise->isChecked())?1:0;
+    raspSett.ColorBalance               = (ui->cbColorBalance->isChecked())?1:0;
+    raspSett.TriggerTime                = ui->slideTriggerTime->value();
 
     return raspSett;
 }
@@ -1702,26 +1714,32 @@ void MainWindow::funcGetSnapshot()
     //Set required image's settings
     //..
     strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
     reqImg->idMsg           = (unsigned char)7;
     reqImg->raspSett        = funcFillSnapshotSettings( reqImg->raspSett );
 
     //Define photo's region
     //..
-    if( ui->cbFullPhoto->isChecked() ){
+    if( ui->cbFullPhoto->isChecked() )
+    {
         reqImg->needCut     = false;
+        reqImg->fullFrame   = true;
         reqImg->imgCols     = camRes->width;//2592 | 640
         reqImg->imgRows     = camRes->height;//1944 | 480
         //It saves image into HDD: _PATH_IMAGE_RECEIVED
-        funcGetRemoteImg( reqImg, true );
-        QImage imgAperture( _PATH_IMAGE_RECEIVED );
-        imgAperture.save( _PATH_DISPLAY_IMAGE );
-
+        if( funcGetRemoteImg( reqImg, true ) )
+        {
+            QImage imgAperture( _PATH_IMAGE_RECEIVED );
+            imgAperture.save( _PATH_DISPLAY_IMAGE );
+        }
+        else funcShowMsg("ERROR","Camera respond with error");
     }else{
         //Requesting image by parts
         //..
         //Diffraction
-        reqImg->needCut  = true;
-        reqImg->squApert = true;
+        reqImg->needCut     = true;
+        reqImg->squApert    = true;
+        reqImg->fullFrame   = false;
         reqImg->raspSett.SquareShutterSpeed      = ui->slideShuterSpeed->value();
         reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
         reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)camRes->width );
@@ -3235,7 +3253,7 @@ void MainWindow::on_actionLoadCanvas_triggered()
                                                         this,
                                                         tr("Select image..."),
                                                         "./snapshots/Calib/",
-                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg);;"
+                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg, *.bmp);;"
                                                      );
     if( auxQstring.isEmpty() ){
         return (void)NULL;
@@ -3545,6 +3563,207 @@ void MainWindow::on_pbLANTestConn_clicked()
 void MainWindow::on_actionGenHypercube_triggered()
 {
 
+    /*
+    //
+    //Reserve memory
+    //
+    QImage tmpImg(_PATH_DISPLAY_IMAGE);
+    //QImage tmpImg("/home/jairo/Descargas/sangre.png");
+
+    uchar** red;
+    uchar** green;
+    uchar** blue;
+    uchar** D;
+    uchar** T;
+    red     = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    green   = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    blue    = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    D       = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    T       = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    for(int i=0; i<tmpImg.height(); i++)
+    {
+        red[i]      = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        green[i]    = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        blue[i]     = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        D[i]        = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        T[i]        = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+    }
+
+    //Extratcs colors from RGB
+    funcRGBImageToArray( red, green, blue, &tmpImg );
+
+    //
+    //Save gray image
+    //
+    QString fileFolder;
+    fileFolder  = QFileDialog::getExistingDirectory(
+                                                        this,
+                                                        tr("Open Directory"),
+                                                        "/home/jairo/Documentos/BORRAR/",
+                                                        QFileDialog::ShowDirsOnly
+                                                        | QFileDialog::DontResolveSymlinks
+                                                    );
+    if( fileFolder.isEmpty() )
+    {
+        return (void)NULL;
+    }
+    else
+    {
+
+        //mouseCursorWait();
+        //funcSaveGrayImage( fileFolder+"/red.png", red, tmpImg.height(), tmpImg.width() );
+        //funcSaveGrayImage( fileFolder+"/green.png", green, tmpImg.height(), tmpImg.width() );
+        //funcSaveGrayImage( fileFolder+"/blue.png", blue, tmpImg.height(), tmpImg.width() );
+        //mouseCursorReset();
+    }
+
+
+    //
+    //Copy data
+    //
+    for(int row=0; row<tmpImg.height(); row++)
+    {
+        for(int col=0; col<tmpImg.width(); col++)
+        {
+            T[row][col] = red[row][col];
+        }
+    }
+
+    funcSaveGrayImage( fileFolder+"/T.png", T, tmpImg.height(), tmpImg.width() );
+
+
+
+    //
+    //Calculate map
+    //
+    int top = 200;
+    int bottom = 80;
+    int k = 0;
+    for(int row=1; row<tmpImg.height()-1; row++)
+    {
+        for(int col=1; col<tmpImg.width()-1; col++)
+        {
+            D[row][col] = 0;
+            if( T[row][col] <= bottom || T[row][col] >= top )
+            {
+                D[row][col] = 1;
+                k++;
+            }
+        }
+    }
+
+
+    //
+    // Iterate
+    //
+    QList<uchar> R;
+    int pos;
+    int l;
+    int iter = 0;
+    int lastK = 0;
+    while( k>0 && lastK != k)
+    {
+        lastK = k;
+        l=0;
+        qDebug() << "iter: " << iter << "k: " << k;
+        for(int row=1; row<tmpImg.height()-1; row++)
+        {
+            for(int col=1; col<tmpImg.width()-1; col++)
+            {
+                if( D[row][col] == 1 )
+                {
+                    R.clear();
+
+                    if( D[row][col-1] == 0 )R.append(T[row][col-1]);
+                    if( D[row][col+1] == 0 )R.append(T[row][col+1]);
+
+                    if( D[row-1][col-1] == 0 )R.append(T[row-1][col-1]);
+                    if( D[row-1][col]   == 0 )R.append(T[row-1][col]);
+                    if( D[row-1][col+1] == 0 )R.append(T[row-1][col+1]);
+
+                    if( D[row+1][col-1] == 0 )R.append(T[row+1][col-1]);
+                    if( D[row+1][col]   == 0 )R.append(T[row+1][col]);
+                    if( D[row+1][col+1] == 0 )R.append(T[row+1][col+1]);
+
+                    if( R.size() > 0 )
+                    {
+
+                        qSort(R);
+                        pos = floor( R.size()/2 );
+                        //qDebug() << "pos: " << pos << "R.at(pos): " << R.at(pos) << "T[row][col]: " << T[row][col];
+                        T[row][col] = R.at(pos);
+                        //D[row][col] = 0;
+                        //k--;
+                        //exit(0);
+                    }
+                    else
+                    {
+                        //qDebug() << "row: " << row << "col: " << col << "R.size(): " << R.size() << "T[row][col]: " << T[row][col];
+                        //exit(0);
+                    }
+
+                }
+                else
+                {
+                    l++;
+                }
+            }
+        }
+
+        //
+        //Recalculate map
+        //
+        k = 0;
+        for(int row=1; row<tmpImg.height()-1; row++)
+        {
+            for(int col=1; col<tmpImg.width()-1; col++)
+            {
+                D[row][col] = 0;
+                if( T[row][col] <= bottom || T[row][col] >= top )
+                {
+                    D[row][col] = 1;
+                    k++;
+                }
+            }
+        }
+
+        //qDebug() << "N: " << (tmpImg.height()-2)*(tmpImg.width()-2) << "l: " << l << "k: " << k << "l+k: " << (l+k);
+        iter++;
+
+    }
+
+    //qDebug() << "Finished";
+
+
+
+    mouseCursorWait();
+    funcSaveGrayImage( fileFolder+"/denoised.png", T, tmpImg.height(), tmpImg.width() );
+    mouseCursorReset();
+
+
+
+
+
+
+
+
+
+    //
+    //Free memory
+    //
+    for(int i=0; i<tmpImg.height(); i++)
+    {
+        free( red[i] );
+        free( green[i] );
+        free( blue[i] );
+    }
+    free( red );
+    free( green );
+    free( blue );
+    */
+
+
+
     QString fileName;
     fileName = QFileDialog::getSaveFileName(
                                                 this,
@@ -3573,6 +3792,7 @@ void MainWindow::on_actionGenHypercube_triggered()
         funcShowMsg(" ", "Hypercube exported successfully\n\n"+time);
     }
     //exit(2);
+
 
 }
 
@@ -3612,9 +3832,16 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
         }
         else
         {
-            fRed    = demosaiseF3D(fRed,hypL,hypH,hypW);
-            fGreen  = demosaiseF3D(fGreen,hypL,hypH,hypW);
-            fBlue   = demosaiseF3D(fBlue,hypL,hypH,hypW);
+            if( SQUARE_BICUBIC_ITERATIONS > 0 )
+            {
+                //Da otra pasada
+                for( i=0; i<SQUARE_BICUBIC_ITERATIONS; i++ )
+                {
+                    fRed    = demosaiseF3D(fRed,hypL,hypH,hypW);
+                    fGreen  = demosaiseF3D(fGreen,hypL,hypH,hypW);
+                    fBlue   = demosaiseF3D(fBlue,hypL,hypH,hypW);
+                }
+            }
         }
     }
 
@@ -3889,8 +4116,9 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
         {
             for(tmpNode.w=0;tmpNode.w<W;tmpNode.w++)
             {
+                //qDebug() << "i: " << i << "l: " << tmpNode.l << "w: " << tmpNode.w << "h: " << tmpNode.h << "W: " << tmpNode.W << "H: " << tmpNode.H;
                 f[i] = calcTrilinearInterpolation(aux, &tmpNode);
-                i++;
+                i++;                
             }
         }
     }
@@ -3916,6 +4144,93 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
 double MainWindow::calcTrilinearInterpolation(double ***cube, trilinear *node)
 {
 
+    double result = cube[node->l][node->h][node->w];
+    if(
+            node->l>0 && node->l<node->L-1 &&
+            node->w>0 && node->w<node->W-1 &&
+            node->h>0 && node->h<node->H-1
+    )
+    {
+        result = (
+                    cube[node->l-1][node->h-1][node->w-1]   +
+                    cube[node->l-1][node->h-1][node->w]     +
+                    cube[node->l-1][node->h-1][node->w+1]   +
+                    cube[node->l-1][node->h][node->w-1]     +
+                    cube[node->l-1][node->h][node->w]       +
+                    cube[node->l-1][node->h][node->w+1]     +
+                    cube[node->l-1][node->h+1][node->w-1]   +
+                    cube[node->l-1][node->h+1][node->w]     +
+                    cube[node->l-1][node->h+1][node->w+1]   +
+
+                    cube[node->l][node->h-1][node->w-1]     +
+                    cube[node->l][node->h-1][node->w]       +
+                    cube[node->l][node->h-1][node->w+1]     +
+                    cube[node->l][node->h][node->w-1]       +
+                    cube[node->l][node->h][node->w]         +
+                    cube[node->l][node->h][node->w+1]       +
+                    cube[node->l][node->h+1][node->w-1]     +
+                    cube[node->l][node->h+1][node->w]       +
+                    cube[node->l][node->h+1][node->w+1]     +
+
+                    cube[node->l+1][node->h-1][node->w-1]   +
+                    cube[node->l+1][node->h-1][node->w]     +
+                    cube[node->l+1][node->h-1][node->w+1]   +
+                    cube[node->l+1][node->h][node->w-1]     +
+                    cube[node->l+1][node->h][node->w]       +
+                    cube[node->l+1][node->h][node->w+1]     +
+                    cube[node->l+1][node->h+1][node->w-1]   +
+                    cube[node->l+1][node->h+1][node->w]     +
+                    cube[node->l+1][node->h+1][node->w+1]
+
+                 ) / 27.0;
+    }
+    else
+    {
+        if(
+            (node->l==0 || node->w==0 || node->h==0) &&
+            ( node->l<node->L-1 && node->w<node->W-1 && node->h<node->H-1 )
+        )
+        {
+            result = (
+                        cube[node->l][node->h][node->w]         +
+                        cube[node->l][node->h][node->w+1]       +
+                        cube[node->l][node->h+1][node->w]       +
+                        cube[node->l][node->h+1][node->w+1]     +
+
+                        cube[node->l+1][node->h][node->w]       +
+                        cube[node->l+1][node->h][node->w+1]     +
+                        cube[node->l+1][node->h+1][node->w]     +
+                        cube[node->l+1][node->h+1][node->w+1]
+
+                     ) / 8.0;
+        }
+        else
+        {
+            if(
+                    (node->l==node->L-1 || node->w==node->W-1 || node->h==node->H-1 ) &&
+                    (node->l>0 && node->w>0 && node->h>0)
+            )
+            {
+                result = (
+                            cube[node->l][node->h][node->w]         +
+                            cube[node->l][node->h][node->w-1]       +
+                            cube[node->l][node->h-1][node->w]       +
+                            cube[node->l][node->h-1][node->w-1]     +
+
+                            cube[node->l-1][node->h][node->w]       +
+                            cube[node->l-1][node->h][node->w-1]     +
+                            cube[node->l-1][node->h-1][node->w]     +
+                            cube[node->l-1][node->h-1][node->w-1]
+
+                         ) / 8.0;
+            }
+        }
+
+    }
+
+
+
+    /*
     double result;
     if(node->l>0 && node->l<node->L-1)
     {
@@ -3942,6 +4257,7 @@ double MainWindow::calcTrilinearInterpolation(double ***cube, trilinear *node)
                      ) / 2.0;
         }
     }
+    */
 
     /*
     if(
@@ -4444,7 +4760,21 @@ void MainWindow::extractsHyperCube(QString originFileName)
 
         //qDebug() << "tmpMax: " << tmpMax;
 
-        tmpFileName = _PATH_TMP_HYPCUBES + QString::number(waves.at(l)) + ".png";
+        if( SQUARE_BICUBIC_ITERATIONS > 1 )
+        {
+            tmpFileName =   _PATH_TMP_HYPCUBES +
+                            QString::number(waves.at(l)) +
+                            "."+
+                            QString::number(SQUARE_BICUBIC_ITERATIONS) +
+                            "Pasadas" +
+                            ".png";
+        }
+        else
+        {
+            tmpFileName = _PATH_TMP_HYPCUBES +
+                          QString::number(waves.at(l)) +
+                          ".png";
+        }
         tmpImg.save(tmpFileName);
         tmpImg.fill(Qt::black);
         //hypercube.append(tmpImg);
@@ -4536,3 +4866,136 @@ cameraResolution* MainWindow::getCamRes()
     return camRes;
 
 }
+
+void MainWindow::on_actionslideHypCam_triggered()
+{
+    slideHypCam* frmSlide = new slideHypCam(this);
+    frmSlide->setWindowModality(Qt::ApplicationModal);
+    frmSlide->setWindowTitle("Slide HypCam");
+    frmSlide->showMaximized();
+    frmSlide->show();
+}
+
+void MainWindow::on_pbGetSlideCube_clicked()
+{
+    ui->pbStartVideo->setEnabled(false);
+
+
+    mouseCursorWait();
+
+    camRes = getCamRes();
+    funcGetSLIDESnapshot();
+
+    mouseCursorReset();
+
+    ui->pbStartVideo->setEnabled(true);
+}
+
+
+bool MainWindow::funcGetSLIDESnapshot()
+{
+    int n;
+
+    //
+    //Getting calibration
+    //..
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //
+    //Save path
+    //..
+    saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
+
+    //
+    //Set required image's settings
+    //..
+    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    reqImg->idMsg           = (unsigned char)9;
+    reqImg->raspSett        = funcFillSnapshotSettings( reqImg->raspSett );
+
+    //
+    //Define slide' region
+    //..
+    reqImg->needCut         = false;
+    reqImg->fullFrame       = false;
+    reqImg->isSlide         = true;
+    reqImg->imgCols         = camRes->width;//2592 | 640
+    reqImg->imgRows         = camRes->height;//1944 | 480
+    reqImg->slide           = funcFillSLIDESettings(reqImg->slide);
+
+    //
+    //Send Slide-cube Request-parameters and recibe ACK if all parameters
+    //has been received are correct
+
+    //Open socket
+    int sockfd = connectSocket( camSelected );
+    unsigned char bufferRead[frameBodyLen];
+    qDebug() << "Socket opened";
+
+    //Require Slide-cube size..
+    ::write(sockfd,reqImg,sizeof(strReqImg));
+    qDebug() << "Slide-cube requested";
+
+    //Receive ACK with the camera status
+    read(sockfd,bufferRead,frameBodyLen);
+    if( bufferRead[1] == 1 ){//Begin the image adquisition routine
+        qDebug() << "Slide: Parameters received correctly";
+    }else{//Do nothing becouse camera is not accessible
+        qDebug() << "Slide: Parameter received with ERROR";
+        return false;
+    }
+
+    //
+    //Send request to start time lapse and wait for ACK if time lapse
+    //was saved correctly
+    //
+    n = ::write(sockfd,"beginTimelapse",14);
+    if( n != 14 )
+        qDebug() << "ERROR starting timelapse";
+    else
+        qDebug() << "Timelapse started";
+
+    //Receive ACK with the time lapse status
+    read(sockfd,bufferRead,frameBodyLen);
+    if( bufferRead[1] == 1 ){//Begin the image adquisition routine
+        qDebug() << "Time lapse: started successfully";
+    }else{//Do nothing becouse camera is not accessible
+        qDebug() << "Time lapse: ERROR starting";
+        return false;
+    }
+
+
+    //
+    //Request to compute slide-diffractio (it is received each image in the cube)
+    //
+
+
+    //
+    // Clear all, close all, and return
+    //
+    ::close(sockfd);
+
+    return true;
+}
+
+strSlideSettings MainWindow::funcFillSLIDESettings(strSlideSettings slideSetting)
+{
+
+    slideSetting.x1         = 500;
+    slideSetting.y1         = 500;
+    slideSetting.rows1      = 200;
+    slideSetting.cols1      = 10;
+
+    slideSetting.x2         = 800;
+    slideSetting.y2         = 500;
+    slideSetting.rows2      = 200;
+    slideSetting.cols2      = 600;
+
+    slideSetting.speed      = 800;
+    slideSetting.duration   = 3000;//8000
+
+    return slideSetting;
+}
+

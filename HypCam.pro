@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,7 +30,8 @@ SOURCES += main.cpp\
     customQMatrix3x3.cpp \
     customQMatrix4x4.cpp \
     selwathtocheck.cpp \
-    chosewavetoextract.cpp
+    chosewavetoextract.cpp \
+    slidehypcam.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -48,17 +50,18 @@ HEADERS  += mainwindow.h \
     customQMatrix3x3.h \
     customQMatrix4x4.h \
     selwathtocheck.h \
-    chosewavetoextract.h
+    chosewavetoextract.h \
+    slidehypcam.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
-    showancalchrres.ui \
     gencalibxml.ui \
     rotationfrm.ui \
     recparamfrm.ui \
     generatehypercube.ui \
     selwathtocheck.ui \
-    chosewavetoextract.ui
+    chosewavetoextract.ui \
+    slidehypcam.ui
 
 RESOURCES += \
     lstImgs.qrc

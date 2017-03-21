@@ -413,7 +413,7 @@
      <widget class="QLineEdit" name="txtSnapPath">
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>150</x>
         <y>10</y>
         <width>113</width>
         <height>33</height>
@@ -778,6 +778,29 @@
        </property>
       </widget>
      </widget>
+     <widget class="QPushButton" name="pbGetSlideCube">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take slide cube&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/slide.png</normaloff>:/new/icons/imagenInte/slide.png</iconset>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_6">
      <attribute name="title">
@@ -1111,6 +1134,7 @@ QSlider::handle:horizontal {
    <addaction name="actionShow_hypercube"/>
    <addaction name="actionChoseWavelength"/>
    <addaction name="actionGenHypercube"/>
+   <addaction name="actionslideHypCam"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -1408,6 +1432,18 @@ QSlider::handle:horizontal {
   <action name="actionBilinear_interpolation">
    <property name="text">
     <string>Bilinear interpolation</string>
+   </property>
+  </action>
+  <action name="actionslideHypCam">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/calBottom.png</normaloff>:/new/icons/imagenInte/calBottom.png</iconset>
+   </property>
+   <property name="text">
+    <string>slideHypCam</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Slide HypCam</string>
    </property>
   </action>
  </widget>

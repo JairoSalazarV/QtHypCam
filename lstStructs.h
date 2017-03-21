@@ -93,6 +93,8 @@
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"
 
+    #define SQUARE_BICUBIC_ITERATIONS       1        //Apply Bicubic k times
+
 
 
     typedef struct trilinear{
@@ -364,6 +366,20 @@
         int rectH;//Len
     }squareAperture;
 
+    typedef struct strSlideSettings
+    {
+        int x1;         //Slide
+        int y1;         //Slide
+        int rows1;      //Slide
+        int cols1;      //Slide
+        int x2;         //Difraction
+        int y2;         //Difraction
+        int rows2;      //Difraction
+        int cols2;      //Difraction
+        int speed;      //time lapse in ms, recomended at least 800
+        int duration;   //time in ms of the total time snapshing
+    }strSlideSettings;
+
     typedef struct strReqImg{
         unsigned char idMsg;
         unsigned char stabSec;
@@ -371,9 +387,12 @@
         int imgRows;
         bool needCut;
         bool squApert;
+        bool fullFrame;
+        bool isSlide;
         structRaspcamSettings raspSett;
         squareAperture sqApSett;
         squareAperture diffArea;
+        strSlideSettings slide;
     }strReqImg;
 
     typedef struct structSettings{

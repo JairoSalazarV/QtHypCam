@@ -6,6 +6,14 @@
 #include <QGraphicsView>
 #include "graphicsview.h"
 
+#include <QtSerialPort/QSerialPort>
+#include <QtCore/QtGlobal>
+
+//QT_BEGIN_NAMESPACE
+
+class QLabel;
+class SettingsDialog;
+
 
 namespace Ui {
 class MainWindow;
@@ -66,7 +74,7 @@ private slots:
 
     void on_pbStartVideo_clicked();
 
-    unsigned char *funcGetRemoteImg(strReqImg *reqImg , bool saveImg=false);
+    bool funcGetRemoteImg(strReqImg *reqImg , bool saveImg=false);
 
     unsigned char *funcObtVideo(unsigned char saveLocally);
 
@@ -387,8 +395,20 @@ private slots:
 
     cameraResolution* getCamRes();
 
+    void on_actionslideHypCam_triggered();
+
+    void on_pbGetSlideCube_clicked();
+
+    bool funcGetSLIDESnapshot();
+
+    strSlideSettings funcFillSLIDESettings(strSlideSettings slideSetting);
+
 private:
     Ui::MainWindow *ui;
+    //QLabel *status;
+    //Console *console;
+    //SettingsDialog *settings;
+    //QSerialPort *serial;
 };
 
 
