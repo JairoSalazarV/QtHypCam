@@ -25,16 +25,44 @@
 
 #include <QFormLayout>
 
+#include <selwathtocheck.h>
+
 //OpenCV
-#include <highgui.h>
+//#include <highgui.h>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/videoio.hpp>
+
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/core/core.hpp>
+
+
+//#include <opencv2/core/core.hpp>
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/highgui/highgui.hpp>
+
+#include <hypCamAPI.h>
+
+
 
 //Custom
 #include <customline.h>
 #include <customrect.h>
 #include <selcolor.h>
 #include <gencalibxml.h>
+#include <rotationfrm.h>
+#include <recparamfrm.h>
+//#include <generatehypercube.h>
+//#include <validatecalibration.h>
+#include <selwathtocheck.h>
 
+#include <chosewavetoextract.h>
+#include <QRgb>
+
+#include <slidehypcam.h>
+
+#include <QtSerialPort/QSerialPort>
+#include <slidehypcam.h>
 
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
@@ -46,23 +74,22 @@ structRaspcamSettings *raspcamSettings = (structRaspcamSettings*)malloc(sizeof(s
 GraphicsView *myCanvas;
 GraphicsView *canvasSpec;
 GraphicsView *canvasCalib;
+GraphicsView *canvasAux;
 
-QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/200Id/CROPED/100.tif";
+customLine *globalCanvHLine;
+customLine *globalCanvVLine;
+//customLine *globalTmpLine;
+
+//QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/200Id/CROPED/100.tif";
 //QString impPath = "./imgResources/CIE.png";
 
 QList<QPair<int,int>> *lstBorder;
 QList<QPair<int,int>> *lstSelPix;
+QList<QPair<int,int>> *lstPixSelAux;
 
 //int tmpRect[4];
 calcAndCropSnap calStruct;
 bool globaIsRotated;
-
-
-
-
-
-
-
 
 
 
@@ -83,19 +110,39 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    //ui->actionValidCal->trigger();
+
     funcObtSettings( lstSettings );
 
+    /*
+    int algo = 4;
+    int *p;
+    p = &algo;
+    qDebug() << "bool: " << sizeof(bool);
+    qDebug() << "char: " << sizeof(char);
+    qDebug() << "int8: " << sizeof(u_int8_t);
+    qDebug() << "int: " << sizeof(int);
+    qDebug() << "int*: " << sizeof(p);
+    printf("Puntero %p\n",p);
+    printf("Puntero %d\n",p);
+    printf("Puntero %d\n",*p);
+    */
+
+
+    /*
     //Fill IP prefix
+    //if(_PRELOAD_IP){
+        char cIP[15];
+        funcObtainIP( cIP );
+        QString qsIP(cIP);
+        QStringList lstIP = qsIP.split('.');
+        qsIP = lstIP.at(0) + "." +lstIP.at(1) + "."+lstIP.at(2) + ".";
+        ui->txtIp->setText(qsIP);
+    //}
+    */
 
-    char cIP[15];
-    funcObtainIP( cIP );
-    QString qsIP(cIP);
-    QStringList lstIP = qsIP.split('.');
-    qsIP = lstIP.at(0) + "." +lstIP.at(1) + "."+lstIP.at(2) + ".";
-    ui->txtIp->setText(qsIP);
 
-
-    //Initialize global settingsPlan de Guadalupe 3257, San Pedro Tlaquepaque, Jal.
+    //Initialize global settings
     camSelected->isConnected    = false;
     camSelected->On             = false;
     camSelected->stream         = false;
@@ -110,17 +157,14 @@ MainWindow::MainWindow(QWidget *parent) :
     myCanvas = new GraphicsView;
     canvasSpec = new GraphicsView;
     canvasCalib = new GraphicsView;
+    canvasAux = new GraphicsView;
     //QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/25Id/15.png";
-    funcPutImageIntoGV( myCanvas, imgPath );
+    //funcPutImageIntoGV( myCanvas, imgPath );
 
-
-
-    //Lst points width
-    ui->tableLstPoints->setColumnWidth(0,50);
-    ui->tableLstPoints->setColumnWidth(1,50);
-    ui->tableLstPoints->setMaximumWidth(137);
-    ui->tableLstPoints->setMaximumHeight(200);
-    ui->tableLstPoints->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    //Initialize points container for free-hand pen tool
+    lstBorder = new QList<QPair<int,int>>;
+    lstSelPix = new QList<QPair<int,int>>;
+    lstPixSelAux = new QList<QPair<int,int>>;
 
     /*
     //Connect to image
@@ -167,17 +211,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //Try to connect to the last IP
-    if( _PRELOAD_IP ){
-        QString lastIP = readAllFile( "./settings/lastIp.hypcam" );
-        lastIP.replace("\n","");
-        ui->txtIp->setText(lastIP);
+    QString lastIP = readAllFile( "./settings/lastIp.hypcam" );
+    lastIP.replace("\n","");
+    ui->txtIp->setText(lastIP);
+    if(_AUTOCONNECT){
         ui->pbAddIp->click();
         ui->tableLstCams->selectRow(0);
         ui->pbConnect->click();
     }
 
     //Fill the lastsnapshots path as default
-    QString lastSnapPath = readAllFile( "./settings/lastSnapPath.hypcam" );
+    QString lastSnapPath = readAllFile( _PATH_LAST_SNAPPATH );
     lastSnapPath.replace("\n","");
     ui->txtSnapPath->setText(lastSnapPath);
 
@@ -196,6 +240,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progBar->setVisible(false);
 
     disableAllToolBars();
+
+    loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
+
+
 
 }
 
@@ -219,25 +267,15 @@ void MainWindow::funcCalibMouseRelease( QMouseEvent *e){
 }
 
 void MainWindow::funcAddPoint( QMouseEvent *e ){
-    //Correct pointer
-    //x = x-3;
-    //y = y-4;
 
-    int idRow = ui->tableLstPoints->rowCount();
-    ui->tableLstPoints->insertRow( idRow );
-    ui->tableLstPoints->setItem(
-                                    idRow,
-                                    0,
-                                    new QTableWidgetItem( QString::number(e->x()) )
-                                );
-    ui->tableLstPoints->setItem(
-                                    idRow,
-                                    1,
-                                    new QTableWidgetItem( QString::number(e->y()) )
-                                );
+    //Extract pixel's coordinates
+    QPair<int,int> tmpPixSel;
+    tmpPixSel.first = e->x();
+    tmpPixSel.second = e->y();
+    lstPixSelAux->append(tmpPixSel);
 
+    //Update politope
     funcUpdatePolitope();
-
 
 }
 
@@ -246,13 +284,13 @@ bool MainWindow::funcUpdatePolitope(){
     int i, x1, y1, x2, y2, x0, y0;
 
     //If is the first point
-    if( ui->tableLstPoints->rowCount() < 2 ){
-        x1  = ui->tableLstPoints->item(0,0)->text().toFloat(0)-3;
-        y1  = ui->tableLstPoints->item(0,1)->text().toFloat(0)-4;
+    if( lstPixSelAux->count() < 2 ){
+        x1  = lstPixSelAux->at(0).first - 3;//Point +/- error
+        y1  = lstPixSelAux->at(0).second - 4;//Point +/- error
         QGraphicsEllipseItem* item = new QGraphicsEllipseItem(x1, y1, 5, 5 );
-        item->setPen( QPen(QColor("#FFFFFF")) );
-        item->setBrush( QBrush(QColor("#FF0000")) );
-        myCanvas->scene()->addItem(item);
+        item->setPen( QPen(Qt::white) );
+        item->setBrush( QBrush(Qt::red) );
+        canvasAux->scene()->addItem(item);
         return true;
     }
 
@@ -261,13 +299,13 @@ bool MainWindow::funcUpdatePolitope(){
     //--------------------------------------------
 
     //Last two points
-    i   = ui->tableLstPoints->rowCount()-1;
-    x0  = ui->tableLstPoints->item(0,0)->text().toFloat(0);
-    y0  = ui->tableLstPoints->item(0,1)->text().toFloat(0);
-    x1  = ui->tableLstPoints->item(i-1,0)->text().toFloat(0);
-    y1  = ui->tableLstPoints->item(i-1,1)->text().toFloat(0);
-    x2  = ui->tableLstPoints->item(i,0)->text().toFloat(0);
-    y2  = ui->tableLstPoints->item(i,1)->text().toFloat(0);
+    i   = lstPixSelAux->count()-1;
+    x0  = lstPixSelAux->at(0).first;
+    y0  = lstPixSelAux->at(0).second;
+    x1  = lstPixSelAux->at(i-1).first;
+    y1  = lstPixSelAux->at(i-1).second;
+    x2  = lstPixSelAux->at(i).first;
+    y2  = lstPixSelAux->at(i).second;
 
     //Draw the line
     if( abs(x0-x2)<=6 && abs(y0-y2)<=6 ){//Politope closed
@@ -298,11 +336,12 @@ bool MainWindow::funcUpdatePolitope(){
 void MainWindow::funcFillFigure(){
     // Clear points
     //...
-    qDebug() << "Polytope closed: " << QString::number(lstBorder->count()) ;
-    while(ui->tableLstPoints->rowCount() > 0){
-        ui->tableLstPoints->removeRow(0);
-    }
-    funcPutImageIntoGV( myCanvas, imgPath );
+    //qDebug() << "Polytope closed: " << QString::number(lstBorder->count()) ;
+    //while(ui->tableLstPoints->rowCount() > 0){
+    //    ui->tableLstPoints->removeRow(0);
+    //}
+    //funcPutImageIntoGV( canvasAux, imgPath );
+    canvasAux->scene()->clear();
 
     // Get max and min Y
     //...
@@ -359,6 +398,17 @@ void MainWindow::funcFillFigure(){
                                     "#FFFFFF"
                                 );
     }
+
+    lstPixSelAux->clear();
+
+     disconnect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcAddPoint(QMouseEvent*) )
+           );
+
+     mouseCursorReset();
 
 
 }
@@ -463,7 +513,7 @@ void MainWindow::funcDrawPointIntoCanvas(
 ){
     QGraphicsEllipseItem* item = new QGraphicsEllipseItem( x, y, w, h );
     item->setPen( QPen(QColor(color)) );
-    myCanvas->scene()->addItem(item);
+    canvasAux->scene()->addItem(item);
     item->setBrush( QBrush(QColor(lineColor)) );
 }
 
@@ -487,60 +537,88 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
 {    
     QList<QString> tmpList;
 
-    //Set AWB
-    tmpList<<"OFF"<<"AUTO"<<"SUNLIGHT"<<"CLOUDY"<<"TUNGSTEN"<<"FLUORESCENT"<<"INCANDESCENT"<<"FLASH"<<"HORIZON";
+    //Set AWB: off,auto,sun,cloud,shade,tungsten,fluorescent,incandescent,flash,horizon
+    tmpList<<"none"<<"off"<<"auto"<<"sun"<<"cloud"<<"shade"<<"tungsten"<<"fluorescent"<<"incandescent"<<"flash"<<"horizon";
     ui->cbAWB->clear();
     ui->cbAWB->addItems( tmpList );
     ui->cbAWB->setCurrentText((char*)raspcamSettings->AWB);
     tmpList.clear();
 
-    //Set Exposure
-    tmpList<<"OFF"<<"AUTO"<<"NIGHT"<<"NIGHTPREVIEW"<<"BACKLIGHT"<<"SPOTLIGHT"<<"SPORTS"<<"SNOW"<<"BEACH"<<"VERYLONG"<<"FIXEDFPS"<<"ANTISHAKE"<<"FIREWORKS";
+    //Set Exposure: off,auto,night,nightpreview,backlight,spotlight,sports,snow,beach,verylong,fixedfps,antishake,fireworks
+    tmpList<<"none"<<"off"<<"auto"<<"night"<<"nightpreview"<<"backlight"<<"spotlight"<<"sports"<<"snow"<<"beach"<<"verylong"<<"fixedfps"<<"antishake"<<"fireworks";
     ui->cbExposure->clear();
     ui->cbExposure->addItems( tmpList );
     ui->cbExposure->setCurrentText((char*)raspcamSettings->Exposure);
     tmpList.clear();
 
     //Gray YUV420
-    if( raspcamSettings->Format == 1 )ui->rbFormat1->setChecked(true);
-    if( raspcamSettings->Format == 2 )ui->rbFormat2->setChecked(true);
+    //if( raspcamSettings->Format == 1 )ui->rbFormat1->setChecked(true);
+    //if( raspcamSettings->Format == 2 )ui->rbFormat2->setChecked(true);
 
     //Brightness
-    ui->slideBrightness->setValue( raspcamSettings->Brightness );
-    ui->labelBrightness->setText( "Brightness: " + QString::number(raspcamSettings->Brightness) );
+    //ui->slideBrightness->setValue( raspcamSettings->Brightness );
+    //ui->labelBrightness->setText( "Brightness: " + QString::number(raspcamSettings->Brightness) );
 
     //Sharpness
-    ui->slideSharpness->setValue( raspcamSettings->Sharpness );
-    ui->labelSharpness->setText( "Sharpness: " + QString::number(raspcamSettings->Sharpness) );
+    //ui->slideSharpness->setValue( raspcamSettings->Sharpness );
+    //ui->labelSharpness->setText( "Sharpness: " + QString::number(raspcamSettings->Sharpness) );
 
     //Contrast
-    ui->slideContrast->setValue( raspcamSettings->Contrast );
-    ui->labelContrast->setText( "Contrast: " + QString::number(raspcamSettings->Contrast) );
+    //ui->slideContrast->setValue( raspcamSettings->Contrast );
+    //ui->labelContrast->setText( "Contrast: " + QString::number(raspcamSettings->Contrast) );
 
     //Saturation
-    ui->slideSaturation->setValue( raspcamSettings->Saturation );
-    ui->labelSaturation->setText( "Saturation: " + QString::number(raspcamSettings->Saturation) );
+    //ui->slideSaturation->setValue( raspcamSettings->Saturation );
+    //ui->labelSaturation->setText( "Saturation: " + QString::number(raspcamSettings->Saturation) );
 
-    //ShuterSpeed
+    //SquareShuterSpeed
+    ui->slideSquareShuterSpeed->setValue( raspcamSettings->SquareShutterSpeed );
+    ui->slideSquareShuterSpeedSmall->setValue( raspcamSettings->SquareShutterSpeedSmall );
+    ui->labelSquareShuterSpeed->setText( "Square Shuter Speed: " + QString::number(raspcamSettings->SquareShutterSpeed+raspcamSettings->SquareShutterSpeedSmall) );
+
+    //DiffractionShuterSpeed
     ui->slideShuterSpeed->setValue( raspcamSettings->ShutterSpeed );
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed) );
+    ui->slideShuterSpeedSmall->setValue( raspcamSettings->ShutterSpeedSmall );
+    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed+raspcamSettings->ShutterSpeedSmall) );
 
     //ISO
     ui->slideISO->setValue( raspcamSettings->ISO );
     ui->labelISO->setText( "ISO: " + QString::number(raspcamSettings->ISO) );
 
     //ExposureCompensation
-    ui->slideExpComp->setValue( raspcamSettings->ExposureCompensation );
-    ui->labelExposureComp->setText( "Exp. Comp.: " + QString::number(raspcamSettings->ExposureCompensation) );
+    //ui->slideExpComp->setValue( raspcamSettings->ExposureCompensation );
+    //ui->labelExposureComp->setText( "Exp. Comp.: " + QString::number(raspcamSettings->ExposureCompensation) );
 
     //RED
     //qDebug() << "Red: " << raspcamSettings->Red;
-    ui->slideRed->setValue( raspcamSettings->Red );
-    ui->labelRed->setText( "Red: " + QString::number(raspcamSettings->Red) );
+    //ui->slideRed->setValue( raspcamSettings->Red );
+    //ui->labelRed->setText( "Red: " + QString::number(raspcamSettings->Red) );
 
     //GREEN
-    ui->slideGreen->setValue( raspcamSettings->Green );
-    ui->labelGreen->setText( "Green: " + QString::number(raspcamSettings->Green) );
+    //ui->slideGreen->setValue( raspcamSettings->Green );
+    //ui->labelGreen->setText( "Green: " + QString::number(raspcamSettings->Green) );
+
+    //PREVIEW
+    //if( raspcamSettings->Preview )ui->cbPreview->setChecked(true);
+    //else ui->cbPreview->setChecked(false);
+
+    //TRIGGER TIME
+    ui->slideTriggerTime->setValue(raspcamSettings->TriggerTime);
+    ui->labelTriggerTime->setText("Trigger time: " + QString::number(raspcamSettings->TriggerTime)+"s");
+
+    //DENOISE EFX
+    if( raspcamSettings->Denoise )ui->cbDenoise->setChecked(true);
+    else ui->cbDenoise->setChecked(false);
+
+    //COLORBALANCE EFX
+    if( raspcamSettings->ColorBalance )ui->cbColorBalance->setChecked(true);
+    else ui->cbColorBalance->setChecked(false);
+
+    //CAMERA RESOLUTION
+    if( raspcamSettings->CameraMp == 5 )ui->radioRes5Mp->setChecked(true);
+    else ui->radioRes8Mp->setChecked(true);
+
+
 
 }
 
@@ -560,7 +638,7 @@ void MainWindow::on_pbGetVideo_clicked()
     server = gethostbyname( "192.168.1.69" );
     //server = gethostbyname( "10.0.5.126" );
     if (server == NULL) {
-        //fprintf(stderr,"ERROR, no such host\n");
+        //fprintf(stderr,"ERROR, not such host\n");
         exit(0);
     }
     bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -627,6 +705,8 @@ bool MainWindow::funcReceiveFile(
 
     qDebug() << "Inside funcReceiveFile";
 
+
+
     //Requesting file
     int i, n;
     //qDebug() << "Writing0";
@@ -637,12 +717,15 @@ bool MainWindow::funcReceiveFile(
     }
     //funcShowMsg("alert","Requesting file");
 
+
+
     //Receive file parts
     unsigned int numMsgs = (fileLen>0)?floor( (float)fileLen / (float)frameBodyLen ):0;
     numMsgs = ((numMsgs*frameBodyLen)<fileLen)?numMsgs+1:numMsgs;
     unsigned int tmpPos = 0;
     memset(tmpFile,'\0',fileLen);
     qDebug() << "Receibing... " <<  QString::number(numMsgs) << " messages";
+    qDebug() << "fileLen: " << fileLen;
 
     //Receive the last
     if(numMsgs==0){
@@ -653,12 +736,16 @@ bool MainWindow::funcReceiveFile(
     }else{
 
         //ui->progBar->setVisible(true);
-        ui->progBar->setRange(1,numMsgs);
-        ui->progBar->setValue(1);        
+        ui->progBar->setRange(0,numMsgs);
+        ui->progBar->setValue(0);
+
+        funcActivateProgBar();
+
         for(i=1;i<=(int)numMsgs;i++){
             ui->progBar->setValue(i);
             bzero(bufferRead,frameBodyLen);
             n = read(sockfd,bufferRead,frameBodyLen);
+            //qDebug() << "n: " << n;
             if(n!=(int)frameBodyLen&&i<(int)numMsgs){
                 qDebug() << "ERROR, message " << i << "WRONG";
                 return false;
@@ -670,7 +757,7 @@ bool MainWindow::funcReceiveFile(
             if( i<(int)numMsgs ){
                 //qDebug() << "W2";
                 QtDelay(2);
-                n = ::write(sockfd,"sendpart",8);
+                n = ::write(sockfd,"sendpart",8);                
                 if(n<0){
                     qDebug() << "ERROR: Sending part-file request";
                     return false;
@@ -679,6 +766,7 @@ bool MainWindow::funcReceiveFile(
         }
         ui->progBar->setValue(0);
         ui->progBar->setVisible(false);
+        ui->progBar->update();
         QtDelay(30);
 
     }
@@ -687,6 +775,14 @@ bool MainWindow::funcReceiveFile(
 
 
     return true;
+}
+
+void MainWindow::funcActivateProgBar(){
+    //mouseCursorReset();
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    QtDelay(50);
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -795,7 +891,7 @@ void MainWindow::on_pbSearchAll_clicked()
                 }else{
                     server = gethostbyname( candIP.at(0).trimmed().toStdString().c_str() );
                     if (server == NULL) {
-                        qDebug() << "no such host";
+                        qDebug() << "Not such host";
                     }else{
 
 
@@ -892,171 +988,96 @@ void MainWindow::on_pbSearchAll_clicked()
 void MainWindow::on_pbSendComm_clicked()
 {
     if( !camSelected->isConnected){
-
         funcShowMsg("Alert","Camera not connected");
-
-    }else{
-        if( ui->txtCommand->text().isEmpty() ){
-            funcShowMsg("Alert","Empty command");
-        }else{
-
-            if( ui->tableLstCams->rowCount() == 0 ){
-                funcShowMsg("Alert","No camera detected");
-            }else{
-                ui->tableLstCams->setFocus();
-
-                //Prepare message to send
-                //funcShowMsg("Ip",ui->tableLstCams->item(tmpRow,1)->text());
-                frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
-                memset(frame2send,'\0',sizeof(frameStruct));
-                if( !ui->checkBlind->isChecked() ){
-                    frame2send->header.idMsg = (unsigned char)2;
-                }else{
-                    frame2send->header.idMsg = (unsigned char)3;
-                }
-                frame2send->header.numTotMsg = 1;
-                frame2send->header.consecutive = 1;
-                frame2send->header.bodyLen   = ui->txtCommand->text().length();
-                memcpy(
-                            frame2send->msg,
-                            ui->txtCommand->text().toStdString().c_str(),
-                            ui->txtCommand->text().length()
-                      );
-
-                //Prepare command message
-                int sockfd, n, tmpFrameLen;
-                //unsigned char bufferRead[sizeof(frameStruct)];
-                struct sockaddr_in serv_addr;
-                struct hostent *server;
-                sockfd = socket(AF_INET, SOCK_STREAM, 0);
-                qDebug() << "Comm IP: " << QString((char*)camSelected->IP);
-                if (sockfd < 0){
-                    qDebug() << "opening socket";
-                }else{
-                    //server = gethostbyname( ui->tableLstCams->item(tmpRow,1)->text().toStdString().c_str() );
-                    server = gethostbyname( (char*)camSelected->IP );
-                    if (server == NULL) {
-                        qDebug() << "no such host";
-
-                    }else{
-                        bzero((char *) &serv_addr, sizeof(serv_addr));
-                        serv_addr.sin_family = AF_INET;
-                        bcopy((char *)server->h_addr,
-                            (char *)&serv_addr.sin_addr.s_addr,
-                            server->h_length);
-                        serv_addr.sin_port = htons(camSelected->tcpPort);
-                        if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
-                            qDebug() << "connecting";
-                        }else{
-
-
-                            //Request command result
-                            qDebug() << "idMsg: " << (int)frame2send->header.idMsg;
-                            qDebug() << "command: " << frame2send->msg;
-                            qDebug() << "tmpFrameLen: " << sizeof(frameHeader) + ui->txtCommand->text().length();
-                            tmpFrameLen = sizeof(frameHeader) + ui->txtCommand->text().length();
-                            n = ::write(sockfd,frame2send,tmpFrameLen);
-                            if(n<0){
-                                qDebug() << "Sending command";
-                            }
-
-                            //Receibing ack with file len
-                            unsigned int fileLen;
-                            unsigned char bufferRead[frameBodyLen];
-                            n = read(sockfd,bufferRead,frameBodyLen);
-                            memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
-                            //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
-
-                            //Receive File
-                            unsigned char tmpFile[fileLen];
-                            funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
-                            ::close(sockfd);
-
-                            //Show command result
-                            std::string tmpTxt((char*)tmpFile);
-                            //qDebug() << (char*)tmpFile;
-                            ui->txtCommRes->setText( QString(tmpTxt.c_str()) ) ;
-
-
-                            /*
-                            if (n < 0){
-                                qDebug() << "writing to socket";
-                            }else{
-                                //Receibing ack with file len
-                                n = read(sockfd,bufferRead,sizeof(frameStruct));
-                                if (n < 0){
-                                    qDebug() << "reading socket";
-                                }else{
-                                    memcpy(frame2send,bufferRead,n);
-                                    ui->txtCommRes->setText( QString(frame2send->msg) );
-                                }
-                            }
-                            */
-
-
-
-                        }
-                    }
-                    ::close(sockfd);
-                }
-
-
-
-            }
-
-
-
-            //unsigned int tmpId = ui->tableLstCams->model()->data(ui->tableLstProj->model()->index(index.row(),0),Qt::DisplayRole).toInt();
-
-
-
-            /*
-
-
-            int sockfd, n, tmpFrameLen;
-            struct sockaddr_in serv_addr;
-            struct hostent *server;
-            sockfd = socket(AF_INET, SOCK_STREAM, 0);
-            qDebug() << "IP: " << IP.c_str();
-            if (sockfd < 0){
-                qDebug() << "opening socket";
-            }else{
-                server = gethostbyname( IP.c_str() );
-                if (server == NULL) {
-                    qDebug() << "no such host";
-                }else{
-                    bzero((char *) &serv_addr, sizeof(serv_addr));
-                    serv_addr.sin_family = AF_INET;
-                    bcopy((char *)server->h_addr,
-                        (char *)&serv_addr.sin_addr.s_addr,
-                        server->h_length);
-                    serv_addr.sin_port = htons(portno);
-                    if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
-                        qDebug() << "connecting";
-                    }else{
-                        //Request camera settings
-                        char tmpIdMsg = (char)1;
-                        tmpFrameLen = sizeof(camSettings);
-                        unsigned char bufferRead[tmpFrameLen];
-                        n = ::write(sockfd,&tmpIdMsg,1);
-                        if (n < 0){
-                            qDebug() << "writing to socket";
-                        }else{
-                            //Receibing ack with file len
-                            n = read(sockfd,bufferRead,tmpFrameLen);
-                            if (n < 0){
-                                qDebug() << "reading socket";
-                            }else{
-                                memcpy(tmpCamSett,&bufferRead,tmpFrameLen);
-                            }
-                        }
-                    }
-                }
-                ::close(sockfd);
-            }
-            */
-        }
+        return (void)NULL;
     }
+    if( ui->txtCommand->text().isEmpty() ){
+        funcShowMsg("Alert","Empty command");
+        return (void)NULL;
+    }
+    if( ui->tableLstCams->rowCount() == 0 ){
+        funcShowMsg("Alert","Not camera detected");
+        return (void)NULL;
+    }
+    ui->tableLstCams->setFocus();
+
+    //Prepare message to send
+    frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
+    memset(frame2send,'\0',sizeof(frameStruct));
+    if( !ui->checkBlind->isChecked() ){
+        frame2send->header.idMsg = (unsigned char)2;
+    }else{
+        frame2send->header.idMsg = (unsigned char)3;
+    }
+    frame2send->header.numTotMsg = 1;
+    frame2send->header.consecutive = 1;
+    frame2send->header.bodyLen   = ui->txtCommand->text().length();
+    memcpy(
+                frame2send->msg,
+                ui->txtCommand->text().toStdString().c_str(),
+                ui->txtCommand->text().length()
+          );
+
+    //Prepare command message
+    int sockfd, n, tmpFrameLen;
+    //unsigned char bufferRead[sizeof(frameStruct)];
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    qDebug() << "Comm IP: " << QString((char*)camSelected->IP);
+    if (sockfd < 0){
+        qDebug() << "opening socket";
+        return (void)NULL;
+    }
+    //server = gethostbyname( ui->tableLstCams->item(tmpRow,1)->text().toStdString().c_str() );
+    server = gethostbyname( (char*)camSelected->IP );
+    if (server == NULL) {
+        qDebug() << "Not such host";
+        return (void)NULL;
+    }
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr,
+        (char *)&serv_addr.sin_addr.s_addr,
+        server->h_length);
+    serv_addr.sin_port = htons(camSelected->tcpPort);
+    if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
+        qDebug() << "ERROR: connecting to socket";
+        return (void)NULL;
+    }
+
+
+    //Request command result
+    qDebug() << "idMsg: " << (int)frame2send->header.idMsg;
+    qDebug() << "command: " << frame2send->msg;
+    qDebug() << "tmpFrameLen: " << sizeof(frameHeader) + ui->txtCommand->text().length();
+    tmpFrameLen = sizeof(frameHeader) + ui->txtCommand->text().length();
+    n = ::write(sockfd,frame2send,tmpFrameLen);
+    if(n<0){
+        qDebug() << "ERROR: Sending command";
+        return (void)NULL;
+    }
+
+    //Receibing ack with file len
+    unsigned int fileLen;
+    unsigned char bufferRead[frameBodyLen];
+    n = read(sockfd,bufferRead,frameBodyLen);
+    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
+    fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
+    qDebug() << "fileLen: " << fileLen;
+    //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
+
+    //Receive File
+    unsigned char tmpFile[fileLen];
+    funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
+    qDebug() <<tmpFile;
+    ::close(sockfd);
+
+    //Show command result
+    std::string tmpTxt((char*)tmpFile);
+    qDebug() << "Get: " << (char*)tmpFile;
+    ui->txtCommRes->setText( QString(tmpTxt.c_str()) ) ;
+
 }
 
 void MainWindow::on_pbConnect_clicked()
@@ -1068,14 +1089,15 @@ void MainWindow::on_pbConnect_clicked()
         qDebug() << "CurrentRow: " << QString::number(rowSelected);
         if(rowSelected >= 0){
             if( camSelected->isConnected ){
-                qDebug() << "Disconnect";
+                qDebug() << "Disconnecting";
                 camSelected->isConnected = false;
                 camSelected->tcpPort = 0;
                 memset(camSelected->IP,'\0',sizeof(camSelected->IP));
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/right.gif") );
                 ui->pbSnapshot->setEnabled(false);
+                ui->pbGetSlideCube->setEnabled(false);
             }else{
-                qDebug() << "Connect: ";
+                qDebug() << "Connecting: ";
                 camSelected->isConnected = true;
                 camSelected->tcpPort = lstSettings->tcpPort;
                 memcpy(
@@ -1085,6 +1107,7 @@ void MainWindow::on_pbConnect_clicked()
                       );                
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/close.png") );
                 ui->pbSnapshot->setEnabled(true);
+                ui->pbGetSlideCube->setEnabled(true);
                 qDebug() << "IP->: " << QString((char*)camSelected->IP);
                 //Save last IP
                 saveFile( "./settings/lastIp.hypcam", QString((char*)camSelected->IP) );
@@ -1153,13 +1176,13 @@ void MainWindow::on_pbStartVideo_clicked()
 }
 
 
-unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
+//unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
+bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 
     //Open socket
     int sockfd = connectSocket( camSelected );
     unsigned char bufferRead[frameBodyLen];
     qDebug() << "Socket opened";
-
     //Require photo size
     //QtDelay(5);
     ::write(sockfd,reqImg,sizeof(strReqImg));
@@ -1171,6 +1194,7 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
         qDebug() << "Camera OK";
     }else{//Do nothing becouse camera is not accessible
         qDebug() << "ERROR turning on the camera";
+        return false;
     }
 
     //Receive photo's size
@@ -1191,35 +1215,49 @@ unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg ){
 
     //Save a backup of the image received
     //..
-    if(!saveBinFile( (unsigned long)fileLen, tmpFile,"./tmpImages/tmpImgRec.RGB888")){
-        qDebug()<< "ERROR: saving image-file received";
-    }
-    else
+    if( saveImg )
     {
-        funcShowMsg("File","Saved");
+        if(!saveBinFile( (unsigned long)fileLen, tmpFile,_PATH_IMAGE_RECEIVED))
+        {
+            qDebug()<< "ERROR: saving image-file received";
+        }
     }
 
     //Close socket and return
     ::close(sockfd);
-    return tmpFile;
+    //return tmpFile;
+    return true;
 }
 
 structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSettings raspSett ){
     //Take settings from gui ;D
     //raspSett.width                 = ui->slideWidth->value();
     //raspSett.height                = ui->slideHeight->value();
-    //raspSett.AWB                   = ui->cbAWB->currentText().toStdString().c_str();
-    raspSett.Brightness            = ui->slideBrightness->value();
-    raspSett.Contrast              = ui->slideContrast->value();
-    //raspSett.Exposure              = ui->cbExposure->currentText().toStdString().c_str();
-    raspSett.ExposureCompensation  = ui->slideExpComp->value();
-    raspSett.Format                = ( ui->rbFormat1->isChecked() )?1:2;
-    raspSett.Green                 = ui->slideGreen->value();
-    raspSett.ISO                   = ui->slideISO->value();
-    raspSett.Red                   = ui->slideRed->value();
-    raspSett.Saturation            = ui->slideSaturation->value();
-    raspSett.Sharpness             = ui->slideSharpness->value();
-    raspSett.ShutterSpeed          = ui->slideShuterSpeed->value();
+    memcpy(
+                raspSett.AWB,
+                ui->cbAWB->currentText().toStdString().c_str(),
+                sizeof(raspSett.AWB)
+          );
+    //raspSett.Brightness            = ui->slideBrightness->value();
+    //raspSett.Contrast              = ui->slideContrast->value();
+    memcpy(
+                raspSett.Exposure,
+                ui->cbExposure->currentText().toStdString().c_str(),
+                sizeof(raspSett.Exposure)
+          );
+    //raspSett.ExposureCompensation     = ui->slideExpComp->value();
+    //raspSett.Format                   = ( ui->rbFormat1->isChecked() )?1:2;
+    //raspSett.Green                    = ui->slideGreen->value();
+    raspSett.ISO                        = ui->slideISO->value();
+    //raspSett.Red                      = ui->slideRed->value();
+    //raspSett.Saturation               = ui->slideSaturation->value();
+    //raspSett.Sharpness                = ui->slideSharpness->value();
+    raspSett.SquareShutterSpeed         = ui->slideSquareShuterSpeed->value() + ui->slideSquareShuterSpeedSmall->value();
+    raspSett.ShutterSpeed               = ui->slideShuterSpeed->value() + ui->slideShuterSpeedSmall->value();
+    raspSett.Denoise                    = (ui->cbDenoise->isChecked())?1:0;
+    raspSett.ColorBalance               = (ui->cbColorBalance->isChecked())?1:0;
+    raspSett.TriggerTime                = ui->slideTriggerTime->value();
+
     return raspSett;
 }
 
@@ -1269,81 +1307,73 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 
 bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
-    ui->progBar->setVisible(true);
-    ui->progBar->setValue(0);
-    QtDelay(50);
+    msSleep = msSleep;
+    mouseCursorWait();
+    this->update();
 
     //Set required image's settings
     //..
     strReqImg *reqImg   = (strReqImg*)malloc(sizeof(strReqImg));
     reqImg->idMsg       = (unsigned char)7;    
     reqImg->stabSec     = sec2Stab;    
-    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );    
-    //Type
-    if( ui->cbPreview->isChecked() ){
-        //Canvas settings
-        reqImg->needCut         = false;
-        reqImg->imgCols         = 320;//2592 | 640 | 320
-        reqImg->imgRows         = 240;//1944 | 480 | 240
-    }else{
-        //Canvas settings
-        reqImg->needCut     = true;
-        reqImg->imgCols     = _BIG_WIDTH;//2592 | 640 | 320
-        reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480 | 240
-    }
-    //Get square parameters
-    if( !funGetSquareXML( "./XML/squareAperture.xml", &reqImg->sqApSett ) ){
-        funcShowMsg("ERROR","Loading bigSquare.xml");
-        return false;
-    }
+    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );
 
+    qDebug() << "reqImg->raspSett.TriggerTime: " << reqImg->raspSett.TriggerTime;
 
-
-
-    //Require and dysplay remote image
-    //...
-    int tmpSqW;
-    int tmpSqH;
-    if( reqImg->needCut ){
-        int X1 = round( (float)(reqImg->sqApSett.x1 * reqImg->imgCols) / reqImg->sqApSett.width );
-        int X2 = round( (float)(reqImg->sqApSett.x2 * reqImg->imgCols) / reqImg->sqApSett.width );
-        int Y1 = round( (float)(reqImg->sqApSett.y1 * reqImg->imgRows) / reqImg->sqApSett.height );
-        int Y2 = round( (float)(reqImg->sqApSett.y2 * reqImg->imgRows) / reqImg->sqApSett.height );
-        tmpSqW = X2-X1;
-        tmpSqH = Y2-Y1;
-    }else{
-        tmpSqW = reqImg->imgCols;
-        tmpSqH = reqImg->imgRows;
-    }
-    unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
-
-    //Tranform image because cut image was manipulated by the raspberry
+    //Define photo's region
     //..
-    QImage tmpImg( QSize(tmpSqW, tmpSqH), QImage::Format_RGB888 );
-    qDebug() << "imgW: " << tmpImg.width();
-    qDebug() << "imgH: " << tmpImg.height();
-    int r,c,i;
-    QRgb tmpPix;
-    i=0;
-    for(r=0;r<tmpSqH;r++){
-        for(c=0;c<tmpSqW;c++){
-            if(!tmpImg.valid(c,r)){
-                qDebug() << "Invalid r: " << r << " c: "<<c;
-                QtDelay(20);
+    if( ui->cbThumbPreview->isChecked() )
+    {
+        reqImg->needCut     = false;
+        reqImg->squApert    = false;
+        reqImg->imgCols     = _FRAME_THUMB_W;
+        reqImg->imgRows     = _FRAME_THUMB_H;
+    }
+    else
+    {
+        if( ui->cbFullPhoto->isChecked() )
+        {
+            reqImg->needCut = false;
+            reqImg->squApert= false;
+            reqImg->imgCols = camRes->width;
+            reqImg->imgRows = camRes->height;
+        }
+        else
+        {
+            //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
+            if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
+                funcShowMsg("ERROR","Loading squareAperture.xml");
                 return false;
             }
-            tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-            tmpImg.setPixel( c/*x*/, r/*y*/, tmpPix );
-            i += 3;
+            reqImg->needCut     = true;
+            reqImg->squApert    = true;
+            //Calculate real number of columns of the required photo
+            reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
+            reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
+            reqImg->sqApSett.rectW  = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
+            reqImg->sqApSett.rectH  = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
+
+            //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
+            //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
+            //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
+            //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
+
+
         }
     }
+
+    //It save the received image
+    funcGetRemoteImg( reqImg, true );
+    QImage tmpImg(_PATH_IMAGE_RECEIVED);
+
     //tmpImg.save("./Results/tmpCropFromSave.ppm");
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpImg) );
-    ui->labelVideo->setFixedWidth( tmpSqW );
-    ui->labelVideo->setFixedHeight( tmpSqH );
+    ui->labelVideo->setFixedWidth( tmpImg.width() );
+    ui->labelVideo->setFixedHeight( tmpImg.height() );
+    ui->labelVideo->update();
 
-    //Delay in order to refresh actions applied
-    QtDelay( msSleep );
+    //Delay in order to refresh actions applied    
+    this->update();
     return true;
 }
 
@@ -1455,49 +1485,15 @@ void MainWindow::on_pbSaveImage_clicked()
     ui->pbStartVideo->click();
 }
 
-void MainWindow::on_slideBrightness_valueChanged(int value)
-{
-    ui->labelBrightness->setText( "Brightess: " + QString::number(value) );
-}
-
-void MainWindow::on_slideSharpness_valueChanged(int value)
-{
-    ui->labelSharpness->setText( "Sharpness: " + QString::number(value) );
-}
-
-void MainWindow::on_slideContrast_valueChanged(int value)
-{
-    ui->labelContrast->setText( "Contrast: " + QString::number(value) );
-}
-
-void MainWindow::on_slideSaturation_valueChanged(int value)
-{
-    ui->labelSaturation->setText( "Saturation: " + QString::number(value) );
-}
-
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
 {
-    ui->labelShuterSpeed->setText( "Shuter Speed: " + QString::number(value) );
+    QString qstrVal = QString::number(value + ui->slideShuterSpeedSmall->value());
+    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + qstrVal );
 }
 
 void MainWindow::on_slideISO_valueChanged(int value)
 {
     ui->labelISO->setText( "ISO: " + QString::number(value) );
-}
-
-void MainWindow::on_slideExpComp_valueChanged(int value)
-{
-    ui->labelExposureComp->setText( "Exposure Comp: " + QString::number(value) );
-}
-
-void MainWindow::on_slideRed_valueChanged(int value)
-{
-    ui->labelRed->setText( "Red: " + QString::number(value) );
-}
-
-void MainWindow::on_slideGreen_valueChanged(int value)
-{
-    ui->labelGreen->setText( "Green: " + QString::number(value) );
 }
 
 void MainWindow::on_pbSaveRaspParam_clicked()
@@ -1566,33 +1562,51 @@ void MainWindow::on_pbSaveRaspParam_clicked()
 }
 
 bool MainWindow::saveRaspCamSettings( QString tmpName ){
-    //Prepare file
+
+    //Conditional variables
+    //
+
+    //Resolution
+    int tmpResInMp = -1;
+    if( ui->radioRes5Mp->isChecked() )
+    {
+        tmpResInMp = 5;
+    }
+    else
+    {
+        tmpResInMp = 8;
+    }
+
+
+    //Prepare file contain
+    //..
     QString newFileCon = "";
     QString denoiseFlag = (ui->cbDenoise->isChecked())?"1":"0";
     QString colbalFlag = (ui->cbColorBalance->isChecked())?"1":"0";
-    QString formatFlag = (ui->rbFormat1->isChecked())?"    <Format>1</Format>\n":"    <Format>2</Format>\n";
+    //QString previewFlag = (ui->cbPreview->isChecked())?"1":"0";
+    QString oneShotFlag = (ui->cbOneShot->isChecked())?"1":"0";
+    QString fullPhotoFlag = (ui->cbFullPhoto->isChecked())?"1":"0";
     newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
     newFileCon.append("<settings>\n");
     newFileCon.append("    <AWB>"+ ui->cbAWB->currentText() +"</AWB>\n");
     newFileCon.append("    <Exposure>"+ ui->cbExposure->currentText() +"</Exposure>\n");
-    newFileCon.append("    <Denoise>"+ denoiseFlag +"</Exposure>\n");
+    newFileCon.append("    <Denoise>"+ denoiseFlag +"</Denoise>\n");
     newFileCon.append("    <ColorBalance>"+ colbalFlag +"</ColorBalance>\n");
-    newFileCon.append("    <Brightness>"+ QString::number(ui->slideBrightness->value() ) +"</Brightness>\n");
-    newFileCon.append("    <Sharpness>"+ QString::number(ui->slideSharpness->value() ) +"</Sharpness>\n");
-    newFileCon.append("    <Contrast>"+ QString::number(ui->slideContrast->value() ) +"</Contrast>\n");
-    newFileCon.append("    <Saturation>"+ QString::number(ui->slideSaturation->value() ) +"</Saturation>\n");
-    newFileCon.append("    <ShutterSpeed>"+ QString::number(ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
-    newFileCon.append("    <ISO>"+ QString::number(ui->slideISO->value() ) +"</ISO>\n");
-    newFileCon.append("    <TriggerTimer>"+ QString::number(ui->slideTriggerTimer->value() ) +"</TriggerTimer>\n");
-    newFileCon.append("    <ExposureCompensation>"+ QString::number(ui->slideExpComp->value() ) +"</ExposureCompensation>\n");
-    newFileCon.append(formatFlag);
-    newFileCon.append("    <Red>"+ QString::number(ui->slideRed->value() ) +"</Red>\n");
-    newFileCon.append("    <Green>"+ QString::number(ui->slideGreen->value() ) +"</Green>\n");
+    newFileCon.append("    <FullPhoto>"+ fullPhotoFlag +"</FullPhoto>\n");
+    //newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
+    newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
+    newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
+    newFileCon.append("    <SquareShutterSpeed>"+ QString::number( ui->slideSquareShuterSpeed->value() ) +"</SquareShutterSpeed>\n");
+    newFileCon.append("    <SquareShutterSpeedSmall>"+ QString::number( ui->slideSquareShuterSpeedSmall->value() ) +"</SquareShutterSpeedSmall>\n");
+    newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
+    newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
+    newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
+    newFileCon.append("    <CameraMp>"+ QString::number( tmpResInMp ) +"</CameraMp>\n");
     newFileCon.append("</settings>");
-
     //Save
-    //ui->txtCamParamXMLName->setText(tmpName);
+    //..
     QFile newFile( "./XML/camPerfils/" + tmpName + ".xml" );
+    if(newFile.exists())newFile.remove();
     if ( newFile.open(QIODevice::ReadWrite) ){
         QTextStream stream( &newFile );
         stream << newFileCon << endl;
@@ -1644,29 +1658,23 @@ bool MainWindow::funcSetCam( structRaspcamSettings *raspcamSettings ){
 
         //raspcamSettings->height = ui->slideHeight->value();
 
-        raspcamSettings->Brightness = ui->slideBrightness->value();
+        //raspcamSettings->Brightness = ui->slideBrightness->value();
 
-        raspcamSettings->Sharpness = ui->slideSharpness->value();
+        //raspcamSettings->Sharpness = ui->slideSharpness->value();
 
-        raspcamSettings->Contrast = ui->slideContrast->value();
+        //raspcamSettings->Contrast = ui->slideContrast->value();
 
-        raspcamSettings->Saturation = ui->slideSaturation->value();
+        //raspcamSettings->Saturation = ui->slideSaturation->value();
 
         raspcamSettings->ShutterSpeed = ui->slideShuterSpeed->value();
 
         raspcamSettings->ISO = ui->slideISO->value();
 
-        raspcamSettings->ExposureCompensation = ui->slideExpComp->value();
+        //raspcamSettings->ExposureCompensation = ui->slideExpComp->value();
 
-        if( ui->rbFormat1->isChecked() ){
-            raspcamSettings->Format = 2;
-        }else{
-            raspcamSettings->Format = 1;
-        }
+        //raspcamSettings->Red = ui->slideRed->value();
 
-        raspcamSettings->Red = ui->slideRed->value();
-
-        raspcamSettings->Green = ui->slideGreen->value();
+        //raspcamSettings->Green = ui->slideGreen->value();
 
 
 
@@ -1694,89 +1702,226 @@ bool MainWindow::funcSetCam( structRaspcamSettings *raspcamSettings ){
 void MainWindow::funcGetSnapshot()
 {
 
-    ui->progBar->setVisible(true);
+    //Getting calibration
+    //..
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
 
     //Save path
     //..
-    saveFile("./settings/lastSnapPath.hypcam",ui->txtSnapPath->text());
-
+    saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
 
     //Set required image's settings
     //..
-    strReqImg *reqImg   = (strReqImg*)malloc(sizeof(strReqImg));
-    reqImg->idMsg       = (unsigned char)7;
-    reqImg->needCut     = true;
-    reqImg->stabSec     = 3;
-    reqImg->imgCols     = _BIG_WIDTH;//2592 | 640
-    reqImg->imgRows     = _BIG_HEIGHT;//1944 | 480
-    reqImg->raspSett    = funcFillSnapshotSettings( reqImg->raspSett );
-    //Get square parameters
-    if( !funGetSquareXML( "./XML/bigSquare.xml", &reqImg->sqApSett ) ){
-        funcShowMsg("ERROR","Loading bigSquare.xml");
-        return (void)NULL;
-    }
+    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    reqImg->idMsg           = (unsigned char)7;
+    reqImg->raspSett        = funcFillSnapshotSettings( reqImg->raspSett );
 
-    //Require remote image
-    //...
-    //unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
-    int tmpSqW = reqImg->sqApSett.x2-reqImg->sqApSett.x1;
-    int tmpSqH = reqImg->sqApSett.y2-reqImg->sqApSett.y1;
-    int X1 = round( (float)(reqImg->sqApSett.x1 * reqImg->imgCols) / reqImg->sqApSett.width );
-    int X2 = round( (float)(reqImg->sqApSett.x2 * reqImg->imgCols) / reqImg->sqApSett.width );
-    int Y1 = round( (float)(reqImg->sqApSett.y1 * reqImg->imgRows) / reqImg->sqApSett.height );
-    int Y2 = round( (float)(reqImg->sqApSett.y2 * reqImg->imgRows) / reqImg->sqApSett.height );
-    if( reqImg->needCut ){
-        tmpSqW = X2-X1;
-        tmpSqH = Y2-Y1;
-    }else{
-        tmpSqW = reqImg->imgCols;
-        tmpSqH = reqImg->imgRows;
-    }
-    unsigned char *tmpFrame = funcGetRemoteImg( reqImg );
-
-    //Tranform image and save it
+    //Define photo's region
     //..
-    int r,c,i;
-    QImage tmpImg( tmpSqW, tmpSqH, QImage::Format_RGB32 );
-    QRgb tmpPix;
-    i=0;
-    for(r=0;r<tmpSqH;r++){
-        for(c=0;c<tmpSqW;c++){
-            tmpPix = qRgb( tmpFrame[i], tmpFrame[i+1], tmpFrame[i+2] );
-            tmpImg.setPixel( c, r, tmpPix );
-            i += 3;
+    if( ui->cbFullPhoto->isChecked() )
+    {
+        reqImg->needCut     = false;
+        reqImg->fullFrame   = true;
+        reqImg->imgCols     = camRes->width;//2592 | 640
+        reqImg->imgRows     = camRes->height;//1944 | 480
+        //It saves image into HDD: _PATH_IMAGE_RECEIVED
+        if( funcGetRemoteImg( reqImg, true ) )
+        {
+            QImage imgAperture( _PATH_IMAGE_RECEIVED );
+            imgAperture.save( _PATH_DISPLAY_IMAGE );
         }
+        else funcShowMsg("ERROR","Camera respond with error");
+    }else{
+        //Requesting image by parts
+        //..
+        //Diffraction
+        reqImg->needCut     = true;
+        reqImg->squApert    = true;
+        reqImg->fullFrame   = false;
+        reqImg->raspSett.SquareShutterSpeed      = ui->slideShuterSpeed->value();
+        reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
+        reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)camRes->width );
+        reqImg->sqApSett.rectY  = round( daCalib.bigY * (double)camRes->height );
+        reqImg->sqApSett.rectW  = round( daCalib.bigW * (double)camRes->width );
+        reqImg->sqApSett.rectH  = round( daCalib.bigH * (double)camRes->height );
+        //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
+        //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
+        //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
+        //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
+        funcGetRemoteImg( reqImg, true );
+        QImage imgDiff( _PATH_IMAGE_RECEIVED );
+        imgDiff.save(_PATH_SNAPSHOT_DIFFRACTION);
+
+        //Aperture
+        reqImg->raspSett.SquareShutterSpeed      = ui->slideSquareShuterSpeed->value();
+        reqImg->raspSett.SquareShutterSpeedSmall = ui->slideSquareShuterSpeedSmall->value();
+        reqImg->sqApSett.rectX  = round( daCalib.squareX * (double)camRes->width );;
+        reqImg->sqApSett.rectY  = round( daCalib.squareY * (double)camRes->height );
+        reqImg->sqApSett.rectW  = round( daCalib.squareW * (double)camRes->width );;
+        reqImg->sqApSett.rectH  = round( daCalib.squareH * (double)camRes->height );
+        //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
+        //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
+        //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
+        //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
+        funcGetRemoteImg( reqImg, true );
+        QImage imgAperture( _PATH_IMAGE_RECEIVED );
+        imgAperture.save(_PATH_SNAPSHOT_APERTURE);
+
+        //Merge Diffraction and Aperture
+        mergeSnapshot(&imgDiff, &imgAperture, &daCalib);
+
     }
 
-    //Show snapshot
-    int tmpFixW = 350;
-    int tmpFixH = 350;
-    QImage tmpThumb = tmpImg.scaled( QSize(tmpFixW,tmpFixH), Qt::KeepAspectRatio );
-    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
-    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
-
-    //Save snapshot
-    //..
-    //Take file name
-    QString tmpFileName = ui->txtSnapPath->text().trimmed();
-    tmpFileName.append(QString::number(time(NULL)));
-    tmpFileName.append(".ppm");
-    std::ofstream outFile ( tmpFileName.toStdString(), std::ios::binary );
-    outFile<<"P6\n"<<tmpSqW<<" "<<tmpSqH<<" 255\n";
-    outFile.write( (char*)tmpFrame, 3*tmpSqW*tmpSqH );
-    outFile.close();
-
+    //Display image into qlabel
+    updateDisplayImageReceived();
 
 }
 
+void MainWindow::mergeSnapshot(QImage *diff, QImage *aper, lstDoubleAxisCalibration *daCalib )
+{
+    int x1, y1;
+    int row, col;
+
+    x1 = daCalib->squarePixX;
+    y1 = daCalib->squarePixY;
+
+    for(row=0;row<aper->height();row++)
+    {
+        for(col=0;col<aper->width();col++)
+        {
+            diff->setPixel(x1+col,y1+row,aper->pixel(col,row));
+        }
+    }
+
+    diff->save( _PATH_DISPLAY_IMAGE );
+}
+
+
+/*
+void MainWindow::getRemoteImgByPartsAndSave( strReqImg *reqImg )
+{
+    //It saves image into HDD: _PATH_IMAGE_RECEIVED
+    funcGetRemoteImg( reqImg, true );
+}
+*/
+
+/*
+void MainWindow::calcRectangles(
+                                    QList<QRect> *lstRect,
+                                    strDiffProj  *p11Min,
+                                    strDiffProj  *p12Min,
+                                    strDiffProj  *p21Min,
+                                    strDiffProj  *p22Min,
+                                    strDiffProj  *p11Max,
+                                    strDiffProj  *p12Max,
+                                    strDiffProj  *p21Max,
+                                    strDiffProj  *p22Max
+                               ){
+
+}
+*/
+
+void MainWindow::calcDiffPoints(
+                                    double wave,
+                                    strDiffProj *p11,
+                                    strDiffProj *p12,
+                                    strDiffProj *p21,
+                                    strDiffProj *p22,
+                                    lstDoubleAxisCalibration *daCalib
+                                ){
+
+    p11->wavelength = wave;
+    p12->wavelength = wave;
+    p21->wavelength = wave;
+    p22->wavelength = wave;
+
+    p11->x          = 1;                  //1-index
+    p11->y          = 1;                  //1-index
+    p12->x          = daCalib->squarePixW; //1-index
+    p12->y          = 1;                  //1-index
+    p21->x          = 1;                  //1-index
+    p21->y          = daCalib->squarePixH; //1-index
+    p22->x          = daCalib->squarePixW; //1-index
+    p22->y          = daCalib->squarePixH; //1-index
+
+    calcDiffProj( p11, daCalib );
+    calcDiffProj( p12, daCalib );
+    calcDiffProj( p21, daCalib );
+    calcDiffProj( p22, daCalib );
+
+}
+
+
+void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
+{
+    //It defines points in the rectangle
+    QPoint p11, p12, p21, p22;
+    p11.setX(rect->x());                    p11.setY(rect->y());
+    p12.setX(rect->x()+rect->width());      p12.setY(rect->y());
+    p21.setX(rect->x());                    p21.setY(rect->y()+rect->height());
+    p22.setX(rect->x()+rect->width());      p22.setY(rect->y()+rect->height());
+
+    //It calibrates rectangle
+    calibPoint( &p11, calib );      calibPoint( &p12, calib );
+    calibPoint( &p21, calib );      calibPoint( &p22, calib );
+
+    //Defines rectangle calibrated
+    int x1, y1, x2, y2, w, h;
+    x1 = (p11.x()<p21.x())?p11.x():p21.x();
+    y1 = (p11.y()<p12.y())?p11.y():p12.y();
+    x2 = (p12.x()>p22.x())?p12.x():p22.x();
+    y2 = (p21.y()>p22.y())?p21.y():p22.y();
+    w  = abs(x2 - x1);
+    h  = abs(y2 - y1);
+
+    //Set calibrated rectangle
+    rect->setX(x1);
+    rect->setY(y1);
+    rect->setWidth(w);
+    rect->setHeight(h);
+
+}
+
+QString MainWindow::getFilenameForRecImg()
+{
+    QString tmpFileName = ui->txtSnapPath->text().trimmed();
+    tmpFileName.append(QString::number(time(NULL)));
+    tmpFileName.append(".RGB888");
+    QFile::copy(_PATH_IMAGE_RECEIVED, tmpFileName);
+    return tmpFileName;
+}
+
+void MainWindow::updateDisplayImageReceived()
+{
+    //Show snapshot
+    //..
+    QImage tmpImg( _PATH_DISPLAY_IMAGE );
+    int maxW, maxH;
+    maxW = (_FRAME_THUMB_W<tmpImg.width())?_FRAME_THUMB_W:tmpImg.width();
+    maxH = (_FRAME_THUMB_H<tmpImg.height())?_FRAME_THUMB_H:tmpImg.height();
+    QImage tmpThumb = tmpImg.scaledToHeight(maxH);
+    tmpThumb = tmpThumb.scaledToWidth(maxW);
+    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
+    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+    //Update view
+    //..
+    auxQstring = _PATH_DISPLAY_IMAGE;
+    loadImageIntoCanvasEdit(auxQstring, true);
+}
 
 void MainWindow::on_pbSnapshot_clicked()
 {
     ui->pbStartVideo->setEnabled(false);
 
 
+    mouseCursorWait();
+
+    camRes = getCamRes();
     funcGetSnapshot();
 
+    mouseCursorReset();
 
     ui->pbStartVideo->setEnabled(true);
 }
@@ -1785,39 +1930,40 @@ void MainWindow::on_pbSnapshot_clicked()
 
 
 void MainWindow::on_pbExpIds_clicked()
-{    
+{
+    /*
     int screen_width =  1000;
     int screen_height = 700;
 
     QGraphicsScene *scene = new QGraphicsScene(0,0,screen_width,screen_height);
     QPixmap pim(imgPath);
     scene->setBackgroundBrush(pim.scaled(screen_width,screen_height,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
+    */
 }
 
-void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath){
-    QImage tmpImg(imgPath);
-    QGraphicsScene *scene = new QGraphicsScene(0,0,tmpImg.width(),tmpImg.height());
+void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath){    
     QPixmap pim(imgPath);
+    QGraphicsScene *scene = new QGraphicsScene(0,0,pim.width(),pim.height());
     scene->setBackgroundBrush(pim);
     gvContainer->setScene(scene);
-    gvContainer->resize(tmpImg.width(),tmpImg.height());
+    gvContainer->resize(pim.width(),pim.height());
     gvContainer->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     gvContainer->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
+    /*
     QHBoxLayout *layout = new QHBoxLayout;
     ui->tab_3->setLayout(layout);
-    ui->tab_3->layout()->addWidget(myCanvas);
+    ui->tab_3->layout()->addWidget(gvContainer);
     layout->setEnabled(false);
+    */
 }
 
 
 void MainWindow::on_pbPtsClearAll_clicked()
 {
-    while(ui->tableLstPoints->rowCount() > 0){
-        ui->tableLstPoints->removeRow(0);
-    }
+    lstPixSelAux->clear();
 
-    funcPutImageIntoGV( myCanvas, imgPath );
+    canvasAux->scene()->clear();
 
     lstBorder->clear();
     lstSelPix->clear();
@@ -1829,7 +1975,7 @@ void MainWindow::on_pbPtsClearAll_clicked()
 void MainWindow::on_pbSavePixs_clicked()
 {
     if( lstSelPix->isEmpty() ){
-        funcShowMsg("LACK","No pixels to export");
+        funcShowMsg("LACK","Not pixels to export");
     }else{
         int i;
         QString filePath = "./Results/lstPixels.txt";
@@ -1847,12 +1993,14 @@ void MainWindow::on_pbSavePixs_clicked()
     }
 }
 
+
+/*
 bool MainWindow::on_pb2XY_clicked()
 {
     //Validate that exist pixel selected
     //..
     if( lstSelPix->count()<1){
-        funcShowMsg("Lack","No pixels selected");
+        funcShowMsg("Lack","Not pixels selected");
         return false;
     }
 
@@ -1891,10 +2039,10 @@ bool MainWindow::on_pb2XY_clicked()
 
     return true;
 }
+*/
 
 
-
-
+/*
 void MainWindow::on_pbLoadImg_clicked()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open File"),"./imgResources/",tr("Image files (*.*)"));
@@ -1902,7 +2050,9 @@ void MainWindow::on_pbLoadImg_clicked()
     funcPutImageIntoGV( myCanvas, imgPath );
     //funcShowMsg("",fileNames.at(0));
 }
+*/
 
+/*
 void MainWindow::on_pbUpdCut_clicked()
 {
 
@@ -1976,8 +2126,9 @@ void MainWindow::funcSetLines(){
     ui->gvCut->scene()->addLine(1,ui->gvCut->height()-yPos,ui->gvCut->width(),ui->gvCut->height()-yPos,QPen(Qt::red));
     ui->gvCut->scene()->addLine(1,ui->gvCut->height()-yPos-yW,ui->gvCut->width(),ui->gvCut->height()-yPos-yW,QPen(Qt::red));
 }
+*/
 
-
+/*
 void MainWindow::on_slideCutPosX_valueChanged(int xpos)
 {
     xpos = xpos;
@@ -2001,7 +2152,8 @@ void MainWindow::on_slideCutPosY_valueChanged(int value)
     value = value;
     funcSetLines();
 }
-
+*/
+/*
 void MainWindow::on_pbSaveSquare_clicked()
 {
     if( funcShowMsgYesNo("Alert","Do you want to replace the setting?") == 1 ){
@@ -2012,7 +2164,9 @@ void MainWindow::on_pbSaveSquare_clicked()
         }
     }
 }
+*/
 
+/*
 bool MainWindow::funcSaveRect( QString fileName ){
     QString tmpContain;
     tmpContain.append( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
@@ -2029,7 +2183,9 @@ bool MainWindow::funcSaveRect( QString fileName ){
     }
     return true;
 }
+*/
 
+/*
 void MainWindow::on_pbSaveBigSquare_clicked()
 {
     if( funcShowMsgYesNo("Alert","Do you want to replace the setting?") == 1 ){
@@ -2040,9 +2196,11 @@ void MainWindow::on_pbSaveBigSquare_clicked()
         }
     }
 }
+*/
 
 void MainWindow::on_pbSpecSnapshot_clicked()
 {
+    /*
     //Turn on camera
     //..
     CvCapture* usbCam  = cvCreateCameraCapture( ui->sbSpecUsb->value() );
@@ -2065,7 +2223,9 @@ void MainWindow::on_pbSpecSnapshot_clicked()
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
-            cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
+
+            cv::imwrite( tmpName.toStdString(), cv::cvarrToMat(imgRot) );
+            //cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
         }
         //Create canvas
         //Display accum
@@ -2109,7 +2269,7 @@ void MainWindow::on_pbSpecSnapshot_clicked()
     //Reset lines
     funcUpdateColorSensibilities();
     funcDrawLines(0,0,0,0);
-
+    */
 }
 
 void MainWindow::funcBeginRect(QMouseEvent* e){
@@ -2123,15 +2283,23 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     calStruct.y2 = e->y();
     ui->pbSpecCut->setEnabled(true);
     qDeleteAll(tmpCanvas->scene()->items());
-    int x1, y1, x2, y2;
+    int x1, y1, x2, y2, w, h;
     x1 = (calStruct.x1<=e->x())?calStruct.x1:e->x();
     x2 = (calStruct.x1>=e->x())?calStruct.x1:e->x();
     y1 = (calStruct.y1<=e->y())?calStruct.y1:e->y();
     y2 = (calStruct.y1>=e->y())?calStruct.y1:e->y();
-    customRect* tmpRect = new customRect(QPoint(x1,y1),QPoint(x2-x1,y2-y1));
+    w  = abs(x2-x1);
+    h  = abs(y2-y1);
+    QPoint p1, p2;
+    p1.setX(x1);   p1.setY(y1);
+    p2.setX(w);    p2.setY(h);
+    customRect* tmpRect = new customRect(p1,p2);
+    tmpRect->mapToScene(p1.x(),p1.y(),p2.x(),p2.y());
     //customRect* tmpRect = new customRect(this);
+    tmpRect->parameters.W = canvasCalib->scene()->width();
+    tmpRect->parameters.H = canvasCalib->scene()->height();
     tmpRect->setPen( QPen(Qt::red) );
-    tmpCanvas->scene()->addItem(tmpRect);
+    tmpCanvas->scene()->addItem(tmpRect);    
     tmpRect->setFocus();
     tmpRect->parameters.movible = true;
     tmpRect->parameters.canvas = tmpCanvas;
@@ -2394,6 +2562,7 @@ void MainWindow::on_pbViewBack_clicked()
 
 void MainWindow::on_pbSnapCal_clicked()
 {
+    /*
     QString imgCropPath = "./snapshots/tmp/calibCrop.png";
 
     //Get image from camera
@@ -2401,7 +2570,9 @@ void MainWindow::on_pbSnapCal_clicked()
     QString imgPath = "./snapshots/tmp/calib.png";
     if( _USE_CAM ){
         IplImage *imgCal = funcGetImgFromCam( ui->sbSpecUsb->value(), 500 );
-        cv::imwrite( imgPath.toStdString(), cv::Mat(imgCal, true) );
+
+        cv::imwrite( imgPath.toStdString(), cv::cvarrToMat(imgCal) );
+        //cv::imwrite( imgPath.toStdString(), cv::Mat(imgCal, true) );
     }
 
     //Cut image
@@ -2445,6 +2616,7 @@ void MainWindow::on_pbSnapCal_clicked()
                                     QPen( QColor( tmpColor ) )
                              );
     wavelen->show();
+    */
 }
 
 
@@ -2462,7 +2634,7 @@ void MainWindow::on_pbObtPar_2_clicked()
                                                         this,
                                                         tr("Select image..."),
                                                         "./snapshots/Calib/",
-                                                        "(*.ppm);;"
+                                                        "(*.ppm *.RGB888);;"
                                                      );
     if( auxQstring.isEmpty() ){
         return (void)NULL;
@@ -2471,14 +2643,17 @@ void MainWindow::on_pbObtPar_2_clicked()
     //Create a copy of the image selected
     //..
     QImage origImg(auxQstring);
-    origImg.save(_DISPLAY_IMAGE);
+    qDebug() << "auxQstring: " << auxQstring;
+    if( !origImg.save(_PATH_DISPLAY_IMAGE) ){
+        funcShowMsg("ERROR","Creating image to display");
+        return (void)NULL;
+    }
 
     //Rotate if requires
     //..
     if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 ){
-        float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
-        QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        imgRot.save(_DISPLAY_IMAGE);
+        float rotAngle = getLastAngle();
+        doImgRotation( rotAngle );
         globaIsRotated = true;
     }else{
         globaIsRotated = false;
@@ -2487,17 +2662,8 @@ void MainWindow::on_pbObtPar_2_clicked()
     //Refresh image in scene
     //..
     //Show image
-    QPixmap pix(_DISPLAY_IMAGE);
-    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
-    qDebug() << "width: "<< pix.width();
-    qDebug() << "height: "<< pix.height();
-    //It creates the scene to be loaded into Layout
-    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
-    canvasCalib->setBackgroundBrush(pix);
-    canvasCalib->setScene( sceneCalib );
-    canvasCalib->resize(pix.width(),pix.height());
-    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    reloadImage2Display();
+
     //Load layout
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
@@ -2519,7 +2685,7 @@ void MainWindow::on_pbObtPar_2_clicked()
     //ui->containerCalSave->setEnabled(true);
     ui->toolBarDraw->setEnabled(true);
     ui->toolBarDraw->setVisible(true);
-    ui->slide2AxCalThre->setEnabled(true);
+    //ui->slide2AxCalThre->setEnabled(true);
 
 
 
@@ -2604,13 +2770,13 @@ void MainWindow::on_slide2AxCalThre_valueChanged(int value)
     if(globaIsRotated){
         float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
         QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        imgRot.save(_DISPLAY_IMAGE);
+        imgRot.save(_PATH_DISPLAY_IMAGE);
     }
     //Apply threshold to the image
     //..
     QImage *imgThre = new QImage(auxQstring);
     funcImgThreshold( value, imgThre );
-    QString tmpFilePaht = _DISPLAY_IMAGE;
+    QString tmpFilePaht = _PATH_DISPLAY_IMAGE;
     if( imgThre->save(tmpFilePaht) ){
         QtDelay(100);
         QPixmap pix(tmpFilePaht);
@@ -2638,6 +2804,8 @@ void MainWindow::funcImgThreshold( int threshold, QImage *tmpImage ){
     }
 }
 
+
+/*
 void MainWindow::on_pbCalSaveTop_clicked()
 {
 
@@ -2712,32 +2880,11 @@ void MainWindow::on_pbCalSaveTop_clicked()
     BlueLine->parameters.movible = false;
 
 
-    /*
-    //Red
-    tmpX = round(
-                    (float)((calStruct.X1 + tmpRes->maxRx)*canvasCalib->width()) /
-                    (float)tmpImg.width()
-                );
-    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#FF0000"))));
-    qDebug() << "Red: " << tmpX;
-    //Green
-    tmpX = round(
-                    (float)((calStruct.X1 + tmpRes->maxGx)*canvasCalib->width()) /
-                    (float)tmpImg.width()
-                );
-    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#00FF00"))));
-    qDebug() << "Green: " << tmpX;
-    //Blue
-    tmpX = round(
-                    (float)((calStruct.X1 + tmpRes->maxBx)*canvasCalib->width()) /
-                    (float)tmpImg.width()
-                );
-    canvasCalib->scene()->addItem(new customLine(tmpX,0,tmpX,canvasCalib->height(),QPen(QColor("#0000FF"))));
-    qDebug() << "Blue: " << tmpX;
-    */
 
 }
+*/
 
+/*
 void MainWindow::funcUpdateImgView(QImage *tmpImg){
     //Applies rotation
     //..
@@ -2748,6 +2895,7 @@ void MainWindow::funcUpdateImgView(QImage *tmpImg){
         funcImgThreshold( ui->slide2AxCalThre->value(), tmpImg );
     }
 }
+*/
 
 void MainWindow::on_pbSpecLoadSnap_clicked()
 {
@@ -2811,6 +2959,9 @@ void MainWindow::on_actionRect_triggered()
     selCol->exec();
     disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addRect2Calib(QString)));
     */
+
+    clearFreeHandPoligon();
+
     //Change mouse's cursor
     addRect2Calib("#F00");
     QApplication::setOverrideCursor(Qt::CrossCursor);
@@ -2854,20 +3005,20 @@ void MainWindow::on_actionCircle_triggered()
 
 void MainWindow::on_actionHorizontalLine_triggered()
 {
-    selColor *selCol = new selColor(this);
-    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
-    selCol->setModal(true);
-    selCol->exec();
-    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
+    selColor *selHCol = new selColor(this);
+    connect(selHCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
+    selHCol->setModal(true);
+    selHCol->exec();
+    disconnect(selHCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addHorLine2Calib(QString)));
 }
 
 void MainWindow::on_actionVerticalLine_triggered()
 {
-    selColor *selCol = new selColor(this);
-    connect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
-    selCol->setModal(true);
-    selCol->exec();
-    disconnect(selCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
+    selColor *selVCol = new selColor(this);
+    connect(selVCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
+    selVCol->setModal(true);
+    selVCol->exec();
+    disconnect(selVCol, SIGNAL(signalColorSelected(QString)), this, SLOT(addVertLine2Calib(QString)));
 }
 
 void MainWindow::addRect2Calib(QString colSeld){
@@ -2883,15 +3034,23 @@ void MainWindow::addCircle2Calib(QString colSeld){
 void MainWindow::addVertLine2Calib(QString colSeld){
     int x = round( canvasCalib->width() / 2 );
     QPoint p1(x,0);
-    QPoint p2(x,canvasCalib->height());
-    canvasCalib->scene()->addItem( new customLine(p1, p2, QPen(QColor(colSeld))) );
+    QPoint p2(x, canvasCalib->height());
+    customLine *tmpVLine = new customLine(p1, p2, QPen(QColor(colSeld)));
+    globalCanvVLine = tmpVLine;
+    //globalCanvVLine->setRotation(-90.0);
+    //globalCanvVLine->moveBy(60,this->height());
+    canvasCalib->scene()->addItem( globalCanvVLine );
+    canvasCalib->update();
 }
 
 void MainWindow::addHorLine2Calib(QString colSeld){
     int y = round( canvasCalib->height() / 2 );
     QPoint p1(0,y);
     QPoint p2( canvasCalib->width(), y);
-    canvasCalib->scene()->addItem( new customLine(p1, p2, QPen(QColor(colSeld))) );
+    customLine *tmpHLine = new customLine(p1, p2, QPen(QColor(colSeld)));
+    globalCanvHLine = tmpHLine;
+    canvasCalib->scene()->addItem( globalCanvHLine );
+    canvasCalib->update();
 }
 
 
@@ -2902,13 +3061,55 @@ void MainWindow::addHorLine2Calib(QString colSeld){
 
 void MainWindow::on_actionClear_triggered()
 {
+    //Clear scene
     canvasCalib->scene()->clear();
+
+    clearFreeHandPoligon();
+
+    clearRectangle();
+
+    //Mouse
+    mouseCursorReset();
+
+}
+
+void MainWindow::clearFreeHandPoligon(){
+    //Clear Free-hand points
+    lstBorder->clear();
+    lstSelPix->clear();
+    lstPixSelAux->clear();
+
+    //Disconnect signals
+    disconnect(
+               canvasAux,
+               SIGNAL( signalMousePressed(QMouseEvent*) ),
+               this,
+               SLOT( funcAddPoint(QMouseEvent*) )
+          );
+    canvasAux->update();
+}
+
+void MainWindow::clearRectangle(){
+    disconnect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcBeginRect(QMouseEvent*) )
+           );
+    disconnect(
+                canvasCalib,
+                SIGNAL( signalMouseReleased(QMouseEvent*) ),
+                this,
+                SLOT( funcCalibMouseRelease(QMouseEvent*) )
+           );
+    canvasCalib->update();
 }
 
 void MainWindow::on_actionSelection_triggered()
 {
     //Change cursor
     QApplication::restoreOverrideCursor();
+
     //Disconnect
     //..
     //Rectangle
@@ -2944,35 +3145,36 @@ void MainWindow::on_pbExpPixs_tabBarClicked(int index)
 }
 
 
-
+/*
 void MainWindow::on_slide2AxCalThre_sliderReleased()
 {
     QApplication::setOverrideCursor(Qt::WaitCursor);
-    int value = ui->slide2AxCalThre->value();
+    //int value = ui->slide2AxCalThre->value();
     //Rotate image if requested
     //..
     if(globaIsRotated){
         float rotAngle = readAllFile( "./settings/calib/rotation.hypcam" ).trimmed().toFloat(0);
         QImage imgRot = funcRotateImage(auxQstring, rotAngle);
-        imgRot.save(_DISPLAY_IMAGE);
+        imgRot.save(_PATH_DISPLAY_IMAGE);
     }
     //Apply threshold to the image
     //..
     QImage *imgThre = new QImage(auxQstring);
     funcImgThreshold( value, imgThre );
-    QString tmpFilePaht = _DISPLAY_IMAGE;
+    QString tmpFilePaht = _PATH_DISPLAY_IMAGE;
     if( imgThre->save(tmpFilePaht) ){
         QtDelay(100);
         QPixmap pix(tmpFilePaht);
         pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
         canvasCalib->setBackgroundBrush(pix);
-        ui->slide2AxCalThre->setValue(value);
-        ui->slide2AxCalThre->setToolTip(QString::number(value));
-        ui->slide2AxCalThre->update();
+       // ui->slide2AxCalThre->setValue(value);
+        //ui->slide2AxCalThre->setToolTip(QString::number(value));
+        //ui->slide2AxCalThre->update();
         //QtDelay(20);
     }
     QApplication::restoreOverrideCursor();
 }
+*/
 
 void MainWindow::on_actionDoubAxisDiff_triggered()
 {
@@ -2981,3 +3183,1819 @@ void MainWindow::on_actionDoubAxisDiff_triggered()
     genCalib->show();
 
 }
+
+
+void MainWindow::on_slideTriggerTime_valueChanged(int value)
+{
+    ui->labelTriggerTime->setText( "Trigger at: " + QString::number(value) + "s" );
+}
+
+void MainWindow::on_actionRotateImg_triggered()
+{
+    DrawVerAndHorLines( canvasCalib, Qt::magenta );
+    rotationFrm *doRot = new rotationFrm(this);
+    doRot->setModal(false);
+    connect(doRot,SIGNAL(angleChanged(float)),this,SLOT(doImgRotation(float)));
+    doRot->show();
+    doRot->move(QPoint(this->width(),0));
+    doRot->raise();
+    doRot->update();
+}
+
+void MainWindow::doImgRotation( float angle ){
+    QTransform transformation;
+    transformation.rotate(angle);
+    QImage tmpImg(auxQstring);
+    tmpImg = tmpImg.transformed(transformation);
+    tmpImg.save(_PATH_DISPLAY_IMAGE);
+    reloadImage2Display();
+    DrawVerAndHorLines( canvasCalib, Qt::magenta );
+}
+
+void MainWindow::DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor color){
+    QPoint p1(0,(tmpCanvas->height()/2));
+    QPoint p2(tmpCanvas->width(),(tmpCanvas->height()/2));
+    customLine *hLine = new customLine(p1,p2,QPen(color));
+    tmpCanvas->scene()->addItem(hLine);
+    p1.setX((tmpCanvas->width()/2));
+    p1.setY(0);
+    p2.setX((tmpCanvas->width()/2));
+    p2.setY(tmpCanvas->height());
+    customLine *vLine = new customLine(p1,p2,QPen(color));
+    tmpCanvas->scene()->addItem(vLine);
+    tmpCanvas->update();
+}
+
+void MainWindow::reloadImage2Display(){
+    //Load image to display
+    QPixmap pix(_PATH_DISPLAY_IMAGE);
+    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);    
+    //It creates the scene to be loaded into Layout
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());    
+    canvasCalib->setBackgroundBrush(QBrush(Qt::black));
+    canvasCalib->setBackgroundBrush(pix);    
+    canvasCalib->setScene( sceneCalib );
+    canvasCalib->resize(pix.width(),pix.height());
+    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->update();
+    //qDebug() << "CanvasSceneW: "<< canvasCalib->scene()->width();
+    //qDebug() << "CanvasSceneH: "<< canvasCalib->scene()->height();
+    //qDebug() << "CanvasW: "<< canvasCalib->width();
+    //qDebug() << "CanvasH: "<< canvasCalib->height();
+}
+
+void MainWindow::on_actionLoadCanvas_triggered()
+{
+    //Select image
+    //..
+    auxQstring = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select image..."),
+                                                        "./snapshots/Calib/",
+                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg, *.bmp);;"
+                                                     );
+    if( auxQstring.isEmpty() ){
+        return (void)NULL;
+    }
+
+    loadImageIntoCanvasEdit(auxQstring, true);
+
+
+}
+
+void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
+    //Create a copy of the image selected
+    //..
+    QImage origImg(fileName);
+    origImg.save(_PATH_DISPLAY_IMAGE);
+
+    //Rotate if requires
+    //..
+    ask = false;
+    if(ask)
+    {
+        if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 )
+        {
+            float rotAngle = getLastAngle();
+            doImgRotation( rotAngle );
+            globaIsRotated = true;
+        }
+        else
+        {
+            globaIsRotated = false;
+        }
+    }
+
+    //Refresh image in scene
+    //..
+    //Show image
+    reloadImage2Display();
+    //Load layout
+    QLayout *layout = new QVBoxLayout();
+    layout->addWidget(canvasCalib);
+    layout->setEnabled(false);
+    ui->tab_6->setLayout(layout);
+
+    //It enables slides
+    //..
+    ui->toolBarDraw->setEnabled(true);
+    ui->toolBarDraw->setVisible(true);
+    //ui->slide2AxCalThre->setEnabled(true);
+
+
+    reloadImage2Display();
+}
+
+void MainWindow::on_actionApplyThreshold_triggered()
+{
+    recParamFrm *recParam = new recParamFrm(this);
+    recParam->setModal(false);
+    connect(recParam,SIGNAL(paramGenerated(QString)),this,SLOT(applyThreshol2Scene(QString)));
+    recParam->setWindowTitle("Type the threshold [0-255]");
+    recParam->show();
+    recParam->raise();
+    recParam->update();
+}
+
+void MainWindow::applyThreshol2Scene(QString threshold){
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    int value = threshold.toInt(0);
+    //Apply threshold to the image
+    //..
+    QImage *imgThre = new QImage(auxQstring);
+    funcImgThreshold( value, imgThre );
+    imgThre->save(_PATH_DISPLAY_IMAGE);
+    //Rotate image if requested
+    //..
+    if(globaIsRotated){
+        float rotAngle = getLastAngle();
+        QImage imgRot = funcRotateImage(_PATH_DISPLAY_IMAGE, rotAngle);
+        imgRot.save(_PATH_DISPLAY_IMAGE);
+        qDebug() << "Rotate: " << rotAngle;
+    }
+    //Update canvas
+    //..
+    reloadImage2Display();
+
+    /*
+    if( imgThre->save(_PATH_DISPLAY_IMAGE) ){
+        QtDelay(100);
+        QPixmap pix(_PATH_DISPLAY_IMAGE);
+        pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);
+        canvasCalib->setBackgroundBrush(pix);
+        ui->slide2AxCalThre->setValue(value);
+        ui->slide2AxCalThre->setToolTip(QString::number(value));
+        ui->slide2AxCalThre->update();
+        //QtDelay(20);
+    }
+    */
+    QApplication::restoreOverrideCursor();
+}
+
+float MainWindow::getLastAngle(){
+    return readAllFile( _PATH_LAST_ROTATION ).trimmed().toFloat(0);
+}
+
+
+void MainWindow::mouseCursorWait(){
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+}
+
+void MainWindow::mouseCursorReset(){
+    QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::on_actionLoadSquareRectangle_triggered()
+{
+    //Obtain squiare aperture params
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, tmpSqAperture ) ){
+        funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
+        return (void)false;
+    }
+
+    //Draw a rectangle of the square aperture
+    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
+    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    customRect *tmpRect = new customRect(p1,p2);
+    tmpRect->setPen(QPen(Qt::red));
+    tmpRect->parameters.W = canvasCalib->width();
+    tmpRect->parameters.H = canvasCalib->height();
+    canvasCalib->scene()->clear();
+    canvasCalib->scene()->addItem(tmpRect);
+    canvasCalib->update();
+
+}
+
+void MainWindow::on_actionLoadRegOfInteres_triggered()
+{
+    //Obtain squiare aperture params
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_REGION_OF_INTERES, tmpSqAperture ) ){
+        funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
+        return (void)false;
+    }
+
+    //Draw a rectangle of the square aperture
+    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
+    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    customRect *tmpRect = new customRect(p1,p2);
+    tmpRect->setPen(QPen(Qt::red));
+    tmpRect->parameters.W = canvasCalib->width();
+    tmpRect->parameters.H = canvasCalib->height();
+    canvasCalib->scene()->clear();
+    canvasCalib->scene()->addItem(tmpRect);
+    canvasCalib->update();
+}
+
+void MainWindow::on_slideShuterSpeedSmall_valueChanged(int value)
+{
+    QString qstrVal = QString::number(value + ui->slideShuterSpeed->value());
+    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + qstrVal );
+}
+
+void MainWindow::on_actionToolPenArea_triggered()
+{
+    clearRectangle();
+    mouseCursorCross();
+    canvasAux = canvasCalib;
+    connect(
+                canvasCalib,
+                SIGNAL( signalMousePressed(QMouseEvent*) ),
+                this,
+                SLOT( funcAddPoint(QMouseEvent*) )
+           );
+}
+
+void MainWindow::mouseCursorHand(){
+    QApplication::setOverrideCursor(Qt::PointingHandCursor);
+}
+
+void MainWindow::mouseCursorCross(){
+    QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void MainWindow::on_actionSend_to_XYZ_triggered()
+{
+    //Validate that exist pixel selected
+    //..
+    if( lstSelPix->count()<1){
+        funcShowMsg("Lack","Not pixels selected");
+        return (void)false;
+    }
+
+    //Create xycolor space
+    //..
+    GraphicsView *xySpace = new GraphicsView(this);
+    funcPutImageIntoGV(xySpace, "./imgResources/CIEManual.png");
+    xySpace->setWindowTitle( "XY color space" );
+    xySpace->show();
+
+    //Transform each pixel from RGB to xy and plot it
+    //..
+    QImage tmpImg(_PATH_DISPLAY_IMAGE);
+    int W = tmpImg.width();
+    int H = tmpImg.height();
+    int pixX, pixY;
+    QRgb tmpPix;
+    colSpaceXYZ *tmpXYZ = (colSpaceXYZ*)malloc(sizeof(colSpaceXYZ));
+    int tmpOffsetX = -13;
+    int tmpOffsetY = -55;
+    int tmpX, tmpY;
+    int i;
+    qDebug() << "<lstSelPix->count(): " << lstSelPix->count();
+    for( i=0; i<lstSelPix->count(); i++ ){
+        //Get pixel position in real image
+        pixX = (float)(lstSelPix->at(i).first * W) / (float)canvasAux->width();
+        pixY = (float)(lstSelPix->at(i).second * H) / (float)canvasAux->height();
+        tmpPix = tmpImg.pixel( pixX, pixY );
+        funcRGB2XYZ( tmpXYZ, (float)qRed(tmpPix), (float)qGreen(tmpPix), (float)qBlue(tmpPix) );
+        //funcRGB2XYZ( tmpXYZ, 255.0, 0, 0  );
+        tmpX = floor( (tmpXYZ->x * 441.0) / 0.75 ) + tmpOffsetX;
+        tmpY = 522 - floor( (tmpXYZ->y * 481.0) / 0.85 ) + tmpOffsetY;
+        funcAddPoit2Graph( xySpace, tmpX, tmpY, 1, 1,
+                           QColor(qRed(tmpPix),qGreen(tmpPix),qBlue(tmpPix)),
+                           QColor(qRed(tmpPix),qGreen(tmpPix),qBlue(tmpPix))
+                         );
+    }
+
+    //Save image plotted
+    //..
+    QPixmap pixMap = QPixmap::grabWidget(xySpace);
+    pixMap.save("./Results/Miscelaneas/RGBPloted.png");
+
+}
+
+void MainWindow::on_actionSaveCanvas_triggered()
+{
+    recParamFrm *recParam = new recParamFrm(this);
+    recParam->setModal(false);
+    connect(recParam,SIGNAL(paramGenerated(QString)),this,SLOT(saveCalib(QString)));
+    recParam->setWindowTitle("Type the filename...");
+    recParam->show();
+    recParam->raise();
+    recParam->update();
+}
+
+void MainWindow::saveCalib(QString fileName){
+    bool result = saveCanvas(canvasCalib,fileName);
+    if( result ){
+        funcShowMsg("Success","Canvas saved");
+    }else{
+        funcShowMsg("ERROR","Saving Canvas");
+    }
+}
+
+bool MainWindow::saveCanvas(GraphicsView *tmpCanvas, QString fileName){
+    //Save
+    //..
+    //Remove if exists
+    QFile prevImg(fileName);
+    if(prevImg.exists()){
+        prevImg.remove();
+    }
+    prevImg.close();
+    QPixmap pixMap = QPixmap::grabWidget(tmpCanvas);
+    if(pixMap.save(fileName)){
+        return true;
+    }else{
+        return false;
+    }
+    return true;
+}
+
+void MainWindow::on_actionExportPixelsSelected_triggered()
+{
+    if( lstSelPix->isEmpty() ){
+        funcShowMsg("LACK","Not pixels to export");
+    }else{
+        int i;
+        QString filePath = "./Results/lstPixels.txt";
+        QFile fileLstPixels(filePath);
+        if (!fileLstPixels.open(QIODevice::WriteOnly | QIODevice::Text)){
+            funcShowMsg("ERROR","Creating file fileLstPixels");
+        }else{
+            QTextStream streamLstPixels(&fileLstPixels);
+            for( i=0; i<lstSelPix->count(); i++ ){
+                streamLstPixels << QString::number(lstSelPix->at(i).first) << " "<< QString::number(lstSelPix->at(i).second) << "\n";
+            }
+        }
+        fileLstPixels.close();
+        funcShowMsg("Success","List of pixels exported into: "+filePath);
+    }
+}
+
+void MainWindow::on_pbLANConnect_clicked()
+{
+    ui->txtCommand->setText("sudo iwconfig wlan0 essid ESSID-NAME key s:PASS");
+    ui->checkBlind->setChecked(true);
+    funcShowMsg("Alert","Execute IWCONFIG setting BLIND mode");
+}
+
+void MainWindow::on_pbLANTestConn_clicked()
+{
+    ui->txtCommand->setText("iwconfig");
+    ui->checkBlind->setChecked(false);
+    ui->pbSendComm->click();
+}
+
+void MainWindow::on_actionGenHypercube_triggered()
+{
+
+    /*
+    //
+    //Reserve memory
+    //
+    QImage tmpImg(_PATH_DISPLAY_IMAGE);
+    //QImage tmpImg("/home/jairo/Descargas/sangre.png");
+
+    uchar** red;
+    uchar** green;
+    uchar** blue;
+    uchar** D;
+    uchar** T;
+    red     = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    green   = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    blue    = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    D       = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    T       = (uchar**)malloc(tmpImg.height()*sizeof(char*));
+    for(int i=0; i<tmpImg.height(); i++)
+    {
+        red[i]      = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        green[i]    = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        blue[i]     = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        D[i]        = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        T[i]        = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+    }
+
+    //Extratcs colors from RGB
+    funcRGBImageToArray( red, green, blue, &tmpImg );
+
+    //
+    //Save gray image
+    //
+    QString fileFolder;
+    fileFolder  = QFileDialog::getExistingDirectory(
+                                                        this,
+                                                        tr("Open Directory"),
+                                                        "/home/jairo/Documentos/BORRAR/",
+                                                        QFileDialog::ShowDirsOnly
+                                                        | QFileDialog::DontResolveSymlinks
+                                                    );
+    if( fileFolder.isEmpty() )
+    {
+        return (void)NULL;
+    }
+    else
+    {
+
+        //mouseCursorWait();
+        //funcSaveGrayImage( fileFolder+"/red.png", red, tmpImg.height(), tmpImg.width() );
+        //funcSaveGrayImage( fileFolder+"/green.png", green, tmpImg.height(), tmpImg.width() );
+        //funcSaveGrayImage( fileFolder+"/blue.png", blue, tmpImg.height(), tmpImg.width() );
+        //mouseCursorReset();
+    }
+
+
+    //
+    //Copy data
+    //
+    for(int row=0; row<tmpImg.height(); row++)
+    {
+        for(int col=0; col<tmpImg.width(); col++)
+        {
+            T[row][col] = red[row][col];
+        }
+    }
+
+    funcSaveGrayImage( fileFolder+"/T.png", T, tmpImg.height(), tmpImg.width() );
+
+
+
+    //
+    //Calculate map
+    //
+    int top = 200;
+    int bottom = 80;
+    int k = 0;
+    for(int row=1; row<tmpImg.height()-1; row++)
+    {
+        for(int col=1; col<tmpImg.width()-1; col++)
+        {
+            D[row][col] = 0;
+            if( T[row][col] <= bottom || T[row][col] >= top )
+            {
+                D[row][col] = 1;
+                k++;
+            }
+        }
+    }
+
+
+    //
+    // Iterate
+    //
+    QList<uchar> R;
+    int pos;
+    int l;
+    int iter = 0;
+    int lastK = 0;
+    while( k>0 && lastK != k)
+    {
+        lastK = k;
+        l=0;
+        qDebug() << "iter: " << iter << "k: " << k;
+        for(int row=1; row<tmpImg.height()-1; row++)
+        {
+            for(int col=1; col<tmpImg.width()-1; col++)
+            {
+                if( D[row][col] == 1 )
+                {
+                    R.clear();
+
+                    if( D[row][col-1] == 0 )R.append(T[row][col-1]);
+                    if( D[row][col+1] == 0 )R.append(T[row][col+1]);
+
+                    if( D[row-1][col-1] == 0 )R.append(T[row-1][col-1]);
+                    if( D[row-1][col]   == 0 )R.append(T[row-1][col]);
+                    if( D[row-1][col+1] == 0 )R.append(T[row-1][col+1]);
+
+                    if( D[row+1][col-1] == 0 )R.append(T[row+1][col-1]);
+                    if( D[row+1][col]   == 0 )R.append(T[row+1][col]);
+                    if( D[row+1][col+1] == 0 )R.append(T[row+1][col+1]);
+
+                    if( R.size() > 0 )
+                    {
+
+                        qSort(R);
+                        pos = floor( R.size()/2 );
+                        //qDebug() << "pos: " << pos << "R.at(pos): " << R.at(pos) << "T[row][col]: " << T[row][col];
+                        T[row][col] = R.at(pos);
+                        //D[row][col] = 0;
+                        //k--;
+                        //exit(0);
+                    }
+                    else
+                    {
+                        //qDebug() << "row: " << row << "col: " << col << "R.size(): " << R.size() << "T[row][col]: " << T[row][col];
+                        //exit(0);
+                    }
+
+                }
+                else
+                {
+                    l++;
+                }
+            }
+        }
+
+        //
+        //Recalculate map
+        //
+        k = 0;
+        for(int row=1; row<tmpImg.height()-1; row++)
+        {
+            for(int col=1; col<tmpImg.width()-1; col++)
+            {
+                D[row][col] = 0;
+                if( T[row][col] <= bottom || T[row][col] >= top )
+                {
+                    D[row][col] = 1;
+                    k++;
+                }
+            }
+        }
+
+        //qDebug() << "N: " << (tmpImg.height()-2)*(tmpImg.width()-2) << "l: " << l << "k: " << k << "l+k: " << (l+k);
+        iter++;
+
+    }
+
+    //qDebug() << "Finished";
+
+
+
+    mouseCursorWait();
+    funcSaveGrayImage( fileFolder+"/denoised.png", T, tmpImg.height(), tmpImg.width() );
+    mouseCursorReset();
+
+
+
+
+
+
+
+
+
+    //
+    //Free memory
+    //
+    for(int i=0; i<tmpImg.height(); i++)
+    {
+        free( red[i] );
+        free( green[i] );
+        free( blue[i] );
+    }
+    free( red );
+    free( green );
+    free( blue );
+    */
+
+
+
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(
+                                                this,
+                                                tr("Save Hypercube as..."),
+                                                "./Hypercubes/",
+                                                tr("Documents (*.hypercube)")
+                                            );
+    if( fileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+
+    QTime timeStamp;
+    timeStamp.start();    
+
+    if( generatesHypcube(2, fileName) )
+    {
+        //Extracts hypercube
+        extractsHyperCube(fileName);
+        //Show time to extract files
+        QString time;
+        time = timeToQString( timeStamp.elapsed() );
+        qDebug() << time;
+        //Inform to the user
+        funcShowMsg(" ", "Hypercube exported successfully\n\n"+time);
+    }
+    //exit(2);
+
+
+}
+
+bool MainWindow::generatesHypcube(int numIterations, QString fileName){
+
+
+
+    mouseCursorWait();
+
+    int i, l, aux, N;
+    double *F, *fRed, *fGreen, *fBlue;
+    QList<double> lstChoises;
+    int hypW, hypH, hypL;
+    lstDoubleAxisCalibration daCalib;    
+    lstChoises  = getWavesChoised();
+    funcGetCalibration(&daCalib);
+
+    hypW        = daCalib.squareUsableW;
+    hypH        = daCalib.squareUsableH;
+    hypL        = lstChoises.count();
+    N           = hypW * hypH * hypL;//Voxels
+
+    F           = (double*)malloc(N*sizeof(double));
+    fRed        = calculatesF(numIterations,_RED,&daCalib);
+    fGreen      = calculatesF(numIterations,_GREEN,&daCalib);
+    fBlue       = calculatesF(numIterations,_BLUE,&daCalib);
+
+    //Demosaicing hypercube
+    //..
+    if(true)
+    {
+        if(false)
+        {
+            fRed    = demosaiseF2D(fRed,hypL,hypH,hypW);
+            fGreen  = demosaiseF2D(fGreen,hypL,hypH,hypW);
+            fBlue   = demosaiseF2D(fBlue,hypL,hypH,hypW);
+        }
+        else
+        {
+            if( SQUARE_BICUBIC_ITERATIONS > 0 )
+            {
+                //Da otra pasada
+                for( i=0; i<SQUARE_BICUBIC_ITERATIONS; i++ )
+                {
+                    fRed    = demosaiseF3D(fRed,hypL,hypH,hypW);
+                    fGreen  = demosaiseF3D(fGreen,hypL,hypH,hypW);
+                    fBlue   = demosaiseF3D(fBlue,hypL,hypH,hypW);
+                }
+            }
+        }
+    }
+
+
+
+
+    //Extracting spectral measure
+    //..
+    //Get hash to the corresponding sensitivity
+    QList<double> Sr;
+    QList<double> Sg;
+    QList<double> Sb;
+    for(l=0; l<hypL; l++)
+    {        
+        //qDebug() << "Hola1" << l << " of "<< hypL << " size: " << daCalib.Sr.size();
+        aux = ((floor(lstChoises.at(l)) - floor(daCalib.minWavelength) )==0)?0:floor( (floor(lstChoises.at(l)) - floor(daCalib.minWavelength) ) / (double)daCalib.minSpecRes );
+        Sr.append( daCalib.Sr.at(aux)  );
+        Sg.append( daCalib.Sg.at(aux) );
+        Sb.append( daCalib.Sb.at(aux) );
+    }
+    //qDebug() << "Hola13";
+    int j, pixByImage;
+    double min, max;
+    int minPos, maxPos;
+    min = 9999;
+    max = -1;
+    pixByImage = daCalib.squareUsableW * daCalib.squareUsableH;    
+    i=0;
+    for(l=0; l<hypL;l++)
+    {
+        for(j=0; j<pixByImage; j++)
+        {
+            F[i]    = (fRed[i]+fGreen[i]+fBlue[i]) / (Sr.at(l)+Sg.at(l)+Sb.at(l));
+            if(min>F[i])
+            {
+                min     = F[i];
+                minPos  = i;
+            }
+            if(max<F[i])
+            {
+                max     = F[i];
+                maxPos  = i;
+            }
+            i++;
+        }
+    }
+    printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
+    fflush(stdout);
+
+    //Save hypercube
+    //..
+    //Format: Date,W,H,L,l1,...,lL,pix_1_l1,pix_2_l1,...pix_n_l1,pix_1_l2,pix_2_l2,...pix_n_l2,...,pix_1_L,pix_2_L,...pix_n_L
+    QString hypercube;
+    QDateTime dateTime = QDateTime::currentDateTime();
+    hypercube.append(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
+    hypercube.append(","+QString::number(daCalib.squareUsableW));
+    hypercube.append(","+QString::number(daCalib.squareUsableH));
+    hypercube.append(","+QString::number(lstChoises.count()));
+    for(l=0; l<lstChoises.count(); l++)
+    {
+        hypercube.append(","+QString::number(lstChoises.at(l)));
+    }
+    N = hypW * hypH * hypL;//Voxels
+    for(i=0; i<N; i++)
+    {
+        hypercube.append(","+QString::number(F[i]));
+    }
+    fileName.replace(".hypercube","");
+    saveFile(fileName+".hypercube",hypercube);
+
+
+
+
+
+
+    mouseCursorReset();
+
+
+
+
+
+    /*
+
+    if(false)
+    {
+        double min, max;
+        int minPos, maxPos;
+        min = 9999;
+        max = -1;
+
+        for(int n=0; n<N; n++)
+        {
+            if(min > F[n])
+            {
+                min = F[n];
+                minPos = n;
+            }
+            if(max < F[n])
+            {
+                max = F[n];
+                maxPos = n;
+            }
+           //    printf("F[%d] | %lf\n",n,F[n]);
+        }
+        printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
+        fflush(stdout);
+    }
+    */
+
+
+
+
+
+
+
+    return true;
+
+}
+
+
+double *MainWindow::demosaiseF2D(double *f, int L, int H, int W)
+{
+    //Variables
+    int i, l, w, h;
+    double ***aux;
+    aux = (double***)malloc(L*sizeof(double**));
+    for(l=0;l<L;l++)
+    {
+        aux[l] = (double**)malloc(H*sizeof(double*));
+        for(h=0;h<H;h++)
+        {
+            aux[l][h] = (double*)malloc(W*sizeof(double));
+        }
+    }
+
+    //Fill as 3D matrix
+    i=0;
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+            for(w=0;w<W;w++)
+            {
+                aux[l][h][w] = f[i];
+                i++;
+            }
+        }
+    }
+
+    //Demosaize
+    i=0;
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+            for(w=0;w<W;w++)
+            {
+                if( h>0 && w>0 && h<H-1 && w<W-1 )
+                {
+                    f[i] = (    aux[l][h-1][w-1] +
+                                aux[l][h+1][w-1] +
+                                aux[l][h-1][w+1] +
+                                aux[l][h+1][w+1]
+                           ) / 4.0;
+                }
+                else
+                {
+                    //ROWS
+                    if( h==0 || h==(H-1) )
+                    {
+                        if(h==0)//First row
+                        {
+                            if( w>0 && w<(W-1) )
+                                f[i] = ( aux[l][h+1][w-1] + aux[l][h+1][w+1]) / 2.0;
+                            else//Corners
+                            {
+                                if(w==0)//Up-Left
+                                    f[i] = ( aux[l][h+1][w] + aux[l][h+1][w+1] + aux[l][h][w+1]) / 3.0;
+                                if(w==(W-1))//Up-Right
+                                    f[i] = ( aux[l][h][w-1] + aux[l][h+1][w-1] + aux[l][h+1][w]) / 3.0;
+                            }
+                        }
+                        else
+                        {
+                            if(h==(H-1))//Last row
+                            {
+                                if( w>0 && w<(W-1) )
+                                    f[i] = ( aux[l][h-1][w-1] + aux[l][h-1][w+1]) / 2.0;
+                                else//Corners
+                                {
+                                    if(w==0)//Down-Left
+                                        f[i] = ( aux[l][h-1][w] + aux[l][h-1][w+1] + aux[l][h][w+1]) / 3.0;
+                                    if(w==(W-1))//Down-Right
+                                        f[i] = ( aux[l][h][w-1] + aux[l][h-1][w-1] + aux[l][h-1][w]) / 3.0;
+                                }
+                            }
+                            else
+                            {
+                                //COLS
+                                if( w==0 || w==(W-1) )
+                                {
+                                    if(w==0)
+                                        f[i] = ( aux[l][h-1][w+1] + aux[l][h+1][w+1]) / 2.0;
+                                    else
+                                        f[i] = ( aux[l][h-1][w-1] + aux[l][h+1][w-1]) / 2.0;
+                                }
+                            }
+                        }
+                    }
+                }
+                i++;
+            }
+        }
+    }
+
+    //Free memory
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+             delete[] aux[l][h];
+        }
+        delete[] aux[l];
+    }
+    delete[] aux;
+
+    return f;
+}
+
+
+double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
+{
+    f = demosaiseF2D(f,L,H,W);
+
+
+    //Variables
+    int i, l, w, h;
+    double ***aux;
+    aux     = (double***)malloc(L*sizeof(double**));
+    for(l=0;l<L;l++)
+    {
+        aux[l] = (double**)malloc(H*sizeof(double*));
+        for(h=0;h<H;h++)
+        {
+            aux[l][h] = (double*)malloc(W*sizeof(double));
+        }
+    }
+
+    //Fill a 3D matrix
+    i=0;
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+            for(w=0;w<W;w++)
+            {
+                aux[l][h][w] = f[i];
+                i++;
+            }
+        }
+    }
+
+    //Demosaize 3D
+    trilinear tmpNode;
+    tmpNode.L = L;
+    tmpNode.W = W;
+    tmpNode.H = H;
+    i=0;
+    for(tmpNode.l=0;tmpNode.l<L;tmpNode.l++)
+    {
+        for(tmpNode.h=0;tmpNode.h<H;tmpNode.h++)
+        {
+            for(tmpNode.w=0;tmpNode.w<W;tmpNode.w++)
+            {
+                //qDebug() << "i: " << i << "l: " << tmpNode.l << "w: " << tmpNode.w << "h: " << tmpNode.h << "W: " << tmpNode.W << "H: " << tmpNode.H;
+                f[i] = calcTrilinearInterpolation(aux, &tmpNode);
+                i++;                
+            }
+        }
+    }
+
+    //Free memory
+    for(l=0;l<L;l++)
+    {
+        for(h=0;h<H;h++)
+        {
+             delete[] aux[l][h];
+        }
+        delete[] aux[l];
+    }
+    delete[] aux;
+
+
+
+    //Finishes
+    return f;
+}
+
+
+double MainWindow::calcTrilinearInterpolation(double ***cube, trilinear *node)
+{
+
+    double result = cube[node->l][node->h][node->w];
+    if(
+            node->l>0 && node->l<node->L-1 &&
+            node->w>0 && node->w<node->W-1 &&
+            node->h>0 && node->h<node->H-1
+    )
+    {
+        result = (
+                    cube[node->l-1][node->h-1][node->w-1]   +
+                    cube[node->l-1][node->h-1][node->w]     +
+                    cube[node->l-1][node->h-1][node->w+1]   +
+                    cube[node->l-1][node->h][node->w-1]     +
+                    cube[node->l-1][node->h][node->w]       +
+                    cube[node->l-1][node->h][node->w+1]     +
+                    cube[node->l-1][node->h+1][node->w-1]   +
+                    cube[node->l-1][node->h+1][node->w]     +
+                    cube[node->l-1][node->h+1][node->w+1]   +
+
+                    cube[node->l][node->h-1][node->w-1]     +
+                    cube[node->l][node->h-1][node->w]       +
+                    cube[node->l][node->h-1][node->w+1]     +
+                    cube[node->l][node->h][node->w-1]       +
+                    cube[node->l][node->h][node->w]         +
+                    cube[node->l][node->h][node->w+1]       +
+                    cube[node->l][node->h+1][node->w-1]     +
+                    cube[node->l][node->h+1][node->w]       +
+                    cube[node->l][node->h+1][node->w+1]     +
+
+                    cube[node->l+1][node->h-1][node->w-1]   +
+                    cube[node->l+1][node->h-1][node->w]     +
+                    cube[node->l+1][node->h-1][node->w+1]   +
+                    cube[node->l+1][node->h][node->w-1]     +
+                    cube[node->l+1][node->h][node->w]       +
+                    cube[node->l+1][node->h][node->w+1]     +
+                    cube[node->l+1][node->h+1][node->w-1]   +
+                    cube[node->l+1][node->h+1][node->w]     +
+                    cube[node->l+1][node->h+1][node->w+1]
+
+                 ) / 27.0;
+    }
+    else
+    {
+        if(
+            (node->l==0 || node->w==0 || node->h==0) &&
+            ( node->l<node->L-1 && node->w<node->W-1 && node->h<node->H-1 )
+        )
+        {
+            result = (
+                        cube[node->l][node->h][node->w]         +
+                        cube[node->l][node->h][node->w+1]       +
+                        cube[node->l][node->h+1][node->w]       +
+                        cube[node->l][node->h+1][node->w+1]     +
+
+                        cube[node->l+1][node->h][node->w]       +
+                        cube[node->l+1][node->h][node->w+1]     +
+                        cube[node->l+1][node->h+1][node->w]     +
+                        cube[node->l+1][node->h+1][node->w+1]
+
+                     ) / 8.0;
+        }
+        else
+        {
+            if(
+                    (node->l==node->L-1 || node->w==node->W-1 || node->h==node->H-1 ) &&
+                    (node->l>0 && node->w>0 && node->h>0)
+            )
+            {
+                result = (
+                            cube[node->l][node->h][node->w]         +
+                            cube[node->l][node->h][node->w-1]       +
+                            cube[node->l][node->h-1][node->w]       +
+                            cube[node->l][node->h-1][node->w-1]     +
+
+                            cube[node->l-1][node->h][node->w]       +
+                            cube[node->l-1][node->h][node->w-1]     +
+                            cube[node->l-1][node->h-1][node->w]     +
+                            cube[node->l-1][node->h-1][node->w-1]
+
+                         ) / 8.0;
+            }
+        }
+
+    }
+
+
+
+    /*
+    double result;
+    if(node->l>0 && node->l<node->L-1)
+    {
+        //qDebug() << "l: " << node->l << " h: " << node->h << " w: " << node->w;
+        result = (
+                    cube[node->l-1][node->h][node->w] +
+                    cube[node->l+1][node->h][node->w]
+                 ) / 2.0;
+    }
+    else
+    {
+        if(node->l==0)
+        {
+            result = (
+                        cube[node->l][node->h][node->w] +
+                        cube[node->l+1][node->h][node->w]
+                     ) / 2.0;
+        }
+        else
+        {
+            result = (
+                        cube[node->l][node->h][node->w] +
+                        cube[node->l-1][node->h][node->w]
+                     ) / 2.0;
+        }
+    }
+    */
+
+    /*
+    if(
+            node->l > 0 && node->l < node->L-1 &&
+            node->w > 0 && node->w < node->W-1 &&
+            node->h > 0 && node->h < node->H-1
+    )
+    {//BOUNDED BY THE MARGIN
+        if(true)
+        {
+            result = (  cube[node->l][node->h-1][node->w-1]     + cube[node->l][node->h-1][node->w+1]     +
+                        cube[node->l][node->h+1][node->w-1]     + cube[node->l][node->h+1][node->w+1]     +
+                        cube[node->l-1][node->h-1][node->w-1]   + cube[node->l-1][node->h-1][node->w+1]   +
+                        cube[node->l-1][node->h+1][node->w-1]   + cube[node->l-1][node->h+1][node->w+1]   +
+                        cube[node->l+1][node->h-1][node->w-1]   + cube[node->l+1][node->h-1][node->w+1]   +
+                        cube[node->l+1][node->h+1][node->w-1]   + cube[node->l+1][node->h+1][node->w+1]
+                     ) / 12.0;
+        }
+        else
+        {
+            result = (
+                        cube[node->l-1][node->h-1][node->w-1]   + cube[node->l-1][node->h-1][node->w+1]   +
+                        cube[node->l-1][node->h+1][node->w-1]   + cube[node->l-1][node->h+1][node->w+1]   +
+                        cube[node->l+1][node->h-1][node->w-1]   + cube[node->l+1][node->h-1][node->w+1]   +
+                        cube[node->l+1][node->h+1][node->w-1]   + cube[node->l+1][node->h+1][node->w+1]
+                     ) / 8.0;
+        }
+    }
+    else
+    {
+        result = cube[node->l][node->h][node->w];
+    }
+    */
+
+
+    return result;
+}
+
+
+double *MainWindow::calculatesF(int numIterations, int sensor, lstDoubleAxisCalibration *daCalib)
+{
+    //Get original image
+    //..
+    int i, N, M;
+    QImage img( _PATH_DISPLAY_IMAGE );
+    M = img.width() * img.height();
+
+    //Creates and fills H
+    // ..
+    //Creates containers
+    int hypW, hypH, hypL;
+    QList<double> lstChoises;
+    pixel **Hcol;
+    int **Hrow;
+
+    lstChoises  = getWavesChoised();
+    hypW        = daCalib->squareUsableW;
+    hypH        = daCalib->squareUsableH;
+    hypL        = lstChoises.count();
+    N           = hypW * hypH * hypL;//Voxels
+
+    //Reserves Memory for H
+    //..
+    Hcol        = (pixel**)malloc(N*sizeof(pixel*));
+    for(int n=0; n<N; n++)
+    {
+        Hcol[n] = (pixel*)malloc(5*sizeof(pixel));
+    }
+
+    Hrow        = (int**)malloc(M*sizeof(int*));
+    for(int m=0; m<M; m++)
+    {
+        Hrow[m]     = (int*)malloc(sizeof(int));
+        Hrow[m][0]  = 0;
+    }
+
+    //It creates H
+    //..
+    createsHColAndHrow( Hcol, Hrow, &img, daCalib );
+
+    //It creates image to proccess
+    //..
+    double *g, *gTmp, *f, *fKPlusOne;
+    gTmp        = (double*)malloc(M*sizeof(double));
+    fKPlusOne   = (double*)malloc(N*sizeof(double));
+    g           = serializeImageToProccess( img, sensor );//g
+    f           = createsF0(Hcol, g, N);//f0
+    for( i=0; i<numIterations; i++ )
+    {
+        createsGTmp( gTmp, g, Hrow, f, M );//(Hf)m
+        improveF( fKPlusOne, Hcol, f, gTmp, N );
+        memcpy(f,fKPlusOne,(N*sizeof(double)));
+    }
+
+    //It finishes
+    return f;
+}
+
+
+
+
+void MainWindow::improveF( double *fKPlusOne, pixel **Hcol, double *f, double *gTmp, int N )
+{
+    int n;
+    double avgMeasure;//average measure
+    double relevance;//How relevant it is respect to all voxels overlaped
+    double numProj;//It is integer but is used double to evit many cast operations
+    numProj = 5.0;
+    for( n=0; n<N; n++ )
+    {
+        //fKPlusOne[n]    = 0.0;
+        avgMeasure      = f[n] / numProj;
+        //qDebug() << "n: " << n << " | avgMeasure: " << avgMeasure;
+
+        relevance       = gTmp[Hcol[n][0].index] +
+                          gTmp[Hcol[n][1].index] +
+                          gTmp[Hcol[n][2].index] +
+                          gTmp[Hcol[n][3].index] +
+                          gTmp[Hcol[n][4].index];
+        //qDebug() << "relevance: " << relevance;
+
+        fKPlusOne[n]    = avgMeasure * relevance;
+        //qDebug() << "fKPlusOne[" << n << "]: " << fKPlusOne[n];
+
+    }
+
+}
+
+void MainWindow::createsGTmp(double *gTmp, double *g, int **Hrow, double *f, int M)
+{
+    int m, n;
+    for( m=0; m<M; m++ )
+    {
+        gTmp[m] = 0.0;
+        if( Hrow[m][0] > 0 )
+        {
+            for( n=1; n<=Hrow[m][0]; n++ )
+            {
+                gTmp[m] += f[Hrow[m][n]];
+            }
+            gTmp[m] = ( g[m] > 0 && gTmp[m] > 0 )?(g[m]/gTmp[m]):0;
+        }
+    }
+}
+
+
+double *MainWindow::createsF0(pixel **Hcol, double *g, int N)
+{
+    double *f;
+    f = (double*)malloc(N*sizeof(double));
+    for( int n=0; n<N; n++ )
+    {
+        f[n] = g[Hcol[n][0].index] +//Zero
+               g[Hcol[n][1].index] +//Right
+               g[Hcol[n][2].index] +//Up
+               g[Hcol[n][3].index] +//Left
+               g[Hcol[n][4].index]; //Down
+        //qDebug() << "f[" << n << "]: " << f[n];
+    }
+    return f;
+}
+
+double *MainWindow::serializeImageToProccess(QImage img, int sensor)
+{
+    int M, m;
+    double *g;
+    M = img.width() * img.height();
+    g = (double*)malloc( M * sizeof(double) );
+
+    QRgb rgb;
+    m=0;
+    for( int r=0; r<img.height(); r++ )
+    {
+        for( int c=0; c<img.width(); c++ )
+        {
+            if( sensor == _RED )
+            {
+                rgb     = img.pixel(QPoint(c,r));
+                g[m]    = (double)qRed(rgb);
+            }
+            else
+            {
+                if( sensor == _RGB )
+                {
+                    rgb     = img.pixel(QPoint(c,r));
+                    g[m]    = (double)(qRed(rgb) + qGreen(rgb) + qBlue(rgb));
+                }
+                else
+                {
+                    if( sensor == _GREEN )
+                    {
+                        rgb     = img.pixel(QPoint(c,r));
+                        g[m]    = (double)qGreen(rgb);
+                    }
+                    else
+                    {   //_BLUE
+                        rgb     = img.pixel(QPoint(c,r));
+                        g[m]    = (double)qBlue(rgb);
+                    }
+                }
+            }
+            m++;
+        }
+    }
+    return g;
+}
+
+void MainWindow::createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDoubleAxisCalibration *daCalib )
+{
+    //Prepares variables and constants
+    //..
+    int hypW, hypH, hypL, idVoxel;
+    QList<double> lstChoises;
+    strDiffProj Pj;
+    lstChoises  = getWavesChoised();
+    hypW        = daCalib->squareUsableW;
+    hypH        = daCalib->squareUsableH;
+    hypL        = lstChoises.count();
+
+    //Fill Hcol
+    //..
+    idVoxel = 0;
+    for(int len=1; len<=hypL; len++)
+    {
+        Pj.wavelength = lstChoises.at(len-1);
+        for(int row=1; row<=hypH; row++)
+        {
+            for(int col=1; col<=hypW; col++)
+            {
+                //Obtain diffraction projection for the acutual wavelength
+                Pj.x = col;
+                Pj.y = row;
+                calcDiffProj(&Pj,daCalib);
+                //Creates a new item in the c-th Hcol
+                Hcol[idVoxel][0].x      = Pj.x;//Zero
+                Hcol[idVoxel][0].y      = Pj.y;
+                Hcol[idVoxel][0].index  = xyToIndex( Hcol[idVoxel][0].x, Hcol[idVoxel][0].y, img->width() );
+
+                Hcol[idVoxel][1].x      = Pj.rx;//Right
+                Hcol[idVoxel][1].y      = Pj.ry;
+                Hcol[idVoxel][1].index  = xyToIndex( Hcol[idVoxel][1].x, Hcol[idVoxel][1].y, img->width() );
+
+                Hcol[idVoxel][2].x      = Pj.ux;//Up
+                Hcol[idVoxel][2].y      = Pj.uy;
+                Hcol[idVoxel][2].index  = xyToIndex( Hcol[idVoxel][2].x, Hcol[idVoxel][2].y, img->width() );
+
+                Hcol[idVoxel][3].x      = Pj.lx;//Left
+                Hcol[idVoxel][3].y      = Pj.ly;
+                Hcol[idVoxel][3].index  = xyToIndex( Hcol[idVoxel][3].x, Hcol[idVoxel][3].y, img->width() );
+
+                Hcol[idVoxel][4].x      = Pj.dx;//Down
+                Hcol[idVoxel][4].y      = Pj.dy;
+                Hcol[idVoxel][4].index  = xyToIndex( Hcol[idVoxel][4].x, Hcol[idVoxel][4].y, img->width() );
+
+                //Creates new item in Hrow
+                insertItemIntoRow(Hrow,Hcol[idVoxel][0].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][1].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][2].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][3].index,idVoxel);
+                insertItemIntoRow(Hrow,Hcol[idVoxel][4].index,idVoxel);
+
+                idVoxel++;
+            }
+        }
+    }
+}
+
+void MainWindow::insertItemIntoRow(int **Hrow, int row, int col)
+{
+    int actualPos;
+    actualPos = Hrow[row][0]+1;
+    Hrow[row] = (int*)realloc(Hrow[row],((actualPos+1)*sizeof(int)));
+    Hrow[row][actualPos] = col;
+    Hrow[row][0]++;
+}
+
+QList<double> MainWindow::getWavesChoised()
+{
+    QList<double> wavelengths;
+    QString waves;
+    waves = readFileParam(_PATH_WAVE_CHOISES);
+    QList<QString> choises;
+    choises = waves.split(",");
+    Q_FOREACH(const QString choise, choises)
+    {
+        if( !choise.isEmpty() && choise != " " && choise!="\n" )
+        {
+            wavelengths.append(choise.toDouble(0));
+        }
+    }
+    return wavelengths;
+}
+
+void MainWindow::on_actionValidCal_triggered()
+{
+    //validateCalibration *frmValCal = new validateCalibration(this);
+    //frmValCal->setModal(false);
+    //frmValCal->show();
+}
+
+void MainWindow::on_actionValCal_triggered()
+{
+    selWathToCheck *tmpFrm = new selWathToCheck(this);
+    tmpFrm->setModal(false);
+    tmpFrm->show();
+}
+
+void MainWindow::on_actionSquareUsable_triggered()
+{
+    //Read Calibration
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    selWathToCheck *checkCalib = new selWathToCheck(this);
+    checkCalib->showSqUsable(
+                                daCalib.squareUsableX,
+                                daCalib.squareUsableY,
+                                daCalib.squareUsableW,
+                                daCalib.squareUsableH,
+                                Qt::magenta
+                            );
+
+}
+
+void MainWindow::on_actionChoseWavelength_triggered()
+{
+    choseWaveToExtract *form = new choseWaveToExtract(this);
+    form->show();
+}
+
+void MainWindow::on_actionFittFunction_triggered()
+{
+    //Select images
+    //..
+    QString originFileName;
+    originFileName = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select image origin..."),
+                                                        "./tmpImages/",
+                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg *.gif);;"
+                                                     );
+    if( originFileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    //Obtains dots
+    //..
+    int row, col, min, minPos, val, i;
+    QRgb pixel;
+    QImage img(originFileName);
+    QImage tmpImg(originFileName);
+    QString function;
+    function = QString::number(img.height());
+    i = 0;
+    for( col=0; col<img.width(); col++ )
+    {
+        min     = 900;
+        minPos  = 0;
+        for( row=0; row<img.height(); row++ )
+        {
+            pixel   = img.pixel(col,row);
+            val     = qRed(pixel)+qGreen(pixel)+qBlue(pixel);
+            if( val < min )
+            {
+                min     = val;
+                minPos  = row;
+            }
+            tmpImg.setPixelColor(QPoint(col,minPos),Qt::white);
+        }
+        function.append(","+QString::number(img.height()-minPos));
+        tmpImg.setPixelColor(QPoint(col,minPos),Qt::magenta);
+        i++;
+    }
+    //Save
+    saveFile(_PATH_HALOGEN_FUNCTION,function);
+    tmpImg.save(_PATH_AUX_IMG);
+
+    funcShowMsg("Function saved successfully",_PATH_HALOGEN_FUNCTION);
+
+}
+
+void MainWindow::on_actionShow_hypercube_triggered()
+{
+    //Select images
+    //..
+    QString originFileName;
+    originFileName = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select hypercube..."),
+                                                        "./Hypercubes/",
+                                                        "(*.hypercube);;"
+                                                     );
+    qDebug() << originFileName;
+    if( originFileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    //Generates hypercube
+    //..
+    extractsHyperCube(originFileName);
+
+    funcShowMsg("Hypercube extracted successfully",_PATH_TMP_HYPCUBES);
+
+
+}
+
+void MainWindow::extractsHyperCube(QString originFileName)
+{
+    //Extracts information about the hypercube
+    //..
+    QString qstringHypercube;
+    QList<QString> hypItems;
+    QList<double> waves;
+    qstringHypercube = readFileParam( originFileName );
+    hypItems = qstringHypercube.split(",");
+    QString dateTime;
+    int W, H, L, l;
+    dateTime = hypItems.at(0);  hypItems.removeAt(0);
+    W = hypItems.at(0).toInt(0);         hypItems.removeAt(0);
+    H = hypItems.at(0).toInt(0);         hypItems.removeAt(0);
+    L = hypItems.at(0).toInt(0);         hypItems.removeAt(0);
+    for(l=0;l<L;l++)
+    {
+        waves.append( hypItems.at(0).toDouble(0) );
+        hypItems.removeAt(0);
+    }
+
+    //Generates the images into a tmpImage
+    //..
+    funcClearDirFolder(_PATH_TMP_HYPCUBES);
+    QString tmpFileName;
+    //QList<QImage> hypercube;
+    QImage tmpImg(W,H,QImage::Format_RGB32);
+    int tmpVal;
+    int col, row;
+    double tmp;
+    //max = vectorMaxQListQString(hypItems);
+    //qDebug() << "To norm max: " << max;
+
+    //Calculate the max cal for each wavelength
+    double max[L+1];
+    int i;
+    i=0;
+    max[L] = 0;
+    for( l=0; l<L; l++ )
+    {
+        max[l] = 0;
+        for( row=0; row<H; row++ )
+        {
+            for( col=0; col<W; col++ )
+            {
+                if(hypItems.at(i).toDouble(0)>max[l])
+                {
+                    max[l] = hypItems.at(i).toDouble(0);
+                }
+                if(hypItems.at(i).toDouble(0)>max[L])
+                {
+                    max[L] = hypItems.at(i).toDouble(0);
+                }
+                i++;
+            }
+        }
+    }
+
+    //Normalize and export image
+    //int tmpMax;
+    i=0;
+    for( l=0; l<L; l++ )
+    {
+        //tmpMax = 0;
+        //qDebug() << "max[l]: " << max[l];
+
+        for( row=0; row<H; row++ )
+        {
+            for( col=0; col<W; col++ )
+            {
+                tmp = hypItems.at(i).toDouble(0);
+                if(true)//Normalize
+                {
+                    //tmpVal  = (tmp<=0.0)?0:round( (tmp/max[l]) * 255.0 );
+                    tmpVal  = (tmp<=0.0)?0:round( (tmp/max[L]) * 255.0 );
+                }
+                else
+                {
+                    tmpVal = tmp;
+                }
+                //tmpImg.setPixelColor(QPoint(col,row),qGray(tmpVal,tmpVal,tmpVal));
+                tmpImg.setPixelColor(QPoint(col,row),qRgb(tmpVal,tmpVal,tmpVal));
+
+                //if(tmpVal>tmpMax)
+                //{
+                //    tmpMax=tmpVal;
+                //}
+
+                i++;
+            }
+        }
+
+        //qDebug() << "tmpMax: " << tmpMax;
+
+        if( SQUARE_BICUBIC_ITERATIONS > 1 )
+        {
+            tmpFileName =   _PATH_TMP_HYPCUBES +
+                            QString::number(waves.at(l)) +
+                            "."+
+                            QString::number(SQUARE_BICUBIC_ITERATIONS) +
+                            "Pasadas" +
+                            ".png";
+        }
+        else
+        {
+            tmpFileName = _PATH_TMP_HYPCUBES +
+                          QString::number(waves.at(l)) +
+                          ".png";
+        }
+        tmpImg.save(tmpFileName);
+        tmpImg.fill(Qt::black);
+        //hypercube.append(tmpImg);
+    }
+
+}
+
+void MainWindow::on_actionBilinear_interpolation_triggered()
+{
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(
+                                                this,
+                                                tr("Save Hypercube as..."),
+                                                _PATH_IMG_FILTERED,
+                                                tr("Images (*.png *.jpg *.jpeg *.gif *.BMP)")
+                                            );
+    if( fileName.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    mouseCursorWait();
+    QImage tmpImgOrig(_PATH_DISPLAY_IMAGE);
+    QImage imgBilInt;
+    imgBilInt = bilinearInterpolationQImage(tmpImgOrig);
+    fileName.replace(".png","");
+    imgBilInt.save(fileName+".png");
+    tmpImgOrig.save(fileName+"LastOrig.png");
+    mouseCursorReset();
+
+    funcShowMsg("Success","Bilinear interpolation applied");
+
+
+
+}
+
+void MainWindow::on_slideSquareShuterSpeedSmall_valueChanged(int value)
+{
+    value = value;
+    refreshSquareShootSpeed();
+}
+
+void MainWindow::on_slideSquareShuterSpeed_valueChanged(int value)
+{
+    value = value;
+    refreshSquareShootSpeed();
+}
+
+void MainWindow::refreshSquareShootSpeed()
+{
+    QString qstrVal = QString::number(
+                                        ui->slideSquareShuterSpeedSmall->value() +
+                                        ui->slideSquareShuterSpeed->value()
+                                     );
+    ui->labelSquareShuterSpeed->setText( "Square Shuter Speed: " + qstrVal );
+}
+
+
+
+void MainWindow::on_pbCopyShutter_clicked()
+{
+    ui->slideSquareShuterSpeed->setValue( ui->slideShuterSpeed->value() );
+    ui->slideSquareShuterSpeedSmall->setValue( ui->slideShuterSpeedSmall->value() );
+}
+
+
+cameraResolution* MainWindow::getCamRes()
+{
+    //cameraResolution* camRes;
+    //camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
+
+    if( ui->radioRes5Mp->isChecked() )
+    {
+        //#define _BIG_WIDTH 2592 //2592 | 640 | 320
+        //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
+        camRes->width    = 2592;
+        camRes->height   = 1944;
+    }
+    else
+    {
+        if( ui->radioRes8Mp->isChecked() )
+        {
+            //https://www.raspberrypi.org/forums/viewtopic.php?t=145815
+            camRes->width    = 3240;
+            camRes->height   = 2464;
+        }
+    }
+
+    return camRes;
+
+}
+
+void MainWindow::on_actionslideHypCam_triggered()
+{
+    slideHypCam* frmSlide = new slideHypCam(this);
+    frmSlide->setWindowModality(Qt::ApplicationModal);
+    frmSlide->setWindowTitle("Slide HypCam");
+    frmSlide->showMaximized();
+    frmSlide->show();
+}
+
+void MainWindow::on_pbGetSlideCube_clicked()
+{
+    ui->pbStartVideo->setEnabled(false);
+
+
+    mouseCursorWait();
+
+    camRes = getCamRes();
+    funcGetSLIDESnapshot();
+
+    mouseCursorReset();
+
+    ui->pbStartVideo->setEnabled(true);
+}
+
+
+bool MainWindow::funcGetSLIDESnapshot()
+{
+    int n;
+
+    //
+    //Getting calibration
+    //..
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //
+    //Save path
+    //..
+    saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
+
+    //
+    //Set required image's settings
+    //..
+    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    reqImg->idMsg           = (unsigned char)9;
+    reqImg->raspSett        = funcFillSnapshotSettings( reqImg->raspSett );
+
+    //
+    //Define slide' region
+    //..
+    reqImg->needCut         = false;
+    reqImg->fullFrame       = false;
+    reqImg->isSlide         = true;
+    reqImg->imgCols         = camRes->width;//2592 | 640
+    reqImg->imgRows         = camRes->height;//1944 | 480
+    reqImg->slide           = funcFillSLIDESettings(reqImg->slide);
+
+    //
+    //Send Slide-cube Request-parameters and recibe ACK if all parameters
+    //has been received are correct
+
+    //Open socket
+    int sockfd = connectSocket( camSelected );
+    unsigned char bufferRead[frameBodyLen];
+    qDebug() << "Socket opened";
+
+    //Require Slide-cube size..
+    ::write(sockfd,reqImg,sizeof(strReqImg));
+    qDebug() << "Slide-cube requested";
+
+    //Receive ACK with the camera status
+    read(sockfd,bufferRead,frameBodyLen);
+    if( bufferRead[1] == 1 ){//Begin the image adquisition routine
+        qDebug() << "Slide: Parameters received correctly";
+    }else{//Do nothing becouse camera is not accessible
+        qDebug() << "Slide: Parameter received with ERROR";
+        return false;
+    }
+
+    //
+    //Send request to start time lapse and wait for ACK if time lapse
+    //was saved correctly
+    //
+    n = ::write(sockfd,"beginTimelapse",14);
+    if( n != 14 )
+        qDebug() << "ERROR starting timelapse";
+    else
+        qDebug() << "Timelapse started";
+
+    //Receive ACK with the time lapse status
+    read(sockfd,bufferRead,frameBodyLen);
+    if( bufferRead[1] == 1 ){//Begin the image adquisition routine
+        qDebug() << "Time lapse: started successfully";
+    }else{//Do nothing becouse camera is not accessible
+        qDebug() << "Time lapse: ERROR starting";
+        return false;
+    }
+
+
+    //
+    //Request to compute slide-diffractio (it is received each image in the cube)
+    //
+
+
+    //
+    // Clear all, close all, and return
+    //
+    ::close(sockfd);
+
+    return true;
+}
+
+strSlideSettings MainWindow::funcFillSLIDESettings(strSlideSettings slideSetting)
+{
+
+    slideSetting.x1         = 500;
+    slideSetting.y1         = 500;
+    slideSetting.rows1      = 200;
+    slideSetting.cols1      = 10;
+
+    slideSetting.x2         = 800;
+    slideSetting.y2         = 500;
+    slideSetting.rows2      = 200;
+    slideSetting.cols2      = 600;
+
+    slideSetting.speed      = 800;
+    slideSetting.duration   = 3000;//8000
+
+    return slideSetting;
+}
+

@@ -2,6 +2,9 @@
 #define GENCALIBXML_H
 
 #include <QDialog>
+#include <__common.h>
+#include <customQMatrix4x3.h>
+#include <customQMatrix4x4.h>
 
 namespace Ui {
 class genCalibXML;
@@ -13,14 +16,30 @@ class genCalibXML : public QDialog
 
 public:
     explicit genCalibXML(QWidget *parent = 0);
+
     ~genCalibXML();
 
+    lstCalibFileNames fillLstCalibPoints();
+
+    strAllLinReg calcAllLinReg(lstCalibFileNames *centroids, int x1, int y1);
+
+    strAllLinReg getAllLR();
+
+    strLimits getLimitsFromHDD();
+
 private slots:
+
+    //customQGenericMatrix funcLinRegTwoIndVar(customQGenericMatrix X);
+
+    void disableButtons();
+
     void funcGetFilePath(QPushButton *tmpPb);
+
+    lstCalibFileNames funcFillCalibStruct();
 
     void autoLoadCentroids();
 
-    void setButton(QPushButton *tmpPb, QString tip, bool doAlert=true);
+    bool setButton(QPushButton *tmpPb, QString tip, bool doAlert=true);
 
     void on_pbSource_clicked();
 
@@ -71,6 +90,24 @@ private slots:
     void on_pbGreenRightDown_clicked();
 
     void on_pbRedRightDown_clicked();
+
+    QVector2D getWavelengthFrontiers();
+
+    void on_pbGenCal_clicked();
+
+    void calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal);
+
+    QList<double> getNormedFunction( QString fileName );
+
+    QVector2D getSqUsableIni();
+
+    QVector2D calcSpectralResolution();
+
+    customQMatrix4x3 mulLinRegXYW(customQMatrix4x4 X);
+
+    QVector3D multipleLinearRegression( customQMatrix4x3 X, QVector4D y );    
+
+    void on_pbFiles_clicked();
 
 private:
     Ui::genCalibXML *ui;

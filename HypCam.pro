@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -21,7 +22,16 @@ SOURCES += main.cpp\
     selcolor.cpp \
     customrect.cpp \
     showancalchrres.cpp \
-    gencalibxml.cpp
+    gencalibxml.cpp \
+    rotationfrm.cpp \
+    recparamfrm.cpp \
+    generatehypercube.cpp \
+    customQMatrix4x3.cpp \
+    customQMatrix3x3.cpp \
+    customQMatrix4x4.cpp \
+    selwathtocheck.cpp \
+    chosewavetoextract.cpp \
+    slidehypcam.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -32,12 +42,26 @@ HEADERS  += mainwindow.h \
     selcolor.h \
     customrect.h \
     showancalchrres.h \
-    gencalibxml.h
+    gencalibxml.h \
+    rotationfrm.h \
+    recparamfrm.h \
+    generatehypercube.h \
+    customQMatrix4x3.h \
+    customQMatrix3x3.h \
+    customQMatrix4x4.h \
+    selwathtocheck.h \
+    chosewavetoextract.h \
+    slidehypcam.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
-    showancalchrres.ui \
-    gencalibxml.ui
+    gencalibxml.ui \
+    rotationfrm.ui \
+    recparamfrm.ui \
+    generatehypercube.ui \
+    selwathtocheck.ui \
+    chosewavetoextract.ui \
+    slidehypcam.ui
 
 RESOURCES += \
     lstImgs.qrc
@@ -45,6 +69,8 @@ RESOURCES += \
 
 
 INCLUDEPATH += /usr/local/include/opencv
+INCLUDEPATH += /usr/local/include/opencv2
+
 #LIBS += -L/usr/local/lib
 LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
 

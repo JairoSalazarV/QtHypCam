@@ -231,6 +231,15 @@
         <file>imagenInte/calLeft.png</file>
         <file>imagenInte/calBottom.png</file>
         <file>imagenInte/DoubleAxisDiff.png</file>
+        <file>imagenInte/WiFi.png</file>
+        <file>imagenInte/hypCube.png</file>
+        <file>imagenInte/validCal.png</file>
+        <file>imagenInte/squareUsable.png</file>
+        <file>imagenInte/squareSmall.png</file>
+        <file>imagenInte/squareBig.png</file>
+        <file>imagenInte/hypChose.png</file>
+        <file>imagenInte/fitt.png</file>
+        <file>imagenInte/slide.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>
@@ -245,5 +254,7 @@
         <file>imagenInte/VerticalLineOff.png</file>
         <file>imagenInte/MouseSelOn.png</file>
         <file>imagenInte/MouseSelOff.png</file>
+        <file>imagenInte/toolSelect.png</file>
+        <file>imagenInte/slide.png</file>
     </qresource>
 </RCC>

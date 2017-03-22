@@ -10,6 +10,279 @@
 #include <QFile>
 #include <QTextStream>
 
+#include <QFileInfo>
+
+#include <customQMatrix3x3.h>
+#include <customQMatrix4x3.h>
+
+#include <QDesktopServices>
+#include <QFileDialog>
+
+
+QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
+{
+    point->setX( round( calib->LR.horizA + (calib->LR.horizB * point->x()) ) );
+    point->setY( round( calib->LR.vertA + (calib->LR.vertB * point->y()) ) );
+    return point;
+}
+
+QString funcRemoveFileNameFromPath( QString Path ){
+    return QFileInfo(Path).absolutePath();
+}
+
+
+QString timeToQString( unsigned int totMilli )
+{
+    unsigned int h          = round(totMilli/(1000*60*60));
+    totMilli                = totMilli - (h*(1000*60*60));
+    unsigned int m          = round(totMilli/(1000*60));
+    totMilli                = totMilli - (m*(1000*60));
+    unsigned int s          = round(totMilli/1000);
+    unsigned int u          = totMilli - (s*1000);
+    QString timeElapsed     = "HH:MM:SS:U( ";
+    timeElapsed            += (h>9)?QString::number(h)+":":"0"+QString::number(h)+":";
+    timeElapsed            += (m>9)?QString::number(m)+":":"0"+QString::number(m)+":";
+    timeElapsed            += (s>9)?QString::number(s)+":":"0"+QString::number(s)+":";
+    timeElapsed            += QString::number(u);
+    timeElapsed            += " )";
+    return timeElapsed;
+}
+
+
+double vectorMax(double *vector, int len)
+{
+    int i;
+    double max;
+    max = 0;
+    for(i=0;i<len;i++)
+    {
+        max = (max<vector[i])?vector[i]:max;
+    }
+    return max;
+}
+
+double vectorMaxQListQString(QList<QString> lst)
+{
+    int i;
+    double max;
+    max = 0;
+    for(i=0;i<lst.size();i++)
+    {
+        max = (max<lst.at(i).toDouble())?lst.at(i).toDouble():max;
+    }
+    return max;
+}
+
+QImage bilinearInterpolationQImage(QImage img)
+{
+    QImage aux;
+    aux = img;
+    int x, y;
+    QColor tmpPixel;
+    QRgb Q11, Q12, Q21, Q22;
+    int r, g, b;
+    for(y=1; y<img.height()-1; y++)
+    {
+        for(x=1; x<img.width()-1; x++)
+        {
+            Q11 = img.pixel(x-1,y-1);
+            Q12 = img.pixel(x+1,y-1);
+            Q21 = img.pixel(x-1,y+1);
+            Q22 = img.pixel(x+1,y+1);
+            r = round( (qRed(Q11)+qRed(Q12)+qRed(Q21)+qRed(Q22)/4.0) );
+            g = round( (qGreen(Q11)+qGreen(Q12)+qGreen(Q21)+qGreen(Q22)/4.0) );
+            b = round( (qBlue(Q11)+qBlue(Q12)+qBlue(Q21)+qBlue(Q22)/4.0) );
+            tmpPixel.setRed(r);
+            tmpPixel.setGreen(g);
+            tmpPixel.setBlue(b);
+            aux.setPixel( x, y, tmpPixel.rgba() );
+        }
+    }
+    return aux;
+}
+
+void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
+
+    qDebug() << "W" << calibSettings->W;
+    qDebug() << "H" << calibSettings->H;
+
+    qDebug() << "bkgPath" << calibSettings->bkgPath;
+
+    qDebug() << "bigX" << calibSettings->bigX;
+    qDebug() << "bigY" << calibSettings->bigY;
+    qDebug() << "bigW" << calibSettings->bigW;
+    qDebug() << "bigH" << calibSettings->bigH;
+
+    qDebug() << "squareX" << calibSettings->squareX;
+    qDebug() << "squareY" << calibSettings->squareY;
+    qDebug() << "squareW" << calibSettings->squareW;
+    qDebug() << "squareH" << calibSettings->squareH;
+
+    qDebug() << "squarePixX: " << calibSettings->squarePixX;
+    qDebug() << "squarePixY: " << calibSettings->squarePixY;
+    qDebug() << "squarePixW: " << calibSettings->squarePixW;
+    qDebug() << "squarePixH: " << calibSettings->squarePixH;
+
+    qDebug() << "squareUsablePixX: " << calibSettings->squareUsableX;
+    qDebug() << "squareUsablePixY: " << calibSettings->squareUsableY;
+    qDebug() << "squareUsablePixW: " << calibSettings->squareUsableW;
+    qDebug() << "squareUsablePixH: " << calibSettings->squareUsableH;
+
+    qDebug() << "horizontalA: " << calibSettings->LR.horizA;
+    qDebug() << "horizontalB: " << calibSettings->LR.horizB;
+    qDebug() << "verticalA: " << calibSettings->LR.vertA;
+    qDebug() << "verticalB: " << calibSettings->LR.vertB;
+
+    qDebug() << "waveHorizA: " << calibSettings->LR.waveHorizA;
+    qDebug() << "waveHorizB: " << calibSettings->LR.waveHorizB;
+    qDebug() << "waveVertA: " << calibSettings->LR.waveVertA;
+    qDebug() << "waveVertB: " << calibSettings->LR.waveVertB;
+
+    qDebug() << "deltaHorizA: " << calibSettings->LR.deltaHorizA;
+    qDebug() << "deltaHorizB: " << calibSettings->LR.deltaHorizB;
+    qDebug() << "deltaVertA: " << calibSettings->LR.deltaVertA;
+    qDebug() << "deltaVertB: " << calibSettings->LR.deltaVertB;
+
+    qDebug() << "minWavelength: " << calibSettings->minWavelength;
+    qDebug() << "maxWavelength: " << calibSettings->maxWavelength;
+    qDebug() << "maxNumBand: " << calibSettings->maxNumBands;
+    qDebug() << "minSpecRes: " << calibSettings->minSpecRes;
+
+}
+
+bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
+
+    QFile *xmlFile = new QFile(_PATH_CALIBRATION_FILE);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening _PATH_CALIBRATION_FILE");
+        return false;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+                continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="bkgPath" )
+                doubAxisCal->bkgPath = xmlReader->readElementText();
+
+            if( xmlReader->name()=="W" )
+                doubAxisCal->W = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="H" )
+                doubAxisCal->H = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="bigX" )
+                doubAxisCal->bigX = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="bigY" )
+                doubAxisCal->bigY = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="bigW" )
+                doubAxisCal->bigW = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="bigH" )
+                doubAxisCal->bigH = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squareX" )
+                doubAxisCal->squareX = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="squareY" )
+                doubAxisCal->squareY = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="squareW" )
+                doubAxisCal->squareW = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="squareH" )
+                doubAxisCal->squareH = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="squarePixX" )
+                doubAxisCal->squarePixX = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixY" )
+                doubAxisCal->squarePixY = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixW" )
+                doubAxisCal->squarePixW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squarePixH" )
+                doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="squareUsablePixX" )
+                doubAxisCal->squareUsableX = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squareUsablePixY" )
+                doubAxisCal->squareUsableY = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squareUsablePixW" )
+                doubAxisCal->squareUsableW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="squareUsablePixH" )
+                doubAxisCal->squareUsableH = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="horizontalA" )
+                doubAxisCal->LR.horizA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="horizontalB" )
+                doubAxisCal->LR.horizB = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="verticalA" )
+                doubAxisCal->LR.vertA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="verticalB" )
+                doubAxisCal->LR.vertB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="waveHorizA" )
+                doubAxisCal->LR.waveHorizA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="waveHorizB" )
+                doubAxisCal->LR.waveHorizB = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="waveVertA" )
+                doubAxisCal->LR.waveVertA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="waveVertB" )
+                doubAxisCal->LR.waveVertB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="deltaHorizA" )
+                doubAxisCal->LR.deltaHorizA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="deltaHorizB" )
+                doubAxisCal->LR.deltaHorizB = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="deltaVertA" )
+                doubAxisCal->LR.deltaVertA = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="deltaVertB" )
+                doubAxisCal->LR.deltaVertB = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="minWavelength" )
+                doubAxisCal->minWavelength = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="maxWavelength" )
+                doubAxisCal->maxWavelength = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="maxNumBand" )
+                doubAxisCal->maxNumBands = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="minSpecRes" )
+                doubAxisCal->minSpecRes = xmlReader->readElementText().toFloat(0);
+
+            if( xmlReader->name()=="Sr" )
+                funcQStringToSensitivities( xmlReader->readElementText(), &doubAxisCal->Sr );
+            if( xmlReader->name()=="Sg" )
+                funcQStringToSensitivities( xmlReader->readElementText(), &doubAxisCal->Sg );
+            if( xmlReader->name()=="Sb" )
+                funcQStringToSensitivities( xmlReader->readElementText(), &doubAxisCal->Sb );
+
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("settings.xml Parse Error",xmlReader->errorString());
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    return true;
+}
+
+void funcQStringToSensitivities(QString txt, QList<double> *p)
+{
+    int i;
+    QList<QString> lstSensitivities;
+    lstSensitivities = txt.split(",");
+    //p = (double*)malloc(lstSensitivities.count()*sizeof(double));
+    for(i=0; i<lstSensitivities.count(); i++)
+    {
+        p->append( lstSensitivities.at(i).toDouble(0) );
+    }
+}
 
 void funcTransPix( calcAndCropSnap *calStruct, int w, int h, int W, int H ){
     //Extrapolate dimensions
@@ -195,6 +468,7 @@ colorAnalyseResult *funcAnalizeImage( QImage *img ){
     */
 }
 
+/*
 IplImage *funcGetImgFromCam( int usb, int stabMs ){
     //Turn on camera
     //..
@@ -219,7 +493,10 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
             cvTranspose(tmpCam,imgRot);
-            cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
+
+            //cv::imwrite( tmpName.toStdString(), cv::Mat(imgRot, true) );
+            cv::imwrite( tmpName.toStdString(), cv::cvarrToMat(imgRot) );
+
             cvReleaseCapture(&usbCam);
             return imgRot;
         }else{
@@ -232,6 +509,7 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
     cvReleaseCapture(&usbCam);
     return tmpCam;
 }
+*/
 
 bool saveFile( QString fileName, QString contain ){
     QFile file(fileName);
@@ -260,9 +538,46 @@ QImage funcRotateImage(QString filePath, float rotAngle){
 
 QString readAllFile( QString filePath ){
     QFile tmpFile(filePath);
-    tmpFile.open(QIODevice::ReadOnly);
-    QTextStream tmpStream(&tmpFile);
-    return tmpStream.readAll();
+    if( tmpFile.exists() )
+    {
+        tmpFile.open(QIODevice::ReadOnly);
+        QTextStream tmpStream(&tmpFile);
+        return tmpStream.readAll();
+    }
+    else
+    {
+        return _ERROR_FILE_NOTEXISTS;
+    }
+    return _ERROR_FILE;
+}
+
+int fileIsValid(QString fileContain)
+{
+    // return:
+    //  1: exists and it is not empty
+    // -1: empty file
+    // -2: error reading
+    // -3: it does note exist
+    if( fileContain.isEmpty() )
+    {
+        return -1;
+    }
+    if( fileContain.contains(_ERROR_FILE) )
+    {
+        return -2;
+    }
+    if( fileContain.contains(_ERROR_FILE_NOTEXISTS) )
+    {
+        return -3;
+    }
+    return 1;
+}
+
+QString readFileParam(QString fileName){
+    QString tmpFileContain = readAllFile(fileName);
+    tmpFileContain = tmpFileContain.trimmed();
+    tmpFileContain.replace("\n","");
+    return tmpFileContain;
 }
 
 bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
@@ -284,27 +599,27 @@ bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement) {
 
-            if( xmlReader->name()=="width" )
-                squareParam->width = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="W" )
+                squareParam->canvasW = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="height" )
-                squareParam->height = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="H" )
+                squareParam->canvasH = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="x1" )
-                squareParam->x1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x" )
+                squareParam->rectX = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="y1" )
-                squareParam->y1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y" )
+                squareParam->rectY = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="x2" )
-                squareParam->x2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="w" )
+                squareParam->rectW = xmlReader->readElementText().toInt(0);
 
-            if( xmlReader->name()=="y2" )
-                squareParam->y2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="h" )
+                squareParam->rectH = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
-        funcShowMsg("raspcamSettings.xml Parse Error",xmlReader->errorString());
+        funcShowMsg("Parse Error",xmlReader->errorString());
         return false;
     }
     xmlReader->clear();
@@ -353,8 +668,14 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Contrast = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Saturation" )
                 raspcamSettings->Saturation = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="SquareShutterSpeed" )
+                raspcamSettings->SquareShutterSpeed = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="SquareShutterSpeedSmall" )
+                raspcamSettings->SquareShutterSpeedSmall = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ShutterSpeed" )
                 raspcamSettings->ShutterSpeed = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="ShutterSpeedSmall" )
+                raspcamSettings->ShutterSpeedSmall = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ISO" )
                 raspcamSettings->ISO = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ExposureCompensation" )
@@ -365,6 +686,18 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Red = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Green" )
                 raspcamSettings->Green = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Denoise" )
+                raspcamSettings->Denoise = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="ColorBalance" )
+                raspcamSettings->ColorBalance = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Preview" )
+                raspcamSettings->Preview = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="OneShot" )
+                raspcamSettings->OneShot = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TriggerTime" )
+                raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="CameraMp" )
+                raspcamSettings->CameraMp = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -449,6 +782,20 @@ void funcShowMsg(QString title, QString msg){
     yesNoMsgBox.setText(msg);
     yesNoMsgBox.setDefaultButton(QMessageBox::Ok);
     yesNoMsgBox.exec();
+}
+
+void funcShowFileError(int error, QString fileName){
+    switch(error){
+        case -1:
+            funcShowMsg("ERROR","Empty file: " + fileName);
+            break;
+        case -2:
+            funcShowMsg("ERROR","Unknow error in file: " + fileName);
+            break;
+        case -3:
+            funcShowMsg("ERROR","File does not exists: " + fileName);
+            break;
+    }
 }
 
 void funcPrintFirst(int n, int max, char *buffer){
@@ -549,6 +896,11 @@ void QtDelay( unsigned int ms ){
     }
 }
 
+int xyToIndex( int x, int y, int w)
+{
+    return ((y-1)*w) + x;
+}
+
 
 int funcShowMsgYesNo( QString title, QString msg ){
     //int integerValue = 10;
@@ -632,17 +984,211 @@ linearRegresion *funcCalcLinReg( float *X ){
     return linReg;
 }
 
+linearRegresion funcLinearRegression( double *X, double *Y, int numItems ){
+
+    if(false)
+    {
+        for(int i=0; i<numItems; i++)
+        {
+            printf("%lf, %lf\n",X[i],Y[i]);
+        }
+    }
+
+
+    linearRegresion linReg;
+    double mX=0.0, mY=0.0, aux1=0.0, aux2=0.0;
+    int i;
+    //Mean
+    for(i=0;i<numItems;i++)
+    {
+        mX += X[i];
+        mY += Y[i];
+    }
+    mX /= (double)numItems;
+    mY /= (double)numItems;
+    //funcShowMsg("mX,mY",QString::number(mX)+", "+QString::number(mY));
+    //
+    for(i=0;i<numItems;i++)
+    {
+        aux1 += (X[i]-mX)*(Y[i]-mY);
+        aux2 += (X[i]-mX)*(X[i]-mX);
+    }    
+    linReg.b   = aux1 / aux2;
+    linReg.a   = mY-(linReg.b*mX);
+
+    //printf("linReg->b: %lf \n",linReg->b);
+    //printf("aux1: %lf \n",aux1);
+    //printf("aux2: %lf \n",aux2);
+    //printf("mX: %lf \n",mX);
+    //printf("mY: %lf \n",mY);
+
+    //
+    return linReg;
+}
 
 
 bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory){
     QFile DummyFile(directory);
     if(DummyFile.open(QIODevice::WriteOnly)) {
         qint64 bytesWritten = DummyFile.write(reinterpret_cast<const char*>(dataPtr), datasize);
-        if (bytesWritten < datasize) {
+        if (bytesWritten < (qint64)datasize) {
             return false;
         }
         DummyFile.close();
     }
     return true;
 }
+
+
+
+/*
+void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett ){
+    diffPix->rightY = (float)calSett->rightLinRegA  + ( (float)calSett->rightLinRegB    * (float)diffPix->x );
+    diffPix->upY    = (float)calSett->upLinRegA     + ( (float)calSett->upLinRegB       * (float)diffPix->x );
+    diffPix->leftY  = (float)calSett->leftLinRegA   + ( (float)calSett->leftLinRegB     * (float)diffPix->x );
+    diffPix->downY  = (float)calSett->downLinRegA   + ( (float)calSett->downLinRegB     * (float)diffPix->x );
+
+    qDebug() << "inside: funcSourcePixToDiffPix";
+    qDebug() << "x: " << diffPix->x;
+
+    qDebug() << "calSett->rightLinRegA: " << calSett->rightLinRegA;
+    qDebug() << "calSett->rightLinRegB: " << calSett->rightLinRegB;
+    qDebug() << "calSett->rightY: " << diffPix->rightY;
+
+}
+*/
+
+
+double funcDet2x2(double **M){
+    return (M[0][0] * M[1][1]) - (M[1][0]*M[0][1]);
+}
+
+
+customQMatrix3x3 matMultiply(QMatrix3x4 *M1, QMatrix4x3 *M2)
+{
+    int M, N, C;
+    M = 3;
+    C = 4;
+    N = 3;
+    customQMatrix3x3 auxP;
+    int i, j, c;
+    for(j=0;j<M;j++)
+    {
+        for(i=0;i<N;i++)
+        {
+            auxP.operator ()(j,i) = 0;
+            for(c=0;c<C;c++)
+            {
+                auxP.operator ()(j,i) += M1->operator ()(c,i) * M2->operator ()(j,c);
+            }
+        }
+    }
+    return auxP;
+}
+
+QMatrix3x4 matMultiply(customQMatrix3x3 *M1, QMatrix3x4 *M2)
+{
+    //MxC x CxN
+    int M, N, C;
+    M = 3;
+    C = 3;
+    N = 4;
+    QMatrix3x4 auxP;
+    int i, j, c;
+    for(i=0;i<M;i++)//Final Row
+    {
+        for(j=0;j<N;j++)//Final Col
+        {
+            auxP.operator ()(j,i) = 0;
+            for(c=0;c<C;c++)//Calc col
+            {
+                auxP.operator ()(j,i) += M1->operator ()(c,i) * M2->operator ()(j,c);
+            }
+        }
+    }
+    return auxP;
+}
+
+QVector3D matMultiply(QMatrix3x4 *M1, QVector4D *M2)
+{
+    QVector3D res;
+    int items;
+    double acum;
+    items = 3;
+    for( int i=0; i<items; i++ )
+    {
+        acum = 0.0;
+        acum += (M1->operator ()(0,i) * M2->x());
+        acum += (M1->operator ()(1,i) * M2->y());
+        acum += (M1->operator ()(2,i) * M2->z());
+        acum += (M1->operator ()(3,i) * M2->w());
+        if(i==0)res.setX(acum);
+        if(i==1)res.setY(acum);
+        if(i==2)res.setZ(acum);
+    }
+    return res;
+}
+
+
+void funcOpenFolder(QString path){
+    QDesktopServices::openUrl(QUrl(path));
+}
+
+
+void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
+{
+    //int offsetX, offsetY;
+    int origX, origY;
+
+    origX   = diffProj->x + daCalib->squareUsableX;
+    origY   = diffProj->y + daCalib->squareUsableY;
+    //offsetX = abs( daCalib->squareUsableX - origX );
+    //offsetY = abs( daCalib->squareUsableY - origY );
+
+    //It calculates the jump
+    int jumpX, jumpY;
+    jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * diffProj->wavelength));
+    jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * diffProj->wavelength));
+
+    //Right
+    diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX + jumpX))) + diffProj->y;
+
+    //Left
+    diffProj->ly = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX - jumpX))) + diffProj->y;
+
+    //Up
+    diffProj->ux = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY-jumpY)) ) + diffProj->x;
+
+    //Down
+    diffProj->dx = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY+jumpY)) ) + diffProj->x;
+
+    //Fits the original "y"
+    diffProj->y  = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)origX)) + diffProj->y;
+    diffProj->x  = floor(daCalib->LR.vertA + (daCalib->LR.vertB * (double)origY)) + diffProj->x;
+
+    diffProj->rx = diffProj->x + jumpX;
+    diffProj->lx = diffProj->x - jumpX;
+    diffProj->uy = diffProj->y - jumpY;
+    diffProj->dy = diffProj->y + jumpY;
+
+}
+
+
+void funcClearDirFolder(QString path)
+{
+    QDir dir(path);
+    if (dir.exists())
+    {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst))
+        {
+            QFile::remove(info.absoluteFilePath());
+        }
+    }
+    else
+    {
+        dir.mkdir(path);
+    }
+}
+
+
 
