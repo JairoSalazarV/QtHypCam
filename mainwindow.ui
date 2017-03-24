@@ -1107,6 +1107,7 @@ QSlider::handle:horizontal {
    <addaction name="actionLoadRegOfInteres"/>
    <addaction name="actionLoadSquareRectangle"/>
    <addaction name="actionSquareUsable"/>
+   <addaction name="pbDrawSlide"/>
    <addaction name="actionSend_to_XYZ"/>
    <addaction name="actionSaveCanvas"/>
    <addaction name="actionExportPixelsSelected"/>
@@ -1444,6 +1445,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Open Slide HypCam</string>
+   </property>
+  </action>
+  <action name="pbDrawSlide">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/slideArea.png</normaloff>:/new/icons/imagenInte/slideArea.png</iconset>
+   </property>
+   <property name="text">
+    <string>Draw slide area</string>
+   </property>
+   <property name="toolTip">
+    <string>Draw slide area</string>
    </property>
   </action>
  </widget>

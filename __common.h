@@ -97,6 +97,10 @@
 
     QString timeToQString(unsigned int totMilli);
 
+    bool funGetSlideSettingsXML(QString fileName, strReqImg *reqImg );
+
+    int saveBinFile_From_u_int8_T( std::string fileName, uint8_t *data, size_t len);
+
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);

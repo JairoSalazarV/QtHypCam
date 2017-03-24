@@ -3409,6 +3409,29 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
     canvasCalib->update();
 }
 
+int MainWindow::funcDrawRectangleFromXML(QString fileName)
+{
+    //Obtain square coordinates from XML file
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( fileName, tmpSqAperture ) ){
+        funcShowMsg("ERROR","Loading " + fileName);
+        return -1;
+    }
+
+    //Draw a rectangle of the square aperture
+    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
+    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    customRect *tmpRect = new customRect(p1,p2);
+    tmpRect->setPen(QPen(Qt::red));
+    tmpRect->parameters.W = canvasCalib->width();
+    tmpRect->parameters.H = canvasCalib->height();
+
+    canvasCalib->scene()->addItem(tmpRect);
+    canvasCalib->update();
+
+    return 1;
+}
+
 void MainWindow::on_slideShuterSpeedSmall_valueChanged(int value)
 {
     QString qstrVal = QString::number(value + ui->slideShuterSpeed->value());
@@ -4894,7 +4917,7 @@ void MainWindow::on_pbGetSlideCube_clicked()
 
 bool MainWindow::funcGetSLIDESnapshot()
 {
-    int n;
+    int i, n;
 
     //
     //Getting calibration
@@ -4918,12 +4941,12 @@ bool MainWindow::funcGetSLIDESnapshot()
     //
     //Define slide' region
     //..
-    reqImg->needCut         = false;
-    reqImg->fullFrame       = false;
-    reqImg->isSlide         = true;
-    reqImg->imgCols         = camRes->width;//2592 | 640
-    reqImg->imgRows         = camRes->height;//1944 | 480
-    reqImg->slide           = funcFillSLIDESettings(reqImg->slide);
+    reqImg->needCut     = false;
+    reqImg->fullFrame   = false;
+    reqImg->isSlide     = true;
+    reqImg->imgCols     = camRes->width;//2592 | 640
+    reqImg->imgRows     = camRes->height;//1944 | 480
+    reqImg              = funcFillSLIDESettings(reqImg);
 
     //
     //Send Slide-cube Request-parameters and recibe ACK if all parameters
@@ -4935,11 +4958,11 @@ bool MainWindow::funcGetSLIDESnapshot()
     qDebug() << "Socket opened";
 
     //Require Slide-cube size..
-    ::write(sockfd,reqImg,sizeof(strReqImg));
+    n = ::write(sockfd,reqImg,sizeof(strReqImg));
     qDebug() << "Slide-cube requested";
 
     //Receive ACK with the camera status
-    read(sockfd,bufferRead,frameBodyLen);
+    n = read(sockfd,bufferRead,frameBodyLen);
     if( bufferRead[1] == 1 ){//Begin the image adquisition routine
         qDebug() << "Slide: Parameters received correctly";
     }else{//Do nothing becouse camera is not accessible
@@ -4958,19 +4981,73 @@ bool MainWindow::funcGetSLIDESnapshot()
         qDebug() << "Timelapse started";
 
     //Receive ACK with the time lapse status
-    read(sockfd,bufferRead,frameBodyLen);
-    if( bufferRead[1] == 1 ){//Begin the image adquisition routine
-        qDebug() << "Time lapse: started successfully";
-    }else{//Do nothing becouse camera is not accessible
-        qDebug() << "Time lapse: ERROR starting";
-        return false;
-    }
+    memset(bufferRead,0,frameBodyLen);
+    n = read(sockfd,bufferRead,frameBodyLen);
+    strNumSlideImgs numImgs;
+    memcpy( &numImgs, bufferRead, sizeof(strNumSlideImgs) );
 
+    //Validate image generated
+    int expecNumImgs;
+    expecNumImgs = ceil( (float)reqImg->slide.duration / (float)reqImg->slide.speed );
+    qDebug() << "Imagery generated: " << numImgs.numImgs << " of " << expecNumImgs;
 
     //
     //Request to compute slide-diffractio (it is received each image in the cube)
     //
+    float timeLapseRatio;
+    timeLapseRatio = 100.0 * ( (float)numImgs.numImgs / (float)expecNumImgs );
+    if( timeLapseRatio < 90.0 )
+    {
+        qDebug() << "Insufficient time lapse imagery generated, timeLapseRatio: " << timeLapseRatio << "% of 90.0% required";
+        n = ::write(sockfd,"0",2);
+    }
+    else
+    {
+        //Start slide-cube generation process
+        qDebug() << "Slide-cube generation process starting request";
+        n = ::write(sockfd,"1",2);
 
+        //Recuest all expected images
+        numImgs.idMsg   = 1;
+        int tmpImgLen;
+        expecNumImgs = 1;
+        funcClearDirFolder( _PATH_SLIDE_TMP_FOLDER );
+        for( i=1; i<=expecNumImgs; i++ )
+        {
+            //QtDelay(30);
+            numImgs.numImgs = i;
+            memcpy( bufferRead, &numImgs, sizeof(strNumSlideImgs) );
+            n               = ::write(sockfd,&numImgs,sizeof(strNumSlideImgs)+1);
+            if( n != sizeof(strNumSlideImgs)+1 )
+            {
+                qDebug() << "ERROR sending request for image: " << i;
+                fflush(stdout);
+            }
+            else
+            {
+                //Wait for ACK
+                memset(bufferRead,0,frameBodyLen);
+                n = read(sockfd,bufferRead,frameBodyLen);
+                if( bufferRead[0] == 1 )
+                {
+                    //Get slide file from camera
+                    qDebug() << "Image " << i << " start to crop and transmit";
+                    u_int8_t* tmpImgRec;
+                    n = funcReceiveFrame( sockfd, i, &tmpImgRec[0], &tmpImgLen, reqImg );
+
+                    //Free memory
+                    delete[] tmpImgRec;
+                }
+                else
+                {
+                    //qDebug() << "Camera respond with error to image requested: " << i;
+                    qDebug() << "Image " << i << " ERROR transmiting or does not exists";
+                }
+            }
+        }
+        qDebug() << "Slide-Cube received";
+    }
+    fflush(stdout);
 
     //
     // Clear all, close all, and return
@@ -4980,22 +5057,352 @@ bool MainWindow::funcGetSLIDESnapshot()
     return true;
 }
 
-strSlideSettings MainWindow::funcFillSLIDESettings(strSlideSettings slideSetting)
+int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* frameLen, strReqImg *reqImg )
 {
+    //--
+    //It assumes that frame was not allocated
+    //--
 
-    slideSetting.x1         = 500;
-    slideSetting.y1         = 500;
-    slideSetting.rows1      = 200;
-    slideSetting.cols1      = 10;
+    int i, n, numMsgs;
 
-    slideSetting.x2         = 800;
-    slideSetting.y2         = 500;
-    slideSetting.rows2      = 200;
-    slideSetting.cols2      = 600;
+    //Get frame len
+    *frameLen = funcReceiveOnePositiveInteger( sockfd );
+    if( *frameLen < 0 )
+    {
+        qDebug() << "ERROR receiving frameLen";
+        return -1;
+    }
+    //qDebug() << "Frame len: " << *frameLen;
 
-    slideSetting.speed      = 800;
-    slideSetting.duration   = 3000;//8000
+    //Get number of messages
+    numMsgs = funcReceiveOnePositiveInteger( sockfd );
+    if( numMsgs < 1 )
+    {
+        qDebug() << "ERROR receiving number of messages";
+        return -1;
+    }
+    //qDebug() << "Number of messages: " << numMsgs;
 
-    return slideSetting;
+    //Frame memory allocation
+    frame = (u_int8_t*)malloc( *frameLen );//Frame container
+
+    //Receive all frame
+    i = 0;
+    strReqSubframe* subFrame = (strReqSubframe*)malloc(sizeof(strReqSubframe));
+    subFrame->posIni    = 0;
+    subFrame->len       = frameBodyLen;
+    //funcDebug("Ready to receive messages");
+    //funcRequestSubframe(sockfd,subFrame);
+
+
+
+    while( subFrame->posIni < *frameLen )//while( i < 1 )
+    {
+
+        //qDebug() << "pos: " << subFrame->posIni << " len: " << subFrame->len;
+        if( ((int)*frameLen - subFrame->posIni) < (int)frameBodyLen  )
+        {
+            subFrame->len = *frameLen - subFrame->posIni;
+        }
+
+        //Request a frame with position and len
+        if( funcRequestSubframe(sockfd,subFrame) == 1 )
+        {
+
+            n    = funcReceiveOneMessage( sockfd, (void*)&frame[subFrame->posIni] );
+
+            if( n < 0 )
+            {
+                qDebug() << "ERROR receiving message: " << i;
+            }
+            else
+            {
+                subFrame->posIni += n-1;
+                //qDebug() << "n received: " << n << " at message: " << i << " pos: " << subFrame->posIni << " frameLen: " <<*frameLen;
+            }
+        }
+        i++;
+    }
+
+
+
+    subFrame->posIni = -1;
+    subFrame->len = -6543;
+    if( funcRequestSubframe(sockfd,subFrame) != 1 )
+        qDebug() << "ERROR finishing subFrames request";
+
+    //
+    //Save frame as image
+    //
+
+    /*
+    printf("Uno(%d,%d,%d,%d) Dos(%d,%d,%d,%d)",
+                                                    reqImg->slide.x1,
+                                                    reqImg->slide.y1,
+                                                    reqImg->slide.rows1,
+                                                    reqImg->slide.cols1,
+                                                    reqImg->slide.x2,
+                                                    reqImg->slide.y2,
+                                                    reqImg->slide.rows2,
+                                                    reqImg->slide.cols2
+           );
+    fflush(stdout);
+    */
+
+
+    int numRows, numCols, r, c;
+    numRows = reqImg->slide.rows1;
+    numCols = reqImg->slide.cols1 + reqImg->slide.cols2;
+    //printf("Img(%d,%d)\n",numCols,numRows);
+    fflush(stdout);
+    QImage tmpImg(numCols, numRows, QImage::Format_RGB32);
+
+    //Slide part
+    i = 0;
+    for( r=0; r<numRows; r++ )
+    {
+        for( c=0; c<reqImg->slide.cols1; c++ )
+        {
+            tmpImg.setPixel( c, r, qRgb( frame[i], frame[i+1], frame[i+2] ) );
+            i += 3;
+        }
+    }
+
+    //Diffraction part
+    for( r=0; r<numRows; r++ )
+    {
+        for( c=reqImg->slide.cols1; c<numCols; c++ )
+        {
+            tmpImg.setPixel( c, r, qRgb( frame[i], frame[i+1], frame[i+2] ) );
+            i += 3;
+        }
+    }
+
+    //Save result
+    std::string tmpOutFileName(_PATH_SLIDE_TMP_FOLDER);
+    tmpOutFileName.append(QString::number(idImg).toStdString());
+    tmpOutFileName.append(".png");//Slide Cube Part
+    tmpImg.save( tmpOutFileName.c_str() );
+
+
+
+
+
+    //
+    //Save raw frame
+    //
+    //std::string tmpOutFileName(_PATH_SLIDE_TMP_FOLDER);
+    //tmpOutFileName.append(QString::number(idImg).toStdString());
+    //tmpOutFileName.append(".scp");//Slide Cube Part
+    //saveBinFile_From_u_int8_T( tmpOutFileName, frame, *frameLen);
+
+
+
+    return 1;
 }
 
+void MainWindow::funcDebug(QString msg)
+{
+    qDebug() << msg;
+}
+
+int MainWindow::funcRequestSubframe( int sockfd, strReqSubframe* subFrameParams )
+{
+    int n;
+
+    //Validate input parameters
+    if(
+            (subFrameParams->posIni < 0 || subFrameParams->len < 1 ) &&
+            ( subFrameParams->len != -6543 )
+    )
+    {
+        //funcDebug("Parameter not setted");
+        return -1;
+    }
+
+    //Evaluate that message was correctly sent
+    //funcDebug("subFrameParams sent");
+    //qDebug() << "Sending, pos: " << subFrameParams->posIni << " len: " << subFrameParams->len;
+
+    n = ::write(sockfd,subFrameParams,sizeof(strReqSubframe)+1);
+    if( n != sizeof(strReqSubframe)+1 )
+    {
+        //funcDebug("Write empty");
+        return -1;
+    }
+
+    //funcDebug("Receiving ACK");
+    n = funcReceiveACK( sockfd );
+
+    //qDebug() << "ACK code received: " << n;
+
+    return n;
+
+}
+
+int MainWindow::funcReceiveACK( int sockfd )
+{
+
+    //qDebug() << "funcReceiveACK";
+
+    int n;
+    u_int8_t buffer[3];
+    n = read(sockfd,buffer,3);
+    if( n < 0 )
+        return -1;//Error receiving message
+
+    //qDebug() << "n: " << n << " buffer[0]: " << buffer[0] << " buffer[1]: " << buffer[1];
+
+    if( buffer[0] == 1 )
+        return 1;
+    if( buffer[0] == 0 )
+        return 0;
+
+    return -1;
+}
+
+int MainWindow::funcReceiveOneMessage( int sockfd, void* frame )
+{
+    //qDebug() << "funcReceiveOneMessage";
+
+    //It assumess that frame has memory prviously allocated
+    //Return the number n of bytes received
+
+    int n;
+    n = read(sockfd,frame,frameBodyLen+1);
+    if( n < 0 )
+        return 0;//Error receiving message
+
+
+    return n;
+}
+
+
+int MainWindow::funcReceiveOnePositiveInteger( int sockfd )
+{
+    //qDebug() << "funcReceiveOnePositiveInteger";
+    //It assumess that frame has memory prviously allocated
+    //Return the number n of bytes received
+
+    u_int8_t buffer[sizeof(int)+1];
+
+    int n;
+    //qDebug() << "READING";
+    n = read(sockfd,buffer,sizeof(int)+1);
+    if( n < 0 )
+        return -1;//Error receiving message
+
+    memcpy(&n,buffer,sizeof(int));
+
+    return n;
+}
+
+
+
+
+
+strReqImg* MainWindow::funcFillSLIDESettings(strReqImg* reqImg)
+{
+
+    //
+    //Obtain square coordinates from XML file
+    //
+    squareAperture *tmpSlide = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SLIDE_APERTURE, tmpSlide ) ){
+        funcShowMsg("ERROR","Loading Slide Area");
+        return reqImg;
+    }
+    squareAperture *tmpSlideDiff = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, tmpSlideDiff ) ){
+        funcShowMsg("ERROR","Loading Slide Diffraction Area");
+        return reqImg;
+    }
+
+    //Fit speed, duration and other parameters
+    if( !funGetSlideSettingsXML( _PATH_SLIDE_SETTINGS, reqImg ) ){
+        funcShowMsg("ERROR","Loading Slide Settings");
+        return reqImg;
+    }
+
+    //Fit slide area
+    reqImg->slide.x1        = round( ((float)tmpSlide->rectX / (float)tmpSlide->canvasW) * (float)reqImg->imgCols );
+    reqImg->slide.y1        = round( ((float)tmpSlide->rectY / (float)tmpSlide->canvasH) * (float)reqImg->imgRows );
+    reqImg->slide.cols1     = round( ((float)tmpSlide->rectW / (float)tmpSlide->canvasW) * (float)reqImg->imgCols );
+    reqImg->slide.rows1     = round( ((float)tmpSlide->rectH / (float)tmpSlide->canvasH) * (float)reqImg->imgRows );
+
+    //Fit diffraction area
+    reqImg->slide.x2        = round( ((float)tmpSlideDiff->rectX / (float)tmpSlideDiff->canvasW) * (float)reqImg->imgCols );
+    reqImg->slide.y2        = round( ((float)tmpSlideDiff->rectY / (float)tmpSlideDiff->canvasH) * (float)reqImg->imgRows );
+    reqImg->slide.cols2     = round( ((float)tmpSlideDiff->rectW / (float)tmpSlideDiff->canvasW) * (float)reqImg->imgCols );
+    reqImg->slide.rows2     = round( ((float)tmpSlideDiff->rectH / (float)tmpSlideDiff->canvasH) * (float)reqImg->imgRows );
+
+    //slideSetting.speed      = 800;
+    //slideSetting.duration   = 1700;//8000
+
+    return reqImg;
+}
+
+
+void MainWindow::on_pbDrawSlide_triggered()
+{
+    //
+    //Obtain square coordinates from XML file
+    //
+    squareAperture *tmpSlide = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SLIDE_APERTURE, tmpSlide ) ){
+        funcShowMsg("ERROR","Loading Slide Area");
+        return (void)NULL;
+    }
+    squareAperture *tmpSlideDiff = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, tmpSlideDiff ) ){
+        funcShowMsg("ERROR","Loading Slide Diffraction Area");
+        return (void)NULL;
+    }
+
+    //
+    // Fix coordinates
+    //
+    int minY;
+    minY = (tmpSlide->rectY < tmpSlideDiff->rectY)?tmpSlide->rectY:tmpSlideDiff->rectY;
+    tmpSlide->rectY     = minY;
+    tmpSlideDiff->rectY = minY;
+
+    int auxH1, auxH2, maxH;
+    auxH1               = (tmpSlide->rectY + tmpSlide->rectH)-tmpSlide->rectY;
+    auxH2               = (tmpSlideDiff->rectY + tmpSlideDiff->rectH)-tmpSlideDiff->rectY;
+    maxH                = (auxH1 > auxH2)?auxH1:auxH2;
+    tmpSlide->rectH     = maxH;
+    tmpSlideDiff->rectH = maxH;
+
+    //Save new coordinates
+    saveRectangleAs( tmpSlide, _PATH_SLIDE_APERTURE );
+    saveRectangleAs( tmpSlideDiff, _PATH_SLIDE_DIFFRACTION );
+
+    //Draw into scene
+    canvasCalib->scene()->clear();
+    funcDrawRectangleFromXML( _PATH_SLIDE_APERTURE );
+    funcDrawRectangleFromXML( _PATH_SLIDE_DIFFRACTION );
+}
+
+int MainWindow::saveRectangleAs( squareAperture *square, QString fileName )
+{
+    QString tmpContain;
+    tmpContain.append( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
+    tmpContain.append("<Variables>\n");
+    tmpContain.append("\t<W>"+ QString::number( square->canvasW  ) +"</W>\n");
+    tmpContain.append("\t<H>"+ QString::number( square->canvasH ) +"</H>\n");
+    tmpContain.append("\t<x>"+ QString::number( square->rectX ) +"</x>\n");
+    tmpContain.append("\t<y>"+ QString::number( square->rectY ) +"</y>\n");
+    tmpContain.append("\t<w>"+ QString::number( square->rectW ) +"</w>\n");
+    tmpContain.append("\t<h>"+ QString::number( square->rectH ) +"</h>\n");
+    tmpContain.append("</Variables>");
+    if( !saveFile( fileName, tmpContain ) )
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+    return 0;
+}

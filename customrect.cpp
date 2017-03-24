@@ -42,6 +42,8 @@ QAction *customRect::showContMenuLine(QPoint pos){
     submenu3->addAction( "Square aperture" );
     submenu3->addAction( "Square usable" );
     submenu3->addAction( "Region of interes" );
+    submenu3->addAction( "Slide" );
+    submenu3->addAction( "Slide diffraction" );
 
     xmenu->addSeparator();
     QMenu* submenu4 = xmenu->addMenu( "Modify" );
@@ -197,6 +199,16 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             saveSquareAs(_PATH_REGION_OF_INTERES);
+        }
+        if(a->text()=="Slide"){
+            //Call the centroid
+            //..
+            saveSquareAs(_PATH_SLIDE_APERTURE);
+        }
+        if(a->text()=="Slide diffraction"){
+            //Call the centroid
+            //..
+            saveSquareAs(_PATH_SLIDE_DIFFRACTION);
         }
         if(a->text()=="Properties"){
             qreal x,y,w,h;

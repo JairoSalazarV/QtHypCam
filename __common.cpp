@@ -18,6 +18,9 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 
+#include <iostream>
+#include <fstream>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -627,6 +630,42 @@ bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
     return true;
 }
 
+
+bool funGetSlideSettingsXML( QString fileName, strReqImg *reqImg ){
+
+    QFile *xmlFile = new QFile( fileName );
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
+
+            if( xmlReader->name()=="duration" )
+                reqImg->slide.duration = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="speed" )
+                reqImg->slide.speed = xmlReader->readElementText().toInt(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return false;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+    return true;
+}
+
 bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString filePath ){
 
     QFile *xmlFile = new QFile( filePath );
@@ -1037,6 +1076,15 @@ bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directo
         DummyFile.close();
     }
     return true;
+}
+
+int saveBinFile_From_u_int8_T( std::string fileName, uint8_t *data, size_t len)
+{
+    std::ofstream fp;
+    fp.open( fileName, std::ios::out | std::ios::binary );
+    fp.write((char*)data, len);
+    fp.close();
+    return 1;
 }
 
 

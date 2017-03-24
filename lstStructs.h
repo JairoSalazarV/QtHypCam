@@ -20,7 +20,7 @@
     #define _GRAPH_CALIB_HEIGHT 590    
     #define  _USE_CAM true
     #define _FACT_MULT 3
-    #define _AUTOCONNECT false
+    #define _AUTOCONNECT true
     #define PI 3.14159265
 
     #define _RED_WAVELENGHT 618
@@ -36,6 +36,10 @@
     #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"
     #define _PATH_SQUARE_USABLE             "./XML/squareUsable.xml"
     #define _PATH_REGION_OF_INTERES         "./XML/regionOfInteres.xml"
+    #define _PATH_SLIDE_APERTURE            "./XML/slideAperture.xml"
+    #define _PATH_SLIDE_DIFFRACTION         "./XML/slideDiffraction.xml"
+    #define _PATH_SLIDE_SETTINGS            "./XML/slideSettings.xml"
+    #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
     #define _PATH_CALIB                     "./settings/Calib/"
@@ -96,6 +100,17 @@
     #define SQUARE_BICUBIC_ITERATIONS       1        //Apply Bicubic k times
 
 
+
+    typedef struct strReqSubframe{
+        int posIni;
+        int len;
+    }strReqSubframe;
+
+    typedef struct strNumSlideImgs
+    {
+        unsigned char idMsg;        //Id message
+        int numImgs;                //Number of images generated
+    }strNumSlideImgs;
 
     typedef struct trilinear{
         int l;

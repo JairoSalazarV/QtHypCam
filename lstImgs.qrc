@@ -240,6 +240,7 @@
         <file>imagenInte/hypChose.png</file>
         <file>imagenInte/fitt.png</file>
         <file>imagenInte/slide.png</file>
+        <file>imagenInte/slideArea.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

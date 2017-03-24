@@ -401,7 +401,25 @@ private slots:
 
     bool funcGetSLIDESnapshot();
 
-    strSlideSettings funcFillSLIDESettings(strSlideSettings slideSetting);
+    int funcReceiveFrame(int sockfd, int idImg, u_int8_t *frame, int *frameLen, strReqImg *reqImg);
+
+    int funcReceiveOnePositiveInteger(int sockfd);
+
+    void funcDebug(QString msg);
+
+    int funcRequestSubframe( int sockfd, strReqSubframe* subFrameParams );
+
+    int funcReceiveACK( int sockfd );
+
+    int funcReceiveOneMessage( int sockfd, void* frame );
+
+    strReqImg *funcFillSLIDESettings(strReqImg *reqImg);
+
+    int funcDrawRectangleFromXML(QString fileName);
+
+    void on_pbDrawSlide_triggered();
+
+    int saveRectangleAs( squareAperture *square, QString fileName );
 
 private:
     Ui::MainWindow *ui;
