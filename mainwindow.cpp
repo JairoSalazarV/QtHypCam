@@ -43,6 +43,7 @@
 
 #include <hypCamAPI.h>
 
+#include <rasphypcam.h>
 
 
 //Custom
@@ -211,7 +212,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     //Try to connect to the last IP
-    QString lastIP = readAllFile( "./settings/lastIp.hypcam" );
+    QString lastIP = readAllFile( _PATH_LAST_IP );
     lastIP.replace("\n","");
     ui->txtIp->setText(lastIP);
     if(_AUTOCONNECT){
@@ -703,19 +704,18 @@ bool MainWindow::funcReceiveFile(
                                     unsigned char *tmpFile
 ){
 
-    qDebug() << "Inside funcReceiveFile";
+    qDebug() << "Inside funcReceiveFile sockfd: " << sockfd;
 
 
 
     //Requesting file
     int i, n;
-    //qDebug() << "Writing0";
+
     n = ::write(sockfd,"sendfile",8);
     if (n < 0){
         qDebug() << "ERROR: writing to socket";
         return false;
     }
-    //funcShowMsg("alert","Requesting file");
 
 
 
@@ -742,6 +742,8 @@ bool MainWindow::funcReceiveFile(
         funcActivateProgBar();
 
         for(i=1;i<=(int)numMsgs;i++){
+            printf("Msg: %d\n",i);
+
             ui->progBar->setValue(i);
             bzero(bufferRead,frameBodyLen);
             n = read(sockfd,bufferRead,frameBodyLen);
@@ -1110,7 +1112,7 @@ void MainWindow::on_pbConnect_clicked()
                 ui->pbGetSlideCube->setEnabled(true);
                 qDebug() << "IP->: " << QString((char*)camSelected->IP);
                 //Save last IP
-                saveFile( "./settings/lastIp.hypcam", QString((char*)camSelected->IP) );
+                saveFile( _PATH_LAST_IP, QString((char*)camSelected->IP) );
             }
         }else{
             ui->pbSnapshot->setEnabled(false);
@@ -4901,17 +4903,71 @@ void MainWindow::on_actionslideHypCam_triggered()
 
 void MainWindow::on_pbGetSlideCube_clicked()
 {
+
+    /*
+    if( funcRaspFileExists( "./tmpTimeLapse/1.png" ) == 0 )
+    {
+        debugMsg("File does not exists");
+    }
+    else
+    {
+        debugMsg("FOUND");
+
+        //Connect to socket
+        int socketID = funcRaspSocketConnect();
+        if( socketID == -1 )
+        {
+            debugMsg("ERROR connecting to socket");
+            return (void)NULL;
+        }
+
+        //Receive photo's size
+        unsigned int fileLen;
+        u_int8_t bufferRead[frameBodyLen];
+        read(socketID,bufferRead,frameBodyLen);
+        memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
+        qDebug() << "Receiving fileLen: " << QString::number(fileLen);
+
+        //Receive File photogram
+        int buffLen = ceil((float)fileLen/(float)frameBodyLen)*frameBodyLen;
+        unsigned char *tmpFile = (unsigned char*)malloc(buffLen);
+        QtDelay(60);
+        if( funcReceiveFile( socketID, fileLen, bufferRead, tmpFile ) ){
+            qDebug() << "Frame received";
+        }else{
+            qDebug() << "ERROR: Frame does not received";
+        }
+
+        //Save a backup of the image received
+        //..
+        if( false )
+        {
+            if(!saveBinFile( (unsigned long)fileLen, tmpFile,_PATH_IMAGE_RECEIVED))
+            {
+                qDebug()<< "ERROR: saving image-file received";
+            }
+        }
+
+
+    }
+    */
+
+
     ui->pbStartVideo->setEnabled(false);
 
 
     mouseCursorWait();
 
     camRes = getCamRes();
+
     funcGetSLIDESnapshot();
 
     mouseCursorReset();
 
     ui->pbStartVideo->setEnabled(true);
+
+
+
 }
 
 
@@ -5003,51 +5059,100 @@ bool MainWindow::funcGetSLIDESnapshot()
     }
     else
     {
+
+        QTime myTimer;
+
+
+
         //Start slide-cube generation process
         qDebug() << "Slide-cube generation process starting request";
         n = ::write(sockfd,"1",2);
 
         //Recuest all expected images
         numImgs.idMsg   = 1;
-        int tmpImgLen;
-        expecNumImgs = 1;
+        int imgLen      = (reqImg->slide.rows1 * (reqImg->slide.cols1 +reqImg->slide.cols2) * 3);
+        //expecNumImgs    = 1;
         funcClearDirFolder( _PATH_SLIDE_TMP_FOLDER );
+        int nextImg;
+        u_int8_t** lstImgs = (u_int8_t**)malloc(expecNumImgs*sizeof(u_int8_t*));
+        int lstImgPos   = 0;
+        int framePos    = 0;
+        int remainder   = imgLen;
+        myTimer.start();
         for( i=1; i<=expecNumImgs; i++ )
         {
-            //QtDelay(30);
-            numImgs.numImgs = i;
-            memcpy( bufferRead, &numImgs, sizeof(strNumSlideImgs) );
-            n               = ::write(sockfd,&numImgs,sizeof(strNumSlideImgs)+1);
-            if( n != sizeof(strNumSlideImgs)+1 )
+            //Read next image status (Id or -1 if finishes)
+            memset(bufferRead,'\0',sizeof(int)+1);
+
+            n = read(sockfd,bufferRead,sizeof(int)+1);
+            memcpy(&nextImg,bufferRead,sizeof(int));
+
+            if( nextImg == -1 )
             {
-                qDebug() << "ERROR sending request for image: " << i;
-                fflush(stdout);
+                funcDebug("Camera does not have more images");
+                break;
             }
             else
             {
-                //Wait for ACK
-                memset(bufferRead,0,frameBodyLen);
-                n = read(sockfd,bufferRead,frameBodyLen);
-                if( bufferRead[0] == 1 )
-                {
-                    //Get slide file from camera
-                    qDebug() << "Image " << i << " start to crop and transmit";
-                    u_int8_t* tmpImgRec;
-                    n = funcReceiveFrame( sockfd, i, &tmpImgRec[0], &tmpImgLen, reqImg );
 
-                    //Free memory
-                    delete[] tmpImgRec;
-                }
-                else
+                qDebug() << "Receiving image" << nextImg;
+
+                //Frame memory allocation
+                lstImgs[lstImgPos]  = (u_int8_t*)malloc((imgLen*sizeof(u_int8_t)));//Frame container
+                bzero( lstImgs[lstImgPos], imgLen );
+                framePos            = 0;
+                remainder           = imgLen;
+
+                //Read image from buffer
+                while( remainder > 0 )
                 {
-                    //qDebug() << "Camera respond with error to image requested: " << i;
-                    qDebug() << "Image " << i << " ERROR transmiting or does not exists";
+                    n = read(sockfd,(void*)&lstImgs[lstImgPos][framePos],remainder+1);
+                    remainder   -= n;
+                    framePos    += n;
+                    fflush(stdout);
                 }
+                lstImgPos++;
+
+
+
+
+                if(1)
+                {
+                    //Variables
+                    int numRows, numCols, r, c;
+                    numRows = reqImg->slide.rows1;
+                    numCols = reqImg->slide.cols1 + reqImg->slide.cols2;
+                    QImage tmpImg(numCols, numRows, QImage::Format_RGB888);
+                    //Slide part
+                    int j = 0;
+                    for( r=0; r<numRows; r++ )
+                    {
+                        for( c=0; c<reqImg->slide.cols1; c++ )
+                        {
+                            tmpImg.setPixel( c, r, qRgb( lstImgs[i-1][j], lstImgs[i-1][j+1], lstImgs[i-1][j+2] ) );
+                            j += 3;
+                        }
+                    }
+                    //Diffraction part
+                    for( r=0; r<numRows; r++ )
+                    {
+                        for( c=reqImg->slide.cols1; c<numCols; c++ )
+                        {
+                            tmpImg.setPixel( c, r, qRgb( lstImgs[i-1][j], lstImgs[i-1][j+1], lstImgs[i-1][j+2] ) );
+                            j += 3;
+                        }
+                    }
+                    //Save
+                    std::string tmpOutFileName(_PATH_SLIDE_TMP_FOLDER);
+                    tmpOutFileName.append(QString::number(i).toStdString());
+                    tmpOutFileName.append(".png");//Slide Cube Part
+                    tmpImg.save( tmpOutFileName.c_str() );
+                }
+
             }
         }
-        qDebug() << "Slide-Cube received";
+        qDebug() << "Slide-Cube received. Time(" << myTimer.elapsed()/1000 << "seconds)" ;
     }
-    fflush(stdout);
 
     //
     // Clear all, close all, and return
@@ -5057,14 +5162,20 @@ bool MainWindow::funcGetSLIDESnapshot()
     return true;
 }
 
-int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* frameLen, strReqImg *reqImg )
+int MainWindow::funcReceiveFrame( int sockfd, int idImg, int* frameLen, strReqImg *reqImg )
 {
+    //clock_t start, end;
+    //start = clock();
+
+
     //--
     //It assumes that frame was not allocated
     //--
 
     int i, n, numMsgs;
 
+    QTime myTimer;
+    myTimer.start();
     //Get frame len
     *frameLen = funcReceiveOnePositiveInteger( sockfd );
     if( *frameLen < 0 )
@@ -5072,8 +5183,9 @@ int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* f
         qDebug() << "ERROR receiving frameLen";
         return -1;
     }
-    //qDebug() << "Frame len: " << *frameLen;
+    qDebug() << "Frame len: " << *frameLen << "--" << myTimer.elapsed() << "ms";
 
+    myTimer.start();
     //Get number of messages
     numMsgs = funcReceiveOnePositiveInteger( sockfd );
     if( numMsgs < 1 )
@@ -5081,56 +5193,72 @@ int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* f
         qDebug() << "ERROR receiving number of messages";
         return -1;
     }
-    //qDebug() << "Number of messages: " << numMsgs;
+    qDebug() << "Number of messages: " << numMsgs<< "--" << myTimer.elapsed() << "ms";
 
+
+    myTimer.start();
     //Frame memory allocation
-    frame = (u_int8_t*)malloc( *frameLen );//Frame container
+    u_int8_t* frame = (u_int8_t*)malloc((*frameLen*sizeof(u_int8_t))+(frameBodyLen*2));//Frame container
+    bzero( frame, *frameLen );
 
-    //Receive all frame
-    i = 0;
-    strReqSubframe* subFrame = (strReqSubframe*)malloc(sizeof(strReqSubframe));
-    subFrame->posIni    = 0;
-    subFrame->len       = frameBodyLen;
-    //funcDebug("Ready to receive messages");
-    //funcRequestSubframe(sockfd,subFrame);
+    int framePos = 0;
+    int remainder = *frameLen;
 
-
-
-    while( subFrame->posIni < *frameLen )//while( i < 1 )
+    while( framePos < *frameLen )
     {
+        n = read(sockfd,(void*)&frame[framePos],remainder+1);
+        //qDebug() << "ALERT: Received: " << n << " of " << remainder;
+        remainder   -= n;
+        framePos    += n;
+    }
+    qDebug() << "All copied"<< "--" << myTimer.elapsed() << "ms";
 
-        //qDebug() << "pos: " << subFrame->posIni << " len: " << subFrame->len;
-        if( ((int)*frameLen - subFrame->posIni) < (int)frameBodyLen  )
+    /*
+    for( i=0; i<numMsgs; i++ )
+    {
+        QtDelay(1);
+        n = funcReceiveOneMessage( sockfd, (void*)&frame[i*frameBodyLen] );
+        if( n != frameBodyLen )
         {
-            subFrame->len = *frameLen - subFrame->posIni;
+            qDebug() << "ALERT: Message: " << i << " Received: " << n << " of " << frameBodyLen;
+            //return -1;
         }
-
-        //Request a frame with position and len
-        if( funcRequestSubframe(sockfd,subFrame) == 1 )
+        QtDelay(2);
+    }
+    //Receive last message if necessary
+    int remainder = *frameLen%frameBodyLen;
+    if( remainder > 0 )
+    {
+        n = funcReceiveOneMessage( sockfd, (void*)&frame[i*frameBodyLen] );
+        printf("remainder: %d pos: %d n: %d\n",remainder,(i*frameBodyLen),n);
+        fflush(stdout);
+        if( n != remainder )
         {
-
-            n    = funcReceiveOneMessage( sockfd, (void*)&frame[subFrame->posIni] );
-
-            if( n < 0 )
-            {
-                qDebug() << "ERROR receiving message: " << i;
-            }
-            else
-            {
-                subFrame->posIni += n-1;
-                //qDebug() << "n received: " << n << " at message: " << i << " pos: " << subFrame->posIni << " frameLen: " <<*frameLen;
-            }
+            qDebug() << "ERROR: In remainder message: " << i << " Received: " << n << " of " << remainder;
+            //return -1;
         }
         i++;
+        n = funcReceiveOneMessage( sockfd, (void*)&frame[i*frameBodyLen] );
+        printf("remainder2: %d pos: %d n: %d\n",remainder,(i*frameBodyLen),n);
+        fflush(stdout);
+        if( n != remainder )
+        {
+            qDebug() << "ERROR: In remainder2 message: " << i << " Received: " << n << " of " << remainder;
+            //return -1;
+        }
+
     }
 
+    debugMsg("Antes clock");
+    */
 
 
-    subFrame->posIni = -1;
-    subFrame->len = -6543;
-    if( funcRequestSubframe(sockfd,subFrame) != 1 )
-        qDebug() << "ERROR finishing subFrames request";
 
+
+
+    //end = clock();
+    //qDebug() << "Spend: " << (end-start)/1000 << " seconds";
+    //fflush(stdout);
     //
     //Save frame as image
     //
@@ -5150,12 +5278,16 @@ int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* f
     */
 
 
+    //debugMsg("Antes QImage");
+
     int numRows, numCols, r, c;
     numRows = reqImg->slide.rows1;
     numCols = reqImg->slide.cols1 + reqImg->slide.cols2;
     //printf("Img(%d,%d)\n",numCols,numRows);
-    fflush(stdout);
-    QImage tmpImg(numCols, numRows, QImage::Format_RGB32);
+    //fflush(stdout);
+    QImage tmpImg(numCols, numRows, QImage::Format_RGB888);
+
+    //debugMsg("Antes for");
 
     //Slide part
     i = 0;
@@ -5167,6 +5299,7 @@ int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* f
             i += 3;
         }
     }
+    //debugMsg("antes diff");
 
     //Diffraction part
     for( r=0; r<numRows; r++ )
@@ -5178,14 +5311,21 @@ int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* f
         }
     }
 
+    //debugMsg("antes save");
+    //exit(0);
+
+
     //Save result
-    std::string tmpOutFileName(_PATH_SLIDE_TMP_FOLDER);
-    tmpOutFileName.append(QString::number(idImg).toStdString());
-    tmpOutFileName.append(".png");//Slide Cube Part
-    tmpImg.save( tmpOutFileName.c_str() );
+    if(0)
+    {
+        std::string tmpOutFileName(_PATH_SLIDE_TMP_FOLDER);
+        tmpOutFileName.append(QString::number(idImg).toStdString());
+        tmpOutFileName.append(".png");//Slide Cube Part
+        tmpImg.save( tmpOutFileName.c_str() );
+    }
 
 
-
+    //debugMsg("Despues save");
 
 
     //
@@ -5197,7 +5337,7 @@ int MainWindow::funcReceiveFrame( int sockfd, int idImg, u_int8_t* frame, int* f
     //saveBinFile_From_u_int8_T( tmpOutFileName, frame, *frameLen);
 
 
-
+    //exit(0);
     return 1;
 }
 
@@ -5269,7 +5409,7 @@ int MainWindow::funcReceiveOneMessage( int sockfd, void* frame )
     //Return the number n of bytes received
 
     int n;
-    n = read(sockfd,frame,frameBodyLen+1);
+    n = read(sockfd,frame,frameBodyLen);
     if( n < 0 )
         return 0;//Error receiving message
 

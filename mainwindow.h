@@ -401,7 +401,7 @@ private slots:
 
     bool funcGetSLIDESnapshot();
 
-    int funcReceiveFrame(int sockfd, int idImg, u_int8_t *frame, int *frameLen, strReqImg *reqImg);
+    int funcReceiveFrame(int sockfd, int idImg, int *frameLen, strReqImg *reqImg);
 
     int funcReceiveOnePositiveInteger(int sockfd);
 

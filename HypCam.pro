@@ -31,7 +31,8 @@ SOURCES += main.cpp\
     customQMatrix4x4.cpp \
     selwathtocheck.cpp \
     chosewavetoextract.cpp \
-    slidehypcam.cpp
+    slidehypcam.cpp \
+    rasphypcam.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -51,7 +52,9 @@ HEADERS  += mainwindow.h \
     customQMatrix4x4.h \
     selwathtocheck.h \
     chosewavetoextract.h \
-    slidehypcam.h
+    slidehypcam.h \
+    rasphypcam.h \
+    lstpaths.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
