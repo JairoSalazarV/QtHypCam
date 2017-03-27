@@ -65,6 +65,8 @@
 #include <QtSerialPort/QSerialPort>
 #include <slidehypcam.h>
 
+#include <QThread>
+
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -109,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
 
     //ui->actionValidCal->trigger();
@@ -1090,7 +1093,7 @@ void MainWindow::on_pbConnect_clicked()
         int rowSelected = ui->tableLstCams->currentRow();
         qDebug() << "CurrentRow: " << QString::number(rowSelected);
         if(rowSelected >= 0){
-            if( camSelected->isConnected ){
+            if( camSelected->isConnected == true ){
                 qDebug() << "Disconnecting";
                 camSelected->isConnected = false;
                 camSelected->tcpPort = 0;
@@ -1099,14 +1102,14 @@ void MainWindow::on_pbConnect_clicked()
                 ui->pbSnapshot->setEnabled(false);
                 ui->pbGetSlideCube->setEnabled(false);
             }else{
-                qDebug() << "Connecting: ";
-                camSelected->isConnected = true;
+                qDebug() << "Connecting: ";                
                 camSelected->tcpPort = lstSettings->tcpPort;
                 memcpy(
                             camSelected->IP,
                             ui->tableLstCams->item(rowSelected,1)->text().trimmed().toStdString().c_str(),
                             sizeof(camSelected->IP)
-                      );                
+                      );
+                camSelected->isConnected = true;
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/close.png") );
                 ui->pbSnapshot->setEnabled(true);
                 ui->pbGetSlideCube->setEnabled(true);
@@ -1388,6 +1391,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
 void MainWindow::on_pbSaveImage_clicked()
 {    
+    int n;
     bool tmpSaveLocaly = funcShowMsgYesNo("Question","Bring into this PC?");
     //Stop streaming
     ui->pbStartVideo->click();
@@ -1402,9 +1406,9 @@ void MainWindow::on_pbSaveImage_clicked()
     unsigned char tmpInstRes[tmpFrameLen];
     tmpInstRes[0] = (unsigned char)5;//Camera instruction
     tmpInstRes[1] = (unsigned char)2;
-    ::write(sockfd,&tmpInstRes,2);
+    n = ::write(sockfd,&tmpInstRes,2);
     bzero(tmpInstRes,tmpFrameLen);
-    read(sockfd,tmpInstRes,2);
+    n = read(sockfd,tmpInstRes,2);
     ::close(sockfd);
 
     //Turn on camera with new parameters
@@ -1414,9 +1418,9 @@ void MainWindow::on_pbSaveImage_clicked()
     tmpInstRes[0] = 5;
     tmpInstRes[1] = 1;
     memcpy( &tmpInstRes[2], raspcamSettings, sizeof(structRaspcamSettings) );
-    ::write(sockfd,&tmpInstRes,tmpFrameLen);
+    n = ::write(sockfd,&tmpInstRes,tmpFrameLen);
     bzero(tmpInstRes,tmpFrameLen);
-    read(sockfd,tmpInstRes,2);
+    n = read(sockfd,tmpInstRes,2);
     //qDebug() << "n: " << QString::number(n);
     qDebug() << "instRes: " << tmpInstRes[1];
     if( tmpInstRes[1] == (unsigned char)0 ){
@@ -1447,9 +1451,9 @@ void MainWindow::on_pbSaveImage_clicked()
         sockfd = connectSocket( camSelected );
         tmpInstRes[0] = (unsigned char)6;//Camera instruction
         tmpInstRes[1] = (unsigned char)2;
-        ::write(sockfd,&tmpInstRes,2);
+        n = ::write(sockfd,&tmpInstRes,2);
         bzero(tmpInstRes,tmpFrameLen);
-        read(sockfd,tmpInstRes,2);
+        n = read(sockfd,tmpInstRes,2);
         qDebug() << "Image saved into HypCam";
         ::close(sockfd);
 
@@ -1461,9 +1465,9 @@ void MainWindow::on_pbSaveImage_clicked()
     sockfd = connectSocket( camSelected );
     tmpInstRes[0] = (unsigned char)5;//Camera instruction
     tmpInstRes[1] = (unsigned char)2;
-    ::write(sockfd,&tmpInstRes,2);
+    n = ::write(sockfd,&tmpInstRes,2);
     bzero(tmpInstRes,tmpFrameLen);
-    read(sockfd,tmpInstRes,2);
+    n = read(sockfd,tmpInstRes,2);
     ::close(sockfd);
     qDebug() << "Camera Turned off";
 
@@ -1473,9 +1477,9 @@ void MainWindow::on_pbSaveImage_clicked()
     tmpInstRes[0] = 5;
     tmpInstRes[1] = 1;
     memcpy( &tmpInstRes[2], raspcamSettings, sizeof(structRaspcamSettings) );
-    ::write(sockfd,&tmpInstRes,tmpFrameLen);
+    n = ::write(sockfd,&tmpInstRes,tmpFrameLen);
     bzero(tmpInstRes,tmpFrameLen);
-    read(sockfd,tmpInstRes,2);
+    n = read(sockfd,tmpInstRes,2);
     qDebug() << "instRes: " << tmpInstRes[1];
     if( tmpInstRes[1] == (unsigned char)0 ){
         funcShowMsg("ERROR","Camera did not completed the instruction");
@@ -4901,56 +4905,26 @@ void MainWindow::on_actionslideHypCam_triggered()
     frmSlide->show();
 }
 
-void MainWindow::on_pbGetSlideCube_clicked()
+void MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestine )
 {
-
-    /*
-    if( funcRaspFileExists( "./tmpTimeLapse/1.png" ) == 0 )
+    if( funcRaspFileExists( fileToObtain ) == 0 )
     {
         debugMsg("File does not exists");
     }
     else
     {
-        debugMsg("FOUND");
-
-        //Connect to socket
-        int socketID = funcRaspSocketConnect();
-        if( socketID == -1 )
-        {
-            debugMsg("ERROR connecting to socket");
-            return (void)NULL;
-        }
-
-        //Receive photo's size
-        unsigned int fileLen;
-        u_int8_t bufferRead[frameBodyLen];
-        read(socketID,bufferRead,frameBodyLen);
-        memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
-        qDebug() << "Receiving fileLen: " << QString::number(fileLen);
-
-        //Receive File photogram
-        int buffLen = ceil((float)fileLen/(float)frameBodyLen)*frameBodyLen;
-        unsigned char *tmpFile = (unsigned char*)malloc(buffLen);
-        QtDelay(60);
-        if( funcReceiveFile( socketID, fileLen, bufferRead, tmpFile ) ){
-            qDebug() << "Frame received";
-        }else{
-            qDebug() << "ERROR: Frame does not received";
-        }
-
-        //Save a backup of the image received
-        //..
-        if( false )
-        {
-            if(!saveBinFile( (unsigned long)fileLen, tmpFile,_PATH_IMAGE_RECEIVED))
-            {
-                qDebug()<< "ERROR: saving image-file received";
-            }
-        }
-
-
+        int fileLen;
+        u_int8_t* fileReceived = funcRaspReceiveFile( fileToObtain, &fileLen );
+        saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen);
+        debugMsg("File received complete");
     }
-    */
+}
+
+void MainWindow::on_pbGetSlideCube_clicked()
+{
+
+    //obtainFile( "./timeLapse/duck.png", "./tmpImages/patito.png" );
+
 
 
     ui->pbStartVideo->setEnabled(false);
@@ -4960,20 +4934,28 @@ void MainWindow::on_pbGetSlideCube_clicked()
 
     camRes = getCamRes();
 
-    funcGetSLIDESnapshot();
+    int numImages = 0;
+    u_int8_t** lstImgs = funcGetSLIDESnapshot( &numImages, true );
+
+    delete[] lstImgs;
 
     mouseCursorReset();
 
     ui->pbStartVideo->setEnabled(true);
 
 
-
 }
 
+structCamSelected* MainWindow::funcGetCamSelected()
+{
+    return camSelected;
+}
 
-bool MainWindow::funcGetSLIDESnapshot()
+u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
 {
     int i, n;
+
+    u_int8_t** lstImgs;
 
     //
     //Getting calibration
@@ -5023,7 +5005,7 @@ bool MainWindow::funcGetSLIDESnapshot()
         qDebug() << "Slide: Parameters received correctly";
     }else{//Do nothing becouse camera is not accessible
         qDebug() << "Slide: Parameter received with ERROR";
-        return false;
+        return lstImgs;
     }
 
     //
@@ -5074,8 +5056,8 @@ bool MainWindow::funcGetSLIDESnapshot()
         //expecNumImgs    = 1;
         funcClearDirFolder( _PATH_SLIDE_TMP_FOLDER );
         int nextImg;
-        u_int8_t** lstImgs = (u_int8_t**)malloc(expecNumImgs*sizeof(u_int8_t*));
-        int lstImgPos   = 0;
+        lstImgs         = (u_int8_t**)malloc(expecNumImgs*sizeof(u_int8_t*));
+        *numImages      = 0;
         int framePos    = 0;
         int remainder   = imgLen;
         myTimer.start();
@@ -5098,25 +5080,25 @@ bool MainWindow::funcGetSLIDESnapshot()
                 qDebug() << "Receiving image" << nextImg;
 
                 //Frame memory allocation
-                lstImgs[lstImgPos]  = (u_int8_t*)malloc((imgLen*sizeof(u_int8_t)));//Frame container
-                bzero( lstImgs[lstImgPos], imgLen );
+                lstImgs[*numImages]  = (u_int8_t*)malloc((imgLen*sizeof(u_int8_t)));//Frame container
+                bzero( lstImgs[*numImages], imgLen );
                 framePos            = 0;
                 remainder           = imgLen;
 
                 //Read image from buffer
                 while( remainder > 0 )
                 {
-                    n = read(sockfd,(void*)&lstImgs[lstImgPos][framePos],remainder+1);
+                    n = read(sockfd,(void*)&lstImgs[*numImages][framePos],remainder+1);
                     remainder   -= n;
                     framePos    += n;
                     fflush(stdout);
                 }
-                lstImgPos++;
+                *numImages = *numImages+1;
 
 
 
 
-                if(1)
+                if(saveFiles==true)
                 {
                     //Variables
                     int numRows, numCols, r, c;
@@ -5159,7 +5141,8 @@ bool MainWindow::funcGetSLIDESnapshot()
     //
     ::close(sockfd);
 
-    return true;
+
+    return lstImgs;
 }
 
 int MainWindow::funcReceiveFrame( int sockfd, int idImg, int* frameLen, strReqImg *reqImg )
@@ -5418,24 +5401,7 @@ int MainWindow::funcReceiveOneMessage( int sockfd, void* frame )
 }
 
 
-int MainWindow::funcReceiveOnePositiveInteger( int sockfd )
-{
-    //qDebug() << "funcReceiveOnePositiveInteger";
-    //It assumess that frame has memory prviously allocated
-    //Return the number n of bytes received
 
-    u_int8_t buffer[sizeof(int)+1];
-
-    int n;
-    //qDebug() << "READING";
-    n = read(sockfd,buffer,sizeof(int)+1);
-    if( n < 0 )
-        return -1;//Error receiving message
-
-    memcpy(&n,buffer,sizeof(int));
-
-    return n;
-}
 
 
 

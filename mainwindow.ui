@@ -269,6 +269,13 @@
         <normaloff>:/new/icons/imagenInte/question.png</normaloff>:/new/icons/imagenInte/question.png</iconset>
       </property>
      </widget>
+     <zorder>tableLstCams</zorder>
+     <zorder>frame</zorder>
+     <zorder>frame_2</zorder>
+     <zorder>txtCommRes</zorder>
+     <zorder>pbLANConnect</zorder>
+     <zorder>pbLANTestConn</zorder>
+     <zorder>pbConnect</zorder>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">

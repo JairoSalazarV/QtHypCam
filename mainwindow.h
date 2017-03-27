@@ -41,7 +41,15 @@ public slots:
 
     void addVertLine2Calib(QString colSeld);
 
-private slots:
+    cameraResolution* getCamRes();
+
+    u_int8_t** funcGetSLIDESnapshot(int* numImages , bool saveFiles);
+
+    structCamSelected* funcGetCamSelected();
+
+
+
+private slots:    
 
     void funcEndRect(QMouseEvent *e, GraphicsView *tmpCanvas);
 
@@ -393,17 +401,17 @@ private slots:
 
     void on_pbCopyShutter_clicked();
 
-    cameraResolution* getCamRes();
-
     void on_actionslideHypCam_triggered();
+
+    void obtainFile( std::string fileToObtain, std::string fileNameDestine );
 
     void on_pbGetSlideCube_clicked();
 
-    bool funcGetSLIDESnapshot();
+
 
     int funcReceiveFrame(int sockfd, int idImg, int *frameLen, strReqImg *reqImg);
 
-    int funcReceiveOnePositiveInteger(int sockfd);
+
 
     void funcDebug(QString msg);
 

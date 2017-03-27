@@ -11,6 +11,68 @@
 #include <lstStructs.h>
 
 
+
+u_int8_t* funcRaspReceiveFile( std::string fileNameRequested, int* fileLen )
+{
+    //It assumes that file exists and this was verified by command 10
+    //
+    //Receive the path of a file into raspCamera and
+    //return the file if exists or empty arry otherwise
+
+    //Connect to socket
+    int socketID = funcRaspSocketConnect();
+    if( socketID == -1 )
+    {
+        debugMsg("ERROR connecting to socket");
+        return (u_int8_t*)NULL;
+    }
+
+    //Request file
+    int n;
+    strReqFileInfo *reqFileInfo = (strReqFileInfo*)malloc(sizeof(strReqFileInfo));
+    memset( reqFileInfo, '\0', sizeof(strReqFileInfo) );
+    reqFileInfo->idMsg          = 11;
+    reqFileInfo->fileNameLen    = fileNameRequested.size();
+    memcpy( &reqFileInfo->fileName[0], fileNameRequested.c_str(), fileNameRequested.size() );
+    int tmpFrameLen = sizeof(strReqFileInfo);//IdMsg + lenInfo + fileLen + padding
+    n = ::write( socketID, reqFileInfo, tmpFrameLen+1 );
+    if (n < 0){
+        debugMsg("ERROR writing to socket");
+        return (u_int8_t*)NULL;
+    }
+
+    //Receive file's size
+    *fileLen = funcReceiveOnePositiveInteger( socketID );
+    std::cout << "fileLen: " << *fileLen << std::endl;
+    fflush(stdout);
+
+    //Prepare container
+    u_int8_t* theFILE = (u_int8_t*)malloc(*fileLen);
+    bzero( &theFILE[0], *fileLen );
+
+    //Read file from system buffer
+    int filePos     = 0;
+    int remainder   = *fileLen;
+
+    //Read image from buffer
+    while( remainder > 0 )
+    {
+        n = read(socketID,(void*)&theFILE[filePos],remainder+1);
+        remainder   -= n;
+        filePos     += n;
+    }
+    //std::cout << "(Last info) filePos: " << filePos << " remainder: " << remainder << " n: " << n << std::endl;
+    //fflush(stdout);
+
+    //Close connection
+    ::close(socketID);
+
+    //Return file
+    return theFILE;
+
+
+}
+
 int funcRaspFileExists( std::string fileName )
 {
     //Ask to the HypCam if file exists
@@ -207,4 +269,24 @@ bool funcRaspIsIP( std::string ipCandidate ){
             return true;
         }
     }
+}
+
+
+int funcReceiveOnePositiveInteger( int sockfd )
+{
+    //qDebug() << "funcReceiveOnePositiveInteger";
+    //It assumess that frame has memory prviously allocated
+    //Return the number n of bytes received
+
+    u_int8_t buffer[sizeof(int)+1];
+
+    int n;
+    //qDebug() << "READING";
+    n = read(sockfd,buffer,sizeof(int)+1);
+    if( n < 0 )
+        return -1;//Error receiving message
+
+    memcpy(&n,buffer,sizeof(int));
+
+    return n;
 }

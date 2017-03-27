@@ -32,7 +32,8 @@ SOURCES += main.cpp\
     selwathtocheck.cpp \
     chosewavetoextract.cpp \
     slidehypcam.cpp \
-    rasphypcam.cpp
+    rasphypcam.cpp \
+    arduinomotor.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -54,7 +55,8 @@ HEADERS  += mainwindow.h \
     chosewavetoextract.h \
     slidehypcam.h \
     rasphypcam.h \
-    lstpaths.h
+    lstpaths.h \
+    arduinomotor.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -76,6 +78,7 @@ INCLUDEPATH += /usr/local/include/opencv2
 
 #LIBS += -L/usr/local/lib
 LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
+LIBS += -lpthread
 
 #LIBS += -lopencv_core -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d
 #LIBS += -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_stitching

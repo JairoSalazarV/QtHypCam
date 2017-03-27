@@ -4,10 +4,14 @@
 #include <QDebug>
 #include <QtSerialPort/QSerialPort>
 #include <slidehypcam.h>
+#include <__common.h>
 
-QSerialPort* serial;
+#include <mainwindow.h>
+#include <rasphypcam.h>
 
+#include <arduinomotor.h>
 
+#include <QThread>
 
 slideHypCam::slideHypCam(QWidget *parent) :
     QMainWindow(parent),
@@ -15,25 +19,11 @@ slideHypCam::slideHypCam(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //
-    //Connect to the serial port
-    //
-    serial = new QSerialPort(this);
-    connect(serial, &QSerialPort::readyRead, this, &slideHypCam::readSerialPort);
-    serial->setBaudRate(9600);
-    serial->setPortName("ttyUSB0");
-    if (serial->open(QIODevice::ReadWrite)) {
-        qDebug() << "Connected";
-    } else {
-        qDebug() << "Error: " << serial->errorString();
-    }
+    //motor = new arduinoMotorSerial();
 
-    //
-    //Send test
-    //
-    serial->write("2");
-
-
+    //serialPortConnect();
+    //motor.funcMotorGoToZero(&serialPort);
+    //serialPort.close();
 
 }
 
@@ -42,19 +32,45 @@ slideHypCam::~slideHypCam()
     delete ui;
 }
 
-void slideHypCam::on_pbSendSerial_clicked()
-{
-    //
-    //Close Serial Port
-    //
-    if (serial->isOpen())
-        serial->close();
 
+
+void slideHypCam::on_actionpbGetSlideCube_triggered()
+{
+    //Instances MainWindow
+    MainWindow* internMainWin       = new MainWindow(this);
+    structCamSelected* camSelected  = internMainWin->funcGetCamSelected();
+
+    //Check if camara is selected
+    if( camSelected->tcpPort == 0 )
+    {
+        funcShowMsg("ALERT","Connect to the camera");
+        return (void)NULL;
+    }
+
+    //Change mouse pointer
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
+    //Obtains camera resolution selected on MainWindow
+    camRes = internMainWin->getCamRes();
+
+    //
+    //Start motor rotation in an independen thread
+    //
+    arduinoMotor* motor = new arduinoMotor();
+    motor->setAWalk( 0, 180, 60, 800 );
+    motor->start();
+
+    //
+    //Obtain imagery and put into RAM
+    //
+    int numImgs;
+    u_int8_t** lstImgs = internMainWin->funcGetSLIDESnapshot( &numImgs, true );
+    delete[] lstImgs;
+    fflush(stdout);
+
+    //Restores mouse pointer
+    QApplication::restoreOverrideCursor();
 
 }
 
-void slideHypCam::readSerialPort()
-{
-    QByteArray data = serial->readAll();
-    qDebug() << QString(data);
-}
+
