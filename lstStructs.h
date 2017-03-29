@@ -319,6 +319,7 @@
         u_int8_t      OneShot;                // 0: Video streaming | 1:Snapshot
         u_int8_t      TriggerTime;            // Seconds before to take a photo
         u_int8_t      Denoise;                // 0v1: Denoise efx
+        u_int8_t      FullPhoto;              // 1: No Cut | 0: Require cut
         u_int8_t      ColorBalance;           // 0v1: ColorBalance efx
         u_int8_t      CameraMp;               // 5: 5Mp | 8:8Mp
     }structRaspcamSettings;

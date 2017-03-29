@@ -614,6 +614,10 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     if( raspcamSettings->Denoise )ui->cbDenoise->setChecked(true);
     else ui->cbDenoise->setChecked(false);
 
+    //FULL PHOTO
+    if( raspcamSettings->FullPhoto )ui->cbFullPhoto->setChecked(true);
+    else ui->cbFullPhoto->setChecked(false);
+
     //COLORBALANCE EFX
     if( raspcamSettings->ColorBalance )ui->cbColorBalance->setChecked(true);
     else ui->cbColorBalance->setChecked(false);
@@ -745,7 +749,7 @@ bool MainWindow::funcReceiveFile(
         funcActivateProgBar();
 
         for(i=1;i<=(int)numMsgs;i++){
-            printf("Msg: %d\n",i);
+            //printf("Msg: %d\n",i);
 
             ui->progBar->setValue(i);
             bzero(bufferRead,frameBodyLen);
@@ -776,7 +780,7 @@ bool MainWindow::funcReceiveFile(
 
     }
 
-    qDebug() << "tmpPos: " << tmpPos;
+    //qDebug() << "tmpPos: " << tmpPos;
 
 
     return true;
@@ -1184,30 +1188,49 @@ void MainWindow::on_pbStartVideo_clicked()
 //unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 
+
     //Open socket
+    int n;
     int sockfd = connectSocket( camSelected );
     unsigned char bufferRead[frameBodyLen];
     qDebug() << "Socket opened";
     //Require photo size
     //QtDelay(5);
-    ::write(sockfd,reqImg,sizeof(strReqImg));
+    n = ::write(sockfd,reqImg,sizeof(strReqImg));
     qDebug() << "Img request sent";
 
     //Receive ACK with the camera status
-    read(sockfd,bufferRead,frameBodyLen);
+    memset(bufferRead,'\0',3);
+    n = read(sockfd,bufferRead,2);
     if( bufferRead[1] == 1 ){//Begin the image adquisition routine
         qDebug() << "Camera OK";
+        ::close(sockfd);
+
+        //Get File
+        if( saveImg )
+        {
+            funcLabelProgBarUpdate("Stabilizing remote camera",0);
+            obtainFile( "./tmpSnapshots/tmpImg.RGB888", _PATH_IMAGE_RECEIVED );
+        }
+
     }else{//Do nothing becouse camera is not accessible
         qDebug() << "ERROR turning on the camera";
+        ::close(sockfd);
         return false;
     }
 
+    /*
     //Receive photo's size
-    unsigned int fileLen;
-    read(sockfd,bufferRead,frameBodyLen);
-    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
-    qDebug() << "Receiving fileLen: " << QString::number(fileLen);
+    QtDelay(1000);
+    int fileLen;
+    memset(bufferRead,'\0',sizeof(int)+1);
+    n = read(sockfd,bufferRead,sizeof(int));
 
+    memcpy(&fileLen,&bufferRead,sizeof(int));
+    qDebug() << "Receiving fileLen: " << QString::number(fileLen);
+    */
+
+    /*
     //Receive File photogram
     int buffLen = ceil((float)fileLen/(float)frameBodyLen)*frameBodyLen;
     unsigned char *tmpFile = (unsigned char*)malloc(buffLen);
@@ -1227,11 +1250,35 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
             qDebug()<< "ERROR: saving image-file received";
         }
     }
+    */
+
 
     //Close socket and return
-    ::close(sockfd);
+
     //return tmpFile;
+
+    funcLabelProgBarHide();
+
     return true;
+}
+
+void MainWindow::funcLabelProgBarUpdate( QString txt, int color )
+{
+    ui->labelProgBar->setVisible(true);
+    ui->labelProgBar->setText(txt);
+    if( color == 0 )
+        ui->labelProgBar->setStyleSheet("QLabel { color : black; }");
+    if( color == 1 )
+        ui->labelProgBar->setStyleSheet("QLabel { color : white; }");
+
+    ui->labelProgBar->update();
+    QtDelay(20);
+}
+
+void MainWindow::funcLabelProgBarHide()
+{
+    ui->labelProgBar->setVisible(false);
+    ui->labelProgBar->update();
 }
 
 structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSettings raspSett ){
@@ -1733,12 +1780,14 @@ void MainWindow::funcGetSnapshot()
         reqImg->imgCols     = camRes->width;//2592 | 640
         reqImg->imgRows     = camRes->height;//1944 | 480
         //It saves image into HDD: _PATH_IMAGE_RECEIVED
+
         if( funcGetRemoteImg( reqImg, true ) )
         {
             QImage imgAperture( _PATH_IMAGE_RECEIVED );
             imgAperture.save( _PATH_DISPLAY_IMAGE );
         }
         else funcShowMsg("ERROR","Camera respond with error");
+        funcLabelProgBarHide();
     }else{
         //Requesting image by parts
         //..
@@ -1925,7 +1974,11 @@ void MainWindow::on_pbSnapshot_clicked()
     mouseCursorWait();
 
     camRes = getCamRes();
+
+
+
     funcGetSnapshot();
+
 
     mouseCursorReset();
 
@@ -4913,11 +4966,97 @@ void MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDesti
     }
     else
     {
+
+        ui->progBar->setVisible(true);
+        ui->progBar->setValue(0.0);
+        ui->progBar->update();
+
         int fileLen;
-        u_int8_t* fileReceived = funcRaspReceiveFile( fileToObtain, &fileLen );
+        u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
+        funcLabelProgBarUpdate("Savin image locally",1);
         saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen);
         debugMsg("File received complete");
+
+        ui->progBar->setValue(100.0);
+        ui->progBar->update();
+        ui->progBar->setVisible(false);
+
     }
+}
+
+u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fileLen )
+{
+
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue( 0.0 );
+    ui->progBar->update();
+    //It assumes that file exists and this was verified by command 10
+    //
+    //Receive the path of a file into raspCamera and
+    //return the file if exists or empty arry otherwise
+
+    //Connect to socket
+    int socketID = funcRaspSocketConnect();
+    if( socketID == -1 )
+    {
+        debugMsg("ERROR connecting to socket");
+        return (u_int8_t*)NULL;
+    }
+
+    //Request file
+    int n;
+    strReqFileInfo *reqFileInfo = (strReqFileInfo*)malloc(sizeof(strReqFileInfo));
+    memset( reqFileInfo, '\0', sizeof(strReqFileInfo) );
+    reqFileInfo->idMsg          = 11;
+    reqFileInfo->fileNameLen    = fileNameRequested.size();
+    memcpy( &reqFileInfo->fileName[0], fileNameRequested.c_str(), fileNameRequested.size() );
+    int tmpFrameLen = sizeof(strReqFileInfo);//IdMsg + lenInfo + fileLen + padding
+    n = ::write( socketID, reqFileInfo, tmpFrameLen+1 );
+    if (n < 0){
+        debugMsg("ERROR writing to socket");
+        return (u_int8_t*)NULL;
+    }
+
+    //Receive file's size
+    *fileLen = funcReceiveOnePositiveInteger( socketID );
+    std::cout << "fileLen: " << *fileLen << std::endl;
+    fflush(stdout);
+
+    //Prepare container
+    u_int8_t* theFILE = (u_int8_t*)malloc(*fileLen);
+    bzero( &theFILE[0], *fileLen );
+
+    //Read file from system buffer
+    int filePos     = 0;
+    int remainder   = *fileLen;
+
+    //Read image from buffer
+    while( remainder > 0 )
+    {
+        n = read(socketID,(void*)&theFILE[filePos],remainder+1);
+        remainder   -= n;
+        filePos     += n;
+
+        ui->progBar->setValue( ( ( 1.0 - ( (float)remainder/(float)*fileLen ) ) * 100.0) );
+        ui->progBar->update();
+
+        //std::cout << ( ( 1.0 - ( (float)remainder/(float)*fileLen ) ) * 100.0) << "%" << std::endl;
+
+    }
+    //std::cout << "(Last info) filePos: " << filePos << " remainder: " << remainder << " n: " << n << std::endl;
+    //fflush(stdout);
+
+    //Close connection
+    ::close(socketID);
+
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(true);
+    ui->progBar->update();
+
+    //Return file
+    return theFILE;
+
+
 }
 
 void MainWindow::on_pbGetSlideCube_clicked()

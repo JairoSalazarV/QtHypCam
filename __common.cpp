@@ -699,6 +699,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                             sizeof(raspcamSettings->Exposure)
                       );
             }
+
+
             if( xmlReader->name()=="Brightness" )
                 raspcamSettings->Brightness = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Sharpness" )
@@ -727,6 +729,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Green = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Denoise" )
                 raspcamSettings->Denoise = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="FullPhoto" )
+                raspcamSettings->FullPhoto = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ColorBalance" )
                 raspcamSettings->ColorBalance = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Preview" )

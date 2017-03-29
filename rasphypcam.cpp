@@ -10,6 +10,8 @@
 
 #include <lstStructs.h>
 
+#include <math.h>
+
 
 
 u_int8_t* funcRaspReceiveFile( std::string fileNameRequested, int* fileLen )
@@ -60,6 +62,9 @@ u_int8_t* funcRaspReceiveFile( std::string fileNameRequested, int* fileLen )
         n = read(socketID,(void*)&theFILE[filePos],remainder+1);
         remainder   -= n;
         filePos     += n;
+
+        //std::cout << ( ( 1.0 - ( (float)remainder/(float)*fileLen ) ) * 100.0) << "%" << std::endl;
+
     }
     //std::cout << "(Last info) filePos: " << filePos << " remainder: " << remainder << " n: " << n << std::endl;
     //fflush(stdout);

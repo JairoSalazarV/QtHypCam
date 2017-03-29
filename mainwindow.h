@@ -200,6 +200,10 @@ private slots:
 
     //void on_pbLoadImg_clicked();
 
+    void funcLabelProgBarHide();
+
+    void funcLabelProgBarUpdate(QString txt , int color);
+
     structRaspcamSettings funcFillSnapshotSettings(structRaspcamSettings raspSett );
 
     //void on_pbUpdCut_clicked();
@@ -404,6 +408,8 @@ private slots:
     void on_actionslideHypCam_triggered();
 
     void obtainFile( std::string fileToObtain, std::string fileNameDestine );
+
+    u_int8_t* funcQtReceiveFile( std::string fileNameRequested, int* fileLen );
 
     void on_pbGetSlideCube_clicked();
 

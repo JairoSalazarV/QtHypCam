@@ -20,8 +20,8 @@
    <widget class="QTabWidget" name="pbExpPixs">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>0</y>
+      <x>-1</x>
+      <y>15</y>
       <width>971</width>
       <height>621</height>
      </rect>
@@ -1057,8 +1057,25 @@ QSlider::handle:horizontal {
      <number>0</number>
     </property>
    </widget>
+   <widget class="QLabel" name="labelProgBar">
+    <property name="geometry">
+     <rect>
+      <x>600</x>
+      <y>4</y>
+      <width>301</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">font-color:#FFFFFF;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
    <zorder>progBar</zorder>
    <zorder>pbExpPixs</zorder>
+   <zorder>labelProgBar</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
