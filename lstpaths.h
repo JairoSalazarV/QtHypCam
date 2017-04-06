@@ -7,7 +7,6 @@
     #define _PATH_LAST_IP                   "./settings/socketIP.hypcam"
     #define _PATH_PORT_TO_CONNECT           "./settings/socketPort.hypcam"
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
-    #define _PATH_LAST_SNAPPATH             "./settings/lastSnapPath.hypcam"
     #define _PATH_HALOGEN_FUNCTION          "./settings/halogenFunction.hypcam"
 
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
@@ -57,6 +56,8 @@
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
+
+    #define _PATH_LAST_SNAPPATH             "lastSnapPath.xml"
 
 
 #endif // LSTPATHS_H

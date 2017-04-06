@@ -28,6 +28,8 @@ private slots:
 
 
 
+    void on_actionSlide_settings_triggered();
+
 private:
     Ui::slideHypCam *ui;
 };

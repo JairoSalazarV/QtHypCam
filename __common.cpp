@@ -650,8 +650,14 @@ bool funGetSlideSettingsXML( QString fileName, strReqImg *reqImg ){
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement) {
 
-            if( xmlReader->name()=="duration" )
-                reqImg->slide.duration = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="degreeIni" )
+                reqImg->slide.degreeIni = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="degreeEnd" )
+                reqImg->slide.degreeEnd = xmlReader->readElementText().toInt(0);
+
+            if( xmlReader->name()=="degreeJump" )
+                reqImg->slide.degreeJump = xmlReader->readElementText().toInt(0);
 
             if( xmlReader->name()=="speed" )
                 reqImg->slide.speed = xmlReader->readElementText().toInt(0);

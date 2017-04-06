@@ -241,6 +241,7 @@
         <file>imagenInte/fitt.png</file>
         <file>imagenInte/slide.png</file>
         <file>imagenInte/slideArea.png</file>
+        <file>imagenInte/slideConfig.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

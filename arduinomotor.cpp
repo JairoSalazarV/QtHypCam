@@ -18,6 +18,7 @@ void arduinoMotor::setAWalk( int ini, int end, int step, int speed )
 
 void arduinoMotor::doAWalk()
 {
+
     if( goTo( internIni ) == -1 )
     {
         //return -1;

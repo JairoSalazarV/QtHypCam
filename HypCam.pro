@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     chosewavetoextract.cpp \
     slidehypcam.cpp \
     rasphypcam.cpp \
-    arduinomotor.cpp
+    arduinomotor.cpp \
+    formslidesettings.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -56,7 +57,9 @@ HEADERS  += mainwindow.h \
     slidehypcam.h \
     rasphypcam.h \
     lstpaths.h \
-    arduinomotor.h
+    arduinomotor.h \
+    lstcustoms.h \
+    formslidesettings.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -66,7 +69,8 @@ FORMS    += mainwindow.ui \
     generatehypercube.ui \
     selwathtocheck.ui \
     chosewavetoextract.ui \
-    slidehypcam.ui
+    slidehypcam.ui \
+    formslidesettings.ui
 
 RESOURCES += \
     lstImgs.qrc

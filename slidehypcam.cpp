@@ -13,6 +13,8 @@
 
 #include <QThread>
 
+#include <formslidesettings.h>
+
 slideHypCam::slideHypCam(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::slideHypCam)
@@ -74,3 +76,10 @@ void slideHypCam::on_actionpbGetSlideCube_triggered()
 }
 
 
+
+void slideHypCam::on_actionSlide_settings_triggered()
+{
+    formSlideSettings* tmpForm = new formSlideSettings(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
+}

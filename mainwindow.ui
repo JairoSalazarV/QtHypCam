@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>964</width>
+    <width>1084</width>
     <height>698</height>
    </rect>
   </property>
@@ -15,6 +15,10 @@
   </property>
   <property name="windowTitle">
    <string>Hyperspectral Image Sensor (Beta 0.1)</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="lstImgs.qrc">
+    <normaloff>:/new/icons/imagenInte/hypCube.png</normaloff>:/new/icons/imagenInte/hypCube.png</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <widget class="QTabWidget" name="pbExpPixs">
@@ -507,7 +511,7 @@
        <rect>
         <x>21</x>
         <y>301</y>
-        <width>221</width>
+        <width>261</width>
         <height>59</height>
        </rect>
       </property>
@@ -522,12 +526,12 @@
         <rect>
          <x>0</x>
          <y>40</y>
-         <width>219</width>
+         <width>251</width>
          <height>19</height>
         </rect>
        </property>
        <property name="maximum">
-        <number>3000000</number>
+        <number>900000</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -538,7 +542,7 @@
         <rect>
          <x>0</x>
          <y>20</y>
-         <width>219</width>
+         <width>251</width>
          <height>19</height>
         </rect>
        </property>
@@ -557,7 +561,7 @@
         <rect>
          <x>0</x>
          <y>-3</y>
-         <width>221</width>
+         <width>261</width>
          <height>19</height>
         </rect>
        </property>
@@ -620,7 +624,7 @@
        <rect>
         <x>21</x>
         <y>369</y>
-        <width>221</width>
+        <width>261</width>
         <height>59</height>
        </rect>
       </property>
@@ -635,12 +639,12 @@
         <rect>
          <x>0</x>
          <y>40</y>
-         <width>219</width>
+         <width>251</width>
          <height>19</height>
         </rect>
        </property>
        <property name="maximum">
-        <number>3000000</number>
+        <number>900000</number>
        </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -651,7 +655,7 @@
         <rect>
          <x>0</x>
          <y>20</y>
-         <width>219</width>
+         <width>251</width>
          <height>19</height>
         </rect>
        </property>
@@ -670,7 +674,7 @@
         <rect>
          <x>0</x>
          <y>-2</y>
-         <width>221</width>
+         <width>261</width>
          <height>19</height>
         </rect>
        </property>
@@ -729,14 +733,14 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>250</x>
-        <y>350</y>
+        <x>350</x>
+        <y>540</y>
         <width>31</width>
         <height>31</height>
        </rect>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Save parameters into XML&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load last snap-settings&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
        <string/>
@@ -1049,7 +1053,7 @@ QSlider::handle:horizontal {
      <rect>
       <x>600</x>
       <y>5</y>
-      <width>311</width>
+      <width>371</width>
       <height>16</height>
      </rect>
     </property>
@@ -1082,7 +1086,7 @@ QSlider::handle:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>964</width>
+     <width>1084</width>
      <height>25</height>
     </rect>
    </property>

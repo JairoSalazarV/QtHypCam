@@ -66,6 +66,7 @@
 #include <slidehypcam.h>
 
 #include <QThread>
+#include <arduinomotor.h>
 
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
@@ -218,7 +219,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QString lastIP = readAllFile( _PATH_LAST_IP );
     lastIP.replace("\n","");
     ui->txtIp->setText(lastIP);
-    if(_AUTOCONNECT){
+
+    if( funcShowMsgYesNo("Welcome!","Auto connect?") ){
         ui->pbAddIp->click();
         ui->tableLstCams->selectRow(0);
         ui->pbConnect->click();
@@ -453,7 +455,7 @@ void MainWindow::funcCreateLine(bool drawVertex,
     //Obtain points in the border
     int xIni = (x1 <= x2)?x1:x2;
     int xEnd = (xIni == x1)?x2:x1;
-    int lastY, j;
+    int lastY = -1, j = -1;
     if(xIni==xEnd){
         yIni = (y1<=y2)?y1:y2;
         yEnd = (y1==yIni)?y2:y1;
@@ -1184,10 +1186,28 @@ void MainWindow::on_pbStartVideo_clicked()
 
 }
 
+void MainWindow::progBarTimer( int ms )
+{
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+
+    int step = floor( (float)ms/100.0);
+    for( int i=1; i<=100; i++ )
+    {
+        ui->progBar->setValue(i);
+        ui->progBar->update();
+        QtDelay(step);
+    }
+
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    ui->progBar->setVisible(false);
+    ui->progBar->update();
+}
 
 //unsigned char *MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
 bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
-
 
     //Open socket
     int n;
@@ -1197,7 +1217,7 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
     //Require photo size
     //QtDelay(5);
     n = ::write(sockfd,reqImg,sizeof(strReqImg));
-    qDebug() << "Img request sent";
+    qDebug() << "Img request sent";        
 
     //Receive ACK with the camera status
     memset(bufferRead,'\0',3);
@@ -1205,6 +1225,9 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
     if( bufferRead[1] == 1 ){//Begin the image adquisition routine
         qDebug() << "Camera OK";
         ::close(sockfd);
+
+        funcLabelProgBarUpdate("Stabilizing camera",1);
+        progBarTimer( (reqImg->raspSett.TriggerTime + 1) * 1000 );
 
         //Get File
         if( saveImg )
@@ -1218,6 +1241,7 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
         ::close(sockfd);
         return false;
     }
+    n=n;
 
     /*
     //Receive photo's size
@@ -1315,6 +1339,8 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
 
 unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 
+    int n;
+
     qDebug() << "Dentro 1";
     //Open socket
     int sockfd = connectSocket( camSelected );
@@ -1326,7 +1352,7 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
     unsigned char tmpInstRes[2];
     tmpInstRes[0] = (unsigned char)6;//Request photo size
     tmpInstRes[1] = saveLocally;
-    ::write(sockfd,&tmpInstRes,2);
+    n = ::write(sockfd,&tmpInstRes,2);
 
     unsigned char *tmpFile;
 
@@ -1334,7 +1360,7 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 
         //Receive photo's size
         qDebug() << "Dentro 3";
-        read(sockfd,bufferRead,frameBodyLen);
+        n = read(sockfd,bufferRead,frameBodyLen);
         memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
         qDebug() << "fileLen: " << QString::number(fileLen);
 
@@ -1353,6 +1379,7 @@ unsigned char * MainWindow::funcObtVideo( unsigned char saveLocally ){
 
     //Close socket
     ::close(sockfd);
+    n=n;
 
     return tmpFile;
 }
@@ -1536,6 +1563,8 @@ void MainWindow::on_pbSaveImage_clicked()
     //Start streaming
     ui->pbStartVideo->setEnabled(true);
     ui->pbStartVideo->click();
+
+    n=n;
 }
 
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
@@ -1618,6 +1647,10 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
 
     //Conditional variables
     //
+    if( tmpName.isEmpty() )return false;
+
+    tmpName = tmpName.replace(".xml","");
+    tmpName = tmpName.replace(".XML","");
 
     //Resolution
     int tmpResInMp = -1;
@@ -1762,7 +1795,12 @@ void MainWindow::funcGetSnapshot()
 
     //Save path
     //..
-    saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
+    //saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
+
+    //Save lastest settings
+    if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false ){
+        funcShowMsg("ERROR","Saving last snap-settings");
+    }
 
     //Set required image's settings
     //..
@@ -1783,8 +1821,16 @@ void MainWindow::funcGetSnapshot()
 
         if( funcGetRemoteImg( reqImg, true ) )
         {
+            //Display image
             QImage imgAperture( _PATH_IMAGE_RECEIVED );
             imgAperture.save( _PATH_DISPLAY_IMAGE );
+
+            //Invert phot if required
+            if( _INVERTED_CAMERA )
+            {
+                QImage imgRot = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
+                imgRot.save( _PATH_DISPLAY_IMAGE );
+            }
         }
         else funcShowMsg("ERROR","Camera respond with error");
         funcLabelProgBarHide();
@@ -2396,7 +2442,7 @@ void MainWindow::funcUpdateColorSensibilities(){
     int Red[tmpImg.width()];memset(Red,'\0',tmpImg.width());
     int Green[tmpImg.width()];memset(Green,'\0',tmpImg.width());
     int Blue[tmpImg.width()];memset(Blue,'\0',tmpImg.width());
-    int r, c, maxR, maxG, maxB, xR, xG, xB;
+    int r, c, maxR, maxG, maxB, xR = 0, xG = 0, xB = 0;
     maxR = 0;
     maxG = 0;
     maxB = 0;
@@ -4918,8 +4964,10 @@ void MainWindow::refreshSquareShootSpeed()
 
 void MainWindow::on_pbCopyShutter_clicked()
 {
-    ui->slideSquareShuterSpeed->setValue( ui->slideShuterSpeed->value() );
-    ui->slideSquareShuterSpeedSmall->setValue( ui->slideShuterSpeedSmall->value() );
+    QString tmpFileName = "./XML/camPerfils/";
+    tmpFileName.append(_PATH_LAST_SNAPPATH);
+    funcGetRaspParamFromXML( raspcamSettings, tmpFileName );
+    funcIniCamParam( raspcamSettings );
 }
 
 
@@ -4981,6 +5029,8 @@ void MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDesti
         ui->progBar->update();
         ui->progBar->setVisible(false);
 
+        //delete[] fileReceived;
+
     }
 }
 
@@ -5028,12 +5078,12 @@ u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fil
 
     //Read file from system buffer
     int filePos     = 0;
-    int remainder   = *fileLen;
+    int remainder   = *fileLen+1;
 
     //Read image from buffer
     while( remainder > 0 )
     {
-        n = read(socketID,(void*)&theFILE[filePos],remainder+1);
+        n = read(socketID,(void*)&theFILE[filePos],remainder);
         remainder   -= n;
         filePos     += n;
 
@@ -5105,7 +5155,12 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
     //
     //Save path
     //..
-    saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
+    //saveFile(_PATH_LAST_SNAPPATH,ui->txtSnapPath->text());
+
+    //Save lastest settings
+    if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false ){
+        funcShowMsg("ERROR","Saving last snap-settings");
+    }
 
     //
     //Set required image's settings
@@ -5140,11 +5195,14 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
 
     //Receive ACK with the camera status
     n = read(sockfd,bufferRead,frameBodyLen);
-    if( bufferRead[1] == 1 ){//Begin the image adquisition routine
+    if( bufferRead[1] == 1 ){//Beginning the image adquisition routine
         qDebug() << "Slide: Parameters received correctly";
     }else{//Do nothing becouse camera is not accessible
         qDebug() << "Slide: Parameter received with ERROR";
-        return lstImgs;
+        u_int8_t** tmp  = (u_int8_t**)malloc(sizeof(u_int8_t*));
+        tmp[0]          = (u_int8_t*)malloc(sizeof(u_int8_t));
+        tmp[0][0]       = '\0';
+        return tmp;
     }
 
     //
@@ -5157,6 +5215,16 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
     else
         qDebug() << "Timelapse started";
 
+    //Move motor
+    arduinoMotor motor;
+    motor.setAWalk(
+                    reqImg->slide.degreeIni,
+                    reqImg->slide.degreeEnd,
+                    reqImg->slide.degreeJump,
+                    reqImg->slide.speed
+                  );
+    motor.doAWalk();
+
     //Receive ACK with the time lapse status
     memset(bufferRead,0,frameBodyLen);
     n = read(sockfd,bufferRead,frameBodyLen);
@@ -5165,7 +5233,11 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
 
     //Validate image generated
     int expecNumImgs;
-    expecNumImgs = ceil( (float)reqImg->slide.duration / (float)reqImg->slide.speed );
+    expecNumImgs =  ceil(
+                            (float)(reqImg->slide.degreeEnd - reqImg->slide.degreeIni) /
+                            (float)reqImg->slide.degreeJump
+                         );
+    //expecNumImgs = ceil( (float)duration / (float)reqImg->slide.speed );
     qDebug() << "Imagery generated: " << numImgs.numImgs << " of " << expecNumImgs;
 
     //
@@ -5173,12 +5245,27 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
     //
     float timeLapseRatio;
     timeLapseRatio = 100.0 * ( (float)numImgs.numImgs / (float)expecNumImgs );
-    if( timeLapseRatio < 90.0 )
+    int getImagery = 1;
+    if( timeLapseRatio < 90.0)
     {
-        qDebug() << "Insufficient time lapse imagery generated, timeLapseRatio: " << timeLapseRatio << "% of 90.0% required";
-        n = ::write(sockfd,"0",2);
+        QString tmpError;
+        tmpError.append("Insufficient time lapse imagery generated, timeLapseRatio: ");
+        tmpError.append(QString::number(timeLapseRatio));
+        tmpError.append("% of 90.0% required.\n\nDo you want to obtain only aquired imagery?");
+        getImagery = funcShowMsgYesNo("ALERT", tmpError);
+
+        if( !getImagery )
+        {
+            n = ::write(sockfd,"0",2);
+            ::close(sockfd);
+            lstImgs = (u_int8_t**)malloc(sizeof(u_int8_t*));
+            delete[] lstImgs;
+            return (u_int8_t**)NULL;
+        }
     }
-    else
+
+
+    if( getImagery )
     {
 
         QTime myTimer;
@@ -5198,13 +5285,14 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
         lstImgs         = (u_int8_t**)malloc(expecNumImgs*sizeof(u_int8_t*));
         *numImages      = 0;
         int framePos    = 0;
-        int remainder   = imgLen;
+        int remainder   = imgLen+1;
         myTimer.start();
+        int firstImageFlag = 0;
+        std::string firstImageName;
         for( i=1; i<=expecNumImgs; i++ )
         {
             //Read next image status (Id or -1 if finishes)
             memset(bufferRead,'\0',sizeof(int)+1);
-
             n = read(sockfd,bufferRead,sizeof(int)+1);
             memcpy(&nextImg,bufferRead,sizeof(int));
 
@@ -5222,12 +5310,12 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
                 lstImgs[*numImages]  = (u_int8_t*)malloc((imgLen*sizeof(u_int8_t)));//Frame container
                 bzero( lstImgs[*numImages], imgLen );
                 framePos            = 0;
-                remainder           = imgLen;
+                remainder           = imgLen+1;
 
                 //Read image from buffer
                 while( remainder > 0 )
                 {
-                    n = read(sockfd,(void*)&lstImgs[*numImages][framePos],remainder+1);
+                    n = read(sockfd,(void*)&lstImgs[*numImages][framePos],remainder);
                     remainder   -= n;
                     framePos    += n;
                     fflush(stdout);
@@ -5265,14 +5353,45 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
                     }
                     //Save
                     std::string tmpOutFileName(_PATH_SLIDE_TMP_FOLDER);
-                    tmpOutFileName.append(QString::number(i).toStdString());
+                    tmpOutFileName.append(QString::number(nextImg).toStdString());
                     tmpOutFileName.append(".png");//Slide Cube Part
                     tmpImg.save( tmpOutFileName.c_str() );
+
+                    if( firstImageFlag==0 )
+                    {
+                        firstImageName.assign( tmpOutFileName.c_str() );
+                        firstImageFlag = 1;
+                    }
+
                 }
+
+
+                if(
+                        ( numImgs.numImgs == *numImages ) &&
+                        ( numImgs.numImgs < expecNumImgs )
+                )
+                {
+                    qDebug() << "All possible images received";
+                    break;
+                }
+
+
 
             }
         }
         qDebug() << "Slide-Cube received. Time(" << myTimer.elapsed()/1000 << "seconds)" ;
+
+
+        if( firstImageFlag == 1 )
+        {
+            QImage tmpImg( firstImageName.c_str() );
+            tmpImg.save( _PATH_DISPLAY_IMAGE );
+            updateDisplayImageReceived();
+            reloadImage2Display();            
+        }
+
+
+
     }
 
     //

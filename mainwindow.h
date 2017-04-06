@@ -82,6 +82,8 @@ private slots:
 
     void on_pbStartVideo_clicked();
 
+    void progBarTimer( int ms );
+
     bool funcGetRemoteImg(strReqImg *reqImg , bool saveImg=false);
 
     unsigned char *funcObtVideo(unsigned char saveLocally);
