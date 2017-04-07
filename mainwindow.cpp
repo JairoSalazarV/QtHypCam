@@ -70,6 +70,8 @@
 
 #include <formslidesettings.h>
 
+#include <lstfilenames.h>
+
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -5432,7 +5434,29 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
             reloadImage2Display();            
         }
 
+        //
+        //Save parameters into slide-imagery's folder
+        //
 
+        //Number of imagery
+        QString tmpContain;
+        QString tmpFileName;
+        tmpContain = QString::number(*numImages);
+        tmpFileName = _PATH_SLIDE_TMP_FOLDER;
+        tmpFileName.append(_FILENAME_SLIDE_PARAM_NUM_IMGS);
+        saveFile( tmpFileName, tmpContain );
+
+        //Slide width
+        tmpContain = QString::number( reqImg->slide.cols1 );
+        tmpFileName = _PATH_SLIDE_TMP_FOLDER;
+        tmpFileName.append(_FILENAME_SLIDE_PARAM_W);
+        saveFile( tmpFileName, tmpContain );
+
+        //Slide height
+        tmpContain = QString::number( reqImg->slide.rows1 );
+        tmpFileName = _PATH_SLIDE_TMP_FOLDER;
+        tmpFileName.append(_FILENAME_SLIDE_PARAM_H);
+        saveFile( tmpFileName, tmpContain );
 
     }
 
