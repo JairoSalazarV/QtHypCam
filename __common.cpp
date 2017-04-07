@@ -1097,6 +1097,24 @@ int saveBinFile_From_u_int8_T( std::string fileName, uint8_t *data, size_t len)
     return 1;
 }
 
+int fileExists( QString fileName )
+{
+    //Receive a filename and return
+    //1: file exists
+    //0: file does not exist
+    //-1: fileName empty
+    //-2: Unknow error
+    if( fileName.isEmpty() )return -1;
+
+    QFile tmpFile( fileName );
+    if( tmpFile.exists() )
+        return 1;
+    else
+        return 0;
+
+    return -2;
+}
+
 
 
 /*

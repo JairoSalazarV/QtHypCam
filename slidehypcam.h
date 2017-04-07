@@ -24,9 +24,15 @@ private slots:
 
     //void serialPortConnect();
 
+    void funcUpdateSlideToDisplay();
+
+    void funcGenerateSlideImage();
+
+    int funcGetNumImgs( QString path );
+
     void on_actionpbGetSlideCube_triggered();
 
-
+    void resizeEvent(QResizeEvent* event);
 
     void on_actionSlide_settings_triggered();
 

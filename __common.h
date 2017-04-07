@@ -101,6 +101,7 @@
 
     int saveBinFile_From_u_int8_T( std::string fileName, uint8_t *data, size_t len);
 
+    int fileExists(QString fileName );
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
@@ -112,6 +113,7 @@
     //Variable area
     //
     static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
+
 
 
 #endif // __COMMON_H

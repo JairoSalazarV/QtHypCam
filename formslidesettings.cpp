@@ -66,7 +66,10 @@ void formSlideSettings::on_pbSave_clicked()
     tmpSettings.append("</Variables>");
 
     if( saveFile( _PATH_SLIDE_SETTINGS, tmpSettings ) == true )
+    {
         funcShowMsg("Success","File saved");
+        this->close();
+    }
     else
         funcShowMsg("ERROR","Saving settings");
 

@@ -1,7 +1,6 @@
 #ifndef LSTPATHS_H
 #define LSTPATHS_H
 
-
     #define _PATH_SETTINGS                  "./settings/"
 
     #define _PATH_LAST_IP                   "./settings/socketIP.hypcam"
@@ -45,6 +44,7 @@
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
+    #define _PATH_SLIDE_TO_DISPLAY          "./tmpImages/tmpSlide/allSlide.png"
 
     #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"
     #define _PATH_SQUARE_USABLE             "./XML/squareUsable.xml"

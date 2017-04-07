@@ -15,6 +15,9 @@
     //#define _AUTOCONNECT true
     #define PI 3.14159265
 
+    #define _PADDING_W                      50
+    #define _PADDING_H                      160
+
     #define _INVERTED_CAMERA                0
 
     #define _RED_WAVELENGHT 618

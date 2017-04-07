@@ -1164,6 +1164,7 @@ QSlider::handle:horizontal {
    <addaction name="actionChoseWavelength"/>
    <addaction name="actionGenHypercube"/>
    <addaction name="actionslideHypCam"/>
+   <addaction name="actionSlide_settings"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -1466,7 +1467,7 @@ QSlider::handle:horizontal {
   <action name="actionslideHypCam">
    <property name="icon">
     <iconset resource="lstImgs.qrc">
-     <normaloff>:/new/icons/imagenInte/calBottom.png</normaloff>:/new/icons/imagenInte/calBottom.png</iconset>
+     <normaloff>:/new/icons/imagenInte/slideForm.png</normaloff>:/new/icons/imagenInte/slideForm.png</iconset>
    </property>
    <property name="text">
     <string>slideHypCam</string>
@@ -1485,6 +1486,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Draw slide area</string>
+   </property>
+  </action>
+  <action name="actionSlide_settings">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/slideConfig.png</normaloff>:/new/icons/imagenInte/slideConfig.png</iconset>
+   </property>
+   <property name="text">
+    <string>Slide settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Slide settings</string>
    </property>
   </action>
  </widget>

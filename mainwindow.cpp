@@ -68,6 +68,8 @@
 #include <QThread>
 #include <arduinomotor.h>
 
+#include <formslidesettings.h>
+
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -99,7 +101,7 @@ bool globaIsRotated;
 
 
 
-
+QThread* progBarThread;
 
 
 
@@ -118,6 +120,8 @@ MainWindow::MainWindow(QWidget *parent) :
     //ui->actionValidCal->trigger();
 
     funcObtSettings( lstSettings );
+
+    progBarThread = new QThread(this);
 
     /*
     int algo = 4;
@@ -1188,6 +1192,7 @@ void MainWindow::on_pbStartVideo_clicked()
 
 void MainWindow::progBarTimer( int ms )
 {
+    //this->moveToThread(progBarThread);
     ui->progBar->setVisible(true);
     ui->progBar->setValue(0);
     ui->progBar->update();
@@ -1197,7 +1202,10 @@ void MainWindow::progBarTimer( int ms )
     {
         ui->progBar->setValue(i);
         ui->progBar->update();
-        QtDelay(step);
+        //QtDelay(step);
+
+        QThread::msleep(step);
+
     }
 
     ui->progBar->setValue(0);
@@ -5223,7 +5231,17 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
                     reqImg->slide.degreeJump,
                     reqImg->slide.speed
                   );
-    motor.doAWalk();
+    //motor.doAWalk();
+    motor.start();
+
+    //Show prog bar
+    int expecNumImgs;
+    expecNumImgs =  ceil(
+                            (float)(reqImg->slide.degreeEnd - reqImg->slide.degreeIni) /
+                            (float)reqImg->slide.degreeJump
+                         );
+    progBarTimer( (expecNumImgs+1) * reqImg->slide.speed );
+    QtDelay(10);//Forces to hide prog-bar
 
     //Receive ACK with the time lapse status
     memset(bufferRead,0,frameBodyLen);
@@ -5231,14 +5249,12 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
     strNumSlideImgs numImgs;
     memcpy( &numImgs, bufferRead, sizeof(strNumSlideImgs) );
 
-    //Validate image generated
-    int expecNumImgs;
-    expecNumImgs =  ceil(
-                            (float)(reqImg->slide.degreeEnd - reqImg->slide.degreeIni) /
-                            (float)reqImg->slide.degreeJump
-                         );
+    //Validate image generated    
     //expecNumImgs = ceil( (float)duration / (float)reqImg->slide.speed );
     qDebug() << "Imagery generated: " << numImgs.numImgs << " of " << expecNumImgs;
+
+
+
 
     //
     //Request to compute slide-diffractio (it is received each image in the cube)
@@ -5260,6 +5276,7 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
             ::close(sockfd);
             lstImgs = (u_int8_t**)malloc(sizeof(u_int8_t*));
             delete[] lstImgs;
+            *numImages = 0;
             return (u_int8_t**)NULL;
         }
     }
@@ -5289,6 +5306,13 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
         myTimer.start();
         int firstImageFlag = 0;
         std::string firstImageName;
+
+        //Show Prog bar
+        ui->progBar->setVisible(true);
+        ui->progBar->setValue(0);
+        ui->progBar->update();
+        QtDelay(5);
+
         for( i=1; i<=expecNumImgs; i++ )
         {
             //Read next image status (Id or -1 if finishes)
@@ -5377,8 +5401,26 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
 
 
 
+
             }
+
+
+
+            //ui->labelProgBar->setText( QString::number(i) + " of " + QString::number(expecNumImgs) );
+            ui->progBar->setValue( round( 100.0*((float)i/(float)expecNumImgs ) ) );
+            ui->progBar->update();
+            QtDelay(5);
+
+
+
         }
+
+        ui->labelProgBar->setText("");
+        ui->progBar->setValue(0);
+        ui->progBar->setVisible(false);
+        ui->progBar->update();
+        QtDelay(5);
+
         qDebug() << "Slide-Cube received. Time(" << myTimer.elapsed()/1000 << "seconds)" ;
 
 
@@ -5769,4 +5811,11 @@ int MainWindow::saveRectangleAs( squareAperture *square, QString fileName )
         return 0;
     }
     return 0;
+}
+
+void MainWindow::on_actionSlide_settings_triggered()
+{
+    formSlideSettings* tmpForm = new formSlideSettings(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
 }

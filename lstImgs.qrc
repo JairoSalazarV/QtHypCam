@@ -242,6 +242,7 @@
         <file>imagenInte/slide.png</file>
         <file>imagenInte/slideArea.png</file>
         <file>imagenInte/slideConfig.png</file>
+        <file>imagenInte/slideForm.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

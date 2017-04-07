@@ -59,7 +59,8 @@ HEADERS  += mainwindow.h \
     lstpaths.h \
     arduinomotor.h \
     lstcustoms.h \
-    formslidesettings.h
+    formslidesettings.h \
+    lstfilenames.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \

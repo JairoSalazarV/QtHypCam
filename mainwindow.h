@@ -437,6 +437,8 @@ private slots:
 
     int saveRectangleAs( squareAperture *square, QString fileName );
 
+    void on_actionSlide_settings_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
