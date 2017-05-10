@@ -218,20 +218,6 @@ MainWindow::MainWindow(QWidget *parent) :
            );
     */
 
-
-
-
-    //Try to connect to the last IP
-    QString lastIP = readAllFile( _PATH_LAST_IP );
-    lastIP.replace("\n","");
-    ui->txtIp->setText(lastIP);
-
-    if( funcShowMsgYesNo("Welcome!","Auto connect?") ){
-        ui->pbAddIp->click();
-        ui->tableLstCams->selectRow(0);
-        ui->pbConnect->click();
-    }
-
     //Fill the lastsnapshots path as default
     QString lastSnapPath = readAllFile( _PATH_LAST_SNAPPATH );
     lastSnapPath.replace("\n","");
@@ -251,10 +237,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->progBar->setValue(0);
     ui->progBar->setVisible(false);
 
+    ui->pbShutdown->setDisabled(true);
+
     disableAllToolBars();
 
     loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
 
+    //
+    //Try to connect to the last IP
+    //
+    QString lastIP = readAllFile( _PATH_LAST_IP );
+    lastIP.replace("\n","");
+    ui->txtIp->setText(lastIP);
+
+    if( funcShowMsgYesNo("Welcome!","Auto connect?") ){
+        ui->pbAddIp->click();
+        ui->tableLstCams->selectRow(0);
+        ui->pbConnect->click();
+    }
 
 
 }
@@ -1029,6 +1029,7 @@ void MainWindow::on_pbSendComm_clicked()
     frame2send->header.numTotMsg = 1;
     frame2send->header.consecutive = 1;
     frame2send->header.bodyLen   = ui->txtCommand->text().length();
+    bzero(frame2send->msg,ui->txtCommand->text().length()+1);
     memcpy(
                 frame2send->msg,
                 ui->txtCommand->text().toStdString().c_str(),
@@ -1069,7 +1070,7 @@ void MainWindow::on_pbSendComm_clicked()
     qDebug() << "command: " << frame2send->msg;
     qDebug() << "tmpFrameLen: " << sizeof(frameHeader) + ui->txtCommand->text().length();
     tmpFrameLen = sizeof(frameHeader) + ui->txtCommand->text().length();
-    n = ::write(sockfd,frame2send,tmpFrameLen);
+    n = ::write(sockfd,frame2send,tmpFrameLen+1);
     if(n<0){
         qDebug() << "ERROR: Sending command";
         return (void)NULL;
@@ -1113,6 +1114,7 @@ void MainWindow::on_pbConnect_clicked()
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/right.gif") );
                 ui->pbSnapshot->setEnabled(false);
                 ui->pbGetSlideCube->setEnabled(false);
+                ui->pbShutdown->setDisabled(true);
             }else{
                 qDebug() << "Connecting: ";                
                 camSelected->tcpPort = lstSettings->tcpPort;
@@ -1125,6 +1127,7 @@ void MainWindow::on_pbConnect_clicked()
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/close.png") );
                 ui->pbSnapshot->setEnabled(true);
                 ui->pbGetSlideCube->setEnabled(true);
+                ui->pbShutdown->setDisabled(false);
                 qDebug() << "IP->: " << QString((char*)camSelected->IP);
                 //Save last IP
                 saveFile( _PATH_LAST_IP, QString((char*)camSelected->IP) );
@@ -3368,7 +3371,7 @@ void MainWindow::on_actionLoadCanvas_triggered()
                                                         this,
                                                         tr("Select image..."),
                                                         "./snapshots/Calib/",
-                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg, *.jpeg, *.bmp);;"
+                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg *.jpeg *.JPEG *.JPG *.bmp);;"
                                                      );
     if( auxQstring.isEmpty() ){
         return (void)NULL;
@@ -5842,4 +5845,139 @@ void MainWindow::on_actionSlide_settings_triggered()
     formSlideSettings* tmpForm = new formSlideSettings(this);
     tmpForm->setModal(true);
     tmpForm->show();
+}
+
+void MainWindow::on_pbShutdown_clicked()
+{
+    std::string cmdShutdown = "sudo shutdown -h now";
+
+    if( !camSelected->isConnected){
+        funcShowMsg("Alert","Camera not connected");
+        return (void)NULL;
+    }
+    if( ui->tableLstCams->rowCount() == 0 ){
+        funcShowMsg("Alert","Not camera detected");
+        return (void)NULL;
+    }
+    ui->tableLstCams->setFocus();
+
+    //Prepare message to send
+    frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
+    memset(frame2send,'\0',sizeof(frameStruct));
+    frame2send->header.idMsg = (unsigned char)2;
+    frame2send->header.numTotMsg = 1;
+    frame2send->header.consecutive = 1;
+    frame2send->header.bodyLen   = cmdShutdown.length();
+    bzero(frame2send->msg,cmdShutdown.length()+1);
+    memcpy(
+                frame2send->msg,
+                cmdShutdown.c_str(),
+                cmdShutdown.length()
+          );
+
+    //Prepare command message
+    int sockfd, n, tmpFrameLen;
+    //unsigned char bufferRead[sizeof(frameStruct)];
+    struct sockaddr_in serv_addr;
+    struct hostent *server;
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    qDebug() << "Comm IP: " << QString((char*)camSelected->IP);
+    if (sockfd < 0){
+        qDebug() << "opening socket";
+        return (void)NULL;
+    }
+    //server = gethostbyname( ui->tableLstCams->item(tmpRow,1)->text().toStdString().c_str() );
+    server = gethostbyname( (char*)camSelected->IP );
+    if (server == NULL) {
+        qDebug() << "Not such host";
+        return (void)NULL;
+    }
+    bzero((char *) &serv_addr, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr,
+        (char *)&serv_addr.sin_addr.s_addr,
+        server->h_length);
+    serv_addr.sin_port = htons(camSelected->tcpPort);
+    if (::connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
+        qDebug() << "ERROR: connecting to socket";
+        return (void)NULL;
+    }
+
+
+    //Request command result
+    qDebug() << "idMsg: " << (int)frame2send->header.idMsg;
+    qDebug() << "command: " << frame2send->msg;
+    qDebug() << "tmpFrameLen: " << sizeof(frameHeader) + cmdShutdown.length();
+    tmpFrameLen = sizeof(frameHeader) + cmdShutdown.length();
+    n = ::write(sockfd,frame2send,tmpFrameLen+1);
+    if(n<0){
+        qDebug() << "ERROR: Sending command";
+        return (void)NULL;
+    }
+    ::close(sockfd);
+
+    ui->pbConnect->setEnabled(false);
+    ui->tableLstCams->removeRow( ui->tableLstCams->currentRow() );
+    ui->pbShutdown->setEnabled(false);
+
+
+    /*
+    //Receibing ack with file len
+    unsigned int fileLen;
+    unsigned char bufferRead[frameBodyLen];
+    n = read(sockfd,bufferRead,frameBodyLen);
+    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
+    fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
+    qDebug() << "fileLen: " << fileLen;
+    //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
+
+    //Receive File
+    unsigned char tmpFile[fileLen];
+    funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
+    qDebug() <<tmpFile;
+    ::close(sockfd);
+
+    //Show command result
+    std::string tmpTxt((char*)tmpFile);
+    qDebug() << "Get: " << (char*)tmpFile;
+    ui->txtCommRes->setText( QString(tmpTxt.c_str()) ) ;
+    */
+}
+
+void MainWindow::on_pbSnapVid_clicked()
+{
+    //Set required image's settings
+    //..
+    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    reqImg->idMsg           = (unsigned char)12;
+    reqImg->video.seconds   = 3;
+
+    //Open socket
+    int n;
+    int sockfd = connectSocket( camSelected );
+    unsigned char bufferRead[frameBodyLen];
+    qDebug() << "Socket opened";
+    //Require photo size
+    //QtDelay(5);
+    n = ::write(sockfd,reqImg,sizeof(strReqImg));
+    qDebug() << "Video request sent";
+
+    //Receive ACK with the camera status
+    memset(bufferRead,'\0',3);
+    n = read(sockfd,bufferRead,2);
+    if( bufferRead[1] == 1 )
+    {//Begin the video adquisition routine
+        qDebug() << "Video recorded";
+        obtainFile( _PATH_RASP_VIDEO_RECORDED, _PATH_VIDEO_RECEIVED );
+    }
+    else
+    {//Video does not generated by raspicam
+        funcShowMsg("ERROR on Camera","Recording video");
+    }
+
+    n = n;
+    ::close(sockfd);
+
+
 }

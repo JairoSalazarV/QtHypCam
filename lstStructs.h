@@ -315,6 +315,11 @@
         //int duration;   //time in ms of the total time snapshing
     }strSlideSettings;
 
+    typedef struct strRecordVideo
+    {
+        int seconds;
+    }strRecordVideo;
+
     typedef struct strReqImg{
         unsigned char idMsg;
         unsigned char stabSec;
@@ -328,6 +333,7 @@
         squareAperture sqApSett;
         squareAperture diffArea;
         strSlideSettings slide;
+        strRecordVideo video;
     }strReqImg;
 
     typedef struct structSettings{

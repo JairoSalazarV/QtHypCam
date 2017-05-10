@@ -18,7 +18,7 @@
     #define _PADDING_W                      50
     #define _PADDING_H                      160
 
-    #define _INVERTED_CAMERA                0
+    #define _INVERTED_CAMERA                1
 
     #define _RED_WAVELENGHT 618
     #define _GREEN_WAVELENGHT 542

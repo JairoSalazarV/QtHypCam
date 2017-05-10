@@ -439,6 +439,10 @@ private slots:
 
     void on_actionSlide_settings_triggered();
 
+    void on_pbShutdown_clicked();
+
+    void on_pbSnapVid_clicked();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
