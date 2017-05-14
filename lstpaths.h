@@ -45,6 +45,7 @@
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
     #define _PATH_VIDEO_RECEIVED            "./tmpImages/tmpVidRec.h264"
+    #define _PATH_VIDEO_RECEIVED_MP4        "./tmpImages/tmpVIDEO.mp4"
     #define _PATH_RASP_VIDEO_RECORDED       "./tmpSnapVideos/tmpVideo.h264"
     #define _PATH_SLIDE_TO_DISPLAY          "./tmpImages/tmpSlide/allSlide.png"
 

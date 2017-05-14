@@ -29,6 +29,19 @@ QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
     return point;
 }
 
+int funcDeleteFile( QString fileName )
+{
+    QFile tmpFile( fileName );
+    if( tmpFile.exists() )
+    {
+        tmpFile.remove();
+        return 1;//File exists and removed
+    }
+    else
+        return 2;//File does not exists but is equal to be removed
+    return -1;//Error
+}
+
 QString funcRemoveFileNameFromPath( QString Path ){
     return QFileInfo(Path).absolutePath();
 }
@@ -1113,6 +1126,17 @@ int fileExists( QString fileName )
         return 0;
 
     return -2;
+}
+
+int funcExecuteCommand( QString command )
+{
+    //Execute raspistill
+    FILE* pipe;
+    pipe = popen(command.toStdString().c_str(), "r");
+    pclose(pipe);
+
+
+    return -1;
 }
 
 

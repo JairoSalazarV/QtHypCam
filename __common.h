@@ -82,6 +82,8 @@
 
     bool saveBinFile(unsigned long datasize, unsigned char *dataPtr, QString directory);
 
+    int funcDeleteFile( QString fileName );
+
     QString funcRemoveFileNameFromPath( QString Path );
 
     customQMatrix3x3 matMultiply(QMatrix3x4 *M1, QMatrix4x3 *M2);
@@ -102,6 +104,8 @@
     int saveBinFile_From_u_int8_T( std::string fileName, uint8_t *data, size_t len);
 
     int fileExists(QString fileName );
+
+    int funcExecuteCommand( QString command );
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
