@@ -8,6 +8,8 @@
 
 #include <QtSerialPort/QSerialPort>
 #include <QtCore/QtGlobal>
+#include <QVideoFrame>
+#include <QMediaPlayer>
 
 //QT_BEGIN_NAMESPACE
 
@@ -46,6 +48,14 @@ public slots:
     u_int8_t** funcGetSLIDESnapshot(int* numImages , bool saveFiles);
 
     structCamSelected* funcGetCamSelected();
+
+    int funcVideoToFrames();
+
+    void processEndOfPlayer(QMediaPlayer::MediaStatus status);
+
+    void funcHideBarAndLabel();
+
+    void processFrame(QVideoFrame actualFrame);
 
 
 

@@ -4,8 +4,11 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-QT       += serialport
+QT  += core gui
+QT  += serialport
+QT  += multimedia
+QT  += multimediawidgets
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -81,11 +84,13 @@ RESOURCES += \
 
 INCLUDEPATH += /usr/local/include/opencv
 INCLUDEPATH += /usr/local/include/opencv2
+#INCLUDEPATH += /usr/local/include/opencv2/videoio/
 
 #LIBS += -L/usr/local/lib
 LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
 LIBS += -lpthread
 
+#LIBS += -lopencv_video
 #LIBS += -lopencv_core -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d
 #LIBS += -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_stitching
 

@@ -28,18 +28,39 @@
 #include <selwathtocheck.h>
 
 //OpenCV
-//#include <highgui.h>
+/*
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/videoio.hpp>
+#include <opencv2/opencv.hpp>
+*/
 
-//#include <opencv2/opencv.hpp>
-//#include <opencv2/core/core.hpp>
+/*
+#include <opencv2/highgui/highgui_c.h>
+#include <opencv2/videoio/videoio_c.h>
+
+#include <opencv2/video/tracking_c.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/core/core.hpp>
+#include <highgui.h>
+#include <cv.h>
+#include <opencv2/core/core_c.h>
+#include <imgproc.hpp>
+#include "opencv/cv.h"
+#include "opencv/highgui.h"
+#include "opencv2/opencv.hpp"
+#include "opencv2/core/core.hpp"
+#include "/usr/local/include/opencv2/videoio/videoio_c.h"
+*/
+
+/*
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/videoio.hpp>
+*/
 
 
-//#include <opencv2/core/core.hpp>
-//#include <opencv2/imgproc/imgproc.hpp>
-//#include <opencv2/highgui/highgui.hpp>
+
 
 #include <hypCamAPI.h>
 
@@ -72,6 +93,12 @@
 
 #include <lstfilenames.h>
 
+#include <QMediaPlayer>
+#include <QVideoProbe>
+#include <QVideoWidget>
+#include <QAbstractVideoSurface>
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -99,7 +126,8 @@ QList<QPair<int,int>> *lstPixSelAux;
 calcAndCropSnap calStruct;
 bool globaIsRotated;
 
-
+qint64 numFrames;
+QList<QImage> lstFrames;
 
 
 
@@ -1197,6 +1225,7 @@ void MainWindow::on_pbStartVideo_clicked()
 
 void MainWindow::progBarTimer( int ms )
 {
+
     //this->moveToThread(progBarThread);
     ui->progBar->setVisible(true);
     ui->progBar->setValue(0);
@@ -5946,6 +5975,7 @@ void MainWindow::on_pbShutdown_clicked()
 
 void MainWindow::on_pbSnapVid_clicked()
 {
+
     //Update camera resolution
     //..
     camRes = getCamRes();
@@ -5954,9 +5984,38 @@ void MainWindow::on_pbSnapVid_clicked()
     //..
     strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
     memset(reqImg,'\0',sizeof(strReqImg));
+
+    //Codec H264 or MJPEG
+    QString videoLocalFilename;
+    QString videoRemoteFilename;
+    //const u_int8_t videoCodec = _MJPEG;
+    const u_int8_t videoCodec = _H264;
+    if( videoCodec == _H264 )
+    {
+        videoRemoteFilename.append(_PATH_VIDEO_REMOTE_H264);
+        videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
+    }
+    else
+    {
+        memcpy( reqImg->video.cd, "MJPEG", 5 );
+
+        if( 1 )
+        {
+            videoRemoteFilename.append(_PATH_VIDEO_REMOTE_MJPEG);
+            videoLocalFilename.append(_PATH_VIDEO_RECEIVED_MJPEG);
+        }
+        else
+        {
+            videoRemoteFilename.append(_PATH_VIDEO_REMOTE_H264);
+            videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
+        }
+    }
+    memcpy( reqImg->video.o, videoRemoteFilename.toStdString().c_str(), videoRemoteFilename.size() );
+
+    //Others
     reqImg->idMsg           = (unsigned char)12;
     reqImg->video.t         = ui->slideTriggerTime->value();
-    reqImg->video.md        = 2;//2
+    reqImg->video.md        = 2;//2    
     reqImg->video.w         = 0;//1640
     reqImg->video.h         = 0;//1232
     reqImg->video.fps       = 0;//1-15
@@ -5977,22 +6036,45 @@ void MainWindow::on_pbSnapVid_clicked()
     if( bufferRead[1] == 1 )
     {//Begin the video adquisition routine
 
+        //
+        // STATUS BAR
+        //
+        funcLabelProgBarUpdate("Recording video",0);
+        progBarTimer( (ui->slideTriggerTime->value() + 1) * 1000 );
+
         //Delete if file exists
-        funcDeleteFile( _PATH_VIDEO_RECEIVED );
+        funcDeleteFile( _PATH_VIDEO_RECEIVED_H264 );
+        funcDeleteFile( _PATH_VIDEO_RECEIVED_MJPEG );
         funcDeleteFile( _PATH_VIDEO_RECEIVED_MP4 );
 
         //Download new
         qDebug() << "Video recorded";        
-        obtainFile( _PATH_RASP_VIDEO_RECORDED, _PATH_VIDEO_RECEIVED );        
+        obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString() );
 
-        //Convert into MP4
-        QString converToMP4;
-        converToMP4 = "";
-        converToMP4.append( "MP4Box -add ");
-        converToMP4.append(_PATH_VIDEO_RECEIVED);
-        converToMP4.append(" ");
-        converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
-        funcExecuteCommand( converToMP4 );
+        //Convert into MP4        
+        if( videoCodec == _H264 )
+        {
+            //Convert into .MP4
+            QString converToMP4;
+            converToMP4 = "";
+            converToMP4.append( "MP4Box -add ");
+            converToMP4.append(_PATH_VIDEO_RECEIVED_H264);
+            converToMP4.append(" ");
+            converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
+            funcExecuteCommand( converToMP4 );
+            //Update permissions
+            //converToMP4 = "chmod +777 ";
+            //converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
+            //funcExecuteCommand( converToMP4 );
+        }
+
+        //
+        //Send .mp4 to frames
+        //
+        funcVideoToFrames();
+
+
+
     }
     else
     {//Video does not generated by raspicam
@@ -6003,4 +6085,132 @@ void MainWindow::on_pbSnapVid_clicked()
     ::close(sockfd);
 
 
+
+
+
+
+
+
+
+
+
+
+
 }
+
+
+class MyVideoSurface : public QAbstractVideoSurface
+{
+    QList<QVideoFrame::PixelFormat> supportedPixelFormats(
+            QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const
+    {
+        Q_UNUSED(handleType);
+
+        // Return the formats you will support
+        return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_RGB565;
+    }
+
+
+
+    bool present(const QVideoFrame &frame)
+    {
+        Q_UNUSED(frame);
+        // Handle the frame and do your processing
+
+        return true;
+    }
+};
+
+int MainWindow::funcVideoToFrames()
+{
+
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(true);
+    ui->progBar->update();
+
+    numFrames = 0;
+    lstFrames.clear();
+    funcClearDirFolder( _PATH_VIDEO_FRAMES );
+
+    QMediaPlayer *player = new QMediaPlayer();
+    QVideoProbe *probe = new QVideoProbe;
+    MyVideoSurface* myVideoSurface = new MyVideoSurface;
+
+    connect(probe, SIGNAL(videoFrameProbed(QVideoFrame)), this, SLOT(processFrame(QVideoFrame)));
+
+    probe->setSource(player); // Returns true, hopefully.
+
+    player->setVideoOutput(myVideoSurface);
+    player->setMedia( QUrl::fromUserInput(_PATH_VIDEO_RECEIVED_MP4, qApp->applicationDirPath()) );
+
+    player->setPlaybackRate(0.1);
+
+    player->play(); // Start receiving frames as they get presented to myVideoSurface
+
+    //while(player->state() != QMediaPlayer::EndOfMedia ){QtDelay(20);}
+    //
+    // STATUS BAR
+    //
+    funcLabelProgBarUpdate(" .mp4 to frames",0);
+
+    connect(player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), this, SLOT(processEndOfPlayer(QMediaPlayer::MediaStatus)));
+
+
+    return 1;
+}
+
+void MainWindow::processEndOfPlayer(QMediaPlayer::MediaStatus status)
+{
+    if( status == QMediaPlayer::EndOfMedia )
+    {
+        funcHideBarAndLabel();
+    }
+}
+
+
+void MainWindow::funcHideBarAndLabel()
+{
+    funcLabelProgBarHide();
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(false);
+    ui->progBar->update();
+}
+
+void MainWindow::processFrame(QVideoFrame actualFrame)
+{
+    QImage img;
+    QVideoFrame frame(actualFrame);  // make a copy we can call map (non-const) on
+    frame.map(QAbstractVideoBuffer::ReadOnly);
+    QImage::Format imageFormat = QVideoFrame::imageFormatFromPixelFormat(frame.pixelFormat());
+    // BUT the frame.pixelFormat() is QVideoFrame::Format_Jpeg, and this is
+    // mapped to QImage::Format_Invalid by
+    // QVideoFrame::imageFormatFromPixelFormat
+    if (imageFormat != QImage::Format_Invalid) {
+        img = QImage(frame.bits(),
+                     frame.width(),
+                     frame.height(),
+                     // frame.bytesPerLine(),
+                     imageFormat);
+    } else {
+        // e.g. JPEG
+        int nbytes = frame.mappedBytes();
+        img = QImage::fromData(frame.bits(), nbytes);
+    }
+
+    frame.unmap();
+    numFrames++;
+
+    if( img.save( _PATH_VIDEO_FRAMES + QString::number(numFrames) + ".png" ) )
+    {
+        //qDebug() << "numFrames saved: " << numFrames;
+        int videoDuration = ui->slideTriggerTime->value();//seconds
+        qint64 expectedFrames = round(videoDuration * 10 * 1.25);
+        ui->progBar->setValue( round( ((float)numFrames/(float)expectedFrames) * 100.0 ) );
+        ui->progBar->update();
+    }
+    else
+    {
+        qDebug() << "Error saving frame " << numFrames;
+    }
+}
+

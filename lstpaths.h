@@ -44,8 +44,16 @@
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
-    #define _PATH_VIDEO_RECEIVED            "./tmpImages/tmpVidRec.h264"
+
+    #define _PATH_VIDEO_REMOTE_H264         "./tmpSnapVideos/tmpVideo.H264"
+    #define _PATH_VIDEO_REMOTE_MJPEG        "./tmpSnapVideos/tmpVideo.MJPEG"
+
+    #define _PATH_VIDEO                     "./tmpImages/"
+    #define _PATH_VIDEO_FRAMES              "./tmpImages/frames/"
+    #define _PATH_VIDEO_RECEIVED_H264       "./tmpImages/tmpVidRec.H264"
+    #define _PATH_VIDEO_RECEIVED_MJPEG      "./tmpImages/tmpVidRec.MJPEG"
     #define _PATH_VIDEO_RECEIVED_MP4        "./tmpImages/tmpVIDEO.mp4"
+
     #define _PATH_RASP_VIDEO_RECORDED       "./tmpSnapVideos/tmpVideo.h264"
     #define _PATH_SLIDE_TO_DISPLAY          "./tmpImages/tmpSlide/allSlide.png"
 
@@ -61,6 +69,8 @@
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
 
     #define _PATH_LAST_SNAPPATH             "lastSnapPath.xml"
+
+
 
 
 #endif // LSTPATHS_H
