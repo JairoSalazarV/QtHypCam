@@ -1230,10 +1230,24 @@ QVector3D matMultiply(QMatrix3x4 *M1, QVector4D *M2)
 }
 
 
-void funcOpenFolder(QString path){
+void funcOpenFolder(QString path)
+{
     QDesktopServices::openUrl(QUrl(path));
 }
 
+int funcAccountFilesInDir(QString Dir)
+{
+    int numFiles = 0;
+    QDir dir(Dir);
+    if ( dir.exists() )
+    {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::Files, QDir::DirsFirst))
+        {
+            numFiles++;
+        }
+    }
+    return numFiles;
+}
 
 void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
 {

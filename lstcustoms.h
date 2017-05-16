@@ -44,7 +44,7 @@
 
     #define SQUARE_BICUBIC_ITERATIONS       1        //Apply Bicubic k times
 
-
+    #define _FRAME_EXTENSION                ".png"
 
 
 

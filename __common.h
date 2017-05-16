@@ -93,6 +93,8 @@
 
     void funcOpenFolder(QString path);
 
+    int funcAccountFilesInDir(QString Dir);
+
     void funcClearDirFolder(QString path);
 
     void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
