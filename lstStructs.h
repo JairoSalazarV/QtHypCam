@@ -316,6 +316,13 @@
         //int duration;   //time in ms of the total time snapshing
     }strSlideSettings;
 
+    typedef struct strSlideMotorWalk{
+        int16_t degreeIni;
+        int16_t degreeEnd;
+        int16_t durationMs;
+        int16_t stabilizingMs;
+    }strSlideMotorWalk;
+
     typedef struct strReqImg{
         unsigned char idMsg;
         unsigned char stabSec;
@@ -330,6 +337,7 @@
         squareAperture diffArea;
         strSlideSettings slide;
         structRaspivid video;
+        strSlideMotorWalk motorWalk;
     }strReqImg;
 
     typedef struct structSettings{

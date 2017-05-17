@@ -181,7 +181,6 @@
 
 
 
-
     typedef struct structRaspivid
     {
         char o[30];     // Fileout name

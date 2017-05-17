@@ -6020,6 +6020,18 @@ void MainWindow::on_pbSnapVid_clicked()
     reqImg->video.h         = 0;//1232
     reqImg->video.fps       = 0;//1-15
 
+    //
+    //Motor walk
+    //
+    // HELP
+    //
+    // (ERROR on binding: Address already in use) -> netstat -tulpn -> kill process
+    // Para saber el USB -> ls -l /dev/tty (tab)
+    reqImg->motorWalk.degreeIni     = 0;
+    reqImg->motorWalk.degreeEnd     = 180;
+    reqImg->motorWalk.durationMs    = 3000;
+    reqImg->motorWalk.stabilizingMs = 1000;
+
     //Open socket
     int n;
     int sockfd = connectSocket( camSelected );
