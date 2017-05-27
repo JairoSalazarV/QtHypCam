@@ -383,7 +383,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>434</y>
+        <y>332</y>
         <width>219</width>
         <height>21</height>
        </rect>
@@ -440,21 +440,8 @@
        <string/>
       </property>
       <property name="icon">
-       <iconset resource="lstImgs.qrc">
+       <iconset>
         <normaloff>:/new/icons/imagenInte/snapshot</normaloff>:/new/icons/imagenInte/snapshot</iconset>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="txtSnapPath">
-      <property name="geometry">
-       <rect>
-        <x>150</x>
-        <y>10</y>
-        <width>113</width>
-        <height>33</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>./snapshots/</string>
       </property>
      </widget>
      <widget class="QWidget" name="layoutWidget3">
@@ -504,7 +491,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>472</y>
+        <y>370</y>
         <width>219</width>
         <height>21</height>
        </rect>
@@ -529,78 +516,14 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QFrame" name="frame_4">
-      <property name="geometry">
-       <rect>
-        <x>21</x>
-        <y>301</y>
-        <width>261</width>
-        <height>59</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QSlider" name="slideSquareShuterSpeed">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>40</y>
-         <width>251</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <number>900000</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QSlider" name="slideSquareShuterSpeedSmall">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>20</y>
-         <width>251</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <number>95000</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="labelSquareShuterSpeed">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>-3</y>
-         <width>261</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Square Shuter Speed</string>
-       </property>
-      </widget>
-     </widget>
      <widget class="QComboBox" name="cbAWB">
       <property name="enabled">
        <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>210</y>
+        <x>170</x>
+        <y>187</y>
         <width>159</width>
         <height>29</height>
        </rect>
@@ -622,8 +545,8 @@
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>24</x>
-        <y>242</y>
+        <x>22</x>
+        <y>225</y>
         <width>111</width>
         <height>21</height>
        </rect>
@@ -635,82 +558,18 @@
      <widget class="QComboBox" name="cbExposure">
       <property name="geometry">
        <rect>
-        <x>21</x>
-        <y>262</y>
+        <x>170</x>
+        <y>223</y>
         <width>159</width>
         <height>29</height>
        </rect>
       </property>
      </widget>
-     <widget class="QFrame" name="frame_3">
-      <property name="geometry">
-       <rect>
-        <x>21</x>
-        <y>369</y>
-        <width>261</width>
-        <height>59</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Raised</enum>
-      </property>
-      <widget class="QSlider" name="slideShuterSpeed">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>40</y>
-         <width>251</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="maximum">
-        <number>900000</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QSlider" name="slideShuterSpeedSmall">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>20</y>
-         <width>251</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="minimum">
-        <number>0</number>
-       </property>
-       <property name="maximum">
-        <number>95000</number>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLabel" name="labelShuterSpeed">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>-2</y>
-         <width>261</width>
-         <height>19</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Diffraction Shuter Speed</string>
-       </property>
-      </widget>
-     </widget>
      <widget class="QSlider" name="slideISO">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>454</y>
+        <y>352</y>
         <width>219</width>
         <height>19</height>
        </rect>
@@ -729,7 +588,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>492</y>
+        <y>390</y>
         <width>219</width>
         <height>19</height>
        </rect>
@@ -818,7 +677,7 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>100</x>
+        <x>150</x>
         <y>10</y>
         <width>31</width>
         <height>31</height>
@@ -841,7 +700,7 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>280</x>
+        <x>190</x>
         <y>10</y>
         <width>31</width>
         <height>31</height>
@@ -856,6 +715,81 @@
       <property name="icon">
        <iconset resource="lstImgs.qrc">
         <normaloff>:/new/icons/imagenInte/dragonplayer.png</normaloff>:/new/icons/imagenInte/dragonplayer.png</iconset>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pbSnapshot_2">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>Take Square</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/takeSquare.png</normaloff>:/new/icons/imagenInte/takeSquare.png</iconset>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelSquareShuterSpeed">
+      <property name="geometry">
+       <rect>
+        <x>22</x>
+        <y>264</y>
+        <width>91</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Shuter Speed</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBoxShuterSpeed">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>260</y>
+        <width>101</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>3000000</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelSquareShuterSpeed_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>300</y>
+        <width>151</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Aquare Shuter Speed</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBoxSquareShuterSpeed">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>296</y>
+        <width>101</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <number>3000000</number>
       </property>
      </widget>
     </widget>
@@ -996,7 +930,7 @@ QSlider::handle:horizontal {
           <string/>
          </property>
          <property name="icon">
-          <iconset resource="lstImgs.qrc">
+          <iconset>
            <normaloff>:/new/icons/imagenInte/snapshot</normaloff>:/new/icons/imagenInte/snapshot</iconset>
          </property>
         </widget>
@@ -1387,7 +1321,7 @@ QSlider::handle:horizontal {
   </action>
   <action name="actionSaveCanvas">
    <property name="icon">
-    <iconset resource="lstImgs.qrc">
+    <iconset>
      <normaloff>:/new/icons/imagenInte/snapshot</normaloff>:/new/icons/imagenInte/snapshot</iconset>
    </property>
    <property name="text">

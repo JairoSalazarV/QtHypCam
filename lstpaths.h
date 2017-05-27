@@ -34,7 +34,7 @@
 
     #define _PATH_IMG_FILTERED              "./tmpImages/Filtered/"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
-    #define _PATH_SNAPSHOT_ZERO             "./tmpImages/Zero.png"
+    #define _PATH_SNAPSHOT_ZERO             "./tmpImages/Zero.png"    
     #define _PATH_SNAPSHOT_RIGHT            "./tmpImages/Right.png"
     #define _PATH_SNAPSHOT_UP               "./tmpImages/Up.png"
     #define _PATH_SNAPSHOT_LEFT             "./tmpImages/Left.png"
@@ -44,6 +44,8 @@
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
+
+    #define _PATH_REMOTE_SNAPSHOT           "./tmpSnapshots/tmpImg.RGB888"
 
     #define _PATH_VIDEO_REMOTE_H264         "./tmpSnapVideos/tmpVideo.H264"
     #define _PATH_VIDEO_REMOTE_MJPEG        "./tmpSnapVideos/tmpVideo.MJPEG"

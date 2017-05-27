@@ -8,9 +8,10 @@
 #include <string.h>
 #include <fstream>
 
-#include <lstStructs.h>
-
 #include <math.h>
+
+#include <lstStructs.h>
+#include <sstream>
 
 
 
@@ -294,4 +295,97 @@ int funcReceiveOnePositiveInteger( int sockfd )
     memcpy(&n,buffer,sizeof(int));
 
     return n;
+}
+
+
+std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
+{
+
+    //Initialize command
+    //..
+    std::string *tmpCommand = new std::string("raspistill -o ");
+    std::ostringstream ss;
+    tmpCommand->append(fileName);
+    tmpCommand->append(" -n -q 100 -gc");
+
+    //Colour balance?
+    if(reqImg->raspSett.ColorBalance){
+        tmpCommand->append(" -ifx colourbalance");
+    }
+
+    //Denoise?
+    if(reqImg->raspSett.Denoise){
+        tmpCommand->append(" -ifx denoise");
+    }
+
+    //Square Shuter speed
+    int shutSpeed = reqImg->raspSett.SquareShutterSpeed;
+    if( (reqImg->squApert && shutSpeed>0))
+    {
+        ss.str("");
+        ss<<shutSpeed;
+        tmpCommand->append(" -ss " + ss.str());
+    }
+
+    //Diffraction Shuter speed
+    shutSpeed = reqImg->raspSett.ShutterSpeed;
+    if(
+        (!reqImg->squApert && shutSpeed>0) ||	//Whe is by parts
+        (reqImg->fullFrame  && shutSpeed>0)	//Whe is unique and shutter speed has been setted
+    )
+    {
+        ss.str("");
+        ss<<shutSpeed;
+        tmpCommand->append(" -ss " + ss.str());
+    }
+
+    //Trigering timer
+    if( reqImg->raspSett.TriggerTime > 0 )
+    {
+        ss.str("");
+        ss<<(reqImg->raspSett.TriggerTime*1000);
+        tmpCommand->append(" -t " + ss.str());
+    }
+    else
+    {
+        ss.str("");
+        ss<<250;//Milliseconds by default
+        tmpCommand->append(" -t " + ss.str());
+    }
+
+    //Width
+    ss.str("");
+    ss<<reqImg->imgCols;
+    tmpCommand->append(" -w " + ss.str());
+
+    //Height
+    ss.str("");
+    ss<<reqImg->imgRows;
+    tmpCommand->append(" -h " + ss.str());
+
+    //AWB
+    if(strcmp((char*)reqImg->raspSett.AWB, "none")!=0){
+        std::string sAWB((char*)reqImg->raspSett.AWB, sizeof(reqImg->raspSett.AWB));
+        tmpCommand->append(" -awb ");
+        tmpCommand->append(sAWB.c_str());
+        //printf("Entro a AWB: %s\n",sAWB.c_str());
+    }
+
+    //Exposure
+    if(strcmp((char*)reqImg->raspSett.Exposure, "none")!=0){
+        std::string sExposure((char*)reqImg->raspSett.Exposure, sizeof(reqImg->raspSett.Exposure));
+        tmpCommand->append(" -ex ");
+        tmpCommand->append(sExposure.c_str());
+        //printf("Entro a Exp: %s\n",sExposure.c_str());
+    }
+
+    //ISO
+    if( reqImg->raspSett.ISO > 0 ){
+        ss.str("");
+        ss<<reqImg->raspSett.ISO;
+        tmpCommand->append(" -ISO " + ss.str());
+    }
+
+
+    return tmpCommand;
 }

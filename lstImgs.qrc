@@ -222,7 +222,6 @@
         <file>imagenInte/switchDisc.png</file>
         <file>imagenInte/switchConn.png</file>
         <file>imagenInte/pause.png</file>
-        <file>imagenInte/snapshot</file>
         <file>imagenInte/bigSquare.png</file>
         <file>imagenInte/tijeras.png</file>
         <file>imagenInte/ojo.png</file>
@@ -243,6 +242,8 @@
         <file>imagenInte/slideArea.png</file>
         <file>imagenInte/slideConfig.png</file>
         <file>imagenInte/slideForm.png</file>
+        <file>imagenInte/takeSquare.png</file>
+        <file>imagenInte/snapshot.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

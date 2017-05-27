@@ -112,9 +112,9 @@ private slots:
 
     //void on_slideSaturation_valueChanged(int value);
 
-    void on_slideShuterSpeed_valueChanged(int value);
+    //void on_slideShuterSpeed_valueChanged(int value);
 
-    void on_slideISO_valueChanged(int value);
+    //void on_slideISO_valueChanged(int value);
 
     //void on_slideExpComp_valueChanged(int value);
 
@@ -159,7 +159,7 @@ private slots:
 
     void getMaxCalibRect(QRect *rect , lstDoubleAxisCalibration *calib);
 
-    QString getFilenameForRecImg();
+    //QString getFilenameForRecImg();
 
     void updateDisplayImageReceived();
 
@@ -342,7 +342,7 @@ private slots:
 
     void on_actionLoadRegOfInteres_triggered();
 
-    void on_slideShuterSpeedSmall_valueChanged(int value);
+    //void on_slideShuterSpeedSmall_valueChanged(int value);
 
     void on_actionToolPenArea_triggered();
 
@@ -409,11 +409,11 @@ private slots:
 
     void on_actionBilinear_interpolation_triggered();
 
-    void on_slideSquareShuterSpeedSmall_valueChanged(int value);    
+    //void on_slideSquareShuterSpeedSmall_valueChanged(int value);
 
-    void on_slideSquareShuterSpeed_valueChanged(int value);
+    //void on_slideSquareShuterSpeed_valueChanged(int value);
 
-    void refreshSquareShootSpeed();
+    //void refreshSquareShootSpeed();
 
     void on_pbCopyShutter_clicked();
 
@@ -452,6 +452,10 @@ private slots:
     void on_pbShutdown_clicked();
 
     void on_pbSnapVid_clicked();
+
+    void on_pbSnapshot_2_clicked();
+
+    int takeRemoteSnapshot();
 
 private:
     Ui::MainWindow *ui;

@@ -247,9 +247,9 @@ MainWindow::MainWindow(QWidget *parent) :
     */
 
     //Fill the lastsnapshots path as default
-    QString lastSnapPath = readAllFile( _PATH_LAST_SNAPPATH );
-    lastSnapPath.replace("\n","");
-    ui->txtSnapPath->setText(lastSnapPath);
+    //QString lastSnapPath = readAllFile( _PATH_LAST_SNAPPATH );
+    //lastSnapPath.replace("\n","");
+    //ui->txtSnapPath->setText(lastSnapPath);
 
     //Set layout into spectometer
     QFormLayout *layout = new QFormLayout;
@@ -611,15 +611,11 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     //ui->slideSaturation->setValue( raspcamSettings->Saturation );
     //ui->labelSaturation->setText( "Saturation: " + QString::number(raspcamSettings->Saturation) );
 
-    //SquareShuterSpeed
-    ui->slideSquareShuterSpeed->setValue( raspcamSettings->SquareShutterSpeed );
-    ui->slideSquareShuterSpeedSmall->setValue( raspcamSettings->SquareShutterSpeedSmall );
-    ui->labelSquareShuterSpeed->setText( "Square Shuter Speed: " + QString::number(raspcamSettings->SquareShutterSpeed+raspcamSettings->SquareShutterSpeedSmall) );
-
     //DiffractionShuterSpeed
-    ui->slideShuterSpeed->setValue( raspcamSettings->ShutterSpeed );
-    ui->slideShuterSpeedSmall->setValue( raspcamSettings->ShutterSpeedSmall );
-    ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + QString::number(raspcamSettings->ShutterSpeed+raspcamSettings->ShutterSpeedSmall) );
+    ui->spinBoxShuterSpeed->setValue( raspcamSettings->ShutterSpeed );
+
+    //SquareShuterSpeed
+    ui->spinBoxSquareShuterSpeed->setValue(raspcamSettings->SquareShutterSpeed);
 
     //ISO
     ui->slideISO->setValue( raspcamSettings->ISO );
@@ -1370,8 +1366,8 @@ structRaspcamSettings MainWindow::funcFillSnapshotSettings( structRaspcamSetting
     //raspSett.Red                      = ui->slideRed->value();
     //raspSett.Saturation               = ui->slideSaturation->value();
     //raspSett.Sharpness                = ui->slideSharpness->value();
-    raspSett.SquareShutterSpeed         = ui->slideSquareShuterSpeed->value() + ui->slideSquareShuterSpeedSmall->value();
-    raspSett.ShutterSpeed               = ui->slideShuterSpeed->value() + ui->slideShuterSpeedSmall->value();
+    raspSett.ShutterSpeed               = ui->spinBoxShuterSpeed->value();
+    raspSett.SquareShutterSpeed         = ui->spinBoxSquareShuterSpeed->value();
     raspSett.Denoise                    = (ui->cbDenoise->isChecked())?1:0;
     raspSett.ColorBalance               = (ui->cbColorBalance->isChecked())?1:0;
     raspSett.TriggerTime                = ui->slideTriggerTime->value();
@@ -1609,6 +1605,7 @@ void MainWindow::on_pbSaveImage_clicked()
     n=n;
 }
 
+/*
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
 {
     QString qstrVal = QString::number(value + ui->slideShuterSpeedSmall->value());
@@ -1619,6 +1616,7 @@ void MainWindow::on_slideISO_valueChanged(int value)
 {
     ui->labelISO->setText( "ISO: " + QString::number(value) );
 }
+*/
 
 void MainWindow::on_pbSaveRaspParam_clicked()
 {
@@ -1724,10 +1722,10 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     //newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
     newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
     newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
-    newFileCon.append("    <SquareShutterSpeed>"+ QString::number( ui->slideSquareShuterSpeed->value() ) +"</SquareShutterSpeed>\n");
-    newFileCon.append("    <SquareShutterSpeedSmall>"+ QString::number( ui->slideSquareShuterSpeedSmall->value() ) +"</SquareShutterSpeedSmall>\n");
-    newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->slideShuterSpeed->value() ) +"</ShutterSpeed>\n");
-    newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
+    newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->spinBoxShuterSpeed->value() ) +"</ShutterSpeed>\n");
+    newFileCon.append("    <SquareShutterSpeed>"+ QString::number( ui->spinBoxSquareShuterSpeed->value() ) +"</SquareShutterSpeed>\n");
+    //newFileCon.append("    <SquareShutterSpeedSmall>"+ QString::number( ui->slideSquareShuterSpeedSmall->value() ) +"</SquareShutterSpeedSmall>\n");
+    //newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
     newFileCon.append("    <CameraMp>"+ QString::number( tmpResInMp ) +"</CameraMp>\n");
     newFileCon.append("</settings>");
@@ -1794,7 +1792,7 @@ bool MainWindow::funcSetCam( structRaspcamSettings *raspcamSettings ){
 
         //raspcamSettings->Saturation = ui->slideSaturation->value();
 
-        raspcamSettings->ShutterSpeed = ui->slideShuterSpeed->value();
+        raspcamSettings->ShutterSpeed = ui->spinBoxShuterSpeed->value();
 
         raspcamSettings->ISO = ui->slideISO->value();
 
@@ -1880,11 +1878,11 @@ void MainWindow::funcGetSnapshot()
         //Requesting image by parts
         //..
         //Diffraction
-        reqImg->needCut     = true;
-        reqImg->squApert    = true;
-        reqImg->fullFrame   = false;
-        reqImg->raspSett.SquareShutterSpeed      = ui->slideShuterSpeed->value();
-        reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
+        reqImg->needCut                 = true;
+        reqImg->squApert                = true;
+        reqImg->fullFrame               = false;
+        reqImg->raspSett.ShutterSpeed   = ui->spinBoxShuterSpeed->value();
+        //reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
         reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)camRes->width );
         reqImg->sqApSett.rectY  = round( daCalib.bigY * (double)camRes->height );
         reqImg->sqApSett.rectW  = round( daCalib.bigW * (double)camRes->width );
@@ -1898,8 +1896,8 @@ void MainWindow::funcGetSnapshot()
         imgDiff.save(_PATH_SNAPSHOT_DIFFRACTION);
 
         //Aperture
-        reqImg->raspSett.SquareShutterSpeed      = ui->slideSquareShuterSpeed->value();
-        reqImg->raspSett.SquareShutterSpeedSmall = ui->slideSquareShuterSpeedSmall->value();
+        reqImg->raspSett.SquareShutterSpeed      = ui->spinBoxSquareShuterSpeed->value();
+        //reqImg->raspSett.SquareShutterSpeedSmall = ui->slideSquareShuterSpeedSmall->value();
         reqImg->sqApSett.rectX  = round( daCalib.squareX * (double)camRes->width );;
         reqImg->sqApSett.rectY  = round( daCalib.squareY * (double)camRes->height );
         reqImg->sqApSett.rectW  = round( daCalib.squareW * (double)camRes->width );;
@@ -2027,14 +2025,14 @@ void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
 
 }
 
-QString MainWindow::getFilenameForRecImg()
-{
-    QString tmpFileName = ui->txtSnapPath->text().trimmed();
-    tmpFileName.append(QString::number(time(NULL)));
-    tmpFileName.append(".RGB888");
-    QFile::copy(_PATH_IMAGE_RECEIVED, tmpFileName);
-    return tmpFileName;
-}
+//QString MainWindow::getFilenameForRecImg()
+//{
+    //QString tmpFileName = ui->txtSnapPath->text().trimmed();
+    //tmpFileName.append(QString::number(time(NULL)));
+   // tmpFileName.append(".RGB888");
+    //QFile::copy(_PATH_IMAGE_RECEIVED, tmpFileName);
+    //return tmpFileName;
+//}
 
 void MainWindow::updateDisplayImageReceived()
 {
@@ -3579,11 +3577,12 @@ int MainWindow::funcDrawRectangleFromXML(QString fileName)
     return 1;
 }
 
+/*
 void MainWindow::on_slideShuterSpeedSmall_valueChanged(int value)
 {
     QString qstrVal = QString::number(value + ui->slideShuterSpeed->value());
     ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + qstrVal );
-}
+}*/
 
 void MainWindow::on_actionToolPenArea_triggered()
 {
@@ -4981,6 +4980,7 @@ void MainWindow::on_actionBilinear_interpolation_triggered()
 
 }
 
+/*
 void MainWindow::on_slideSquareShuterSpeedSmall_valueChanged(int value)
 {
     value = value;
@@ -5000,7 +5000,7 @@ void MainWindow::refreshSquareShootSpeed()
                                         ui->slideSquareShuterSpeed->value()
                                      );
     ui->labelSquareShuterSpeed->setText( "Square Shuter Speed: " + qstrVal );
-}
+}*/
 
 
 
@@ -6239,3 +6239,88 @@ void MainWindow::processFrame(QVideoFrame actualFrame)
     }
 }
 
+
+void MainWindow::on_pbSnapshot_2_clicked()
+{
+    if( takeRemoteSnapshot() )
+    {
+
+    }
+    else
+    {
+
+    }
+
+}
+
+int MainWindow::takeRemoteSnapshot()
+{
+    int status = 0;
+
+    //
+    // Get cam resolution
+    //
+    camRes = getCamRes();
+
+    //
+    //Getting calibration
+    //..
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //Save lastest settings
+    if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false ){
+        funcShowMsg("ERROR","Saving last snap-settings");
+    }
+
+    //
+    //Generates Camera Command
+    //..
+    std::string tmp;
+    structRaspistillCommand* structRaspiCommand = (structRaspistillCommand*)malloc(sizeof(structRaspistillCommand));
+    strReqImg *reqImg                           = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    memset(structRaspiCommand,'\0',sizeof(structRaspistillCommand));
+    reqImg->raspSett                            = funcFillSnapshotSettings( reqImg->raspSett );
+    reqImg->imgCols                             = camRes->width;//2592 | 640
+    reqImg->imgRows                             = camRes->height;//1944 | 480
+    structRaspiCommand->idMsg                   = (unsigned char)4;
+    tmp.assign(_PATH_REMOTE_SNAPSHOT);
+    memcpy( structRaspiCommand->fileName, tmp.c_str(), tmp.length() );
+    tmp = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
+    memcpy( structRaspiCommand->raspiCommand, tmp.c_str(), tmp.length() );
+    qDebug() << structRaspiCommand->raspiCommand;
+
+    //
+    // Send Command and Wait for ACK
+    //
+
+    //Open socket
+    int n;
+    int sockfd = connectSocket( camSelected );
+    unsigned char bufferRead[frameBodyLen];
+    qDebug() << "Socket opened";
+    n = ::write(sockfd,structRaspiCommand,sizeof(structRaspistillCommand));
+    qDebug() << "Img request sent";
+
+    //Receive ACK with the camera status
+    memset(bufferRead,'\0',3);
+    n = read(sockfd,bufferRead,2);
+
+    if( bufferRead[1] == 1 )
+    {
+        qDebug() << "Image taked remotelly";
+        status = 1;
+    }
+    else
+    {
+        qDebug() << "ERROR taking image";
+        status = 0;
+    }
+
+    ::close(sockfd);
+    delete[] structRaspiCommand;
+    delete[] reqImg;
+
+    return status;
+}

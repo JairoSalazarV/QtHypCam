@@ -251,6 +251,12 @@
       char msg[frameBodyLen];				// Usable message
     }frameStruct;
 
+    typedef struct structRaspistillCommand{
+      unsigned char idMsg;					// Id instruction
+      char fileName[100];
+      char raspiCommand[frameBodyLen-100];
+    }structRaspistillCommand;
+
     typedef struct strReqFileInfo{
         u_int8_t    idMsg;
         int         fileNameLen;
@@ -272,10 +278,8 @@
         int           Sharpness;              // -100 to 100
         int           Contrast;               // -100 to 100
         int           Saturation;             // -100 to 100
-        int           SquareShutterSpeed;     // microsecs (0 - 3000000)
-        int           SquareShutterSpeedSmall;// microsecs (1 - 95000)
         int           ShutterSpeed;           // microsecs (0 - 3000000)
-        int           ShutterSpeedSmall;      // microsecs (1 - 95000)
+        int           SquareShutterSpeed;     // microsecs (0 - 3000000)
         int           ISO;                    // 100 to 800
         int           ExposureCompensation;   // -10 to 10
         u_int8_t      Format;                 // 1->raspicam::RASPICAM_FORMAT_GRAY | 2->raspicam::RASPICAM_FORMAT_YUV420
