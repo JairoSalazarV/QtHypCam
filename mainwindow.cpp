@@ -27,6 +27,8 @@
 
 #include <selwathtocheck.h>
 
+#include <QImageReader>
+
 //OpenCV
 /*
 #include <opencv2/imgproc/imgproc.hpp>
@@ -1271,7 +1273,7 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
         if( saveImg )
         {
             funcLabelProgBarUpdate("Stabilizing remote camera",0);
-            obtainFile( "./tmpSnapshots/tmpImg.RGB888", _PATH_IMAGE_RECEIVED );
+            obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
         }
 
     }else{//Do nothing becouse camera is not accessible
@@ -1863,14 +1865,14 @@ void MainWindow::funcGetSnapshot()
         {
             //Display image
             QImage imgAperture( _PATH_IMAGE_RECEIVED );
-            imgAperture.save( _PATH_DISPLAY_IMAGE );
 
             //Invert phot if required
             if( _INVERTED_CAMERA )
-            {
-                QImage imgRot = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
-                imgRot.save( _PATH_DISPLAY_IMAGE );
-            }
+                imgAperture = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
+            imgAperture.save( _PATH_DISPLAY_IMAGE );
+
+            //Display image into qlabel
+            updateDisplayImageReceived(imgAperture);
         }
         else funcShowMsg("ERROR","Camera respond with error");
         funcLabelProgBarHide();
@@ -1915,8 +1917,7 @@ void MainWindow::funcGetSnapshot()
 
     }
 
-    //Display image into qlabel
-    updateDisplayImageReceived();
+
 
 }
 
@@ -2039,6 +2040,23 @@ void MainWindow::updateDisplayImageReceived()
     //Show snapshot
     //..
     QImage tmpImg( _PATH_DISPLAY_IMAGE );
+    int maxW, maxH;
+    maxW = (_FRAME_THUMB_W<tmpImg.width())?_FRAME_THUMB_W:tmpImg.width();
+    maxH = (_FRAME_THUMB_H<tmpImg.height())?_FRAME_THUMB_H:tmpImg.height();
+    QImage tmpThumb = tmpImg.scaledToHeight(maxH);
+    tmpThumb = tmpThumb.scaledToWidth(maxW);
+    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
+    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+    //Update view
+    //..
+    auxQstring = _PATH_DISPLAY_IMAGE;
+    loadImageIntoCanvasEdit(auxQstring, true);
+}
+
+void MainWindow::updateDisplayImageReceived(QImage tmpImg)
+{
+    //Show snapshot
+    //..
     int maxW, maxH;
     maxW = (_FRAME_THUMB_W<tmpImg.width())?_FRAME_THUMB_W:tmpImg.width();
     maxH = (_FRAME_THUMB_H<tmpImg.height())?_FRAME_THUMB_H:tmpImg.height();
@@ -3537,7 +3555,7 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
 {
     //Obtain squiare aperture params
     squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_REGION_OF_INTERES, tmpSqAperture ) ){
+    if( !funGetSquareXML( _PATH_SQUARE_USABLE, tmpSqAperture ) ){
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return (void)false;
     }
@@ -4737,15 +4755,21 @@ void MainWindow::on_actionValCal_triggered()
 void MainWindow::on_actionSquareUsable_triggered()
 {
     //Read Calibration
-    lstDoubleAxisCalibration daCalib;
-    funcGetCalibration(&daCalib);
+    //Region of interes
+    //..
+    squareAperture *rectSquare = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, rectSquare ) )
+    {
+        funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
+        return (void)false;
+    }
 
     selWathToCheck *checkCalib = new selWathToCheck(this);
     checkCalib->showSqUsable(
-                                daCalib.squareUsableX,
-                                daCalib.squareUsableY,
-                                daCalib.squareUsableW,
-                                daCalib.squareUsableH,
+                                rectSquare->rectX,
+                                rectSquare->rectY,
+                                rectSquare->rectW,
+                                rectSquare->rectH,
                                 Qt::magenta
                             );
 
@@ -5048,11 +5072,12 @@ void MainWindow::on_actionslideHypCam_triggered()
     frmSlide->show();
 }
 
-void MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestine )
+int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestine )
 {
     if( funcRaspFileExists( fileToObtain ) == 0 )
     {
         debugMsg("File does not exists");
+        return 0;
     }
     else
     {
@@ -5074,6 +5099,71 @@ void MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDesti
         //delete[] fileReceived;
 
     }
+
+    return 1;
+}
+
+
+QImage MainWindow::obtainFile( std::string fileToObtain )
+{
+    QImage img;
+    if( funcRaspFileExists( fileToObtain ) == 0 )
+    {
+        debugMsg("File does not exists");
+        return img;
+    }
+    else
+    {
+
+        ui->progBar->setVisible(true);
+        ui->progBar->setValue(0.0);
+        ui->progBar->update();
+
+        int fileLen;
+        u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
+        if( saveBinFile_From_u_int8_T(_PATH_IMAGE_RECEIVED,fileReceived,fileLen) )
+            img = QImage(_PATH_IMAGE_RECEIVED);
+
+        /*
+        const unsigned char* fileReceivedQt = reinterpret_cast<const unsigned char*>(&fileReceived[0]);
+        std::string strTmp;
+        strTmp.append(fileReceivedQt);
+         */
+        /*
+        const char *fileReceivedQt = reinterpret_cast<char*>(fileReceived);
+        QBuffer buffer;
+        buffer.open(QBuffer::ReadWrite);
+        buffer.write(fileReceivedQt);
+        buffer.seek(0);
+        qDebug() << "buffer.size(): " << buffer.size() << " of " << fileLen;
+        img = QImage::fromData( buffer.buffer() );*/
+
+
+        /*
+        QBuffer buffer;
+        buffer.setData(reinterpret_cast<const char*>(fileReceived), fileLen);
+        QByteArray ba = QByteArray::fromRawData(buffer.data(),fileLen);
+        QDataStream s1(ba);
+        s1.setByteOrder(QDataStream::LittleEndian);
+        s1 >> img;*/
+
+        //qDebug() << "imgW: " << img.width();
+        //QByteArray ba = QByteArray(reinterpret_cast<const char*>(fileReceived), fileLen);
+        //QBuffer buffer(ba);
+        //camRes = getCamRes();
+        //img = QImage::fromData(camRes->width, camRes->height, QImage::Format_RGB888);
+        //img.save(_PATH_IMAGE_RECEIVED);
+        debugMsg("File received complete");
+
+        ui->progBar->setValue(100.0);
+        ui->progBar->update();
+        ui->progBar->setVisible(false);
+
+        return img;
+
+    }
+
+    return img;
 }
 
 u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fileLen )
@@ -6242,18 +6332,180 @@ void MainWindow::processFrame(QVideoFrame actualFrame)
 
 void MainWindow::on_pbSnapshot_2_clicked()
 {
-    if( takeRemoteSnapshot() )
-    {
 
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Diffration Area";
+        return (void)NULL;
     }
     else
     {
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        if( diffImage.isNull() )
+        {
+            qDebug() << "ERROR: Obtaining Diffration Area";
+            return (void)NULL;
+        }
+        else
+        {
+            if( !takeRemoteSnapshot(true) )
+            {
+                qDebug() << "ERROR: Taking Aperture Area";
+                return (void)NULL;
+            }
+            else
+            {
+                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+                if( apertureImage.isNull() )
+                {
+                    qDebug() << "ERROR: Obtaining Aperture Area";
+                    return (void)NULL;
+                }
+                else
+                {
+                    //
+                    //Merge image
+                    //
+                    //Get square aperture coordinates
+                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
+                        return (void)false;
+                    }
 
+                    //
+                    //Copy square aperture into diffraction image
+                    //
+                    for( int y=aperture->rectY; y<=(aperture->rectY+aperture->rectH); y++ )
+                    {
+                        for( int x=aperture->rectX; x<=(aperture->rectX+aperture->rectW); x++ )
+                        {
+                            diffImage.setPixel( x, y, apertureImage.pixel( x, y ) );
+                        }
+                    }
+
+                    //
+                    //Crop original image to release the usable area
+                    //
+                    //Get usable area coordinates
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                        return (void)false;
+                    }
+                    //Crop and save
+                    diffImage = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+                    diffImage.save(_PATH_DISPLAY_IMAGE);
+                    qDebug() << "Images saved";
+
+                    updateDisplayImageReceived(diffImage);
+                }
+            }
+        }
     }
+
 
 }
 
-int MainWindow::takeRemoteSnapshot()
+int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle )
+{
+    //Get original rectangle properties
+    if( !funGetSquareXML( fileName, rectangle ) )
+    {
+        funcShowMsg("ERROR","Loading in pixels: "+fileName);
+        return 0;
+    }
+
+    //Translate coordinates into pixels
+    rectangle->rectX = round( ((float)rectangle->rectX / (float)rectangle->canvasW) * (float)camRes->width );
+    rectangle->rectW = round( ((float)rectangle->rectW / (float)rectangle->canvasW) * (float)camRes->width );
+    rectangle->rectY = round( ((float)rectangle->rectY / (float)rectangle->canvasH) * (float)camRes->height );
+    rectangle->rectH = round( ((float)rectangle->rectH / (float)rectangle->canvasH) * (float)camRes->height );
+
+
+    return 1;
+}
+
+int MainWindow::createSubimageRemotelly(bool squareArea )
+{
+    int status = 0;
+
+    //
+    // Get cam resolution
+    //
+    camRes = getCamRes();
+
+    //
+    //Getting calibration
+    //..
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //
+    //Generates Camera Command
+    //..
+    std::string tmp;
+    structSubimage* subimage    = (structSubimage*)malloc(sizeof(structSubimage));
+    memset(subimage,'\0',sizeof(structSubimage));
+    subimage->idMsg             = (unsigned char)5;
+    if( squareArea == true )
+    {
+        subimage->frame.canvasW     = daCalib.W;
+        subimage->frame.canvasH     = daCalib.H;
+        subimage->frame.rectX       = round( daCalib.squareX * (double)camRes->width );
+        subimage->frame.rectY       = round( daCalib.squareY * (double)camRes->height );
+        subimage->frame.rectW       = round( daCalib.squareW * (double)camRes->width );
+        subimage->frame.rectH       = round( daCalib.squareH * (double)camRes->height );
+    }
+    else
+    {
+        subimage->frame.canvasW     = daCalib.W;
+        subimage->frame.canvasH     = daCalib.H;
+        subimage->frame.rectX       = round( daCalib.bigX * (double)camRes->width );
+        subimage->frame.rectY       = round( daCalib.bigY * (double)camRes->height );
+        subimage->frame.rectW       = round( daCalib.bigW * (double)camRes->width );
+        subimage->frame.rectH       = round( daCalib.bigH * (double)camRes->height );
+    }
+
+    tmp.assign(_PATH_REMOTE_SNAPSHOT);
+    memcpy( subimage->fileName, tmp.c_str(), tmp.length() );
+
+    //
+    // Send Command and Wait for ACK
+    //
+
+    //Open socket
+    int n;
+    int sockfd = connectSocket( camSelected );
+    unsigned char bufferRead[frameBodyLen];
+    qDebug() << "Socket opened";
+    n = ::write(sockfd,subimage,sizeof(structSubimage));
+    qDebug() << "Img request sent";
+
+    //Receive ACK with the camera status
+    memset(bufferRead,'\0',3);
+    n = read(sockfd,bufferRead,2);
+
+    if( bufferRead[1] == 1 )
+    {
+        qDebug() << "Image cropped remotelly";
+        status = 1;
+    }
+    else
+    {
+        qDebug() << "ERROR cropping image";
+        status = 0;
+    }
+    n=n;
+    ::close(sockfd);
+    delete[] subimage;
+
+    return status;
+}
+
+int MainWindow::takeRemoteSnapshot(bool squareArea )
 {
     int status = 0;
 
@@ -6281,10 +6533,12 @@ int MainWindow::takeRemoteSnapshot()
     strReqImg *reqImg                           = (strReqImg*)malloc(sizeof(strReqImg));
     memset(reqImg,'\0',sizeof(strReqImg));
     memset(structRaspiCommand,'\0',sizeof(structRaspistillCommand));
+    structRaspiCommand->idMsg                   = (unsigned char)4;
+    reqImg->squApert                            = squareArea;
     reqImg->raspSett                            = funcFillSnapshotSettings( reqImg->raspSett );
     reqImg->imgCols                             = camRes->width;//2592 | 640
     reqImg->imgRows                             = camRes->height;//1944 | 480
-    structRaspiCommand->idMsg                   = (unsigned char)4;
+
     tmp.assign(_PATH_REMOTE_SNAPSHOT);
     memcpy( structRaspiCommand->fileName, tmp.c_str(), tmp.length() );
     tmp = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
@@ -6317,6 +6571,7 @@ int MainWindow::takeRemoteSnapshot()
         qDebug() << "ERROR taking image";
         status = 0;
     }
+    n=n;
 
     ::close(sockfd);
     delete[] structRaspiCommand;

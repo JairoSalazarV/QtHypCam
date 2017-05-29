@@ -162,6 +162,7 @@ private slots:
     //QString getFilenameForRecImg();
 
     void updateDisplayImageReceived();
+    void updateDisplayImageReceived(QImage extImg);
 
     void on_pbSnapshot_clicked();
 
@@ -419,7 +420,8 @@ private slots:
 
     void on_actionslideHypCam_triggered();
 
-    void obtainFile( std::string fileToObtain, std::string fileNameDestine );
+    int obtainFile( std::string fileToObtain, std::string fileNameDestine );
+    QImage obtainFile( std::string fileToObtain );
 
     u_int8_t* funcQtReceiveFile( std::string fileNameRequested, int* fileLen );
 
@@ -455,7 +457,11 @@ private slots:
 
     void on_pbSnapshot_2_clicked();
 
-    int takeRemoteSnapshot();
+    int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
+
+    int createSubimageRemotelly(bool squareArea);
+
+    int takeRemoteSnapshot(bool squareArea);
 
 private:
     Ui::MainWindow *ui;

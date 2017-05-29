@@ -46,6 +46,8 @@ void selWathToCheck::showSqUsable(int x, int y, int w, int h , Qt::GlobalColor c
 {
     showGV();
     customRect *tmpRect = new customRect(QPoint(x,y),QPoint(w,h));
+    tmpRect->parameters.W = globalGvValCal->sceneRect().width();
+    tmpRect->parameters.H = globalGvValCal->sceneRect().height();
     tmpRect->setPen(QPen(color));
     globalGvValCal->scene()->addItem(tmpRect);
     globalGvValCal->update();

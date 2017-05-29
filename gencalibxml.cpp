@@ -531,6 +531,8 @@ void genCalibXML::on_pbGenCal_clicked()
 {
     if( isExportable )
     {
+        //camRes = getCamRes();
+
         QApplication::setOverrideCursor(Qt::WaitCursor);
 
         //lstCalibFileNames calibPoints = fillLstCalibPoints();
@@ -541,7 +543,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //Region of interes
         //..
         squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
+        if( !funGetSquareXML( _PATH_SQUARE_USABLE, regOfInteres ) )
         {
             funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
             return (void)false;
@@ -561,6 +563,7 @@ void genCalibXML::on_pbGenCal_clicked()
             return (void)false;
         }
         //Calculates the position expected in the received image
+        qDebug() << "camRes->width: " << camRes->width;
         int auxSqX, auxSqY, auxSqW, auxSqH, auxBigX, auxBigY;
         auxSqX  = round((float)camRes->width  * ((float)sqApert->rectX / (float)sqApert->canvasW));
         auxSqY  = round((float)camRes->height * ((float)sqApert->rectY / (float)sqApert->canvasH));
@@ -744,6 +747,7 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     QImage imgMod( _PATH_DISPLAY_IMAGE );
     QRgb tmpPix;
     int r, c, tmpX, tmpY, numWaves, range;
+    numWaves = 0;
     double response[4][daCalibGenCal->maxNumBands];
     double sensitiv[4][daCalibGenCal->maxNumBands];
     double sensNorm[3][daCalibGenCal->maxNumBands];
@@ -767,7 +771,7 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     {
         for( c=origin.x()-range; c<=origin.x()+range; c++ )
         {
-            actWave     = daCalibGenCal->minWavelength;            
+            actWave     = daCalibGenCal->minWavelength;
             numWaves = 0;
             while( actWave < daCalibGenCal->maxWavelength )
             {
@@ -950,7 +954,7 @@ QVector2D genCalibXML::getSqUsableIni(){
     //Region of interes
     //..
     squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
+    if( !funGetSquareXML( _PATH_SQUARE_USABLE, regOfInteres ) )
     {
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return result;

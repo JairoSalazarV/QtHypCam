@@ -303,6 +303,12 @@
         int rectH;//Len
     }squareAperture;
 
+    typedef struct structSubimage{
+        unsigned char idMsg;
+        squareAperture frame;
+        char fileName[100];
+    }structSubimage;
+
     typedef struct strSlideSettings
     {
         int x1;         //Slide
