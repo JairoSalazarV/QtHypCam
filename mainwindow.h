@@ -67,7 +67,7 @@ private slots:
 
     void funcSpectMouseRelease(QMouseEvent *e);
 
-    void on_pbGetVideo_clicked();
+    //void on_pbGetVideo_clicked();
 
     void on_actionExit_triggered();
 
@@ -88,9 +88,9 @@ private slots:
 
     void on_pbConnect_clicked();
 
-    void on_pbCamTurnOn_clicked();
+    //void on_pbCamTurnOn_clicked();
 
-    void on_pbStartVideo_clicked();
+    //void on_pbStartVideo_clicked();
 
     void progBarTimer( int ms );
 
@@ -100,7 +100,7 @@ private slots:
 
     bool funcUpdateVideo( unsigned int msSleep, int sec2Stab );
 
-    void on_pbSaveImage_clicked();
+    //void on_pbSaveImage_clicked();
 
     void funcIniCamParam(structRaspcamSettings *raspcamSettings);
 
@@ -169,11 +169,11 @@ private slots:
     void funcGetSnapshot();
 
 
-    void on_pbExpIds_clicked();
+    //void on_pbExpIds_clicked();
 
     void funcPutImageIntoGV(QGraphicsView *gvContainer, QString impPath);
 
-    void on_pbPtsClearAll_clicked();
+    //void on_pbPtsClearAll_clicked();
 
     //void on_pbPtsDel_clicked();
 
@@ -207,7 +207,7 @@ private slots:
                                 QColor lineColor
     );
 
-    void on_pbSavePixs_clicked();
+    //void on_pbSavePixs_clicked();
 
     //bool on_pb2XY_clicked();
 
@@ -263,18 +263,18 @@ private slots:
 
     void on_pbSnapCal_clicked();
 
-    void on_pbObtPar_2_clicked();
+    //void on_pbObtPar_2_clicked();
 
 
-    void on_slide2AxCalPos_valueChanged(int value);
+    //void on_slide2AxCalPos_valueChanged(int value);
 
     void updateCalibLine();
 
-    void on_pbCalSaveRot_clicked();
+    //void on_pbCalSaveRot_clicked();
 
     void refreshGvCalib(QString fileName);
 
-    void on_pbClearCalScene_clicked();
+    //void on_pbClearCalScene_clicked();
 
     //void on_slide2AxCalThre_valueChanged(int value);
 
@@ -425,7 +425,7 @@ private slots:
 
     u_int8_t* funcQtReceiveFile( std::string fileNameRequested, int* fileLen );
 
-    void on_pbGetSlideCube_clicked();
+    //void on_pbGetSlideCube_clicked();
 
 
 
@@ -455,13 +455,15 @@ private slots:
 
     void on_pbSnapVid_clicked();
 
-    void on_pbSnapshot_2_clicked();
+    //void on_pbSnapshot_2_clicked();
 
     int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
 
     int createSubimageRemotelly(bool squareArea);
 
     int takeRemoteSnapshot(bool squareArea);
+
+    void on_pbSnapshotSquare_clicked();
 
 private:
     Ui::MainWindow *ui;

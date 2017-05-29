@@ -649,8 +649,8 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     else ui->cbDenoise->setChecked(false);
 
     //FULL PHOTO
-    if( raspcamSettings->FullPhoto )ui->cbFullPhoto->setChecked(true);
-    else ui->cbFullPhoto->setChecked(false);
+    //if( raspcamSettings->FullPhoto )ui->cbFullPhoto->setChecked(true);
+    //else ui->cbFullPhoto->setChecked(false);
 
     //COLORBALANCE EFX
     if( raspcamSettings->ColorBalance )ui->cbColorBalance->setChecked(true);
@@ -664,6 +664,7 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
 
 }
 
+/*
 void MainWindow::on_pbGetVideo_clicked()
 {
 
@@ -735,7 +736,7 @@ void MainWindow::on_pbGetVideo_clicked()
 
 
 }
-
+*/
 
 
 bool MainWindow::funcReceiveFile(
@@ -1139,7 +1140,7 @@ void MainWindow::on_pbConnect_clicked()
                 memset(camSelected->IP,'\0',sizeof(camSelected->IP));
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/right.gif") );
                 ui->pbSnapshot->setEnabled(false);
-                ui->pbGetSlideCube->setEnabled(false);
+                //ui->pbGetSlideCube->setEnabled(false);
                 ui->pbShutdown->setDisabled(true);
             }else{
                 qDebug() << "Connecting: ";                
@@ -1152,7 +1153,7 @@ void MainWindow::on_pbConnect_clicked()
                 camSelected->isConnected = true;
                 ui->pbConnect->setIcon( QIcon(":/new/icons/imagenInte/close.png") );
                 ui->pbSnapshot->setEnabled(true);
-                ui->pbGetSlideCube->setEnabled(true);
+                //ui->pbGetSlideCube->setEnabled(true);
                 ui->pbShutdown->setDisabled(false);
                 qDebug() << "IP->: " << QString((char*)camSelected->IP);
                 //Save last IP
@@ -1169,6 +1170,7 @@ void MainWindow::on_pbConnect_clicked()
 
 }
 
+/*
 void MainWindow::on_pbCamTurnOn_clicked()
 {
     unsigned char v[20];
@@ -1181,11 +1183,12 @@ void MainWindow::on_pbCamTurnOn_clicked()
     qDebug() << "Size: " << v2.size();
 
 }
+*/
 
 
 
 
-
+/*
 void MainWindow::on_pbStartVideo_clicked()
 {    
     if( !camSelected->isConnected ){
@@ -1199,8 +1202,8 @@ void MainWindow::on_pbStartVideo_clicked()
         //..
         if( camSelected->stream ){//Playing video
             camSelected->stream = false;
-            ui->pbStartVideo->setIcon( QIcon(":/new/icons/imagenInte/player_play.svg") );
-            ui->pbStartVideo->setToolTip("Play");
+            //ui->pbStartVideo->setIcon( QIcon(":/new/icons/imagenInte/player_play.svg") );
+            //ui->pbStartVideo->setToolTip("Play");
             qDebug() << "Paused";
         }else{
             if( ui->cbOneShot->isChecked() ){
@@ -1220,6 +1223,7 @@ void MainWindow::on_pbStartVideo_clicked()
     }
 
 }
+*/
 
 void MainWindow::progBarTimer( int ms )
 {
@@ -1441,45 +1445,18 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
     //Define photo's region
     //..
-    if( ui->cbThumbPreview->isChecked() )
-    {
-        reqImg->needCut     = false;
-        reqImg->squApert    = false;
-        reqImg->imgCols     = _FRAME_THUMB_W;
-        reqImg->imgRows     = _FRAME_THUMB_H;
+    //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
+    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
+        funcShowMsg("ERROR","Loading squareAperture.xml");
+        return false;
     }
-    else
-    {
-        if( ui->cbFullPhoto->isChecked() )
-        {
-            reqImg->needCut = false;
-            reqImg->squApert= false;
-            reqImg->imgCols = camRes->width;
-            reqImg->imgRows = camRes->height;
-        }
-        else
-        {
-            //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
-            if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
-                funcShowMsg("ERROR","Loading squareAperture.xml");
-                return false;
-            }
-            reqImg->needCut     = true;
-            reqImg->squApert    = true;
-            //Calculate real number of columns of the required photo
-            reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
-            reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
-            reqImg->sqApSett.rectW  = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
-            reqImg->sqApSett.rectH  = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
-
-            //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
-            //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
-            //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
-            //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
-
-
-        }
-    }
+    reqImg->needCut     = true;
+    reqImg->squApert    = true;
+    //Calculate real number of columns of the required photo
+    reqImg->sqApSett.rectX  = round( ((float)reqImg->sqApSett.rectX/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
+    reqImg->sqApSett.rectY  = round( ((float)reqImg->sqApSett.rectY/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
+    reqImg->sqApSett.rectW  = round( ((float)reqImg->sqApSett.rectW/(float)reqImg->sqApSett.canvasW) * (float)camRes->width);
+    reqImg->sqApSett.rectH  = round( ((float)reqImg->sqApSett.rectH/(float)reqImg->sqApSett.canvasH) * (float)camRes->height);
 
     //It save the received image
     funcGetRemoteImg( reqImg, true );
@@ -1502,7 +1479,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
 
 
 
-
+/*
 void MainWindow::on_pbSaveImage_clicked()
 {    
     int n;
@@ -1606,6 +1583,7 @@ void MainWindow::on_pbSaveImage_clicked()
 
     n=n;
 }
+*/
 
 /*
 void MainWindow::on_slideShuterSpeed_valueChanged(int value)
@@ -1712,17 +1690,17 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     QString denoiseFlag = (ui->cbDenoise->isChecked())?"1":"0";
     QString colbalFlag = (ui->cbColorBalance->isChecked())?"1":"0";
     //QString previewFlag = (ui->cbPreview->isChecked())?"1":"0";
-    QString oneShotFlag = (ui->cbOneShot->isChecked())?"1":"0";
-    QString fullPhotoFlag = (ui->cbFullPhoto->isChecked())?"1":"0";
+    //QString oneShotFlag = (ui->cbOneShot->isChecked())?"1":"0";
+    //QString fullPhotoFlag = (ui->cbFullPhoto->isChecked())?"1":"0";
     newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
     newFileCon.append("<settings>\n");
     newFileCon.append("    <AWB>"+ ui->cbAWB->currentText() +"</AWB>\n");
     newFileCon.append("    <Exposure>"+ ui->cbExposure->currentText() +"</Exposure>\n");
     newFileCon.append("    <Denoise>"+ denoiseFlag +"</Denoise>\n");
     newFileCon.append("    <ColorBalance>"+ colbalFlag +"</ColorBalance>\n");
-    newFileCon.append("    <FullPhoto>"+ fullPhotoFlag +"</FullPhoto>\n");
+    //newFileCon.append("    <FullPhoto>"+ fullPhotoFlag +"</FullPhoto>\n");
     //newFileCon.append("    <Preview>"+ previewFlag +"</Preview>\n");
-    newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
+    //newFileCon.append("    <OneShot>"+ oneShotFlag +"</OneShot>\n");
     newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
     newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->spinBoxShuterSpeed->value() ) +"</ShutterSpeed>\n");
     newFileCon.append("    <SquareShutterSpeed>"+ QString::number( ui->spinBoxSquareShuterSpeed->value() ) +"</SquareShutterSpeed>\n");
@@ -1853,71 +1831,27 @@ void MainWindow::funcGetSnapshot()
 
     //Define photo's region
     //..
-    if( ui->cbFullPhoto->isChecked() )
+    reqImg->needCut     = false;
+    reqImg->fullFrame   = true;
+    reqImg->imgCols     = camRes->width;//2592 | 640
+    reqImg->imgRows     = camRes->height;//1944 | 480
+    //It saves image into HDD: _PATH_IMAGE_RECEIVED
+
+    if( funcGetRemoteImg( reqImg, true ) )
     {
-        reqImg->needCut     = false;
-        reqImg->fullFrame   = true;
-        reqImg->imgCols     = camRes->width;//2592 | 640
-        reqImg->imgRows     = camRes->height;//1944 | 480
-        //It saves image into HDD: _PATH_IMAGE_RECEIVED
-
-        if( funcGetRemoteImg( reqImg, true ) )
-        {
-            //Display image
-            QImage imgAperture( _PATH_IMAGE_RECEIVED );
-
-            //Invert phot if required
-            if( _INVERTED_CAMERA )
-                imgAperture = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
-            imgAperture.save( _PATH_DISPLAY_IMAGE );
-
-            //Display image into qlabel
-            updateDisplayImageReceived(imgAperture);
-        }
-        else funcShowMsg("ERROR","Camera respond with error");
-        funcLabelProgBarHide();
-    }else{
-        //Requesting image by parts
-        //..
-        //Diffraction
-        reqImg->needCut                 = true;
-        reqImg->squApert                = true;
-        reqImg->fullFrame               = false;
-        reqImg->raspSett.ShutterSpeed   = ui->spinBoxShuterSpeed->value();
-        //reqImg->raspSett.SquareShutterSpeedSmall = ui->slideShuterSpeedSmall->value();
-        reqImg->sqApSett.rectX  = round( daCalib.bigX * (double)camRes->width );
-        reqImg->sqApSett.rectY  = round( daCalib.bigY * (double)camRes->height );
-        reqImg->sqApSett.rectW  = round( daCalib.bigW * (double)camRes->width );
-        reqImg->sqApSett.rectH  = round( daCalib.bigH * (double)camRes->height );
-        //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
-        //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
-        //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
-        //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
-        funcGetRemoteImg( reqImg, true );
-        QImage imgDiff( _PATH_IMAGE_RECEIVED );
-        imgDiff.save(_PATH_SNAPSHOT_DIFFRACTION);
-
-        //Aperture
-        reqImg->raspSett.SquareShutterSpeed      = ui->spinBoxSquareShuterSpeed->value();
-        //reqImg->raspSett.SquareShutterSpeedSmall = ui->slideSquareShuterSpeedSmall->value();
-        reqImg->sqApSett.rectX  = round( daCalib.squareX * (double)camRes->width );;
-        reqImg->sqApSett.rectY  = round( daCalib.squareY * (double)camRes->height );
-        reqImg->sqApSett.rectW  = round( daCalib.squareW * (double)camRes->width );;
-        reqImg->sqApSett.rectH  = round( daCalib.squareH * (double)camRes->height );
-        //qDebug() << "reqImg->sqApSett.rectX: " << reqImg->sqApSett.rectX;
-        //qDebug() << "reqImg->sqApSett.rectY: " << reqImg->sqApSett.rectY;
-        //qDebug() << "reqImg->sqApSett.rectW: " << reqImg->sqApSett.rectW;
-        //qDebug() << "reqImg->sqApSett.rectH: " << reqImg->sqApSett.rectH;
-        funcGetRemoteImg( reqImg, true );
+        //Display image
         QImage imgAperture( _PATH_IMAGE_RECEIVED );
-        imgAperture.save(_PATH_SNAPSHOT_APERTURE);
 
-        //Merge Diffraction and Aperture
-        mergeSnapshot(&imgDiff, &imgAperture, &daCalib);
+        //Invert phot if required
+        if( _INVERTED_CAMERA )
+            imgAperture = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
+        imgAperture.save( _PATH_DISPLAY_IMAGE );
 
+        //Display image into qlabel
+        updateDisplayImageReceived(imgAperture);
     }
-
-
+    else funcShowMsg("ERROR","Camera respond with error");
+    funcLabelProgBarHide();
 
 }
 
@@ -2072,8 +2006,6 @@ void MainWindow::updateDisplayImageReceived(QImage tmpImg)
 
 void MainWindow::on_pbSnapshot_clicked()
 {
-    ui->pbStartVideo->setEnabled(false);
-
 
     mouseCursorWait();
 
@@ -2086,23 +2018,11 @@ void MainWindow::on_pbSnapshot_clicked()
 
     mouseCursorReset();
 
-    ui->pbStartVideo->setEnabled(true);
 }
 
 
 
 
-void MainWindow::on_pbExpIds_clicked()
-{
-    /*
-    int screen_width =  1000;
-    int screen_height = 700;
-
-    QGraphicsScene *scene = new QGraphicsScene(0,0,screen_width,screen_height);
-    QPixmap pim(imgPath);
-    scene->setBackgroundBrush(pim.scaled(screen_width,screen_height,Qt::IgnoreAspectRatio,Qt::SmoothTransformation));
-    */
-}
 
 void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath){    
     QPixmap pim(imgPath);
@@ -2122,6 +2042,7 @@ void MainWindow::funcPutImageIntoGV(QGraphicsView *gvContainer, QString imgPath)
 }
 
 
+/*
 void MainWindow::on_pbPtsClearAll_clicked()
 {
     lstPixSelAux->clear();
@@ -2132,9 +2053,10 @@ void MainWindow::on_pbPtsClearAll_clicked()
     lstSelPix->clear();
 
 
-}
+}*/
 
 
+/*
 void MainWindow::on_pbSavePixs_clicked()
 {
     if( lstSelPix->isEmpty() ){
@@ -2155,6 +2077,7 @@ void MainWindow::on_pbSavePixs_clicked()
         funcShowMsg("Success","List of pixels exported into: "+filePath);
     }
 }
+*/
 
 
 /*
@@ -2788,7 +2711,7 @@ void MainWindow::on_pbSnapCal_clicked()
 
 
 
-
+/*
 void MainWindow::on_pbObtPar_2_clicked()
 {
     //Select image
@@ -2833,13 +2756,13 @@ void MainWindow::on_pbObtPar_2_clicked()
     layout->setEnabled(false);
     ui->tab_6->setLayout(layout);
 
-    /*
-    qDebug() << "tres";
-    ui->tab_6->layout()->addWidget(canvasCalib);    
-    qDebug() << "cuatro";
-    ui->tab_6->layout()->setEnabled(false);
-    ui->tab_6->layout()->setAlignment(Qt::AlignLeft);
-    */
+
+    //qDebug() << "tres";
+    //ui->tab_6->layout()->addWidget(canvasCalib);
+    //qDebug() << "cuatro";
+    //ui->tab_6->layout()->setEnabled(false);
+    //ui->tab_6->layout()->setAlignment(Qt::AlignLeft);
+
 
     //refreshGvCalib( auxQstring );
 
@@ -2852,7 +2775,7 @@ void MainWindow::on_pbObtPar_2_clicked()
 
 
 
-}
+}*/
 
 
 
@@ -2872,11 +2795,12 @@ void MainWindow::refreshGvCalib( QString fileName )
     //canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 }
 
+/*
 void MainWindow::on_slide2AxCalPos_valueChanged(int value)
 {
     value = value;
     updateCalibLine();
-}
+}*/
 
 void MainWindow::updateCalibLine(){
     /*
@@ -2895,33 +2819,6 @@ void MainWindow::updateCalibLine(){
     ui->pbClearCalScene->setText("Clear line");
     */
 
-}
-
-void MainWindow::on_pbCalSaveRot_clicked()
-{
-    /*
-    //Points from scene
-    float rotAngle = -1.0*((float)ui->slide2AxCalRot->value()/5.0);
-    qDebug() << "rotAngle: " << rotAngle;
-    if( saveFile("./settings/calib/rotation.hypcam",QString::number(rotAngle)) ){
-        funcShowMsg("Success","Rotation saved successfully: "+QString::number(rotAngle));
-    }else{
-        funcShowMsg("ERROR","Saving rotation");
-    }
-    */
-}
-
-void MainWindow::on_pbClearCalScene_clicked()
-{
-    /*
-    if( ui->pbClearCalScene->text() == "Clear line" ){
-        ui->pbClearCalScene->setText("Show line");
-        canvasCalib->scene()->clear();
-    }else{
-        ui->pbClearCalScene->setText("Clear line");
-        updateCalibLine();
-    }
-    */
 }
 
 /*
@@ -5241,6 +5138,7 @@ u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fil
 
 }
 
+/*
 void MainWindow::on_pbGetSlideCube_clicked()
 {
 
@@ -5266,6 +5164,7 @@ void MainWindow::on_pbGetSlideCube_clicked()
 
 
 }
+*/
 
 structCamSelected* MainWindow::funcGetCamSelected()
 {
@@ -6329,86 +6228,6 @@ void MainWindow::processFrame(QVideoFrame actualFrame)
     }
 }
 
-
-void MainWindow::on_pbSnapshot_2_clicked()
-{
-
-    if( !takeRemoteSnapshot(false) )
-    {
-        qDebug() << "ERROR: Taking Diffration Area";
-        return (void)NULL;
-    }
-    else
-    {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
-        if( diffImage.isNull() )
-        {
-            qDebug() << "ERROR: Obtaining Diffration Area";
-            return (void)NULL;
-        }
-        else
-        {
-            if( !takeRemoteSnapshot(true) )
-            {
-                qDebug() << "ERROR: Taking Aperture Area";
-                return (void)NULL;
-            }
-            else
-            {
-                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
-                if( apertureImage.isNull() )
-                {
-                    qDebug() << "ERROR: Obtaining Aperture Area";
-                    return (void)NULL;
-                }
-                else
-                {
-                    //
-                    //Merge image
-                    //
-                    //Get square aperture coordinates
-                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, aperture ) )
-                    {
-                        funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
-                        return (void)false;
-                    }
-
-                    //
-                    //Copy square aperture into diffraction image
-                    //
-                    for( int y=aperture->rectY; y<=(aperture->rectY+aperture->rectH); y++ )
-                    {
-                        for( int x=aperture->rectX; x<=(aperture->rectX+aperture->rectW); x++ )
-                        {
-                            diffImage.setPixel( x, y, apertureImage.pixel( x, y ) );
-                        }
-                    }
-
-                    //
-                    //Crop original image to release the usable area
-                    //
-                    //Get usable area coordinates
-                    memset(aperture,'\0',sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
-                    {
-                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
-                        return (void)false;
-                    }
-                    //Crop and save
-                    diffImage = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
-                    diffImage.save(_PATH_DISPLAY_IMAGE);
-                    qDebug() << "Images saved";
-
-                    updateDisplayImageReceived(diffImage);
-                }
-            }
-        }
-    }
-
-
-}
-
 int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle )
 {
     //Get original rectangle properties
@@ -6578,4 +6397,80 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     delete[] reqImg;
 
     return status;
+}
+
+void MainWindow::on_pbSnapshotSquare_clicked()
+{
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Diffration Area";
+        return (void)NULL;
+    }
+    else
+    {
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        if( diffImage.isNull() )
+        {
+            qDebug() << "ERROR: Obtaining Diffration Area";
+            return (void)NULL;
+        }
+        else
+        {
+            if( !takeRemoteSnapshot(true) )
+            {
+                qDebug() << "ERROR: Taking Aperture Area";
+                return (void)NULL;
+            }
+            else
+            {
+                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+                if( apertureImage.isNull() )
+                {
+                    qDebug() << "ERROR: Obtaining Aperture Area";
+                    return (void)NULL;
+                }
+                else
+                {
+                    //
+                    //Merge image
+                    //
+                    //Get square aperture coordinates
+                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
+                        return (void)false;
+                    }
+
+                    //
+                    //Copy square aperture into diffraction image
+                    //
+                    for( int y=aperture->rectY; y<=(aperture->rectY+aperture->rectH); y++ )
+                    {
+                        for( int x=aperture->rectX; x<=(aperture->rectX+aperture->rectW); x++ )
+                        {
+                            diffImage.setPixel( x, y, apertureImage.pixel( x, y ) );
+                        }
+                    }
+
+                    //
+                    //Crop original image to release the usable area
+                    //
+                    //Get usable area coordinates
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                        return (void)false;
+                    }
+                    //Crop and save
+                    diffImage = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+                    diffImage.save(_PATH_DISPLAY_IMAGE);
+                    qDebug() << "Images saved";
+
+                    updateDisplayImageReceived(diffImage);
+                }
+            }
+        }
+    }
 }

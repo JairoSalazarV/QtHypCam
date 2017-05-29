@@ -31,7 +31,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -308,29 +308,6 @@
      <attribute name="title">
       <string>Streaming</string>
      </attribute>
-     <widget class="QPushButton" name="pbStartVideo">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>31</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Play&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/player_play.svg</normaloff>:/new/icons/imagenInte/player_play.svg</iconset>
-      </property>
-     </widget>
      <widget class="QLabel" name="labelVideo">
       <property name="geometry">
        <rect>
@@ -383,7 +360,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>332</y>
+        <y>282</y>
         <width>219</width>
         <height>21</height>
        </rect>
@@ -427,14 +404,14 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>60</x>
+        <x>20</x>
         <y>10</y>
         <width>31</width>
         <height>31</height>
        </rect>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take snapshot&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>One Shot</string>
       </property>
       <property name="text">
        <string/>
@@ -450,27 +427,10 @@
         <x>21</x>
         <y>60</y>
         <width>122</width>
-        <height>124</height>
+        <height>61</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QCheckBox" name="cbOneShot">
-         <property name="text">
-          <string>One shot</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="cbFullPhoto">
-         <property name="text">
-          <string>Full photo</string>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QCheckBox" name="cbColorBalance">
          <property name="text">
@@ -491,29 +451,13 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>370</y>
+        <y>320</y>
         <width>219</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
        <string>Trigger time</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="cbThumbPreview">
-      <property name="geometry">
-       <rect>
-        <x>210</x>
-        <y>60</y>
-        <width>131</width>
-        <height>26</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Thumb preview</string>
-      </property>
-      <property name="checked">
-       <bool>false</bool>
       </property>
      </widget>
      <widget class="QComboBox" name="cbAWB">
@@ -523,7 +467,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>187</y>
+        <y>137</y>
         <width>159</width>
         <height>29</height>
        </rect>
@@ -533,7 +477,7 @@
       <property name="geometry">
        <rect>
         <x>23</x>
-        <y>191</y>
+        <y>141</y>
         <width>121</width>
         <height>21</height>
        </rect>
@@ -546,7 +490,7 @@
       <property name="geometry">
        <rect>
         <x>22</x>
-        <y>225</y>
+        <y>175</y>
         <width>111</width>
         <height>21</height>
        </rect>
@@ -559,7 +503,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>223</y>
+        <y>173</y>
         <width>159</width>
         <height>29</height>
        </rect>
@@ -569,7 +513,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>352</y>
+        <y>302</y>
         <width>219</width>
         <height>19</height>
        </rect>
@@ -588,7 +532,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>390</y>
+        <y>340</y>
         <width>219</width>
         <height>19</height>
        </rect>
@@ -635,8 +579,8 @@
      <widget class="QGroupBox" name="groupResolution">
       <property name="geometry">
        <rect>
-        <x>210</x>
-        <y>100</y>
+        <x>170</x>
+        <y>60</y>
         <width>131</width>
         <height>61</height>
        </rect>
@@ -671,43 +615,20 @@
        </property>
       </widget>
      </widget>
-     <widget class="QPushButton" name="pbGetSlideCube">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>150</x>
-        <y>10</y>
-        <width>31</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take slide cube&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/slide.png</normaloff>:/new/icons/imagenInte/slide.png</iconset>
-      </property>
-     </widget>
      <widget class="QPushButton" name="pbSnapVid">
       <property name="enabled">
        <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>190</x>
+        <x>120</x>
         <y>10</y>
         <width>31</width>
         <height>31</height>
        </rect>
       </property>
       <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take snapvideo&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>Record Video</string>
       </property>
       <property name="text">
        <string/>
@@ -717,13 +638,13 @@
         <normaloff>:/new/icons/imagenInte/dragonplayer.png</normaloff>:/new/icons/imagenInte/dragonplayer.png</iconset>
       </property>
      </widget>
-     <widget class="QPushButton" name="pbSnapshot_2">
+     <widget class="QPushButton" name="pbSnapshotSquare">
       <property name="enabled">
        <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>110</x>
+        <x>70</x>
         <y>10</y>
         <width>31</width>
         <height>31</height>
@@ -744,7 +665,7 @@
       <property name="geometry">
        <rect>
         <x>22</x>
-        <y>264</y>
+        <y>214</y>
         <width>91</width>
         <height>19</height>
        </rect>
@@ -757,7 +678,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>260</y>
+        <y>210</y>
         <width>101</width>
         <height>29</height>
        </rect>
@@ -770,7 +691,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>300</y>
+        <y>250</y>
         <width>151</width>
         <height>19</height>
        </rect>
@@ -783,7 +704,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>296</y>
+        <y>246</y>
         <width>101</width>
         <height>29</height>
        </rect>
@@ -1051,7 +972,7 @@ QSlider::handle:horizontal {
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">font-color:#FFFFFF;</string>
+     <string notr="true"/>
     </property>
     <property name="text">
      <string/>
