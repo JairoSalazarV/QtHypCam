@@ -24,14 +24,14 @@
    <widget class="QTabWidget" name="pbExpPixs">
     <property name="geometry">
      <rect>
-      <x>-1</x>
+      <x>0</x>
       <y>15</y>
-      <width>971</width>
+      <width>1041</width>
       <height>621</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -713,6 +713,29 @@
        <number>3000000</number>
       </property>
      </widget>
+     <widget class="QPushButton" name="pbSaveImage">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>300</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>Save Snapshot</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/download-icon.gif</normaloff>:/new/icons/imagenInte/download-icon.gif</iconset>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_6">
      <attribute name="title">
@@ -966,8 +989,8 @@ QSlider::handle:horizontal {
     <property name="geometry">
      <rect>
       <x>600</x>
-      <y>4</y>
-      <width>301</width>
+      <y>20</y>
+      <width>371</width>
       <height>20</height>
      </rect>
     </property>

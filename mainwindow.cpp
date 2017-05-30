@@ -287,6 +287,12 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
 
+    //
+    // Show Last Preview
+    //
+    updateDisplayImageReceived();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -3428,16 +3434,22 @@ void MainWindow::mouseCursorReset(){
 
 void MainWindow::on_actionLoadSquareRectangle_triggered()
 {
-    //Obtain squiare aperture params
+    //Obtaining square aperture params
     squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
     if( !funGetSquareXML( _PATH_SQUARE_APERTURE, tmpSqAperture ) ){
-        funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
+        funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return (void)false;
     }
 
+    int x, y, w, h;
+    x = round(((float)tmpSqAperture->rectX / (float)tmpSqAperture->canvasW) * (float)canvasCalib->scene()->width());
+    y = round(((float)tmpSqAperture->rectY / (float)tmpSqAperture->canvasH) * (float)canvasCalib->scene()->height());
+    w = round(((float)tmpSqAperture->rectW / (float)tmpSqAperture->canvasW) * (float)canvasCalib->scene()->width());
+    h = round(((float)tmpSqAperture->rectH / (float)tmpSqAperture->canvasH) * (float)canvasCalib->scene()->height());
+
     //Draw a rectangle of the square aperture
-    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
-    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    QPoint p1(x,y);
+    QPoint p2(w,h);
     customRect *tmpRect = new customRect(p1,p2);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
@@ -3450,16 +3462,22 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
 
 void MainWindow::on_actionLoadRegOfInteres_triggered()
 {
-    //Obtain squiare aperture params
+    //Obtaining square aperture params
     squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
     if( !funGetSquareXML( _PATH_SQUARE_USABLE, tmpSqAperture ) ){
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return (void)false;
     }
 
+    int x, y, w, h;
+    x = round(((float)tmpSqAperture->rectX / (float)tmpSqAperture->canvasW) * (float)canvasCalib->scene()->width());
+    y = round(((float)tmpSqAperture->rectY / (float)tmpSqAperture->canvasH) * (float)canvasCalib->scene()->height());
+    w = round(((float)tmpSqAperture->rectW / (float)tmpSqAperture->canvasW) * (float)canvasCalib->scene()->width());
+    h = round(((float)tmpSqAperture->rectH / (float)tmpSqAperture->canvasH) * (float)canvasCalib->scene()->height());
+
     //Draw a rectangle of the square aperture
-    QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
-    QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
+    QPoint p1(x,y);
+    QPoint p2(w,h);
     customRect *tmpRect = new customRect(p1,p2);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
@@ -6473,4 +6491,61 @@ void MainWindow::on_pbSnapshotSquare_clicked()
             }
         }
     }
+}
+
+void MainWindow::on_pbSaveImage_clicked()
+{
+    //
+    //Read the filename
+    //
+    QString fileName;
+    fileName = QFileDialog::getSaveFileName(
+                                                this,
+                                                tr("Save Snapshot as..."),
+                                                "./snapshots/",
+                                                tr("Documents (*.png)")
+                                            );
+    if( fileName.isEmpty() )
+    {
+        qDebug() << "Filename not typed";
+        return (void)false;
+    }
+
+    //
+    //Validate filename
+    //
+    fileName = funcRemoveImageExtension(fileName);
+
+    //
+    //Save image
+    //
+    QImage tmpImg( _PATH_DISPLAY_IMAGE );
+    tmpImg.save(fileName);
+
+}
+
+QString MainWindow::funcRemoveImageExtension( QString imgName )
+{
+    imgName.replace(".png","");
+    imgName.replace(".PNG","");
+
+    imgName.replace(".jpg","");
+    imgName.replace(".JPG","");
+
+    imgName.replace(".jpeg","");
+    imgName.replace(".JPEG","");
+
+    imgName.replace(".gif","");
+    imgName.replace(".GIF","");
+
+    imgName.replace(".rgb888","");
+    imgName.replace(".RGB888","");
+
+    imgName.replace(".bmp","");
+    imgName.replace(".BMP","");
+
+    imgName.append( _FRAME_EXTENSION );
+
+    return imgName;
+
 }
