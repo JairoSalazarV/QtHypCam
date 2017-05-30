@@ -244,6 +244,7 @@
         <file>imagenInte/slideForm.png</file>
         <file>imagenInte/takeSquare.png</file>
         <file>imagenInte/snapshot.png</file>
+        <file>imagenInte/oneShotSnap.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

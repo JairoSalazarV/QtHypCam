@@ -5031,13 +5031,16 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
     {
 
         ui->progBar->setVisible(true);
-        ui->progBar->setValue(0.0);
+        ui->progBar->setValue(0);
         ui->progBar->update();
 
         int fileLen;
         u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
+
+        funcLabelProgBarUpdate("Saving image locally",0);
         if( saveBinFile_From_u_int8_T(_PATH_IMAGE_RECEIVED,fileReceived,fileLen) )
             img = QImage(_PATH_IMAGE_RECEIVED);
+        funcLabelProgBarUpdate("",0);
 
         /*
         const unsigned char* fileReceivedQt = reinterpret_cast<const unsigned char*>(&fileReceived[0]);
@@ -5073,6 +5076,7 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
         ui->progBar->setValue(100.0);
         ui->progBar->update();
         ui->progBar->setVisible(false);
+        funcLabelProgBarUpdate("",0);
 
         return img;
 
@@ -6394,6 +6398,15 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     n = ::write(sockfd,structRaspiCommand,sizeof(structRaspistillCommand));
     qDebug() << "Img request sent";
 
+    //Show progbar
+    funcLabelProgBarUpdate("Stabilizing camera",0);
+    progBarTimer( (ui->slideTriggerTime->value() + 1) * 1000 );
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(true);
+    ui->progBar->update();
+    funcLabelProgBarUpdate("Transferring image",0);
+
+
     //Receive ACK with the camera status
     memset(bufferRead,'\0',3);
     n = read(sockfd,bufferRead,2);
@@ -6419,6 +6432,9 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
 
 void MainWindow::on_pbSnapshotSquare_clicked()
 {
+
+    mouseCursorWait();
+
     if( !takeRemoteSnapshot(false) )
     {
         qDebug() << "ERROR: Taking Diffration Area";
@@ -6491,6 +6507,8 @@ void MainWindow::on_pbSnapshotSquare_clicked()
             }
         }
     }
+
+    mouseCursorReset();
 }
 
 void MainWindow::on_pbSaveImage_clicked()
@@ -6548,4 +6566,46 @@ QString MainWindow::funcRemoveImageExtension( QString imgName )
 
     return imgName;
 
+}
+
+void MainWindow::on_pbOneShotSnapshot_clicked()
+{
+    mouseCursorWait();    
+
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Diffration Area";
+        return (void)NULL;
+    }
+    else
+    {
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        if( diffImage.isNull() )
+        {
+            qDebug() << "ERROR: Obtaining Diffration Area";
+            return (void)NULL;
+        }
+        else
+        {
+            //
+            //Crop original image to release the usable area
+            //
+            //Get usable area coordinates
+            squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+            memset(aperture,'\0',sizeof(squareAperture));
+            if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+            {
+                funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                return (void)false;
+            }
+            //Crop and save
+            diffImage = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+            diffImage.save(_PATH_DISPLAY_IMAGE);
+            qDebug() << "Images saved";
+
+            updateDisplayImageReceived(diffImage);
+        }
+    }
+
+    mouseCursorReset();
 }

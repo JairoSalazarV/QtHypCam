@@ -469,6 +469,8 @@ private slots:
 
     QString funcRemoveImageExtension( QString imgName );
 
+    void on_pbOneShotSnapshot_clicked();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
