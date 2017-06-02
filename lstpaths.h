@@ -14,6 +14,10 @@
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
 
+    #define _PATH_CALIBRATION               "./settings/Calib/"
+    #define _PATH_CALIBRATION_RESPONCES     "./settings/Calib/responses/"
+    #define _PATH_CALIBRATION_IMAGES        "./settings/Calib/images/"
+    #define _PATH_CALIBRATION_BACKGROUND    "./settings/Calib/images/background.png"
     #define _PATH_RED_RESPONSE              "./settings/Calib/responses/redResponse.hypcam"
     #define _PATH_GREEN_RESPONSE            "./settings/Calib/responses/greenResponse.hypcam"
     #define _PATH_BLUE_RESPONSE             "./settings/Calib/responses/blueResponse.hypcam"

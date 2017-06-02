@@ -64,7 +64,8 @@ HEADERS  += mainwindow.h \
     lstcustoms.h \
     formslidesettings.h \
     lstfilenames.h \
-    lstraspividstruct.h
+    lstraspividstruct.h \
+    __aaaloquefalta.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \

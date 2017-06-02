@@ -513,23 +513,16 @@ border:0px;</string>
     <string>...</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>32</x>
      <y>250</y>
-     <width>184</width>
+     <width>191</width>
      <height>34</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
-     <widget class="QPushButton" name="pbGenCal">
-      <property name="text">
-       <string>Generate calib.xml</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QToolButton" name="pbFiles">
       <property name="toolTip">
@@ -545,9 +538,33 @@ border:0px;</string>
       </property>
      </widget>
     </item>
+    <item row="0" column="0">
+     <widget class="QPushButton" name="pbGenCal">
+      <property name="text">
+       <string>Generate calib.xml</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QToolButton" name="pbClearCalib">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear Calibration Files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/edit-clear.png</normaloff>
+        <normalon>:/new/icons/imagenInte/folder-icon.png</normalon>:/new/icons/imagenInte/edit-clear.png</iconset>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="lstImgs.qrc"/>
+ </resources>
  <connections/>
 </ui>

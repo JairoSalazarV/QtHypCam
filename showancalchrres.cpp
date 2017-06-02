@@ -608,7 +608,12 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     //Save coordinates
     if(saveFile(fileName,coordinates)){
         //Save canvas background path
-        saveFile(_PATH_CALBKG,globalRect->parameters.backgroundPath);
+        saveFile(_PATH_CALBKG,_PATH_CALIBRATION_BACKGROUND);
+        if( !fileExists(_PATH_CALIBRATION_BACKGROUND) )
+        {
+            QImage tmpImg( _PATH_DISPLAY_IMAGE );
+            tmpImg.save(_PATH_CALIBRATION_BACKGROUND);
+        }
         funcShowMsg(" ","Setting saved successfully");
     }else{
         funcShowMsg("ERROR","Saving setting-file");

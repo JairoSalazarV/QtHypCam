@@ -124,25 +124,25 @@ void funcPrintCalibration(lstDoubleAxisCalibration *calibSettings){
 
     qDebug() << "bkgPath" << calibSettings->bkgPath;
 
-    qDebug() << "bigX" << calibSettings->bigX;
-    qDebug() << "bigY" << calibSettings->bigY;
-    qDebug() << "bigW" << calibSettings->bigW;
-    qDebug() << "bigH" << calibSettings->bigH;
+    //qDebug() << "bigX" << calibSettings->bigX;
+    //qDebug() << "bigY" << calibSettings->bigY;
+    //qDebug() << "bigW" << calibSettings->bigW;
+    //qDebug() << "bigH" << calibSettings->bigH;
 
     qDebug() << "squareX" << calibSettings->squareX;
     qDebug() << "squareY" << calibSettings->squareY;
     qDebug() << "squareW" << calibSettings->squareW;
     qDebug() << "squareH" << calibSettings->squareH;
 
-    qDebug() << "squarePixX: " << calibSettings->squarePixX;
-    qDebug() << "squarePixY: " << calibSettings->squarePixY;
-    qDebug() << "squarePixW: " << calibSettings->squarePixW;
-    qDebug() << "squarePixH: " << calibSettings->squarePixH;
+    //qDebug() << "squarePixX: " << calibSettings->squarePixX;
+    //qDebug() << "squarePixY: " << calibSettings->squarePixY;
+    //qDebug() << "squarePixW: " << calibSettings->squarePixW;
+    //qDebug() << "squarePixH: " << calibSettings->squarePixH;
 
-    qDebug() << "squareUsablePixX: " << calibSettings->squareUsableX;
-    qDebug() << "squareUsablePixY: " << calibSettings->squareUsableY;
-    qDebug() << "squareUsablePixW: " << calibSettings->squareUsableW;
-    qDebug() << "squareUsablePixH: " << calibSettings->squareUsableH;
+    qDebug() << "squareUsableX: " << calibSettings->squareUsableX;
+    qDebug() << "squareUsableY: " << calibSettings->squareUsableY;
+    qDebug() << "squareUsableW: " << calibSettings->squareUsableW;
+    qDebug() << "squareUsableH: " << calibSettings->squareUsableH;
 
     qDebug() << "horizontalA: " << calibSettings->LR.horizA;
     qDebug() << "horizontalB: " << calibSettings->LR.horizB;
@@ -198,6 +198,7 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="H" )
                 doubAxisCal->H = xmlReader->readElementText().toInt(0);
 
+            /*
             if( xmlReader->name()=="bigX" )
                 doubAxisCal->bigX = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="bigY" )
@@ -205,7 +206,7 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="bigW" )
                 doubAxisCal->bigW = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="bigH" )
-                doubAxisCal->bigH = xmlReader->readElementText().toFloat(0);
+                doubAxisCal->bigH = xmlReader->readElementText().toFloat(0);*/
 
             if( xmlReader->name()=="squareX" )
                 doubAxisCal->squareX = xmlReader->readElementText().toFloat(0);
@@ -216,6 +217,7 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="squareH" )
                 doubAxisCal->squareH = xmlReader->readElementText().toFloat(0);
 
+            /*
             if( xmlReader->name()=="squarePixX" )
                 doubAxisCal->squarePixX = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="squarePixY" )
@@ -223,15 +225,15 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
             if( xmlReader->name()=="squarePixW" )
                 doubAxisCal->squarePixW = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="squarePixH" )
-                doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);
+                doubAxisCal->squarePixH = xmlReader->readElementText().toInt(0);*/
 
-            if( xmlReader->name()=="squareUsablePixX" )
+            if( xmlReader->name()=="squareUsableX" )
                 doubAxisCal->squareUsableX = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="squareUsablePixY" )
+            if( xmlReader->name()=="squareUsableY" )
                 doubAxisCal->squareUsableY = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="squareUsablePixW" )
+            if( xmlReader->name()=="squareUsableW" )
                 doubAxisCal->squareUsableW = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="squareUsablePixH" )
+            if( xmlReader->name()=="squareUsableH" )
                 doubAxisCal->squareUsableH = xmlReader->readElementText().toInt(0);
 
             if( xmlReader->name()=="horizontalA" )
@@ -600,6 +602,7 @@ bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
 
     QFile *xmlFile = new QFile( fileName );
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "ERROR reading file: " << fileName;
         return false;
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);

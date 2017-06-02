@@ -57,6 +57,16 @@ public slots:
 
     void processFrame(QVideoFrame actualFrame);
 
+    int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
+
+    void mouseCursorHand();
+
+    void mouseCursorCross();
+
+    void mouseCursorWait();
+
+    void mouseCursorReset();
+
 
 
 private slots:    
@@ -347,14 +357,6 @@ private slots:
 
     void on_actionToolPenArea_triggered();
 
-    void mouseCursorHand();
-
-    void mouseCursorCross();
-
-    void mouseCursorWait();
-
-    void mouseCursorReset();
-
     void on_actionSend_to_XYZ_triggered();
 
     void on_actionSaveCanvas_triggered();
@@ -455,9 +457,7 @@ private slots:
 
     void on_pbSnapVid_clicked();
 
-    //void on_pbSnapshot_2_clicked();
-
-    int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
+    //void on_pbSnapshot_2_clicked();    
 
     int createSubimageRemotelly(bool squareArea);
 

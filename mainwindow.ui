@@ -1110,8 +1110,6 @@ QSlider::handle:horizontal {
    <addaction name="actionShow_hypercube"/>
    <addaction name="actionChoseWavelength"/>
    <addaction name="actionGenHypercube"/>
-   <addaction name="actionslideHypCam"/>
-   <addaction name="actionSlide_settings"/>
   </widget>
   <action name="actionExit">
    <property name="text">

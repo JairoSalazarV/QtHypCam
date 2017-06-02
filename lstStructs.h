@@ -108,18 +108,22 @@
         QString         bkgPath;
         int             W;
         int             H;
-        float           bigX;
-        float           bigY;
-        float           bigW;
-        float           bigH;
-        float           squareX;
-        float           squareY;
-        float           squareW;
-        float           squareH;
-        int             squarePixX;
-        int             squarePixY;
-        int             squarePixW;
-        int             squarePixH;
+        //float           bigX;
+        //float           bigY;
+        //float           bigW;
+        //float           bigH;
+        //float           squareX;
+        //float           squareY;
+        //float           squareW;
+        //float           squareH;
+        int             squareX;
+        int             squareY;
+        int             squareW;
+        int             squareH;
+        //int             squarePixX;
+        //int             squarePixY;
+        //int             squarePixW;
+        //int             squarePixH;
         int             squareUsableX;      //Respect to the snapshot
         int             squareUsableY;      //Respect to the snapshot
         int             squareUsableW;      //Respect to the snapshot
@@ -176,6 +180,12 @@
         QString redLeft;
         QString redLeftDown;
         QString redDown;
+        //Limits
+        QString limR;
+        QString limU;
+        QString limL;
+        QString limD;
+        QString sourceHalogen;
     }lstCalibFileNames;
 
     typedef struct customLineParameters{

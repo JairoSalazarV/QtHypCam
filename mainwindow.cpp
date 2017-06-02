@@ -1866,8 +1866,8 @@ void MainWindow::mergeSnapshot(QImage *diff, QImage *aper, lstDoubleAxisCalibrat
     int x1, y1;
     int row, col;
 
-    x1 = daCalib->squarePixX;
-    y1 = daCalib->squarePixY;
+    x1 = daCalib->squareX;
+    y1 = daCalib->squareY;
 
     for(row=0;row<aper->height();row++)
     {
@@ -1921,12 +1921,12 @@ void MainWindow::calcDiffPoints(
 
     p11->x          = 1;                  //1-index
     p11->y          = 1;                  //1-index
-    p12->x          = daCalib->squarePixW; //1-index
+    p12->x          = daCalib->squareW; //1-index
     p12->y          = 1;                  //1-index
     p21->x          = 1;                  //1-index
-    p21->y          = daCalib->squarePixH; //1-index
-    p22->x          = daCalib->squarePixW; //1-index
-    p22->y          = daCalib->squarePixH; //1-index
+    p21->y          = daCalib->squareH; //1-index
+    p22->x          = daCalib->squareW; //1-index
+    p22->y          = daCalib->squareH; //1-index
 
     calcDiffProj( p11, daCalib );
     calcDiffProj( p12, daCalib );
@@ -6253,7 +6253,8 @@ void MainWindow::processFrame(QVideoFrame actualFrame)
 int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle )
 {
     //Get original rectangle properties
-    if( !funGetSquareXML( fileName, rectangle ) )
+    qDebug() << "fileName: " << fileName;
+    if( funGetSquareXML( fileName, rectangle ) == false )
     {
         funcShowMsg("ERROR","Loading in pixels: "+fileName);
         return 0;
@@ -6295,19 +6296,19 @@ int MainWindow::createSubimageRemotelly(bool squareArea )
     {
         subimage->frame.canvasW     = daCalib.W;
         subimage->frame.canvasH     = daCalib.H;
-        subimage->frame.rectX       = round( daCalib.squareX * (double)camRes->width );
-        subimage->frame.rectY       = round( daCalib.squareY * (double)camRes->height );
-        subimage->frame.rectW       = round( daCalib.squareW * (double)camRes->width );
-        subimage->frame.rectH       = round( daCalib.squareH * (double)camRes->height );
+        subimage->frame.rectX       = daCalib.squareX;
+        subimage->frame.rectY       = daCalib.squareY;
+        subimage->frame.rectW       = daCalib.squareW;
+        subimage->frame.rectH       = daCalib.squareH;
     }
     else
     {
         subimage->frame.canvasW     = daCalib.W;
         subimage->frame.canvasH     = daCalib.H;
-        subimage->frame.rectX       = round( daCalib.bigX * (double)camRes->width );
-        subimage->frame.rectY       = round( daCalib.bigY * (double)camRes->height );
-        subimage->frame.rectW       = round( daCalib.bigW * (double)camRes->width );
-        subimage->frame.rectH       = round( daCalib.bigH * (double)camRes->height );
+        subimage->frame.rectX       = daCalib.squareUsableX;
+        subimage->frame.rectY       = daCalib.squareUsableY;
+        subimage->frame.rectW       = daCalib.squareUsableW;
+        subimage->frame.rectH       = daCalib.squareUsableH;
     }
 
     tmp.assign(_PATH_REMOTE_SNAPSHOT);

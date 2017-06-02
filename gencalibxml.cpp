@@ -14,8 +14,10 @@
 
 #include <QRgb>
 
-bool isExportable = false;
+#include <mainwindow.h>
 
+bool isExportable = false;
+MainWindow *mainW;
 
 genCalibXML::genCalibXML(QWidget *parent) :
     QDialog(parent),
@@ -25,6 +27,8 @@ genCalibXML::genCalibXML(QWidget *parent) :
     autoLoadCentroids();
 
     disableButtons();
+
+    mainW = qobject_cast<MainWindow*>(parent);
 
 }
 
@@ -103,6 +107,13 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
     calibFileNames.redLeftDown      = "./settings/Calib/rLD.hypcam";
     calibFileNames.redDown          = "./settings/Calib/rD.hypcam";
 
+    calibFileNames.limR             = "./settings/Calib/limR.hypcam";
+    calibFileNames.limU             = "./settings/Calib/limU.hypcam";
+    calibFileNames.limL             = "./settings/Calib/limL.hypcam";
+    calibFileNames.limD             = "./settings/Calib/limD.hypcam";
+    calibFileNames.sourceHalogen    = "./settings/Calib/sourceHalogen.hypcam";
+
+
     return calibFileNames;
 
 }
@@ -143,8 +154,15 @@ void genCalibXML::autoLoadCentroids(){
     acum=setButton(ui->pbRedLeft,calibFileNames.redLeft,false)?++i:i;
     setButton(ui->pbRedLeftDown,calibFileNames.redLeftDown,false);
     acum=setButton(ui->pbRedDown,calibFileNames.redDown,false)?++i:i;
+    //Limits
+    acum=setButton(ui->pbRedDown,calibFileNames.limR,false)?++i:i;
+    acum=setButton(ui->pbRedDown,calibFileNames.limU,false)?++i:i;
+    acum=setButton(ui->pbRedDown,calibFileNames.limL,false)?++i:i;
+    acum=setButton(ui->pbRedDown,calibFileNames.limD,false)?++i:i;
+    acum=setButton(ui->pbRedDown,calibFileNames.sourceHalogen,false)?++i:i;
 
-    if(acum==12)
+
+    if(acum==17)
     {
         isExportable = true;
     }
@@ -326,6 +344,15 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     pointsY[5] = offsetY + (double)centroids->greenRight.split(",").at(1).toInt(0);
     pointsY[6] = offsetY + (double)centroids->blueRight.split(",").at(1).toInt(0);
 
+    /*
+    for(int i = 0; i<7; i++)
+        printf("%d ", (int)pointsX[i]);
+    printf("\n");
+    for(int i = 0; i<7; i++)
+        printf("%d ", (int)pointsY[i]);
+    printf("\n");
+    */
+
     linearRegresion horB = funcLinearRegression( pointsX, pointsY, 7 );
     linRegRes.horizA = horB.a;
     linRegRes.horizB = horB.b;
@@ -358,8 +385,6 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //Delta blue X
     //auxL = (double)abs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
     auxL = (double)fabs( aux - centroids->blueLeft.split(",").at(0).toFloat(0) );
-
-
     auxR = (double)fabs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
     pointsX[0] = (double)_BLUE_WAVELENGHT;
     pointsY[0] = (auxL+auxR) / 2.0;
@@ -496,11 +521,11 @@ strLimits genCalibXML::getLimitsFromHDD(){
 QVector2D genCalibXML::getWavelengthFrontiers()
 {
     QVector2D fontier;
+    //qDebug() << "Aqui3-0";
     strLimits limits = getLimitsFromHDD();
     float waveRight, waveUp, waveLeft, waveDown;
     float waveLimInf, waveLimSup;
     strAllLinReg linRegRes = getAllLR();
-
     //It obtains direction of the final limit
     //..
     //Min
@@ -519,11 +544,11 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     waveLimSup  = (waveRight < waveUp)?waveRight:waveUp;
     waveLimSup  = (waveLimSup < waveLeft)?waveLimSup:waveLeft;
     waveLimSup  = (waveLimSup < waveDown)?waveLimSup:waveDown;
-
     //Set and return
     //..
     fontier.setX(waveLimInf);
     fontier.setY(waveLimSup);
+    qDebug() << "Aqui3-3";
     return fontier;
 }
 
@@ -532,6 +557,9 @@ void genCalibXML::on_pbGenCal_clicked()
     if( isExportable )
     {
         //camRes = getCamRes();
+        camRes  = mainW->getCamRes();
+        //qDebug() << "camResW " << camRes->width;
+        //qDebug() << "camResH " << camRes->height;
 
         QApplication::setOverrideCursor(Qt::WaitCursor);
 
@@ -540,6 +568,7 @@ void genCalibXML::on_pbGenCal_clicked()
 
         QString sourcePath = readFileParam(_PATH_CALBKG);
 
+        /*
         //Region of interes
         //..
         squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
@@ -552,18 +581,23 @@ void genCalibXML::on_pbGenCal_clicked()
         xB = (double)regOfInteres->rectX / (double)regOfInteres->canvasW;
         yB = (double)regOfInteres->rectY / (double)regOfInteres->canvasH;
         wB = (double)regOfInteres->rectW / (double)regOfInteres->canvasW;
-        hB = (double)regOfInteres->rectH / (double)regOfInteres->canvasH;
+        hB = (double)regOfInteres->rectH / (double)regOfInteres->canvasH;*/
+
+        //return (void)NULL;
 
         //Square aperture
         //..
         squareAperture *sqApert = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
+        //if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
+        if( mainW->rectangleInPixelsFromSquareXML(_PATH_SQUARE_APERTURE, sqApert) == 0 )
         {
             funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
+            mainW->mouseCursorReset();
             return (void)false;
         }
+        /*
         //Calculates the position expected in the received image
-        qDebug() << "camRes->width: " << camRes->width;
+        //qDebug() << "camRes->width: " << camRes->width;
         int auxSqX, auxSqY, auxSqW, auxSqH, auxBigX, auxBigY;
         auxSqX  = round((float)camRes->width  * ((float)sqApert->rectX / (float)sqApert->canvasW));
         auxSqY  = round((float)camRes->height * ((float)sqApert->rectY / (float)sqApert->canvasH));
@@ -573,16 +607,19 @@ void genCalibXML::on_pbGenCal_clicked()
         auxBigY = round((float)camRes->height * ((float)regOfInteres->rectY / (float)regOfInteres->canvasH));
         //In reference to the final position
         auxSqX -= auxBigX;
-        auxSqY -= auxBigY;
+        auxSqY -= auxBigY;  */
 
         //Usable area
         //..
         squareAperture *sqUsable = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
+        //if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
+        if( mainW->rectangleInPixelsFromSquareXML(_PATH_SQUARE_USABLE,sqUsable) == 0 )
         {
             funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
+            mainW->mouseCursorReset();
             return (void)false;
         }
+        /*
         //Calculates the position expected in the received image
         int auxSqUsableX, auxSqUsableY, auxSqUsableW, auxSqUsableH;
         float areaInterW, areaInterH;
@@ -591,11 +628,11 @@ void genCalibXML::on_pbGenCal_clicked()
         auxSqUsableX  = round((float)areaInterW * ((float)sqUsable->rectX / (float)sqUsable->canvasW));
         auxSqUsableY  = round((float)areaInterH * ((float)sqUsable->rectY / (float)sqUsable->canvasH));
         auxSqUsableW  = round((float)areaInterW * ((float)sqUsable->rectW / (float)sqUsable->canvasW));
-        auxSqUsableH  = round((float)areaInterH * ((float)sqUsable->rectH / (float)sqUsable->canvasH));
+        auxSqUsableH  = round((float)areaInterH * ((float)sqUsable->rectH / (float)sqUsable->canvasH));*/
 
         //Calculates linear regressions
         //..
-        strAllLinReg linRegRes = getAllLR();
+        strAllLinReg linRegRes = getAllLR();        
 
         //Obtains limits from HDD
         //..
@@ -604,14 +641,16 @@ void genCalibXML::on_pbGenCal_clicked()
         waveLim = getWavelengthFrontiers();
         minWavelength = QString::number(waveLim.x());
         maxWavelength = QString::number(waveLim.y());
+        qDebug() << "Aqui3";
 
         //Square aperture as percentage
         //..
+        /*
         double xs,ys,ws,hs;
         xs = (double)sqApert->rectX / (double)sqApert->canvasW;
         ys = (double)sqApert->rectY / (double)sqApert->canvasH;
         ws = (double)sqApert->rectW / (double)sqApert->canvasW;
-        hs = (double)sqApert->rectH / (double)sqApert->canvasH;
+        hs = (double)sqApert->rectH / (double)sqApert->canvasH;*/
 
         //Calculate MIN num of bands
         //..
@@ -630,10 +669,12 @@ void genCalibXML::on_pbGenCal_clicked()
         daCalibGenCal.minSpecRes    = spectralResolution.y();
         daCalibGenCal.minWavelength = waveLim.x();
         daCalibGenCal.maxWavelength = waveLim.y();
-        daCalibGenCal.squareUsableX = auxSqUsableX;
+
+        /*daCalibGenCal.squareUsableX = auxSqUsableX;
         daCalibGenCal.squareUsableY = auxSqUsableY;
         daCalibGenCal.squareUsableW = auxSqUsableW;
-        daCalibGenCal.squareUsableH = auxSqUsableH;
+        daCalibGenCal.squareUsableH = auxSqUsableH;*/
+
         calculateAndSaveSensitivities(&daCalibGenCal);
         Sr = readFileParam( _PATH_RED_SENSITIV );
         Sg = readFileParam( _PATH_GREEN_SENSITIV );
@@ -653,25 +694,29 @@ void genCalibXML::on_pbGenCal_clicked()
             newFileCon.append("    <W>"+ QString::number(camRes->width)                            + "</W>\n");
             newFileCon.append("    <H>"+ QString::number(camRes->height)                           + "</H>\n");
 
-            newFileCon.append("    <bigX>"+ QString::number( xB )                               + "</bigX>\n");
+            /*newFileCon.append("    <bigX>"+ QString::number( xB )                               + "</bigX>\n");
             newFileCon.append("    <bigY>"+ QString::number( yB )                               + "</bigY>\n");
             newFileCon.append("    <bigW>"+ QString::number( wB )                               + "</bigW>\n");
-            newFileCon.append("    <bigH>"+ QString::number( hB )                               + "</bigH>\n");
+            newFileCon.append("    <bigH>"+ QString::number( hB )                               + "</bigH>\n");*/
 
-            newFileCon.append("    <squareX>"+ QString::number( xs )                            + "</squareX>\n");
-            newFileCon.append("    <squareY>"+ QString::number( ys )                            + "</squareY>\n");
-            newFileCon.append("    <squareW>"+ QString::number( ws )                            + "</squareW>\n");
-            newFileCon.append("    <squareH>"+ QString::number( hs )                            + "</squareH>\n");
+            //newFileCon.append("    <squareCanvasW>"+ QString::number( sqApert->canvasW )       + "</squareCanvasW>\n");
+            //newFileCon.append("    <squareCanvasH>"+ QString::number( sqApert->canvasH )       + "</squareCanvasH>\n");
+            newFileCon.append("    <squareX>"+ QString::number( sqApert->rectX )               + "</squareX>\n");
+            newFileCon.append("    <squareY>"+ QString::number( sqApert->rectY )               + "</squareY>\n");
+            newFileCon.append("    <squareW>"+ QString::number( sqApert->rectW )               + "</squareW>\n");
+            newFileCon.append("    <squareH>"+ QString::number( sqApert->rectH )               + "</squareH>\n");
 
-            newFileCon.append("    <squarePixX>"+ QString::number( auxSqX )                     + "</squarePixX>\n");
+            /*newFileCon.append("    <squarePixX>"+ QString::number( auxSqX )                     + "</squarePixX>\n");
             newFileCon.append("    <squarePixY>"+ QString::number( auxSqY )                     + "</squarePixY>\n");
             newFileCon.append("    <squarePixW>"+ QString::number( auxSqW )                     + "</squarePixW>\n");
-            newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )                     + "</squarePixH>\n");
+            newFileCon.append("    <squarePixH>"+ QString::number( auxSqH )                     + "</squarePixH>\n");*/
 
-            newFileCon.append("    <squareUsablePixX>"+ QString::number( auxSqUsableX )         + "</squareUsablePixX>\n");
-            newFileCon.append("    <squareUsablePixY>"+ QString::number( auxSqUsableY )         + "</squareUsablePixY>\n");
-            newFileCon.append("    <squareUsablePixW>"+ QString::number( auxSqUsableW )         + "</squareUsablePixW>\n");
-            newFileCon.append("    <squareUsablePixH>"+ QString::number( auxSqUsableH )         + "</squareUsablePixH>\n");
+            //newFileCon.append("    <squareCanvasW>"+ QString::number( sqUsable->canvasW )      + "</squareCanvasW>\n");
+            //newFileCon.append("    <squareCanvasH>"+ QString::number( sqUsable->canvasH )      + "</squareCanvasH>\n");
+            newFileCon.append("    <squareUsableX>"+ QString::number( sqUsable->rectX )         + "</squareUsableX>\n");
+            newFileCon.append("    <squareUsableY>"+ QString::number( sqUsable->rectY )         + "</squareUsableY>\n");
+            newFileCon.append("    <squareUsableW>"+ QString::number( sqUsable->rectW )         + "</squareUsableW>\n");
+            newFileCon.append("    <squareUsableH>"+ QString::number( sqUsable->rectH )         + "</squareUsableH>\n");
             //newFileCon.append("    <squareUsableX1>"+ QString::number( auxSqUsableX1 )          + "</squareUsableX1>\n");
             //newFileCon.append("    <squareUsableY1>"+ QString::number( auxSqUsableY1 )          + "</squareUsableY1>\n");
 
@@ -717,7 +762,7 @@ void genCalibXML::on_pbGenCal_clicked()
     }
     else
     {
-        funcShowMsg("Lack","Calibrations points incomplete");
+        funcShowMsg("Lack","Incomplete Calibrations Points");
     }
 
 }
@@ -1129,4 +1174,19 @@ void genCalibXML::on_pbFiles_clicked()
 {
     QDesktopServices::openUrl(QUrl(funcRemoveFileNameFromPath(_PATH_CALIBRATION_FILE)));
     this->close();
+}
+
+void genCalibXML::on_pbClearCalib_clicked()
+{
+    if( funcShowMsgYesNo("Alert!","Are you shure to delete calibration files?") )
+    {
+        funcClearDirFolder(_PATH_CALIBRATION);
+        funcClearDirFolder(_PATH_CALIBRATION_RESPONCES);
+        funcClearDirFolder(_PATH_CALIBRATION_IMAGES);
+
+        QDir dir(_PATH_CALIBRATION);
+        dir.mkdir(_PATH_CALIBRATION_RESPONCES);
+        dir.mkdir(_PATH_CALIBRATION_IMAGES);
+        this->close();
+    }
 }

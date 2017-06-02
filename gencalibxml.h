@@ -109,6 +109,8 @@ private slots:
 
     void on_pbFiles_clicked();
 
+    void on_pbClearCalib_clicked();
+
 private:
     Ui::genCalibXML *ui;
 };

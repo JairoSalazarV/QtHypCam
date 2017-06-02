@@ -157,23 +157,23 @@ void selWathToCheck::showWavelengthSimulation()
 
     //Display the areas usable an the correspondign reflected area for selected wavelenght
     //..
-    int x, y;
+    int x, y, iniHoriz, endHoriz, iniVert, endVert;
     //y = daCalib->squareUsableY;
 
     QImage tmpImg( _PATH_DISPLAY_IMAGE );
 
     //Horizontales
-    for(x=1;x<=daCalib->squareUsableW;x++)
+    for(x=1;x<=daCalib->squareW;x++)
     {
         //Horizontal
         diffProj.x = x;
-        diffProj.y = 1;//Row 1
+        diffProj.y = daCalib->squareY;//Row 1
         calcDiffProj( &diffProj, daCalib );              
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
 
         diffProj.x = x;
-        diffProj.y = daCalib->squareUsableH;//row h
+        diffProj.y = daCalib->squareX + daCalib->squareH;//row h
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
@@ -183,7 +183,7 @@ void selWathToCheck::showWavelengthSimulation()
 
     //Verticales
     //x = daCalib->squareUsableX;
-    for(y=1;y<=daCalib->squareUsableH;y++)
+    for(y=1;y<=daCalib->squareH;y++)
     {
         //Horizontal
         diffProj.x = 1;//Column 1
@@ -192,7 +192,7 @@ void selWathToCheck::showWavelengthSimulation()
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
 
-        diffProj.x = daCalib->squareUsableW;
+        diffProj.x = daCalib->squareW;
         diffProj.y = y;
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
@@ -433,8 +433,8 @@ void selWathToCheck::drawLimit(int side){
     limSup = limit.split(",").at(0).toInt(0);
 
 
-    customLine *limInfLine;
-    customLine *limSupLine;
+    customLine *limInfLine = (customLine*)malloc(sizeof(customLine));
+    customLine *limSupLine = (customLine*)malloc(sizeof(customLine));
     int len1, len2;
     double wavelenghtInf, wavelenghtSup;
     //strAllLinReg calibLR = tmpGenCal.getAllLR();

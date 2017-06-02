@@ -20,9 +20,9 @@
 
     #define _INVERTED_CAMERA                0
 
-    #define _RED_WAVELENGHT 618
-    #define _GREEN_WAVELENGHT 542
-    #define _BLUE_WAVELENGHT 438
+    #define _RED_WAVELENGHT                 618
+    #define _GREEN_WAVELENGHT               542
+    #define _BLUE_WAVELENGHT                438
 
     #define _EXTENTION                      ".hypcam"
 
