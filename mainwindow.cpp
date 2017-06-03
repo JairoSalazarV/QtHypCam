@@ -6593,9 +6593,9 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
             //Get usable area coordinates
             squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
             memset(aperture,'\0',sizeof(squareAperture));
-            if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+            if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES, aperture ) )
             {
-                funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_REGION_OF_INTERES");
                 return (void)false;
             }
             //Crop and save

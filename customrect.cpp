@@ -195,12 +195,12 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //..
             saveSquareAs(_PATH_SQUARE_USABLE);
         }
-        /*
+
         if(a->text()=="Region of interes"){
             //Call the centroid
             //..
             saveSquareAs(_PATH_REGION_OF_INTERES);
-        }*/
+        }
         if(a->text()=="Slide"){
             //Call the centroid
             //..
