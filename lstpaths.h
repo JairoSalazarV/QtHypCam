@@ -34,7 +34,8 @@
     #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"
     #define _PATH_LIMIT_L                   "./settings/Calib/limL.hypcam"
     #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
-    #define _PATH_LIMIT_S                   "./settings/Calib/sourceHalogen.hypcam"
+    #define _PATH_LIMIT_S                   "./settings/Calib/source.hypcam"
+    //#define _PATH_LIMIT_S                   "./settings/Calib/sourceHalogen.hypcam"
 
     #define _PATH_IMG_FILTERED              "./tmpImages/Filtered/"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
@@ -47,6 +48,7 @@
     #define _PATH_SNAPSHOT_APERTURE         "./tmpImages/snapAperture.png"
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
+    #define _PATH_IMG_SENSIBILITIES         "./tmpImages/sensibilities.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
 
     #define _PATH_REMOTE_SNAPSHOT           "./tmpSnapshots/tmpImg.RGB888"

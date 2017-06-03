@@ -21,6 +21,9 @@
 #include <iostream>
 #include <fstream>
 
+#include <QRect>
+#include <lstStructs.h>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -286,6 +289,14 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
     }
     xmlReader->clear();
     xmlFile->close();
+
+
+    cameraResolution camRes;
+    camRes.width = doubAxisCal->W;
+    camRes.height = doubAxisCal->H;
+    QPoint Corner = getSquareCorner(&camRes);
+    doubAxisCal->cornerX = Corner.x();
+    doubAxisCal->cornerY = Corner.y();
 
     return true;
 }
@@ -593,8 +604,15 @@ int fileIsValid(QString fileContain)
 
 QString readFileParam(QString fileName){
     QString tmpFileContain = readAllFile(fileName);
-    tmpFileContain = tmpFileContain.trimmed();
-    tmpFileContain.replace("\n","");
+    if( !fileIsValid(tmpFileContain) )
+    {
+        return tmpFileContain;
+    }
+    else
+    {
+        tmpFileContain = tmpFileContain.trimmed();
+        tmpFileContain.replace("\n","");
+    }
     return tmpFileContain;
 }
 
@@ -1051,7 +1069,9 @@ linearRegresion *funcCalcLinReg( float *X ){
 
 linearRegresion funcLinearRegression( double *X, double *Y, int numItems ){
 
-    if(false)
+    bool print = false;
+
+    if(print)
     {
         for(int i=0; i<numItems; i++)
         {
@@ -1081,11 +1101,16 @@ linearRegresion funcLinearRegression( double *X, double *Y, int numItems ){
     linReg.b   = aux1 / aux2;
     linReg.a   = mY-(linReg.b*mX);
 
-    //printf("linReg->b: %lf \n",linReg->b);
-    //printf("aux1: %lf \n",aux1);
-    //printf("aux2: %lf \n",aux2);
-    //printf("mX: %lf \n",mX);
-    //printf("mY: %lf \n",mY);
+    if( print )
+    {
+        printf("linReg->a: %lf \n",linReg.a);
+        printf("linReg->b: %lf \n",linReg.b);
+        printf("aux1: %lf \n",aux1);
+        printf("aux2: %lf \n",aux2);
+        printf("mX: %lf \n",mX);
+        printf("mY: %lf \n",mY);
+        exit(0);
+    }
 
     //
     return linReg;
@@ -1254,39 +1279,65 @@ int funcAccountFilesInDir(QString Dir)
 
 void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
 {
-    //int offsetX, offsetY;
-    int origX, origY;
+    //
+    // Calculate the distance respect to the left-top corner
+    // in order to return the shifted position
+    //    
+    int numPixToCornerX = diffProj->x - daCalib->cornerX;
+    int numPixToCornerY = diffProj->y - daCalib->cornerY;
+    //qDebug() << "leftTopConerX: " << leftTopConer.x();
+    //qDebug() << "leftTopConerY: " << leftTopConer.y();
 
-    origX   = diffProj->x + daCalib->squareUsableX;
-    origY   = diffProj->y + daCalib->squareUsableY;
-    //offsetX = abs( daCalib->squareUsableX - origX );
-    //offsetY = abs( daCalib->squareUsableY - origY );
+    //
+    // Calculates the second order expected position in order to
+    // calculate the rotation for that point
+    //
+    //Y uses Horizontal and X uses Vertical
+    int diffLenSecondOrderX, diffLenSecondOrderY;
+    diffLenSecondOrderX = floor(daCalib->LR.waveVertA   + (daCalib->LR.waveVertB * diffProj->wavelength));
+    diffLenSecondOrderY = floor(daCalib->LR.waveHorizA    + (daCalib->LR.waveHorizB * diffProj->wavelength));
 
-    //It calculates the jump
-    int jumpX, jumpY;
-    jumpX = floor(daCalib->LR.waveHorizA + (daCalib->LR.waveHorizB * diffProj->wavelength));
-    jumpY = floor(daCalib->LR.waveVertA + (daCalib->LR.waveVertB * diffProj->wavelength));
+
+    //
+    //Calculates the point for the left-top corner after rotate this
+    //
 
     //Right
-    diffProj->ry = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX + jumpX))) + diffProj->y;
+    diffProj->rx    = diffProj->x + diffLenSecondOrderX;
+    diffProj->ry    = round(daCalib->LR.horizA  + (daCalib->LR.horizB  * (double)diffProj->rx)) + numPixToCornerY;
 
     //Left
-    diffProj->ly = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)(origX - jumpX))) + diffProj->y;
+    diffProj->lx    = diffProj->x - diffLenSecondOrderX;
+    diffProj->ly    = round(daCalib->LR.horizA  + (daCalib->LR.horizB  * (double)diffProj->lx)) + numPixToCornerY;
 
     //Up
-    diffProj->ux = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY-jumpY)) ) + diffProj->x;
+    diffProj->uy    = diffProj->y - diffLenSecondOrderY;
+    diffProj->ux    = round(daCalib->LR.vertA  + (daCalib->LR.vertB  * (double)diffProj->uy)) + numPixToCornerX;
 
     //Down
-    diffProj->dx = floor( daCalib->LR.vertA + ( daCalib->LR.vertB * (double)(origY+jumpY)) ) + diffProj->x;
+    diffProj->dy    = diffProj->y + diffLenSecondOrderY;
+    diffProj->dx    = round(daCalib->LR.vertA  + (daCalib->LR.vertB  * (double)diffProj->dy)) + numPixToCornerX;
 
-    //Fits the original "y"
-    diffProj->y  = floor(daCalib->LR.horizA + (daCalib->LR.horizB * (double)origX)) + diffProj->y;
-    diffProj->x  = floor(daCalib->LR.vertA + (daCalib->LR.vertB * (double)origY)) + diffProj->x;
+    /*
+    qDebug() << " ";
+    qDebug() << "Punto obtenido: ";
+    qDebug() << "diffProj->x: " << diffProj->x;
+    qDebug() << "diffProj->y: " << diffProj->y;
+    qDebug() << "numPixToCornerX: " << numPixToCornerX;
+    qDebug() << "numPixToCornerXY: " << numPixToCornerY;
+    qDebug() << "diffLenSecondOrderX: " << diffLenSecondOrderX;
+    qDebug() << "diffLenSecondOrderY: " << diffLenSecondOrderY;
+    qDebug() << "diffProj->ux: " << diffProj->ux;
+    qDebug() << "diffProj->uy: " << diffProj->uy;*/
 
-    diffProj->rx = diffProj->x + jumpX;
-    diffProj->lx = diffProj->x - jumpX;
-    diffProj->uy = diffProj->y - jumpY;
-    diffProj->dy = diffProj->y + jumpY;
+    //exit(0);
+
+    /*
+    //Down
+    tmpPixSecondOrderY  = diffFirstOrderY - diffLenghtSecondOrderY;
+    diffProj->dx        = round(daCalib->LR.vertA  + (daCalib->LR.vertB  * (double)tmpPixSecondOrderY));
+    diffProj->dy        = tmpPixSecondOrderY;*/
+
 
 }
 
@@ -1309,3 +1360,66 @@ void funcClearDirFolder(QString path)
 
 
 
+QPoint getSquareCorner(cameraResolution* camRes){
+
+    QPoint corner;
+    corner.setX(-1);
+    corner.setY(-1);
+
+    //Square aperture
+    //..
+    squareAperture *sqApert = (squareAperture*)malloc(sizeof(squareAperture));
+    //if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
+    if( rectangleInPixelsFromSquareXML(_PATH_SQUARE_APERTURE, sqApert, camRes) == 0 )
+    {
+        funcShowMsg("ERROR","Loading 02/Junio/2017 _PATH_SQUARE_APERTURE");
+        //mouseCursorReset();
+        return corner;
+    }
+
+
+    //Usable area
+    //..
+    squareAperture *sqSquareUsable = (squareAperture*)malloc(sizeof(squareAperture));
+    //if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
+    if( rectangleInPixelsFromSquareXML(_PATH_SQUARE_USABLE, sqSquareUsable,camRes) == 0 )
+    {
+        funcShowMsg("ERROR","Loading 02/Junio/2017 _PATH_SQUARE_USABLE");
+        //mouseCursorReset();
+        return corner;
+    }
+
+    //qDebug() << "sqApert->rectX: " << sqApert->rectX;
+    //qDebug() << "sqSquareUsable->rectX: " << sqSquareUsable->rectX;
+    corner.setX( sqApert->rectX - sqSquareUsable->rectX );
+    corner.setY( sqApert->rectY - sqSquareUsable->rectY );
+    return corner;
+
+}
+
+int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle, cameraResolution* camRes )
+{
+    //Get original rectangle properties
+    //qDebug() << "fileName: " << fileName;
+    if( funGetSquareXML( fileName, rectangle ) == false )
+    {
+        funcShowMsg("ERROR","Loading in pixels: "+fileName);
+        return 0;
+    }
+
+    //Translate coordinates into pixels
+    //qDebug() << "rectangle->rectX: " << rectangle->rectX;
+    //qDebug() << "rectangle->canvasW: " << rectangle->canvasW;
+    //qDebug() << "camRes->width: " << camRes->width;
+
+    rectangle->rectX = round( ((float)rectangle->rectX / (float)rectangle->canvasW) * (float)camRes->width );
+    rectangle->rectW = round( ((float)rectangle->rectW / (float)rectangle->canvasW) * (float)camRes->width );
+    rectangle->rectY = round( ((float)rectangle->rectY / (float)rectangle->canvasH) * (float)camRes->height );
+    rectangle->rectH = round( ((float)rectangle->rectH / (float)rectangle->canvasH) * (float)camRes->height );
+
+    //qDebug() << "rectangle->rectX: " << rectangle->rectX;
+
+    //exit(0);
+
+    return 1;
+}

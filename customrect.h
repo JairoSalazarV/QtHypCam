@@ -19,7 +19,7 @@ class customRect : public QGraphicsRectItem
 public:
     customRectParameters parameters;
 
-    customRect(QPoint p1, QPoint p2);
+    customRect(QPoint p1, QPoint p2, GraphicsView *rectCanvas);
 
     bool saveSquareAs(QString fileName);
 

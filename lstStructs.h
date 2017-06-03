@@ -132,6 +132,8 @@
         float           maxWavelength;
         int             maxNumBands;
         double          minSpecRes;
+        int             cornerX;
+        int             cornerY;
         strAllLinReg    LR;
         QList<double>   Sr;
         QList<double>   Sg;

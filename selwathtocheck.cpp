@@ -12,6 +12,8 @@
 
 #include <QVector2D>
 
+#include <mainwindow.h>
+
 //#include <gencalibxml.h>
 
 GraphicsView *globalGvValCal;
@@ -19,11 +21,18 @@ GraphicsView *globalGvValCal;
 lstDoubleAxisCalibration doubAxisCalib;
 lstDoubleAxisCalibration *daCalib;
 
+MainWindow* selWhatToCheckParent;
+
+cameraResolution* selWhatToCheckcamRes;
+
 selWathToCheck::selWathToCheck(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::selWathToCheck)
 {
     ui->setupUi(this);
+
+    selWhatToCheckParent = qobject_cast<MainWindow*>(parent);
+    selWhatToCheckcamRes = selWhatToCheckParent->getCamRes();
 
     fillLabelImg(_PATH_DISPLAY_IMAGE);
 
@@ -45,7 +54,8 @@ selWathToCheck::~selWathToCheck()
 void selWathToCheck::showSqUsable(int x, int y, int w, int h , Qt::GlobalColor color)
 {
     showGV();
-    customRect *tmpRect = new customRect(QPoint(x,y),QPoint(w,h));
+    //GraphicsView* canvasCalib = selWhatToCheckParent->getCanvasRect();
+    customRect *tmpRect = new customRect(QPoint(x,y),QPoint(w,h),globalGvValCal);
     tmpRect->parameters.W = globalGvValCal->sceneRect().width();
     tmpRect->parameters.H = globalGvValCal->sceneRect().height();
     tmpRect->setPen(QPen(color));
@@ -157,48 +167,73 @@ void selWathToCheck::showWavelengthSimulation()
 
     //Display the areas usable an the correspondign reflected area for selected wavelenght
     //..
-    int x, y, iniHoriz, endHoriz, iniVert, endVert;
+    int x, y, x1, y1, x2, y2;
     //y = daCalib->squareUsableY;
 
     QImage tmpImg( _PATH_DISPLAY_IMAGE );
 
+    //Fixing coordinates
+    x1 = daCalib->squareX - daCalib->squareUsableX;
+    x2 = x1 + daCalib->squareW;
+    y1 = (daCalib->squareY - daCalib->squareUsableY);
+    y2 = y1 + daCalib->squareH;
+
+    /*
+    x1 = 150;
+    x2 = x1 + daCalib->squareW;
+    y1 = 200;
+    y2 = y1 + daCalib->squareH;*/
+
+    qDebug() << "daCalib->squareX: " << daCalib->squareX;
+    qDebug() << "daCalib->squareUsableX: " << daCalib->squareUsableX;
+    qDebug() << "daCalib->squareY: " << daCalib->squareY;
+    qDebug() << "daCalib->squareUsableY: " << daCalib->squareUsableY;
+    qDebug() << "(" << x1 << ", " << y1 << ")";
+    qDebug() << "(" << x2 << ", " << y2 << ")";
+
+
+
     //Horizontales
-    for(x=1;x<=daCalib->squareW;x++)
+    for(x=x1;x<=x2;x++)
     {
         //Horizontal
+
         diffProj.x = x;
-        diffProj.y = daCalib->squareY;//Row 1
-        calcDiffProj( &diffProj, daCalib );              
+        diffProj.y = y1;//Row 1
+
+        calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
 
+
         diffProj.x = x;
-        diffProj.y = daCalib->squareX + daCalib->squareH;//row h
+        diffProj.y = y2;//Row 2
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
 
     }
+    //return (void)false;
 
 
     //Verticales
     //x = daCalib->squareUsableX;
-    for(y=1;y<=daCalib->squareH;y++)
+    for(y=y1;y<=y2;y++)
     {
         //Horizontal
-        diffProj.x = 1;//Column 1
+        diffProj.x = x1;//Column 1
         diffProj.y = y;
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
 
-        diffProj.x = daCalib->squareW;
+        diffProj.x = x2;//Column 1
         diffProj.y = y;
         calcDiffProj( &diffProj, daCalib );
         drawDiffProj( &diffProj );
         drawDiffProjIntoImage(&tmpImg,&diffProj);
-
     }
+
 
     tmpImg.save(_PATH_AUX_IMG);
 
@@ -394,6 +429,7 @@ void selWathToCheck::drawLinearRegression(bool horizontal){
         {
            x = floor( a + (b*y) );
            globalGvValCal->scene()->addEllipse((qreal)x,(qreal)y,1,1,QPen(Qt::cyan));
+           //qDebug() << "x = a + (b*y) | " << x << "= " << a << " + (" << b << " * " << y << ")";
         }
     }
 }
@@ -510,7 +546,7 @@ void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color, QImage *i
         fileContain = readAllFile(_PATH_CALIB + file + ".hypcam");
     }
     if( fileContain.contains(_ERROR_FILE_NOTEXISTS) || fileContain.contains(_ERROR_FILE) ){
-        qDebug() << fileContain;
+        qDebug() << "ERROR reading: " << fileContain;
         return (void)NULL;
     }
 

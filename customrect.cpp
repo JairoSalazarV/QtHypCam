@@ -6,9 +6,12 @@
 
 #include <showancalchrres.h>
 
-customRect::customRect(QPoint p1, QPoint p2)
+customRect::customRect(QPoint p1, QPoint p2, GraphicsView *rectCanvas)
 {
     setRect(p1.x(),p1.y(),p2.x(),p2.y());
+    this->parameters.W = rectCanvas->width();
+    this->parameters.H = rectCanvas->height();
+    this->parameters.canvas = rectCanvas;
     //this->parameters.x = p1.x();
     //this->parameters.y = p1.y();
     //this->parameters.w = abs(p1.x()-p2.x());
@@ -114,9 +117,21 @@ void customRect::keyPressEvent(QKeyEvent *event){
 void customRect::refreshTooltip(){
     QString tt;
     qreal x,y,w,h;
+
     this->rect().getRect(&x,&y,&w,&h);
-    tt.append("(" + QString::number(x) + ", " + QString::number(y) + "):");
-    tt.append("(" + QString::number(w)+ ", " + QString::number(h) + ")");
+
+    QImage bkg( _PATH_DISPLAY_IMAGE );
+
+    int pixX, pixY;
+    pixX = round(((float)x/(float)this->parameters.W)*(float)bkg.width());
+    pixY = round(((float)y/(float)this->parameters.H)*(float)bkg.height());
+
+    tt.append("Canvas(" + QString::number(this->parameters.W) + ", " + QString::number(this->parameters.H) + ") ");
+
+    tt.append("Rect(" + QString::number(x) + ", " + QString::number(y) + ", " + QString::number(w)+ ", " + QString::number(h) + ") ");
+
+    tt.append("Pix(" + QString::number(pixX) + ", " + QString::number(pixY) + ") ");
+
     this->setToolTip(tt);
 }
 

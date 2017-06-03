@@ -21,9 +21,11 @@ public:
 
     lstCalibFileNames fillLstCalibPoints();
 
-    strAllLinReg calcAllLinReg(lstCalibFileNames *centroids, int x1, int y1);
+    strAllLinReg calcAllLinReg(lstCalibFileNames *centroids);
 
     strAllLinReg getAllLR();
+
+    //QPoint squareCorner();
 
     strLimits getLimitsFromHDD();
 

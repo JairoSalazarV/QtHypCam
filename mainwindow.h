@@ -57,7 +57,7 @@ public slots:
 
     void processFrame(QVideoFrame actualFrame);
 
-    int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
+    //int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
 
     void mouseCursorHand();
 
@@ -67,6 +67,7 @@ public slots:
 
     void mouseCursorReset();
 
+    GraphicsView* getCanvasRect();
 
 
 private slots:    
@@ -470,6 +471,8 @@ private slots:
     QString funcRemoveImageExtension( QString imgName );
 
     void on_pbOneShotSnapshot_clicked();
+
+    //QPoint squareCorner();
 
 private:
     Ui::MainWindow *ui;

@@ -300,6 +300,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+GraphicsView* MainWindow::getCanvasRect()
+{
+    return canvasCalib;
+}
+
 void MainWindow::disableAllToolBars(){
     ui->toolBarDraw->setVisible(false);
 }
@@ -2385,7 +2390,7 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     QPoint p1, p2;
     p1.setX(x1);   p1.setY(y1);
     p2.setX(w);    p2.setY(h);
-    customRect* tmpRect = new customRect(p1,p2);
+    customRect* tmpRect = new customRect(p1,p2,canvasCalib);
     tmpRect->mapToScene(p1.x(),p1.y(),p2.x(),p2.y());
     //customRect* tmpRect = new customRect(this);
     tmpRect->parameters.W = canvasCalib->scene()->width();
@@ -3450,7 +3455,7 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
     QPoint p2(w,h);
-    customRect *tmpRect = new customRect(p1,p2);
+    customRect *tmpRect = new customRect(p1,p2,canvasCalib);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -3478,7 +3483,7 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
     QPoint p2(w,h);
-    customRect *tmpRect = new customRect(p1,p2);
+    customRect *tmpRect = new customRect(p1,p2,canvasCalib);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -3499,10 +3504,10 @@ int MainWindow::funcDrawRectangleFromXML(QString fileName)
     //Draw a rectangle of the square aperture
     QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
     QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
-    customRect *tmpRect = new customRect(p1,p2);
+    customRect *tmpRect = new customRect(p1,p2,canvasCalib);
     tmpRect->setPen(QPen(Qt::red));
-    tmpRect->parameters.W = canvasCalib->width();
-    tmpRect->parameters.H = canvasCalib->height();
+    //tmpRect->parameters.W = canvasCalib->width();
+    //tmpRect->parameters.H = canvasCalib->height();
 
     canvasCalib->scene()->addItem(tmpRect);
     canvasCalib->update();
@@ -3912,8 +3917,8 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     lstChoises  = getWavesChoised();
     funcGetCalibration(&daCalib);
 
-    hypW        = daCalib.squareUsableW;
-    hypH        = daCalib.squareUsableH;
+    hypW        = daCalib.squareW;
+    hypH        = daCalib.squareH;
     hypL        = lstChoises.count();
     N           = hypW * hypH * hypL;//Voxels
 
@@ -3924,7 +3929,7 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
 
     //Demosaicing hypercube
     //..
-    if(true)
+    if(false)
     {
         if(false)
         {
@@ -4416,8 +4421,8 @@ double *MainWindow::calculatesF(int numIterations, int sensor, lstDoubleAxisCali
     int **Hrow;
 
     lstChoises  = getWavesChoised();
-    hypW        = daCalib->squareUsableW;
-    hypH        = daCalib->squareUsableH;
+    hypW        = daCalib->squareW;
+    hypH        = daCalib->squareH;
     hypL        = lstChoises.count();
     N           = hypW * hypH * hypL;//Voxels
 
@@ -4569,33 +4574,60 @@ double *MainWindow::serializeImageToProccess(QImage img, int sensor)
 
 void MainWindow::createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDoubleAxisCalibration *daCalib )
 {
+    //--------------------------------------
     //Prepares variables and constants
-    //..
+    //--------------------------------------
     int hypW, hypH, hypL, idVoxel;
     QList<double> lstChoises;
     strDiffProj Pj;
     lstChoises  = getWavesChoised();
-    hypW        = daCalib->squareUsableW;
-    hypH        = daCalib->squareUsableH;
+    hypW        = daCalib->squareW;
+    hypH        = daCalib->squareH;
     hypL        = lstChoises.count();
 
+    //--------------------------------------
+    // Prepare square area
+    //--------------------------------------
+    camRes = getCamRes();
+    //QPoint leftTopConer = getSquareCorner(camRes);
+    int squareEndW, squareEndH;
+    //squareEndW = leftTopConer.x() + daCalib->squareW;
+    //squareEndH = leftTopConer.y() + daCalib->squareH;
+
+    //qDebug() << "leftTopConer.x(): " << leftTopConer.x();
+    //qDebug() << "leftTopConer.y(): " << leftTopConer.y();
+    //qDebug() << "squareEndW: " << squareEndW;
+    //qDebug() << "squareEndH: " << squareEndH;
+
+
+    //qDebug() << "dentroH";
     //Fill Hcol
     //..
     idVoxel = 0;
     for(int len=1; len<=hypL; len++)
     {
         Pj.wavelength = lstChoises.at(len-1);
-        for(int row=1; row<=hypH; row++)
+        //qDebug() << "Pj.wavelength: " << Pj.wavelength;
+        for(int row=daCalib->cornerY; row<=daCalib->cornerY+daCalib->squareH; row++)
         {
-            for(int col=1; col<=hypW; col++)
+            for(int col=daCalib->cornerX; col<=daCalib->cornerX+daCalib->squareW; col++)
             {
                 //Obtain diffraction projection for the acutual wavelength
                 Pj.x = col;
                 Pj.y = row;
+                //qDebug() << "Pj.x: " << Pj.x;
+                //qDebug() << "Pj.y: " << Pj.y;
                 calcDiffProj(&Pj,daCalib);
+                //qDebug() << "Pj.x: " << Pj.x;
+                //qDebug() << "Pj.y: " << Pj.y;
+                //qDebug() << "Pj.rx: " << Pj.rx;
+                //qDebug() << "Pj.ry: " << Pj.ry;
+                //exit(0);
+
                 //Creates a new item in the c-th Hcol
                 Hcol[idVoxel][0].x      = Pj.x;//Zero
                 Hcol[idVoxel][0].y      = Pj.y;
+
                 Hcol[idVoxel][0].index  = xyToIndex( Hcol[idVoxel][0].x, Hcol[idVoxel][0].y, img->width() );
 
                 Hcol[idVoxel][1].x      = Pj.rx;//Right
@@ -4620,10 +4652,10 @@ void MainWindow::createsHColAndHrow(pixel **Hcol, int **Hrow, QImage *img, lstDo
                 insertItemIntoRow(Hrow,Hcol[idVoxel][2].index,idVoxel);
                 insertItemIntoRow(Hrow,Hcol[idVoxel][3].index,idVoxel);
                 insertItemIntoRow(Hrow,Hcol[idVoxel][4].index,idVoxel);
-
                 idVoxel++;
             }
         }
+        //qDebug() << "len: " << len;
     }
 }
 
@@ -6249,7 +6281,7 @@ void MainWindow::processFrame(QVideoFrame actualFrame)
         qDebug() << "Error saving frame " << numFrames;
     }
 }
-
+/*
 int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle )
 {
     //Get original rectangle properties
@@ -6261,14 +6293,19 @@ int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture
     }
 
     //Translate coordinates into pixels
+    //qDebug() << "rectangle->rectX: " << rectangle->rectX;
+    //qDebug() << "rectangle->canvasW: " << rectangle->canvasW;
+    //qDebug() << "camRes->width: " << camRes->width;
+
     rectangle->rectX = round( ((float)rectangle->rectX / (float)rectangle->canvasW) * (float)camRes->width );
     rectangle->rectW = round( ((float)rectangle->rectW / (float)rectangle->canvasW) * (float)camRes->width );
     rectangle->rectY = round( ((float)rectangle->rectY / (float)rectangle->canvasH) * (float)camRes->height );
     rectangle->rectH = round( ((float)rectangle->rectH / (float)rectangle->canvasH) * (float)camRes->height );
 
+    //qDebug() << "rectangle->rectXDespues: " << rectangle->rectX;
 
     return 1;
-}
+}*/
 
 int MainWindow::createSubimageRemotelly(bool squareArea )
 {
@@ -6471,7 +6508,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                     //
                     //Get square aperture coordinates
                     squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, aperture ) )
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, aperture, camRes ) )
                     {
                         funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
                         return (void)false;
@@ -6493,7 +6530,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                     //
                     //Get usable area coordinates
                     memset(aperture,'\0',sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture, camRes ) )
                     {
                         funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
                         return (void)false;
@@ -6594,7 +6631,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
             //Get usable area coordinates
             squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
             memset(aperture,'\0',sizeof(squareAperture));
-            if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+            if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture, camRes ) )
             {
                 funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
                 return (void)false;
@@ -6610,3 +6647,6 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
 
     mouseCursorReset();
 }
+
+
+
