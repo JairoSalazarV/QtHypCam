@@ -1256,6 +1256,9 @@ void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
 
     origX   = diffProj->x + daCalib->squareUsableX;
     origY   = diffProj->y + daCalib->squareUsableY;
+
+
+
     //offsetX = abs( daCalib->squareUsableX - origX );
     //offsetY = abs( daCalib->squareUsableY - origY );
 

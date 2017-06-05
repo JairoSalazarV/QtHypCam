@@ -262,7 +262,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     //Enable-Disable buttoms
     //..
-    ui->toolBarDraw->setEnabled(false);
+    //ui->toolBarDraw->setEnabled(false);
 
     ui->progBar->setValue(0);
     ui->progBar->setVisible(false);
@@ -301,7 +301,7 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::disableAllToolBars(){
-    ui->toolBarDraw->setVisible(false);
+    //ui->toolBarDraw->setVisible(false);
 }
 
 void MainWindow::funcSpectMouseRelease( QMouseEvent *e){
@@ -1452,7 +1452,7 @@ bool MainWindow::funcUpdateVideo( unsigned int msSleep, int sec2Stab ){
     //Define photo's region
     //..
     //QString tmpSquare2Load = (ui->cbPreview->isChecked())?_PATH_REGION_OF_INTERES:_PATH_SQUARE_APERTURE;
-    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, &reqImg->sqApSett ) ){
+    if( !funGetSquareXML( _PATH_SQUARE_APERTURE2, &reqImg->sqApSett ) ){
         funcShowMsg("ERROR","Loading squareAperture.xml");
         return false;
     }
@@ -3436,7 +3436,7 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
 {
     //Obtaining square aperture params
     squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, tmpSqAperture ) ){
+    if( !funGetSquareXML( _PATH_SQUARE_APERTURE2, tmpSqAperture ) ){
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return (void)false;
     }
@@ -3463,17 +3463,18 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
 void MainWindow::on_actionLoadRegOfInteres_triggered()
 {
     //Obtaining square aperture params
-    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_SQUARE_USABLE, tmpSqAperture ) ){
+    squareAperture* squareDiff = (squareAperture*)malloc(sizeof(squareAperture));
+    //if( !funGetSquareXML( _PATH_SQUARE_USABLE, squareDiff ) ){
+    if( !funGetSquareXML( _PATH_REGION_OF_INTERES2, squareDiff ) ){
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return (void)false;
     }
 
     int x, y, w, h;
-    x = round(((float)tmpSqAperture->rectX / (float)tmpSqAperture->canvasW) * (float)canvasCalib->scene()->width());
-    y = round(((float)tmpSqAperture->rectY / (float)tmpSqAperture->canvasH) * (float)canvasCalib->scene()->height());
-    w = round(((float)tmpSqAperture->rectW / (float)tmpSqAperture->canvasW) * (float)canvasCalib->scene()->width());
-    h = round(((float)tmpSqAperture->rectH / (float)tmpSqAperture->canvasH) * (float)canvasCalib->scene()->height());
+    x = round(((float)squareDiff->rectX / (float)squareDiff->canvasW) * (float)canvasCalib->scene()->width());
+    y = round(((float)squareDiff->rectY / (float)squareDiff->canvasH) * (float)canvasCalib->scene()->height());
+    w = round(((float)squareDiff->rectW / (float)squareDiff->canvasW) * (float)canvasCalib->scene()->width());
+    h = round(((float)squareDiff->rectH / (float)squareDiff->canvasH) * (float)canvasCalib->scene()->height());
 
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
@@ -4673,7 +4674,7 @@ void MainWindow::on_actionSquareUsable_triggered()
     //Region of interes
     //..
     squareAperture *rectSquare = (squareAperture*)malloc(sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_SQUARE_APERTURE, rectSquare ) )
+    if( !funGetSquareXML( _PATH_SQUARE_USABLE, rectSquare ) )
     {
         funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
         return (void)false;
@@ -6470,7 +6471,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                     //
                     //Get square aperture coordinates
                     squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, aperture ) )
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE2, aperture ) )
                     {
                         funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
                         return (void)false;
@@ -6492,7 +6493,8 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                     //
                     //Get usable area coordinates
                     memset(aperture,'\0',sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+                    //if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE2, aperture ) )
                     {
                         funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
                         return (void)false;
@@ -6593,7 +6595,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
             //Get usable area coordinates
             squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
             memset(aperture,'\0',sizeof(squareAperture));
-            if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES, aperture ) )
+            if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES2, aperture ) )
             {
                 funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_REGION_OF_INTERES");
                 return (void)false;

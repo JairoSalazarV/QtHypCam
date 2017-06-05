@@ -558,7 +558,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //Region of interes
         //..
         squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
+        if( !funGetSquareXML( _PATH_REGION_OF_INTERES2, regOfInteres ) )
         {
             funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
             return (void)false;
@@ -572,7 +572,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //Square aperture
         //..
         squareAperture *sqApert = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
+        if( !funGetSquareXML( _PATH_SQUARE_APERTURE2, sqApert ) )
         {
             funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
             return (void)false;
@@ -590,9 +590,10 @@ void genCalibXML::on_pbGenCal_clicked()
         auxSqX -= auxBigX;
         auxSqY -= auxBigY;
 
-        //Usable area
+        //Square usable
         //..
         squareAperture *sqUsable = (squareAperture*)malloc(sizeof(squareAperture));
+        //if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
         if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
         {
             funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
@@ -972,7 +973,8 @@ QVector2D genCalibXML::getSqUsableIni(){
     //Region of interes
     //..
     squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_SQUARE_USABLE, regOfInteres ) )
+    //if( !funGetSquareXML( _PATH_SQUARE_USABLE, regOfInteres ) )
+    if( !funGetSquareXML( _PATH_REGION_OF_INTERES2, regOfInteres ) )
     {
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return result;
@@ -984,6 +986,7 @@ QVector2D genCalibXML::getSqUsableIni(){
     //Usable area
     //..
     squareAperture *sqUsable = (squareAperture*)malloc(sizeof(squareAperture));
+    //if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
     if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
     {
         funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
