@@ -114,7 +114,7 @@ private slots:
 
     //void on_slideShuterSpeed_valueChanged(int value);
 
-    //void on_slideISO_valueChanged(int value);
+    void on_slideISO_valueChanged(int value);
 
     //void on_slideExpComp_valueChanged(int value);
 
@@ -458,6 +458,7 @@ private slots:
     //void on_pbSnapshot_2_clicked();
 
     int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
+    int rectangleInPixelsFromSquareXML( QString fileName, QString respectTo, squareAperture *rectangle );
 
     int createSubimageRemotelly(bool squareArea);
 
@@ -470,6 +471,8 @@ private slots:
     QString funcRemoveImageExtension( QString imgName );
 
     void on_pbOneShotSnapshot_clicked();
+
+    void on_actionsquareSettings_triggered();
 
 private:
     Ui::MainWindow *ui;

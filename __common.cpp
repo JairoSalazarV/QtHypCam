@@ -982,7 +982,7 @@ int funcShowMsgYesNo( QString title, QString msg ){
             break;
         }
     }
-    return 0;
+    return -1;
 }
 
 
@@ -1307,5 +1307,16 @@ void funcClearDirFolder(QString path)
     }
 }
 
-
+int funcPrintRectangle(QString title, squareAperture* rectangle)
+{
+    qDebug() << "";
+    qDebug() << title;
+    qDebug() << "W: " << rectangle->canvasW;
+    qDebug() << "H: " << rectangle->canvasH;
+    qDebug() << "x: " << rectangle->rectX;
+    qDebug() << "y: " << rectangle->rectY;
+    qDebug() << "w: " << rectangle->rectW;
+    qDebug() << "h: " << rectangle->rectH;
+    return 1;
+}
 

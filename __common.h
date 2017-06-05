@@ -97,6 +97,8 @@
 
     void funcClearDirFolder(QString path);
 
+    int funcPrintRectangle(QString title, squareAperture *rectangle);
+
     void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
 
     QString timeToQString(unsigned int totMilli);

@@ -276,6 +276,8 @@ void GraphicsView::funcDisplayPixelProperties(QMouseEvent *e)
     //..
     QString tmpProp;
     QPointF tmpPoint = this->mapToScene(e->pos().x(),e->pos().y());
+    tmpProp.append("CanvasW: "+QString::number(this->scene()->width())+"\n");
+    tmpProp.append("CanvasH: "+QString::number(this->scene()->height())+"\n");
     tmpProp.append("x: "+QString::number(tmpPoint.x())+"\n");
     tmpProp.append("y: "+QString::number(tmpPoint.y())+"\n");
     //Show point

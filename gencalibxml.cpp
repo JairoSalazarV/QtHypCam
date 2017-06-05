@@ -81,6 +81,7 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
     lstCalibFileNames calibFileNames;
 
     calibFileNames.source           = "./settings/Calib/source.hypcam";
+    calibFileNames.sourceHalogen    = "./settings/Calib/sourceHalogen.hypcam";
 
     calibFileNames.blueRightDown    = "./settings/Calib/bRD.hypcam";
     calibFileNames.blueRight        = "./settings/Calib/bR.hypcam";
@@ -109,6 +110,12 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
     calibFileNames.redLeftDown      = "./settings/Calib/rLD.hypcam";
     calibFileNames.redDown          = "./settings/Calib/rD.hypcam";
 
+    calibFileNames.limR             = "./settings/Calib/limR.hypcam";
+    calibFileNames.limU             = "./settings/Calib/limU.hypcam";
+    calibFileNames.limL             = "./settings/Calib/limL.hypcam";
+    calibFileNames.limD             = "./settings/Calib/limD.hypcam";
+
+
     return calibFileNames;
 
 }
@@ -122,6 +129,9 @@ void genCalibXML::autoLoadCentroids(){
     acum=0;
     //Source
     setButton(ui->pbSource,calibFileNames.source,false);
+    acum=setButton(ui->pbSource,calibFileNames.source,false)?++i:i;
+    setButton(ui->pbSourceHalogen,calibFileNames.sourceHalogen,false);
+    acum=setButton(ui->pbSourceHalogen,calibFileNames.sourceHalogen,false)?++i:i;
     //Blues
     setButton(ui->pbBlueRightDown,calibFileNames.blueRightDown,false);
     acum=setButton(ui->pbBlueRight,calibFileNames.blueRight,false)?++i:i;
@@ -149,8 +159,17 @@ void genCalibXML::autoLoadCentroids(){
     acum=setButton(ui->pbRedLeft,calibFileNames.redLeft,false)?++i:i;
     setButton(ui->pbRedLeftDown,calibFileNames.redLeftDown,false);
     acum=setButton(ui->pbRedDown,calibFileNames.redDown,false)?++i:i;
+    //Limits
+    setButton(ui->pbLimR,calibFileNames.limR,false);
+    acum=setButton(ui->pbLimR,calibFileNames.limR,false)?++i:i;
+    setButton(ui->pbLimU,calibFileNames.limU,false);
+    acum=setButton(ui->pbLimU,calibFileNames.limU,false)?++i:i;
+    setButton(ui->pbLimL,calibFileNames.limL,false);
+    acum=setButton(ui->pbLimL,calibFileNames.limL,false)?++i:i;
+    setButton(ui->pbLimD,calibFileNames.limD,false);
+    acum=setButton(ui->pbLimD,calibFileNames.limD,false)?++i:i;
 
-    if(acum==12)
+    if(acum==(12+2+4))
     {
         isExportable = true;
     }
@@ -314,6 +333,10 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     offsetX                     = (double)x1 - centroids->source.split(",").at(0).toFloat(0);
     offsetY                     = (double)y1 - centroids->source.split(",").at(1).toFloat(0);
 
+    //qDebug() << "offsetX: " << offsetX;
+    //qDebug() << "offsetY: " << offsetY;
+
+
     //Horizontal
     //..
     pointsX[0] = offsetX + (double)centroids->redLeft.split(",").at(0).toInt(0);
@@ -338,27 +361,33 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
 
     //Vertical
     //..
-    pointsX[0] = offsetX + (double)centroids->redDown.split(",").at(1).toInt(0);
-    pointsX[1] = offsetX + (double)centroids->greenDown.split(",").at(1).toInt(0);
-    pointsX[2] = offsetX + (double)centroids->blueDown.split(",").at(1).toInt(0);
-    pointsX[3] = offsetX + (double)centroids->source.split(",").at(1).toInt(0);
-    pointsX[4] = offsetX + (double)centroids->redUp.split(",").at(1).toInt(0);
-    pointsX[5] = offsetX + (double)centroids->greenUp.split(",").at(1).toInt(0);
-    pointsX[6] = offsetX + (double)centroids->blueUp.split(",").at(1).toInt(0);
+    pointsX[0] = offsetY + (double)centroids->redDown.split(",").at(1).toInt(0);
+    pointsX[1] = offsetY + (double)centroids->greenDown.split(",").at(1).toInt(0);
+    pointsX[2] = offsetY + (double)centroids->blueDown.split(",").at(1).toInt(0);
+    pointsX[3] = offsetY + (double)centroids->source.split(",").at(1).toInt(0);
+    pointsX[4] = offsetY + (double)centroids->redUp.split(",").at(1).toInt(0);
+    pointsX[5] = offsetY + (double)centroids->greenUp.split(",").at(1).toInt(0);
+    pointsX[6] = offsetY + (double)centroids->blueUp.split(",").at(1).toInt(0);
 
-    pointsY[0] = offsetY + (double)centroids->redDown.split(",").at(0).toInt(0);
-    pointsY[1] = offsetY + (double)centroids->greenDown.split(",").at(0).toInt(0);
-    pointsY[2] = offsetY + (double)centroids->blueDown.split(",").at(0).toInt(0);
-    pointsY[3] = offsetY + (double)centroids->source.split(",").at(0).toInt(0);
-    pointsY[4] = offsetY + (double)centroids->redUp.split(",").at(0).toInt(0);
-    pointsY[5] = offsetY + (double)centroids->greenUp.split(",").at(0).toInt(0);
-    pointsY[6] = offsetY + (double)centroids->blueUp.split(",").at(0).toInt(0);
+    pointsY[0] = offsetX + (double)centroids->redDown.split(",").at(0).toInt(0);
+    pointsY[1] = offsetX + (double)centroids->greenDown.split(",").at(0).toInt(0);
+    pointsY[2] = offsetX + (double)centroids->blueDown.split(",").at(0).toInt(0);
+    pointsY[3] = offsetX + (double)centroids->source.split(",").at(0).toInt(0);
+    pointsY[4] = offsetX + (double)centroids->redUp.split(",").at(0).toInt(0);
+    pointsY[5] = offsetX + (double)centroids->greenUp.split(",").at(0).toInt(0);
+    pointsY[6] = offsetX + (double)centroids->blueUp.split(",").at(0).toInt(0);
     linearRegresion verB = funcLinearRegression( pointsX, pointsY, 7 );
     linRegRes.vertA = verB.a;
     linRegRes.vertB = verB.b;
 
     //Wavelength horizontal
     //..
+    QString redWavelength, greenWavelength, blueWavelength;
+    redWavelength = readFileParam(_PATH_SETTINGS_RED_WAVELEN);
+    greenWavelength = readFileParam(_PATH_SETTINGS_GREEN_WAVELEN);
+    blueWavelength = readFileParam(_PATH_SETTINGS_BLUE_WAVELEN);
+
+
     double auxL, auxR, aux;
     aux  = centroids->source.split(",").at(0).toFloat(0);
     //Delta blue X
@@ -367,17 +396,17 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
 
 
     auxR = (double)fabs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
-    pointsX[0] = (double)_BLUE_WAVELENGHT;
+    pointsX[0] = blueWavelength.toDouble(0);
     pointsY[0] = (auxL+auxR) / 2.0;
     //Delta green X
     auxL = (double)fabs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
     auxR = (double)fabs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
-    pointsX[1] = (double)_GREEN_WAVELENGHT;
+    pointsX[1] = greenWavelength.toDouble(0);
     pointsY[1] = (auxL+auxR) / 2.0;
     //Delta red X
     auxL = (double)fabs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
     auxR = (double)fabs(aux - centroids->redRight.split(",").at(0).toFloat(0));
-    pointsX[2] = (double)_RED_WAVELENGHT;
+    pointsX[2] = redWavelength.toDouble(0);
     pointsY[2] = (auxL+auxR) / 2.0;
     //Delta source X
     pointsX[3] = 0.0;
@@ -393,17 +422,17 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //Delta blue X
     auxU        = (double)fabs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
     auxD        = (double)fabs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
-    pointsX[0]  = (double)_BLUE_WAVELENGHT;
+    pointsX[0]  = blueWavelength.toDouble(0);
     pointsY[0]  = (auxU+auxD) / 2.0;
     //Delta green X
     auxU        = (double)fabs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
     auxD        = (double)fabs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
-    pointsX[1]  = (double)_GREEN_WAVELENGHT;
+    pointsX[1]  = greenWavelength.toDouble(0);
     pointsY[1]  = (auxU+auxD) / 2.0;
     //Delta red X
     auxU        = (double)fabs(aux - centroids->redUp.split(",").at(1).toFloat(0));
     auxD        = (double)fabs(aux - centroids->redDown.split(",").at(1).toFloat(0));
-    pointsX[2]  = (double)_RED_WAVELENGHT;
+    pointsX[2]  = redWavelength.toDouble(0);
     pointsY[2]  = (auxU+auxD) / 2.0;
     //Delta source X
     pointsX[3]  = 0.0;
@@ -418,17 +447,17 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //Delta blue X
     auxL = (double)fabs(aux - centroids->blueLeft.split(",").at(0).toFloat(0));
     auxR = (double)fabs(aux - centroids->blueRight.split(",").at(0).toFloat(0));
-    pointsY[0] = (double)_BLUE_WAVELENGHT;
+    pointsY[0] = blueWavelength.toDouble(0);
     pointsX[0] = (auxL+auxR) / 2.0;
     //Delta green X
     auxL = (double)fabs(aux - centroids->greenLeft.split(",").at(0).toFloat(0));
     auxR = (double)fabs(aux - centroids->greenRight.split(",").at(0).toFloat(0));
-    pointsY[1] = (double)_GREEN_WAVELENGHT;
+    pointsY[1] = greenWavelength.toDouble(0);
     pointsX[1] = (auxL+auxR) / 2.0;
     //Delta red X
     auxL = (double)fabs(aux - centroids->redLeft.split(",").at(0).toFloat(0));
     auxR = (double)fabs(aux - centroids->redRight.split(",").at(0).toFloat(0));
-    pointsY[2] = (double)_RED_WAVELENGHT;
+    pointsY[2] = redWavelength.toDouble(0);
     pointsX[2] = (auxL+auxR) / 2.0;
     //Delta source X
     pointsX[3] = 0.0;
@@ -443,17 +472,17 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //Delta blue X
     auxU        = (double)fabs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
     auxD        = (double)fabs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
-    pointsY[0]  = (double)_BLUE_WAVELENGHT;
+    pointsY[0]  = blueWavelength.toDouble(0);;
     pointsX[0]  = (auxU+auxD) / 2.0;
     //Delta green X
     auxU        = (double)fabs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
     auxD        = (double)fabs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
-    pointsY[1]  = (double)_GREEN_WAVELENGHT;
+    pointsY[1]  = greenWavelength.toDouble(0);
     pointsX[1]  = (auxU+auxD) / 2.0;
     //Delta red X
     auxU        = (double)fabs(aux - centroids->redUp.split(",").at(1).toFloat(0));
     auxD        = (double)fabs(aux - centroids->redDown.split(",").at(1).toFloat(0));
-    pointsY[2]  = (double)_RED_WAVELENGHT;
+    pointsY[2]  = redWavelength.toDouble(0);
     pointsX[2]  = (auxU+auxD) / 2.0;
     //Delta source X
     pointsY[3]  = 0.0;
@@ -475,31 +504,31 @@ strLimits genCalibXML::getLimitsFromHDD(){
     QString aux;
     strLimits limits;
 
-    qDebug() << "Aquí711";
+    //qDebug() << "Aquí711";
     aux = readAllFile(_PATH_LIMIT_R);
     limits.rightInf = aux.split(",").at(2).toInt(0);
     limits.rightSup = aux.split(",").at(0).toInt(0);
 
-    qDebug() << "Aquí712";
+    //qDebug() << "Aquí712";
     aux = readAllFile(_PATH_LIMIT_U);
     limits.upInf = aux.split(",").at(2).toInt(0);
     limits.upSup = aux.split(",").at(0).toInt(0);
 
-    qDebug() << "Aquí713";
+    //qDebug() << "Aquí713";
     aux = readAllFile(_PATH_LIMIT_L);
     limits.leftInf = aux.split(",").at(2).toInt(0);
     limits.leftSup = aux.split(",").at(0).toInt(0);
 
-    qDebug() << "Aquí714";
+    //qDebug() << "Aquí714";
     aux = readAllFile(_PATH_LIMIT_D);
     limits.downInf = aux.split(",").at(2).toInt(0);
     limits.downSup = aux.split(",").at(0).toInt(0);
 
-    qDebug() << "Aquí715";
+    //qDebug() << "Aquí715";
     aux = readAllFile(_PATH_LIMIT_S);
     limits.sourceX = aux.split(",").at(0).toInt(0);
     limits.sourceY = aux.split(",").at(1).toInt(0);
-    qDebug() << "Aquí716";
+    //qDebug() << "Aquí716";
     return limits;
 
 }
@@ -507,9 +536,9 @@ strLimits genCalibXML::getLimitsFromHDD(){
 QVector2D genCalibXML::getWavelengthFrontiers()
 {
     QVector2D fontier;
-    qDebug() << "Aquí71";
+    //qDebug() << "Aquí71";
     strLimits limits = getLimitsFromHDD();
-    qDebug() << "Aquí72";
+    //qDebug() << "Aquí72";
     float waveRight, waveUp, waveLeft, waveDown;
     float waveLimInf, waveLimSup;
     strAllLinReg linRegRes = getAllLR();
@@ -517,7 +546,7 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     //It obtains direction of the final limit
     //..
     //Min
-    qDebug() << "Aquí73";
+    //qDebug() << "Aquí73";
     waveRight   = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.rightInf) );
     waveUp      = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.upInf) );
     waveLeft    = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.leftInf) );
@@ -526,7 +555,7 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     waveLimInf  = (waveLimInf > waveLeft)?waveLimInf:waveLeft;
     waveLimInf  = (waveLimInf > waveDown)?waveLimInf:waveDown;
     //Max
-    qDebug() << "Aquí74";
+    //qDebug() << "Aquí74";
     waveRight   = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.rightSup) );
     waveUp      = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.upSup) );
     waveLeft    = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.leftSup) );
@@ -534,7 +563,7 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     waveLimSup  = (waveRight < waveUp)?waveRight:waveUp;
     waveLimSup  = (waveLimSup < waveLeft)?waveLimSup:waveLeft;
     waveLimSup  = (waveLimSup < waveDown)?waveLimSup:waveDown;
-    qDebug() << "Aquí75";
+    //qDebug() << "Aquí75";
     //Set and return
     //..
     fontier.setX(waveLimInf);
@@ -614,7 +643,7 @@ void genCalibXML::on_pbGenCal_clicked()
 
         strAllLinReg linRegRes = getAllLR();
 
-        qDebug() << "Aquí7";
+        //qDebug() << "Aquí7";
         //Obtains limits from HDD
         //..
         QString minWavelength, maxWavelength;
@@ -622,7 +651,7 @@ void genCalibXML::on_pbGenCal_clicked()
         waveLim = getWavelengthFrontiers();
         minWavelength = QString::number(waveLim.x());
         maxWavelength = QString::number(waveLim.y());
-        qDebug() << "Aquí8";
+        //qDebug() << "Aquí8";
         //Square aperture as percentage
         //..
         double xs,ys,ws,hs;
@@ -630,7 +659,7 @@ void genCalibXML::on_pbGenCal_clicked()
         ys = (double)sqApert->rectY / (double)sqApert->canvasH;
         ws = (double)sqApert->rectW / (double)sqApert->canvasW;
         hs = (double)sqApert->rectH / (double)sqApert->canvasH;
-        qDebug() << "Aquí9";
+        //qDebug() << "Aquí9";
         //Calculate MIN num of bands
         //..
         QVector2D spectralResolution;
@@ -747,8 +776,8 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     //manage coordinates based on square aperture and apply a transformation
     //that moves the centroide's coordinates by applying LR.
     int offsetX, offsetY;
-    offsetX = 2;
-    offsetY = 5;
+    offsetX = 0;//2
+    offsetY = 0;//5
 
     //Get source centroide
     //..
@@ -1150,4 +1179,19 @@ void genCalibXML::on_pbFiles_clicked()
 {
     QDesktopServices::openUrl(QUrl(funcRemoveFileNameFromPath(_PATH_CALIBRATION_FILE)));
     this->close();
+}
+
+void genCalibXML::on_pbClearAll_clicked()
+{
+    if( funcShowMsgYesNo("Alert!!!, Confirmation required","Delete all calibration files?") == 1 )
+    {
+        funcClearDirFolder( _PATH_CALIB );
+        funcClearDirFolder( _PATH_CALIB_IMAGES );
+        funcClearDirFolder( _PATH_CALIB_RESPONSES );
+    }
+}
+
+void genCalibXML::on_pbSourceHalogen_clicked()
+{
+    funcGetFilePath(ui->pbSourceHalogen);
 }

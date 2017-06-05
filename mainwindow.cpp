@@ -29,6 +29,8 @@
 
 #include <QImageReader>
 
+#include <formsquareaperturesettings.h>
+
 //OpenCV
 /*
 #include <opencv2/imgproc/imgproc.hpp>
@@ -1597,12 +1599,12 @@ void MainWindow::on_slideShuterSpeed_valueChanged(int value)
     QString qstrVal = QString::number(value + ui->slideShuterSpeedSmall->value());
     ui->labelShuterSpeed->setText( "Diffraction Shuter Speed: " + qstrVal );
 }
-
+*/
 void MainWindow::on_slideISO_valueChanged(int value)
 {
     ui->labelISO->setText( "ISO: " + QString::number(value) );
 }
-*/
+
 
 void MainWindow::on_pbSaveRaspParam_clicked()
 {
@@ -3326,6 +3328,7 @@ void MainWindow::on_actionLoadCanvas_triggered()
     }
 
     loadImageIntoCanvasEdit(auxQstring, true);
+    updateDisplayImageReceived();
 
 
 }
@@ -3883,7 +3886,7 @@ void MainWindow::on_actionGenHypercube_triggered()
     QTime timeStamp;
     timeStamp.start();    
 
-    if( generatesHypcube(2, fileName) )
+    if( generatesHypcube(readFileParam(_PATH_SETTINGS_EM_ITERATIONS).toInt(0), fileName) )
     {
         //Extracts hypercube
         extractsHyperCube(fileName);
@@ -4676,7 +4679,7 @@ void MainWindow::on_actionSquareUsable_triggered()
     squareAperture *rectSquare = (squareAperture*)malloc(sizeof(squareAperture));
     if( !funGetSquareXML( _PATH_SQUARE_USABLE, rectSquare ) )
     {
-        funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
+        funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
         return (void)false;
     }
 
@@ -6260,14 +6263,49 @@ int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture
         return 0;
     }
 
-    //Translate coordinates into pixels
-    rectangle->rectX = round( ((float)rectangle->rectX / (float)rectangle->canvasW) * (float)camRes->width );
-    rectangle->rectW = round( ((float)rectangle->rectW / (float)rectangle->canvasW) * (float)camRes->width );
-    rectangle->rectY = round( ((float)rectangle->rectY / (float)rectangle->canvasH) * (float)camRes->height );
-    rectangle->rectH = round( ((float)rectangle->rectH / (float)rectangle->canvasH) * (float)camRes->height );
+    //Translate coordinates into pixels    
+    rectangle->rectX    = round( ((float)rectangle->rectX / (float)rectangle->canvasW) * (float)camRes->width );
+    rectangle->rectW    = round( ((float)rectangle->rectW / (float)rectangle->canvasW) * (float)camRes->width );
+    rectangle->rectY    = round( ((float)rectangle->rectY / (float)rectangle->canvasH) * (float)camRes->height );
+    rectangle->rectH    = round( ((float)rectangle->rectH / (float)rectangle->canvasH) * (float)camRes->height );
 
+    rectangle->canvasW  = camRes->width;
+    rectangle->canvasH  = camRes->height;
 
     return 1;
+}
+
+int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, QString respectTo, squareAperture *rectangle )
+{
+    squareAperture *rectangleRespecTo = (squareAperture*)malloc(sizeof(squareAperture));
+
+    //Get original rectangle properties
+    if( !funGetSquareXML( fileName, rectangle ) )
+    {
+        funcShowMsg("ERROR","Loading in pixels: "+fileName);
+        return 0;
+    }
+
+    //Get reference rectangle properties
+    if( !rectangleInPixelsFromSquareXML( respectTo, rectangleRespecTo ) )
+    {
+        funcShowMsg("ERROR","Loading in pixels: "+respectTo);
+        return 0;
+    }
+
+    //funcPrintRectangle("Area de interes",rectangleRespecTo);
+
+    //Translate coordinates into pixels
+    rectangle->rectX    = round( ((float)rectangle->rectX / (float)rectangle->canvasW) * (float)rectangleRespecTo->rectW );
+    rectangle->rectW    = round( ((float)rectangle->rectW / (float)rectangle->canvasW) * (float)rectangleRespecTo->rectW );
+    rectangle->rectY    = round( ((float)rectangle->rectY / (float)rectangle->canvasH) * (float)rectangleRespecTo->rectH );
+    rectangle->rectH    = round( ((float)rectangle->rectH / (float)rectangle->canvasH) * (float)rectangleRespecTo->rectH );
+
+    rectangle->canvasW  = rectangleRespecTo->rectW;
+    rectangle->canvasH  = rectangleRespecTo->rectH;
+
+    return 1;
+
 }
 
 int MainWindow::createSubimageRemotelly(bool squareArea )
@@ -6466,16 +6504,35 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                 }
                 else
                 {
-                    //
+                    //-------------------------------------------
                     //Merge image
+                    //-------------------------------------------
+
+                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+
+                    //
+                    //Crop original image to release the usable area
+                    //
+                    //Get usable area coordinates
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES2, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                        return (void)false;
+                    }
+                    diffImage       = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+                    apertureImage   = apertureImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+
                     //
                     //Get square aperture coordinates
-                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE2, aperture ) )
+                    //
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE2, _PATH_REGION_OF_INTERES2, aperture ) )
                     {
                         funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
                         return (void)false;
                     }
+                    funcPrintRectangle( "Square Aperture", aperture );
 
                     //
                     //Copy square aperture into diffraction image
@@ -6488,22 +6545,12 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                         }
                     }
 
-                    //
-                    //Crop original image to release the usable area
-                    //
-                    //Get usable area coordinates
-                    memset(aperture,'\0',sizeof(squareAperture));
-                    //if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_USABLE, aperture ) )
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE2, aperture ) )
-                    {
-                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
-                        return (void)false;
-                    }
-                    //Crop and save
-                    diffImage = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
-                    diffImage.save(_PATH_DISPLAY_IMAGE);
-                    qDebug() << "Images saved";
 
+
+                    //
+                    //Save cropped image
+                    //
+                    diffImage.save(_PATH_DISPLAY_IMAGE);
                     updateDisplayImageReceived(diffImage);
                 }
             }
@@ -6610,4 +6657,11 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
     }
 
     mouseCursorReset();
+}
+
+void MainWindow::on_actionsquareSettings_triggered()
+{
+    formSquareApertureSettings* squareSettings = new formSquareApertureSettings(this);
+    squareSettings->setModal(true);
+    squareSettings->show();
 }

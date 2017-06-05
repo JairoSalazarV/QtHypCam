@@ -1110,8 +1110,7 @@ QSlider::handle:horizontal {
    <addaction name="actionShow_hypercube"/>
    <addaction name="actionChoseWavelength"/>
    <addaction name="actionGenHypercube"/>
-   <addaction name="actionslideHypCam"/>
-   <addaction name="actionSlide_settings"/>
+   <addaction name="actionsquareSettings"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -1445,6 +1444,18 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Slide settings</string>
+   </property>
+  </action>
+  <action name="actionsquareSettings">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/document-properties.svg</normaloff>:/new/icons/imagenInte/document-properties.svg</iconset>
+   </property>
+   <property name="text">
+    <string>squareSettings</string>
+   </property>
+   <property name="toolTip">
+    <string>Square Settings</string>
    </property>
   </action>
  </widget>

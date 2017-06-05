@@ -8,8 +8,15 @@
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
     #define _PATH_HALOGEN_FUNCTION          "./settings/halogenFunction.hypcam"
 
+    #define _PATH_SETTINGS_RED_WAVELEN      "./settings/Wavelengths/RedWavelength.hypcam"
+    #define _PATH_SETTINGS_GREEN_WAVELEN    "./settings/Wavelengths/GreenWavelength.hypcam"
+    #define _PATH_SETTINGS_BLUE_WAVELEN     "./settings/Wavelengths/BlueWavelength.hypcam"
+    #define _PATH_SETTINGS_EM_ITERATIONS    "./settings/Wavelengths/EMIterations.hypcam"
+
     #define _PATH_CALBKG                    "./settings/Calib/backgroundPath.hypcam"
     #define _PATH_CALIB                     "./settings/Calib/"
+    #define _PATH_CALIB_IMAGES              "./settings/Calib/images/"
+    #define _PATH_CALIB_RESPONSES           "./settings/Calib/responses/"
 
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"

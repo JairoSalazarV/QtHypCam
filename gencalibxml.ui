@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>253</width>
-    <height>300</height>
+    <width>412</width>
+    <height>406</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QPushButton" name="pbBlueLeftUp">
    <property name="geometry">
     <rect>
-     <x>79</x>
-     <y>74</y>
+     <x>159</x>
+     <y>134</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -36,8 +36,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueLeftDown">
    <property name="geometry">
     <rect>
-     <x>79</x>
-     <y>138</y>
+     <x>159</x>
+     <y>198</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -56,8 +56,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedRight">
    <property name="geometry">
     <rect>
-     <x>213</x>
-     <y>106</y>
+     <x>317</x>
+     <y>166</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -76,8 +76,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedUp">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>10</y>
+     <x>193</x>
+     <y>70</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -96,8 +96,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenLeftUp">
    <property name="geometry">
     <rect>
-     <x>46</x>
-     <y>42</y>
+     <x>126</x>
+     <y>102</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -116,8 +116,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenLeft">
    <property name="geometry">
     <rect>
-     <x>46</x>
-     <y>106</y>
+     <x>104</x>
+     <y>166</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -136,8 +136,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueRight">
    <property name="geometry">
     <rect>
-     <x>146</x>
-     <y>106</y>
+     <x>250</x>
+     <y>166</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -156,8 +156,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueDown">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>138</y>
+     <x>193</x>
+     <y>198</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -176,8 +176,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenRight">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>106</y>
+     <x>284</x>
+     <y>166</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -196,8 +196,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenUp">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>42</y>
+     <x>193</x>
+     <y>102</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -216,8 +216,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueUp">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>74</y>
+     <x>193</x>
+     <y>134</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -236,8 +236,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueRightDown">
    <property name="geometry">
     <rect>
-     <x>146</x>
-     <y>138</y>
+     <x>226</x>
+     <y>198</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -256,8 +256,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenLeftDown">
    <property name="geometry">
     <rect>
-     <x>46</x>
-     <y>170</y>
+     <x>126</x>
+     <y>230</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -276,8 +276,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbSource">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>106</y>
+     <x>176</x>
+     <y>166</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -290,14 +290,14 @@ border:0px;</string>
 border:0px;</string>
    </property>
    <property name="text">
-    <string>...</string>
+    <string>S</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pbGreenRightUp">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>42</y>
+     <x>260</x>
+     <y>102</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -316,8 +316,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueRightUp">
    <property name="geometry">
     <rect>
-     <x>146</x>
-     <y>74</y>
+     <x>226</x>
+     <y>134</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -336,8 +336,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedRightDown">
    <property name="geometry">
     <rect>
-     <x>213</x>
-     <y>202</y>
+     <x>293</x>
+     <y>262</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -356,8 +356,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedLeftDown">
    <property name="geometry">
     <rect>
-     <x>12</x>
-     <y>202</y>
+     <x>92</x>
+     <y>262</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -376,8 +376,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbBlueLeft">
    <property name="geometry">
     <rect>
-     <x>79</x>
-     <y>106</y>
+     <x>137</x>
+     <y>166</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -396,8 +396,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedLeft">
    <property name="geometry">
     <rect>
-     <x>12</x>
-     <y>106</y>
+     <x>70</x>
+     <y>166</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -416,8 +416,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedLeftUp">
    <property name="geometry">
     <rect>
-     <x>12</x>
-     <y>10</y>
+     <x>92</x>
+     <y>70</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -436,8 +436,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedDown">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>202</y>
+     <x>193</x>
+     <y>262</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -456,8 +456,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenDown">
    <property name="geometry">
     <rect>
-     <x>113</x>
-     <y>170</y>
+     <x>193</x>
+     <y>230</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -476,8 +476,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbRedRightUp">
    <property name="geometry">
     <rect>
-     <x>213</x>
-     <y>10</y>
+     <x>293</x>
+     <y>70</y>
      <width>28</width>
      <height>21</height>
     </rect>
@@ -496,8 +496,8 @@ border:0px;</string>
   <widget class="QPushButton" name="pbGreenRightDown">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>170</y>
+     <x>260</x>
+     <y>230</y>
      <width>27</width>
      <height>21</height>
     </rect>
@@ -513,12 +513,12 @@ border:0px;</string>
     <string>...</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>32</x>
-     <y>250</y>
-     <width>184</width>
+     <x>110</x>
+     <y>350</y>
+     <width>191</width>
      <height>34</height>
     </rect>
    </property>
@@ -545,7 +545,122 @@ border:0px;</string>
       </property>
      </widget>
     </item>
+    <item row="0" column="2">
+     <widget class="QToolButton" name="pbClearAll">
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset>
+        <normalon>:/new/icons/imagenInte/stop.svg</normalon>
+       </iconset>
+      </property>
+     </widget>
+    </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="pbLimL">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>70</y>
+     <width>31</width>
+     <height>211</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Not selected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:#066;
+border:0px;</string>
+   </property>
+   <property name="text">
+    <string>limL</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbLimR">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>70</y>
+     <width>31</width>
+     <height>211</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Not selected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:#066;
+border:0px;</string>
+   </property>
+   <property name="text">
+    <string>limR</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbLimD">
+   <property name="geometry">
+    <rect>
+     <x>86</x>
+     <y>310</y>
+     <width>241</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Not selected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:#066;
+border:0px;</string>
+   </property>
+   <property name="text">
+    <string>limD</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbLimU">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>20</y>
+     <width>241</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Not selected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:#066;
+border:0px;</string>
+   </property>
+   <property name="text">
+    <string>limU</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbSourceHalogen">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>166</y>
+     <width>27</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Not selected&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color:#F0F;
+border:0px;</string>
+   </property>
+   <property name="text">
+    <string>SH</string>
+   </property>
   </widget>
  </widget>
  <resources/>

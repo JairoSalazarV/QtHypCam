@@ -149,6 +149,7 @@
         float squareH;
         //Source
         QString source;
+        QString sourceHalogen;
         //Blue
         QString blueRightDown;
         QString blueRight;
@@ -176,6 +177,11 @@
         QString redLeft;
         QString redLeftDown;
         QString redDown;
+        //Limits
+        QString limR;
+        QString limU;
+        QString limL;
+        QString limD;
     }lstCalibFileNames;
 
     typedef struct customLineParameters{

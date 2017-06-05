@@ -109,6 +109,10 @@ private slots:
 
     void on_pbFiles_clicked();
 
+    void on_pbClearAll_clicked();
+
+    void on_pbSourceHalogen_clicked();
+
 private:
     Ui::genCalibXML *ui;
 };
