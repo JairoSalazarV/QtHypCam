@@ -3669,207 +3669,20 @@ void MainWindow::on_pbLANTestConn_clicked()
 void MainWindow::on_actionGenHypercube_triggered()
 {
 
-    /*
-    //
-    //Reserve memory
-    //
-    QImage tmpImg(_PATH_DISPLAY_IMAGE);
-    //QImage tmpImg("/home/jairo/Descargas/sangre.png");
-
-    uchar** red;
-    uchar** green;
-    uchar** blue;
-    uchar** D;
-    uchar** T;
-    red     = (uchar**)malloc(tmpImg.height()*sizeof(char*));
-    green   = (uchar**)malloc(tmpImg.height()*sizeof(char*));
-    blue    = (uchar**)malloc(tmpImg.height()*sizeof(char*));
-    D       = (uchar**)malloc(tmpImg.height()*sizeof(char*));
-    T       = (uchar**)malloc(tmpImg.height()*sizeof(char*));
-    for(int i=0; i<tmpImg.height(); i++)
+    //----------------------------------------
+    // Validate lst of wavelengths choised
+    //----------------------------------------
+    QList<double> lstChoises;
+    lstChoises  = getWavesChoised();
+    if( lstChoises.size() <= 0 )
     {
-        red[i]      = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
-        green[i]    = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
-        blue[i]     = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
-        D[i]        = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
-        T[i]        = (uchar*)malloc( tmpImg.width() * sizeof(uchar) );
+        funcShowMsg("ERROR","Please, select wavelengths to extract");
+        return (void)false;
     }
 
-    //Extratcs colors from RGB
-    funcRGBImageToArray( red, green, blue, &tmpImg );
-
-    //
-    //Save gray image
-    //
-    QString fileFolder;
-    fileFolder  = QFileDialog::getExistingDirectory(
-                                                        this,
-                                                        tr("Open Directory"),
-                                                        "/home/jairo/Documentos/BORRAR/",
-                                                        QFileDialog::ShowDirsOnly
-                                                        | QFileDialog::DontResolveSymlinks
-                                                    );
-    if( fileFolder.isEmpty() )
-    {
-        return (void)NULL;
-    }
-    else
-    {
-
-        //mouseCursorWait();
-        //funcSaveGrayImage( fileFolder+"/red.png", red, tmpImg.height(), tmpImg.width() );
-        //funcSaveGrayImage( fileFolder+"/green.png", green, tmpImg.height(), tmpImg.width() );
-        //funcSaveGrayImage( fileFolder+"/blue.png", blue, tmpImg.height(), tmpImg.width() );
-        //mouseCursorReset();
-    }
-
-
-    //
-    //Copy data
-    //
-    for(int row=0; row<tmpImg.height(); row++)
-    {
-        for(int col=0; col<tmpImg.width(); col++)
-        {
-            T[row][col] = red[row][col];
-        }
-    }
-
-    funcSaveGrayImage( fileFolder+"/T.png", T, tmpImg.height(), tmpImg.width() );
-
-
-
-    //
-    //Calculate map
-    //
-    int top = 200;
-    int bottom = 80;
-    int k = 0;
-    for(int row=1; row<tmpImg.height()-1; row++)
-    {
-        for(int col=1; col<tmpImg.width()-1; col++)
-        {
-            D[row][col] = 0;
-            if( T[row][col] <= bottom || T[row][col] >= top )
-            {
-                D[row][col] = 1;
-                k++;
-            }
-        }
-    }
-
-
-    //
-    // Iterate
-    //
-    QList<uchar> R;
-    int pos;
-    int l;
-    int iter = 0;
-    int lastK = 0;
-    while( k>0 && lastK != k)
-    {
-        lastK = k;
-        l=0;
-        qDebug() << "iter: " << iter << "k: " << k;
-        for(int row=1; row<tmpImg.height()-1; row++)
-        {
-            for(int col=1; col<tmpImg.width()-1; col++)
-            {
-                if( D[row][col] == 1 )
-                {
-                    R.clear();
-
-                    if( D[row][col-1] == 0 )R.append(T[row][col-1]);
-                    if( D[row][col+1] == 0 )R.append(T[row][col+1]);
-
-                    if( D[row-1][col-1] == 0 )R.append(T[row-1][col-1]);
-                    if( D[row-1][col]   == 0 )R.append(T[row-1][col]);
-                    if( D[row-1][col+1] == 0 )R.append(T[row-1][col+1]);
-
-                    if( D[row+1][col-1] == 0 )R.append(T[row+1][col-1]);
-                    if( D[row+1][col]   == 0 )R.append(T[row+1][col]);
-                    if( D[row+1][col+1] == 0 )R.append(T[row+1][col+1]);
-
-                    if( R.size() > 0 )
-                    {
-
-                        qSort(R);
-                        pos = floor( R.size()/2 );
-                        //qDebug() << "pos: " << pos << "R.at(pos): " << R.at(pos) << "T[row][col]: " << T[row][col];
-                        T[row][col] = R.at(pos);
-                        //D[row][col] = 0;
-                        //k--;
-                        //exit(0);
-                    }
-                    else
-                    {
-                        //qDebug() << "row: " << row << "col: " << col << "R.size(): " << R.size() << "T[row][col]: " << T[row][col];
-                        //exit(0);
-                    }
-
-                }
-                else
-                {
-                    l++;
-                }
-            }
-        }
-
-        //
-        //Recalculate map
-        //
-        k = 0;
-        for(int row=1; row<tmpImg.height()-1; row++)
-        {
-            for(int col=1; col<tmpImg.width()-1; col++)
-            {
-                D[row][col] = 0;
-                if( T[row][col] <= bottom || T[row][col] >= top )
-                {
-                    D[row][col] = 1;
-                    k++;
-                }
-            }
-        }
-
-        //qDebug() << "N: " << (tmpImg.height()-2)*(tmpImg.width()-2) << "l: " << l << "k: " << k << "l+k: " << (l+k);
-        iter++;
-
-    }
-
-    //qDebug() << "Finished";
-
-
-
-    mouseCursorWait();
-    funcSaveGrayImage( fileFolder+"/denoised.png", T, tmpImg.height(), tmpImg.width() );
-    mouseCursorReset();
-
-
-
-
-
-
-
-
-
-    //
-    //Free memory
-    //
-    for(int i=0; i<tmpImg.height(); i++)
-    {
-        free( red[i] );
-        free( green[i] );
-        free( blue[i] );
-    }
-    free( red );
-    free( green );
-    free( blue );
-    */
-
-
-
+    //----------------------------------------
+    // Select hypercube destination
+    //----------------------------------------
     QString fileName;
     fileName = QFileDialog::getSaveFileName(
                                                 this,
@@ -3903,8 +3716,6 @@ void MainWindow::on_actionGenHypercube_triggered()
 }
 
 bool MainWindow::generatesHypcube(int numIterations, QString fileName){
-
-
 
     mouseCursorWait();
 

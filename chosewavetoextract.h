@@ -40,6 +40,8 @@ private slots:
 
     void on_tableChoises_doubleClicked(const QModelIndex &index);
 
+    void iniOptsAndChois(bool allOptions);
+
 private:
     Ui::choseWaveToExtract *ui;
 
@@ -49,7 +51,7 @@ private:
 
     void refreshOptChoi();
 
-    void iniOptsAndChois(bool allOptions);
+
 
 };
 

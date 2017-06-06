@@ -95,6 +95,8 @@ private slots:
 
     void on_pbGenCal_clicked();
 
+    void clearWavelengthChoised();
+
     void calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal);
 
     QList<double> getNormedFunction( QString fileName );

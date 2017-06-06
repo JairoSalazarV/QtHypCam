@@ -470,18 +470,18 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     //..
     aux         = centroids->source.split(",").at(1).toFloat(0);
     //Delta blue X
-    auxU        = (double)fabs(aux - centroids->blueUp.split(",").at(1).toFloat(0));
-    auxD        = (double)fabs(aux - centroids->blueDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->blueUp.split(",").at(1).toDouble(0));
+    auxD        = (double)fabs(aux - centroids->blueDown.split(",").at(1).toDouble(0));
     pointsY[0]  = blueWavelength.toDouble(0);;
     pointsX[0]  = (auxU+auxD) / 2.0;
     //Delta green X
-    auxU        = (double)fabs(aux - centroids->greenUp.split(",").at(1).toFloat(0));
-    auxD        = (double)fabs(aux - centroids->greenDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->greenUp.split(",").at(1).toDouble(0));
+    auxD        = (double)fabs(aux - centroids->greenDown.split(",").at(1).toDouble(0));
     pointsY[1]  = greenWavelength.toDouble(0);
     pointsX[1]  = (auxU+auxD) / 2.0;
     //Delta red X
-    auxU        = (double)fabs(aux - centroids->redUp.split(",").at(1).toFloat(0));
-    auxD        = (double)fabs(aux - centroids->redDown.split(",").at(1).toFloat(0));
+    auxU        = (double)fabs(aux - centroids->redUp.split(",").at(1).toDouble(0));
+    auxD        = (double)fabs(aux - centroids->redDown.split(",").at(1).toDouble(0));
     pointsY[2]  = redWavelength.toDouble(0);
     pointsX[2]  = (auxU+auxD) / 2.0;
     //Delta source X
@@ -668,7 +668,7 @@ void genCalibXML::on_pbGenCal_clicked()
         maxNumBand  = QString::number(spectralResolution.x());
         minSpecRes  = QString::number(spectralResolution.y());
 
-        qDebug() << "Aquí10";
+        //qDebug() << "Aquí10";
         //Calculates the sensivities and save into HDD
         //..
         QString Sr, Sg, Sb;
@@ -762,12 +762,38 @@ void genCalibXML::on_pbGenCal_clicked()
             funcShowMsg("ERROR","Saving file");
         }
 
+        //-------------------------------------------
+        // Clear Wavelengths selected
+        //-------------------------------------------
+        clearWavelengthChoised();
+
+
     }
     else
     {
         funcShowMsg("Lack","Calibrations points incomplete");
     }
 
+}
+
+void genCalibXML::clearWavelengthChoised()
+{
+    float tmpWave;
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+    tmpWave = daCalib.minWavelength;
+    QString options;
+    options.append(QString::number(tmpWave));
+    while( tmpWave < daCalib.maxWavelength - daCalib.minSpecRes )
+    {
+        tmpWave += daCalib.minSpecRes;
+        options.append("," + QString::number(tmpWave));
+    }
+    saveFile(_PATH_WAVE_OPTIONS,options);
+    saveFile(_PATH_WAVE_CHOISES,"");
+
+    //lstDoubleAxisCalibration daCalib;
+    //funcGetCalibration(&daCalib);
 }
 
 void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal)

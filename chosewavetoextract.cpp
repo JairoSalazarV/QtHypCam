@@ -2,7 +2,6 @@
 #include "ui_chosewavetoextract.h"
 
 
-
 choseWaveToExtract::choseWaveToExtract(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::choseWaveToExtract)
@@ -155,18 +154,23 @@ void choseWaveToExtract::addByStep()
 {
     float tmpWave;
     tmpWave = daCalib.minWavelength;
-    QString options;
+    //QString options;
     int row;
-
 
     while( tmpWave < daCalib.maxWavelength )
     {
         row = 0;
+
+        qDebug() << "tmpWave: " << tmpWave;
+        ui->tableOptions->selectRow(row);
+        qDebug() << "ui->tableOptions->item(row,0)->text().toDouble(0) 0: " << ui->tableOptions->item(row,0)->text().toDouble(0);
         while( ui->tableOptions->item(row,0)->text().toDouble(0) <= tmpWave )
         {
+            qDebug() << "ui->tableOptions->item(row,0)->text().toDouble(0): " << ui->tableOptions->item(row,0)->text().toDouble(0);
             row++;
         }
-        ui->tableOptions->setCurrentCell(row-1,0);
+        row = (row-1>=0)?(row-1):0;
+        ui->tableOptions->setCurrentCell(row,0);
         ui->pbAdd->click();
         tmpWave += (daCalib.minSpecRes * ui->spinBoxStep->value());
     }
