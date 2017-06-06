@@ -57,6 +57,8 @@ public slots:
 
     void processFrame(QVideoFrame actualFrame);
 
+    void funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath );
+
 
 
 private slots:    
@@ -475,6 +477,10 @@ private slots:
     void on_actionsquareSettings_triggered();
 
     void on_pbSelectFolder_clicked();
+
+    void on_slideChangeImage_valueChanged(int value);
+
+    void funcDrawPlotLimits();
 
 private:
     Ui::MainWindow *ui;

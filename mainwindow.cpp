@@ -158,9 +158,9 @@ QList<QImage> lstFrames;
 QThread* progBarThread;
 
 
-
-
-
+int*** tmpHypCube;
+QList<QFileInfo> lstImages;
+GraphicsView* graphViewSmall;
 
 
 
@@ -313,6 +313,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // Show Last Preview
     //
     updateDisplayImageReceived();
+
+
+    //
+    //Allocate memory to the hypercube
+    //
+    //funcAllocInteger3DMatrixMemo( 3, 3, 3, tmpHypCube, true );
+
 
 
 }
@@ -6513,7 +6520,7 @@ void MainWindow::on_pbSelectFolder_clicked()
     //---------------------------------------
     //List files in directory
     //---------------------------------------
-    QList<QFileInfo> lstImages = funcListFilesInDir(pathSource);
+    lstImages = funcListFilesInDir(pathSource);
     if( lstImages.size() == 0 )
     {
         funcShowMsg("ERROR","Invalid directory");
@@ -6541,13 +6548,154 @@ void MainWindow::on_pbSelectFolder_clicked()
     //---------------------------------------
     //Create Cube from HDD
     //---------------------------------------
-    int hypCube[H][W][L];
+    tmpHypCube = (int***)funcAllocInteger3DMatrixMemo( H, W, L, tmpHypCube );
     for( l=0; l<L; l++ )
     {
         tmpImg = QImage(lstImages.at(l).absoluteFilePath());
         for( r=0; r<H; r++ )
+        {
             for( c=0; c<W; c++ )
-                hypCube[r][c][l]    = qRed(tmpImg.pixel(c,r));
+            {
+                tmpHypCube[r][c][l]    = qRed(tmpImg.pixel(c,r));
+            }
+        }
     }
+
+    //---------------------------------------
+    //Display first photo
+    //---------------------------------------
+    graphViewSmall = new GraphicsView(this);
+    graphViewSmall->resize(tmpImg.width(),tmpImg.height());
+    funcLoadImageIntoGaphView(graphViewSmall,lstImages.at(0).absoluteFilePath());
+    QLayout *layout = new QVBoxLayout();
+    layout->addWidget(graphViewSmall);
+    layout->setEnabled(false);
+    ui->tabShowPixels->setLayout(layout);
+    graphViewSmall->move(20,50);
+
+
+    //---------------------------------------
+    //Enable slide bar
+    //---------------------------------------
+    //funcLoadImageIntoGaphView(ui->gaphViewImg,lstImages.at(0).absoluteFilePath());
+    ui->slideChangeImage->setMinimum(1);
+    ui->slideChangeImage->setToolTip(QString::number(1));
+    ui->slideChangeImage->setMaximum(lstImages.size());
+    ui->slideChangeImage->setMaximumWidth( tmpImg.width() );    
+    ui->labelCubeImageName->setText( "(1/" + QString::number(lstImages.size()) + ") " + lstImages.at(0).fileName() );
+    ui->slideChangeImage->setEnabled(true);
+    ui->gaphViewPlot->move(20,tmpImg.height()+115);
+    ui->labelCubeImageName->move(20,tmpImg.height()+55);
+    ui->slideChangeImage->move(20,tmpImg.height()+85);
+
+    //---------------------------------------
+    //Draw plot limits
+    //---------------------------------------
+    funcDrawPlotLimits();
+
+}
+
+void MainWindow::funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath )
+{
+    QPixmap pixMap(filePath);
+    QGraphicsScene *scene = new QGraphicsScene(0,0,pixMap.width(),pixMap.height());
+    scene->setBackgroundBrush(QBrush(Qt::black));
+    canvas->setBackgroundBrush(pixMap);
+    canvas->setScene(scene);
+    canvas->resize(pixMap.width(),pixMap.height());
+    canvas->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvas->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvas->update();
+}
+
+void MainWindow::on_slideChangeImage_valueChanged(int value)
+{
+    ui->slideChangeImage->setToolTip( QString::number(value) );    
+    ui->labelCubeImageName->setText( "("+ QString::number(value) +"/" + QString::number(lstImages.size()) + ") " + lstImages.at(value-1).fileName() );
+    funcLoadImageIntoGaphView(graphViewSmall,lstImages.at(value-1).absoluteFilePath());
+}
+
+void MainWindow::funcDrawPlotLimits()
+{
+    //Set scene
+    int i, W, H;
+    W = ui->gaphViewPlot->width();
+    H = ui->gaphViewPlot->height();
+    QGraphicsScene *scene = new QGraphicsScene(0,0,W,H);
+    scene->setBackgroundBrush(QBrush(Qt::black));
+    ui->gaphViewPlot->setScene(scene);
+    ui->gaphViewPlot->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    ui->gaphViewPlot->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+
+    //Prepare font
+    QFont font;
+    font.setPixelSize(12);
+    font.setBold(false);
+    font.setFamily("Calibri");
+
+    //Set axis
+    int range, rangeStep, rangeInit, rangeEnd; //wavelength range
+    int frameX, frameY;
+    frameX = 40;
+    frameY = 30;
+    rangeInit = 300;
+    rangeEnd = 1100;
+    range = rangeEnd - rangeInit;
+    rangeStep = 50;
+
+    QPen pen(Qt::white,1.5);
+    QPen penTxt(Qt::white,1);
+    QLineF lineX(0,H-frameY,W,H-frameY);
+    scene->addLine(lineX,pen);
+    QLineF lineY(frameX,0,frameX,H);
+    scene->addLine(lineY,pen);
+
+    //Set slides X
+    qreal frameW, frameH, x1, y1, x2, y2, numLines, spaceBetwLines;
+    frameW = W - (frameX*2);
+    frameH = H - (frameY*2);
+    int lineLen = 6;
+    numLines = floor((float)range / (float)rangeStep);
+    spaceBetwLines = (float)frameW / (float)numLines;
+    for( i=0; i<=numLines; i++ )
+    {
+        //Line
+        x1 = frameX + (i*spaceBetwLines);
+        y1 = frameH + frameY - lineLen;
+        x2 = x1;
+        y2 = y1 + (2*lineLen);
+        QLineF line(x1,y1,x2,y2);
+        scene->addLine(line,pen);
+        //Text
+        QGraphicsSimpleTextItem* tmpTxt = new QGraphicsSimpleTextItem(QString::number(rangeInit+(i*rangeStep)) + QString::fromLatin1(" nm"));
+        tmpTxt->setPos(x2-15,y2+5);
+        tmpTxt->setFont(font);
+        tmpTxt->setPen(penTxt);
+        scene->addItem(tmpTxt);
+    }
+
+    //Set slides Y
+    qreal rangeStepY;
+    rangeStepY = 0.2;
+    numLines = floor(1/rangeStepY);
+    spaceBetwLines = (float)frameH / (float)numLines;
+    for( i=1; i<=numLines; i++ )
+    {
+        //Line
+        x1 = frameX - lineLen;
+        y1 = H - frameY - (i*spaceBetwLines);
+        x2 = x1 + (2*lineLen);
+        y2 = y1;
+        QLineF line(x1,y1,x2,y2);
+        scene->addLine(line,pen);
+        //Text
+        QGraphicsSimpleTextItem* tmpTxt = new QGraphicsSimpleTextItem(QString::number(i*rangeStepY));
+        tmpTxt->setPos(x1-25,y1-8);
+        tmpTxt->setFont(font);
+        tmpTxt->setPen(penTxt);
+        scene->addItem(tmpTxt);
+    }
+
+
 
 }

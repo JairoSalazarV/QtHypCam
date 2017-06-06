@@ -1345,3 +1345,61 @@ int funcPrintRectangle(QString title, squareAperture* rectangle)
     return 1;
 }
 
+extern void* funcAllocInteger3DMatrixMemo( int rows, int cols, int layers, int*** M )
+{
+    int i, j;
+
+    //Check settings
+    if( rows<=0 || cols<=0 || layers<=0 )
+    {
+        std::cout << "ERROR on funcAllocInteger3DMatrixMemo: mismatch parameters" << std::endl;
+        return (void*)NULL;
+    }
+
+    //Free Matrix
+    if( M != NULL )
+    {
+        for( i=0; i<rows; i++ )
+        {
+            if( M[i] != NULL )
+            {
+                for( j=0; j<cols; j++ )
+                {
+                    if( M[i][j] != NULL )
+                    {
+                        free( M[i][j] ) ;
+                    }
+                }
+                free( M[i] );
+            }
+        }
+        free(M);
+    }
+
+    //Allocate Matrix
+    M = (int***)malloc(rows*sizeof(int**));
+    if( M == NULL )
+    {
+        std::cout << "ERROR Allocating M" << std::endl;
+        return (void*)NULL;
+    }
+    for( i=0; i<rows; i++ )
+    {
+        M[i] = (int**)malloc(cols*sizeof(int*));
+        if( M[i] == NULL )
+        {
+            std::cout << "ERROR Allocating M[i]" << std::endl;
+            return (void*)NULL;
+        }
+        for( j=0; j<cols; j++ )
+        {
+            M[i][j] = (int*)malloc(layers*sizeof(int));
+            if( M[i][j] == NULL )
+            {
+                std::cout << "ERROR Allocating M[i][j]" << std::endl;
+                return (void*)NULL;
+            }
+        }
+    }
+    return M;
+}

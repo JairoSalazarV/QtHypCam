@@ -1021,24 +1021,43 @@ QSlider::handle:horizontal {
         <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="gaphViewImg">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>60</y>
-        <width>300</width>
-        <height>300</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QGraphicsView" name="gaphViewPlot">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>370</y>
+        <y>110</y>
         <width>1000</width>
-        <height>192</height>
+        <height>270</height>
        </rect>
+      </property>
+     </widget>
+     <widget class="QSlider" name="slideChangeImage">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>80</y>
+        <width>251</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelCubeImageName">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>251</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Image name</string>
       </property>
      </widget>
     </widget>

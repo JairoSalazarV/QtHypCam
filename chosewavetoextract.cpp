@@ -161,12 +161,12 @@ void choseWaveToExtract::addByStep()
     {
         row = 0;
 
-        qDebug() << "tmpWave: " << tmpWave;
+        //qDebug() << "tmpWave: " << tmpWave;
         ui->tableOptions->selectRow(row);
-        qDebug() << "ui->tableOptions->item(row,0)->text().toDouble(0) 0: " << ui->tableOptions->item(row,0)->text().toDouble(0);
+        //qDebug() << "ui->tableOptions->item(row,0)->text().toDouble(0) 0: " << ui->tableOptions->item(row,0)->text().toDouble(0);
         while( ui->tableOptions->item(row,0)->text().toDouble(0) <= tmpWave )
         {
-            qDebug() << "ui->tableOptions->item(row,0)->text().toDouble(0): " << ui->tableOptions->item(row,0)->text().toDouble(0);
+            //qDebug() << "ui->tableOptions->item(row,0)->text().toDouble(0): " << ui->tableOptions->item(row,0)->text().toDouble(0);
             row++;
         }
         row = (row-1>=0)?(row-1):0;

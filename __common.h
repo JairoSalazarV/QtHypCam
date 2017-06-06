@@ -117,6 +117,8 @@
 
     int funcExecuteCommand( QString command );
 
+    extern void *funcAllocInteger3DMatrixMemo(int rows, int cols, int layers, int*** M );
+
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
     //QImage *IplImageToQImage(const IplImage * iplImage, uchar **data,
