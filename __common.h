@@ -13,6 +13,8 @@
 
     #include <customQMatrix3x3.h>
 
+    #include <QFileInfo>
+
     QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib );
 
     double funcDet2x2(double **M);
@@ -31,6 +33,8 @@
     void funcObtSettings( structSettings * lstSettings);
 
     void funcShowMsg( QString title, QString msg );
+
+    QString funcShowSelDir(QString path);
 
     void funcShowFileError(int error, QString fileName);
 
@@ -98,6 +102,8 @@
     void funcClearDirFolder(QString path);
 
     int funcPrintRectangle(QString title, squareAperture *rectangle);
+
+    QList<QFileInfo> funcListFilesInDir(QString Dir);
 
     void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
 

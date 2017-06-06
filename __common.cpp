@@ -21,6 +21,8 @@
 #include <iostream>
 #include <fstream>
 
+//#include <QObject>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -846,6 +848,15 @@ void funcShowMsg(QString title, QString msg){
     yesNoMsgBox.exec();
 }
 
+QString funcShowSelDir(QString path)
+{
+    QString dir = QFileDialog::getExistingDirectory(NULL, "Open Directory",
+                                                 path,
+                                                 QFileDialog::ShowDirsOnly
+                                                 | QFileDialog::DontResolveSymlinks);
+    return dir;
+}
+
 void funcShowFileError(int error, QString fileName){
     switch(error){
         case -1:
@@ -1247,6 +1258,20 @@ int funcAccountFilesInDir(QString Dir)
         }
     }
     return numFiles;
+}
+
+QList<QFileInfo> funcListFilesInDir(QString Dir)
+{
+    QList<QFileInfo> lstFiles;
+    QDir dir(Dir);
+    if ( dir.exists() )
+    {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::Files, QDir::DirsFirst))
+        {
+            lstFiles.append(info);
+        }
+    }
+    return lstFiles;
 }
 
 void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)

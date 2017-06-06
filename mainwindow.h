@@ -474,6 +474,8 @@ private slots:
 
     void on_actionsquareSettings_triggered();
 
+    void on_pbSelectFolder_clicked();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

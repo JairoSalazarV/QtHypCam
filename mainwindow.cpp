@@ -6496,3 +6496,58 @@ void MainWindow::on_actionsquareSettings_triggered()
     squareSettings->setModal(true);
     squareSettings->show();
 }
+
+void MainWindow::on_pbSelectFolder_clicked()
+{
+    int l, r, c;
+    //---------------------------------------
+    //Get directory
+    //---------------------------------------
+    QString pathSource = funcShowSelDir(_PATH_TMP_HYPCUBES);
+    if( pathSource.isNull() )
+    {
+        qDebug() << "Dir not selected";
+        return (void)false;
+    }
+
+    //---------------------------------------
+    //List files in directory
+    //---------------------------------------
+    QList<QFileInfo> lstImages = funcListFilesInDir(pathSource);
+    if( lstImages.size() == 0 )
+    {
+        funcShowMsg("ERROR","Invalid directory");
+        return (void)false;
+    }
+
+    //---------------------------------------
+    //Validate imagery in Dir
+    //---------------------------------------
+    QImage tmpImg(lstImages.at(0).absoluteFilePath());
+    int W, H, L;
+    W = tmpImg.width();
+    H = tmpImg.height();
+    L = lstImages.size();
+    for( l=1; l<L; l++ )
+    {
+        tmpImg = QImage(lstImages.at(l).absoluteFilePath());
+        if( tmpImg.width() != W || tmpImg.height() != H )
+        {
+            funcShowMsg("ERROR","Dir selected contains image with different size");
+            return (void)false;
+        }
+    }
+
+    //---------------------------------------
+    //Create Cube from HDD
+    //---------------------------------------
+    int hypCube[H][W][L];
+    for( l=0; l<L; l++ )
+    {
+        tmpImg = QImage(lstImages.at(l).absoluteFilePath());
+        for( r=0; r<H; r++ )
+            for( c=0; c<W; c++ )
+                hypCube[r][c][l]    = qRed(tmpImg.pixel(c,r));
+    }
+
+}
