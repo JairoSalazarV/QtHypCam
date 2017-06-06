@@ -1,3 +1,23 @@
+/*
+
+    ->Jun/05/2017 Ready to get one shot snapshot
+
+
+    //----------------------------------------
+    //Merge branch into master
+    //----------------------------------------
+    git checkout seotweaks
+    git merge -s ours master
+    git checkout master
+    git merge seotweaks
+
+
+*/
+
+
+
+
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
