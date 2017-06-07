@@ -40,10 +40,15 @@ class GraphicsView : public QGraphicsView
 
         void mouseReleaseEvent(QMouseEvent *e);
 
+        void mouseMoveEvent(QMouseEvent *e);
+
+
     signals:
         void signalMouseReleased(QMouseEvent *e);
 
         void signalMousePressed(QMouseEvent *e);
+
+        void signalMouseMove(QMouseEvent *e);
 
 };
 

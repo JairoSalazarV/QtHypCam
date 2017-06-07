@@ -366,3 +366,11 @@ QAction *GraphicsView::showContextMenuLine(QPoint pos){
 
     return xmenu->exec(pos);
 }
+
+
+
+void GraphicsView::mouseMoveEvent(QMouseEvent *e)
+{
+    e->accept();
+    emit signalMouseMove(e);
+}

@@ -57,6 +57,10 @@ public slots:
 
     void processFrame(QVideoFrame actualFrame);
 
+    void funcDrawSpectralPixelIntoSmall(int x, int y);
+
+    void funcMouseMoveReaction(QMouseEvent* e);
+
     void funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath );
 
 

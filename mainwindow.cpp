@@ -159,9 +159,13 @@ QThread* progBarThread;
 
 
 int*** tmpHypCube;
-QList<QFileInfo> lstImages;
+static QList<QFileInfo> lstImages;
 GraphicsView* graphViewSmall;
-
+const int frameX    = 40;       //left and right
+const int frameY    = 30;       //up and down
+const int rangeInit = 300;      //Wavelength(nm) at the origin
+const int rangeEnd  = 1100;     //Wavelength(nm) max limit
+const int rangeStep = 50;       //Wavelength(nm) between slides
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -6565,6 +6569,7 @@ void MainWindow::on_pbSelectFolder_clicked()
     //Display first photo
     //---------------------------------------
     graphViewSmall = new GraphicsView(this);
+    connect( graphViewSmall, SIGNAL( signalMouseMove(QMouseEvent*) ),this, SLOT( funcMouseMoveReaction(QMouseEvent*) ));
     graphViewSmall->resize(tmpImg.width(),tmpImg.height());
     funcLoadImageIntoGaphView(graphViewSmall,lstImages.at(0).absoluteFilePath());
     QLayout *layout = new QVBoxLayout();
@@ -6584,7 +6589,7 @@ void MainWindow::on_pbSelectFolder_clicked()
     ui->slideChangeImage->setMaximumWidth( tmpImg.width() );    
     ui->labelCubeImageName->setText( "(1/" + QString::number(lstImages.size()) + ") " + lstImages.at(0).fileName() );
     ui->slideChangeImage->setEnabled(true);
-    ui->gaphViewPlot->move(20,tmpImg.height()+115);
+    ui->graphViewPlot->move(20,tmpImg.height()+115);
     ui->labelCubeImageName->move(20,tmpImg.height()+55);
     ui->slideChangeImage->move(20,tmpImg.height()+85);
 
@@ -6593,6 +6598,73 @@ void MainWindow::on_pbSelectFolder_clicked()
     //---------------------------------------
     funcDrawPlotLimits();
 
+}
+
+void MainWindow::funcDrawSpectralPixelIntoSmall(int x, int y)
+{
+    /*
+    const int frameX    = 40;       //left and right
+    const int frameY    = 30;       //up and down
+    const int rangeInit = 300;      //Wavelength(nm) at the origin
+    const int rangeEnd  = 1100;     //Wavelength(nm) max limit
+    const int rangeStep = 50;       //Wavelength(nm) between slides*/
+
+    int l;
+    qreal W, H, x1, y1, x2, y2, wavelength1, wavelength2, energy1, energy2;
+
+    //------------------------------------------
+    //Initialize canvas
+    //------------------------------------------
+    graphViewSmall->scene()->clear();
+    funcDrawPlotLimits();
+
+    //------------------------------------------
+    //Prepare variables
+    //------------------------------------------
+    W = ui->graphViewPlot->width();
+    H = ui->graphViewPlot->height();
+    const float pixelsByNm      = (float)(W - (2*frameX)) /
+                                  (float)(rangeEnd-rangeInit);
+    const float energyRange     = (float)(H - (2*frameY));
+
+
+
+    //------------------------------------------
+    //Plot Spectral Pixel Componnets
+    //------------------------------------------
+    QPen penLine(Qt::magenta,1);
+    QPen penEllipse(Qt::magenta,1);
+    QBrush brushEllipse(Qt::magenta);
+    for( l=1; l<lstImages.size(); l++ )
+    {
+        //Calculate coordinates
+        wavelength1 = lstImages.at(l-1).completeBaseName().toFloat(0) - (float)rangeInit;
+        wavelength2 = lstImages.at(l).completeBaseName().toFloat(0) - (float)rangeInit;
+        energy1     = ((float)tmpHypCube[y][x][l-1] / 255.0) * energyRange;
+        energy2     = ((float)tmpHypCube[y][x][l] / 255.0) * energyRange;
+        x1          = (float)frameX + ( pixelsByNm * wavelength1 );
+        y1          = H - (float)frameY - energy1;
+        x2          = (float)frameX + ( pixelsByNm * wavelength2 );
+        y2          = H - (float)frameY - energy2;
+        //Plot Line
+        QLineF line(x1,y1,x2,y2);
+        ui->graphViewPlot->scene()->addLine(line,penLine);
+        //Plot Ellipse
+        ui->graphViewPlot->scene()->addEllipse(x1,y1-3,5,5,penEllipse,brushEllipse);
+        ui->graphViewPlot->scene()->addEllipse(x2,y2-3,5,5,penEllipse,brushEllipse);
+    }
+}
+
+void MainWindow::funcMouseMoveReaction(QMouseEvent* e)
+{
+    int x, y, W, H;
+    W = graphViewSmall->width();
+    H = graphViewSmall->height();
+    x = (e->x()>=0)?e->x():0;
+    y = (e->y()>=0)?e->y():0;
+    x = (x<W)?x:W;
+    y = (y<H)?y:H;
+    funcDrawSpectralPixelIntoSmall(x,y);
 }
 
 void MainWindow::funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath )
@@ -6619,13 +6691,13 @@ void MainWindow::funcDrawPlotLimits()
 {
     //Set scene
     int i, W, H;
-    W = ui->gaphViewPlot->width();
-    H = ui->gaphViewPlot->height();
+    W = ui->graphViewPlot->width();
+    H = ui->graphViewPlot->height();
     QGraphicsScene *scene = new QGraphicsScene(0,0,W,H);
     scene->setBackgroundBrush(QBrush(Qt::black));
-    ui->gaphViewPlot->setScene(scene);
-    ui->gaphViewPlot->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-    ui->gaphViewPlot->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    ui->graphViewPlot->setScene(scene);
+    ui->graphViewPlot->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    ui->graphViewPlot->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
 
     //Prepare font
     QFont font;
@@ -6634,14 +6706,10 @@ void MainWindow::funcDrawPlotLimits()
     font.setFamily("Calibri");
 
     //Set axis
-    int range, rangeStep, rangeInit, rangeEnd; //wavelength range
-    int frameX, frameY;
-    frameX = 40;
-    frameY = 30;
-    rangeInit = 300;
-    rangeEnd = 1100;
-    range = rangeEnd - rangeInit;
-    rangeStep = 50;
+    //int range, rangeStep, rangeInit, rangeEnd; //wavelength range
+    //int frameX, frameY;
+    int range = rangeEnd - rangeInit;
+
 
     QPen pen(Qt::white,1.5);
     QPen penTxt(Qt::white,1);

@@ -1021,7 +1021,7 @@ QSlider::handle:horizontal {
         <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
       </property>
      </widget>
-     <widget class="QGraphicsView" name="gaphViewPlot">
+     <widget class="QGraphicsView" name="graphViewPlot">
       <property name="geometry">
        <rect>
         <x>20</x>
