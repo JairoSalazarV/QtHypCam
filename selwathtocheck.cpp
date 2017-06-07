@@ -313,7 +313,7 @@ void selWathToCheck::showLimitCalculated()
     H = globalGvValCal->scene()->height();
     min = round(daCalib->LR.waveHorizA +( daCalib->LR.waveHorizB * daCalib->minWavelength ));
     max = round(daCalib->LR.waveHorizA +( daCalib->LR.waveHorizB * daCalib->maxWavelength ));
-    source = readAllFile(_PATH_LIMIT_S);
+    source = readAllFile(_PATH_LIMIT_S_HALOGEN);
     sX = source.split(",").at(0).toInt(0);
     sY = source.split(",").at(1).toInt(0);
 
@@ -360,7 +360,7 @@ void selWathToCheck::showLimitCalculated()
     globalGvValCal->scene()->addItem(maxLine);
 
     QImage img(_PATH_DISPLAY_IMAGE);
-    drawCentroid(_PATH_LIMIT_S,Qt::magenta,&img);
+    drawCentroid(_PATH_LIMIT_S_HALOGEN,Qt::magenta,&img);
 
 
 }
@@ -411,7 +411,7 @@ void selWathToCheck::drawAllLimits()
 
 void selWathToCheck::drawLimit(int side){
 
-    QString limSource = readAllFile(_PATH_LIMIT_S);
+    QString limSource = readAllFile(_PATH_LIMIT_S_HALOGEN);
     qreal limInf, limSup;
     QString limit;
     switch(side)
@@ -501,9 +501,9 @@ void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color, QImage *i
     const int len = 15;
 
     QString fileContain;
-    if(file == _PATH_LIMIT_S)
+    if(file == _PATH_LIMIT_S_HALOGEN)
     {
-        fileContain = readAllFile(_PATH_LIMIT_S);
+        fileContain = readAllFile(_PATH_LIMIT_S_HALOGEN);
     }
     else
     {

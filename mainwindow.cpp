@@ -3346,16 +3346,29 @@ void MainWindow::reloadImage2Display(){
 
 void MainWindow::on_actionLoadCanvas_triggered()
 {
+
+    QString lastPath = readFileParam(_PATH_LAST_IMG_OPEN);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = "./snapshots/Calib/";
+    }
+
     //Select image
     //..
     auxQstring = QFileDialog::getOpenFileName(
                                                         this,
                                                         tr("Select image..."),
-                                                        "./snapshots/Calib/",
+                                                        lastPath,
                                                         "(*.ppm *.RGB888 *.tif *.png *.jpg *.jpeg *.JPEG *.JPG *.bmp);;"
                                                      );
-    if( auxQstring.isEmpty() ){
+    if( auxQstring.isEmpty() )
+    {
         return (void)NULL;
+    }
+    else
+    {
+        lastPath = funcRemoveFileNameFromPath(auxQstring);
+        saveFile(_PATH_LAST_IMG_OPEN,lastPath);
     }
 
     loadImageIntoCanvasEdit(auxQstring, true);
@@ -5940,7 +5953,7 @@ void MainWindow::on_pbSnapVid_clicked()
         //
         //Send .mp4 to frames
         //
-        funcVideoToFrames();
+        //funcVideoToFrames();
 
 
 
@@ -6408,16 +6421,26 @@ void MainWindow::on_pbSaveImage_clicked()
     //Read the filename
     //
     QString fileName;
+    QString lastPath = readFileParam(_PATH_LAST_IMG_SAVED);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = "./snapshots/";
+    }
     fileName = QFileDialog::getSaveFileName(
                                                 this,
                                                 tr("Save Snapshot as..."),
-                                                "./snapshots/",
+                                                lastPath,
                                                 tr("Documents (*.png)")
                                             );
     if( fileName.isEmpty() )
     {
         qDebug() << "Filename not typed";
         return (void)false;
+    }
+    else
+    {
+        lastPath = funcRemoveFileNameFromPath(fileName);
+        saveFile(_PATH_LAST_IMG_SAVED,lastPath);
     }
 
     //
@@ -6763,6 +6786,56 @@ void MainWindow::funcDrawPlotLimits()
         tmpTxt->setPen(penTxt);
         scene->addItem(tmpTxt);
     }
+
+
+
+}
+
+void MainWindow::on_pbSelectFolderSlide_clicked()
+{
+    int l;
+
+    //---------------------------------------
+    //Get directory
+    //---------------------------------------
+    QString pathSource = funcShowSelDir(_PATH_VIDEO_FRAMES);
+    if( pathSource.isNull() )
+    {
+        qDebug() << "Dir not selected";
+        return (void)false;
+    }
+
+    //---------------------------------------
+    //List files in directory
+    //---------------------------------------
+    lstImages = funcListFilesInDir(pathSource);
+    if( lstImages.size() == 0 )
+    {
+        funcShowMsg("ERROR","Invalid directory");
+        return (void)false;
+    }
+
+    //---------------------------------------
+    //Validate imagery in Dir
+    //---------------------------------------
+    QImage tmpImg(lstImages.at(0).absoluteFilePath());
+    int W, H, L;
+    W = tmpImg.width();
+    H = tmpImg.height();
+    L = lstImages.size();
+    for( l=1; l<L; l++ )
+    {
+        tmpImg = QImage(lstImages.at(l).absoluteFilePath());
+        if( tmpImg.width() != W || tmpImg.height() != H )
+        {
+            funcShowMsg("ERROR","Dir selected contains image with different size");
+            return (void)false;
+        }
+    }
+
+    funcShowMsg("OK","Image List Ready");
+
+
 
 
 

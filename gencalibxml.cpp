@@ -525,7 +525,7 @@ strLimits genCalibXML::getLimitsFromHDD(){
     limits.downSup = aux.split(",").at(0).toInt(0);
 
     //qDebug() << "Aquí715";
-    aux = readAllFile(_PATH_LIMIT_S);
+    aux = readAllFile(_PATH_LIMIT_S_HALOGEN);
     limits.sourceX = aux.split(",").at(0).toInt(0);
     limits.sourceY = aux.split(",").at(1).toInt(0);
     //qDebug() << "Aquí716";
@@ -640,7 +640,6 @@ void genCalibXML::on_pbGenCal_clicked()
 
         //Calculates linear regressions
         //..
-
         strAllLinReg linRegRes = getAllLR();
 
         //qDebug() << "Aquí7";
@@ -809,7 +808,7 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     //..
     QString sourceHalogen;
     QVector2D origin;
-    sourceHalogen = readFileParam( _PATH_LIMIT_S );
+    sourceHalogen = readFileParam( _PATH_LIMIT_S_HALOGEN );
     origin.setX( sourceHalogen.split(",").at(0).toInt(0) - daCalibGenCal->squareUsableX - offsetX );
     origin.setY( sourceHalogen.split(",").at(1).toInt(0) - daCalibGenCal->squareUsableY - offsetY );
 
@@ -997,6 +996,7 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     saveFile(_PATH_HALOGEN_IRRADIATION,halogenIrradiance);
 
     imgMod.save(_PATH_AUX_IMG);
+    //exit(3);
 
 }
 

@@ -33,11 +33,15 @@
     #define _PATH_HALOGEN_IRRADIATION       "./settings/Calib/responses/halogenIrradiation.hypcam"
     #define _PATH_RGB_SENSIVILITIES         "./settings/Calib/responses/sensitivities.hypcam"
 
+    #define _PATH_LAST_IMG_OPEN             "./settings/lastPaths/selectImage.hypcam"
+    #define _PATH_LAST_IMG_SAVED            "./settings/lastPaths/savedImage.hypcam"
+
     #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
     #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"
     #define _PATH_LIMIT_L                   "./settings/Calib/limL.hypcam"
     #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
-    #define _PATH_LIMIT_S                   "./settings/Calib/sourceHalogen.hypcam"
+    #define _PATH_LIMIT_S_HALOGEN           "./settings/Calib/sourceHalogen.hypcam"
+    #define _PATH_LIMIT_S_FLUORESCENT       "./settings/Calib/source.hypcam"
 
     #define _PATH_IMG_FILTERED              "./tmpImages/Filtered/"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"

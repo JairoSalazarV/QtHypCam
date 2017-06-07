@@ -486,6 +486,8 @@ private slots:
 
     void funcDrawPlotLimits();
 
+    void on_pbSelectFolderSlide_clicked();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

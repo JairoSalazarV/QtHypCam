@@ -31,7 +31,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -765,6 +765,101 @@
       <string>Graphic tools</string>
      </attribute>
     </widget>
+    <widget class="QWidget" name="tabShowPixels">
+     <attribute name="title">
+      <string>Pixels</string>
+     </attribute>
+     <widget class="QPushButton" name="pbSelectFolder">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select Directory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
+      </property>
+     </widget>
+     <widget class="QGraphicsView" name="graphViewPlot">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>110</y>
+        <width>1000</width>
+        <height>270</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QSlider" name="slideChangeImage">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>80</y>
+        <width>251</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelCubeImageName">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>50</y>
+        <width>251</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Image name</string>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="SlideFromVideo">
+     <attribute name="title">
+      <string>Slide</string>
+     </attribute>
+     <widget class="QPushButton" name="pbSelectFolderSlide">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select Directory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="tab_5">
      <attribute name="title">
       <string>Spectrometer</string>
@@ -992,73 +1087,6 @@ QSlider::handle:horizontal {
         </widget>
        </item>
       </layout>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tabShowPixels">
-     <attribute name="title">
-      <string>Pixels</string>
-     </attribute>
-     <widget class="QPushButton" name="pbSelectFolder">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>31</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select Directory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
-      </property>
-     </widget>
-     <widget class="QGraphicsView" name="graphViewPlot">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>110</y>
-        <width>1000</width>
-        <height>270</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QSlider" name="slideChangeImage">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>80</y>
-        <width>251</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-     <widget class="QLabel" name="labelCubeImageName">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>50</y>
-        <width>251</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Image name</string>
-      </property>
      </widget>
     </widget>
    </widget>

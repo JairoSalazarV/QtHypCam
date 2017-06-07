@@ -592,9 +592,19 @@ int fileIsValid(QString fileContain)
 }
 
 QString readFileParam(QString fileName){
-    QString tmpFileContain = readAllFile(fileName);
-    tmpFileContain = tmpFileContain.trimmed();
-    tmpFileContain.replace("\n","");
+    QString tmpFileContain = "";
+    if( fileExists(fileName) )
+    {
+        tmpFileContain = readAllFile(fileName);
+        if( fileIsValid(tmpFileContain) )
+        {
+            tmpFileContain = tmpFileContain.trimmed();
+            tmpFileContain.replace("\n","");
+        }
+    }else
+    {
+        saveFile(fileName,tmpFileContain);
+    }
     return tmpFileContain;
 }
 
