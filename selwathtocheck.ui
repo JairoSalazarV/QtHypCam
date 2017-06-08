@@ -166,7 +166,7 @@
     <string>Wavelength</string>
    </property>
   </widget>
-  <widget class="QCheckBox" name="checkBoxSensSamples">
+  <widget class="QCheckBox" name="checkBoxCentroidsCalc">
    <property name="geometry">
     <rect>
      <x>157</x>
@@ -176,7 +176,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Sensitivities</string>
+    <string>Centroids Calc</string>
    </property>
   </widget>
  </widget>

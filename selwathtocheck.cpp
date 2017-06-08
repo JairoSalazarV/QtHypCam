@@ -76,6 +76,12 @@ void selWathToCheck::on_pbCentroids_clicked()
         drawAllCentoides();
     }
 
+    //Centroides
+    if( ui->checkBoxCentroidsCalc->isChecked() )
+    {
+        drawAllCalculatedCentoides();
+    }
+
     //Limits
     if( ui->checkBoxLimits->isChecked() )
     {
@@ -496,6 +502,84 @@ void selWathToCheck::drawAllCentoides(){
     img.save(_PATH_AUX_IMG);
 }
 
+void selWathToCheck::drawAllCalculatedCentoides()
+{
+    //---------------------------------------------
+    //Get the calibration parameters
+    //---------------------------------------------
+    strDiffProj diffProj;
+    funcGetCalibration(daCalib);
+    double wavelengthRed    = readFileParam(_PATH_SETTINGS_RED_WAVELEN).toDouble(0);
+    double wavelengthGreen  = readFileParam(_PATH_SETTINGS_GREEN_WAVELEN).toDouble(0);
+    double wavelengthBlue   = readFileParam(_PATH_SETTINGS_BLUE_WAVELEN).toDouble(0);
+
+    //---------------------------------------------
+    //Get the Fluorescent centroid
+    //---------------------------------------------
+    QString fileContain;
+    fileContain = readAllFile(_PATH_LIMIT_S_FLUORESCENT);
+    if( fileContain.contains(_ERROR_FILE_NOTEXISTS) || fileContain.contains(_ERROR_FILE) ){
+        qDebug() << fileContain;
+        return (void)NULL;
+    }
+    int sourceX, sourceY;
+    sourceX = fileContain.split(",").at(0).toInt(0);
+    sourceY = fileContain.split(",").at(1).toInt(0);
+    sourceX = sourceX - daCalib->squareUsableX;
+    sourceY = sourceY - daCalib->squareUsableY;
+
+    //---------------------------------------------
+    //Draw the Source Centroid
+    //---------------------------------------------
+    diffProj.x          = sourceX;
+    diffProj.y          = sourceY;
+    calcDiffProj( &diffProj, daCalib );
+    QImage img( _PATH_DISPLAY_IMAGE );
+    drawCentroid(diffProj.x,diffProj.y,Qt::magenta,&img);
+
+
+    //---------------------------------------------
+    //Draw centroid calculated
+    //---------------------------------------------
+    //Blue
+    diffProj.x          = sourceX;
+    diffProj.y          = sourceY;
+    diffProj.wavelength = wavelengthRed;
+    calcDiffProj( &diffProj, daCalib );
+    drawCentroid(diffProj.rx,diffProj.ry,Qt::blue,&img);
+    drawCentroid(diffProj.ux,diffProj.uy,Qt::blue,&img);
+    drawCentroid(diffProj.lx,diffProj.ly,Qt::blue,&img);
+    drawCentroid(diffProj.dx,diffProj.dy,Qt::blue,&img);
+
+    //Green
+    diffProj.x          = sourceX;
+    diffProj.y          = sourceY;
+    diffProj.wavelength = wavelengthGreen;
+    calcDiffProj( &diffProj, daCalib );
+    drawCentroid(diffProj.rx,diffProj.ry,Qt::green,&img);
+    drawCentroid(diffProj.ux,diffProj.uy,Qt::green,&img);
+    drawCentroid(diffProj.lx,diffProj.ly,Qt::green,&img);
+    drawCentroid(diffProj.dx,diffProj.dy,Qt::green,&img);
+
+    //Red
+    diffProj.x          = sourceX;
+    diffProj.y          = sourceY;
+    diffProj.wavelength = wavelengthBlue;
+    calcDiffProj( &diffProj, daCalib );
+    drawCentroid(diffProj.rx,diffProj.ry,Qt::red,&img);
+    drawCentroid(diffProj.ux,diffProj.uy,Qt::red,&img);
+    drawCentroid(diffProj.lx,diffProj.ly,Qt::red,&img);
+    drawCentroid(diffProj.dx,diffProj.dy,Qt::red,&img);
+
+
+    /*
+    diffProj.wavelength =
+    calcDiffProj( &diffProj, daCalib );*/
+
+
+}
+
+
 void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color, QImage *img)
 {
     const int len = 15;
@@ -517,6 +601,38 @@ void selWathToCheck::drawCentroid(QString file, Qt::GlobalColor color, QImage *i
     int x, y;
     x = fileContain.split(",").at(0).toInt(0);
     y = fileContain.split(",").at(1).toInt(0);
+    QGraphicsLineItem *horLine = new QGraphicsLineItem(
+                                                            (qreal)(x-len),
+                                                            (qreal)y,
+                                                            (qreal)(x+len),
+                                                            (qreal)y
+                                                      );
+    QGraphicsLineItem *verLine = new QGraphicsLineItem(
+                                                            (qreal)x,
+                                                            (qreal)(y-len),
+                                                            (qreal)x,
+                                                            (qreal)(y+len)
+                                                      );
+    horLine->setPen(QPen(color));
+    verLine->setPen(QPen(color));
+    globalGvValCal->scene()->addItem(horLine);
+    globalGvValCal->scene()->addItem(verLine);
+    globalGvValCal->update();
+
+    //Draw int real image
+    int c, r;
+    for( r=y-len; r<y+len; r++ )
+        img->setPixelColor(x,r,color);
+    for( c=x-len; c<x+len; c++ )
+        img->setPixelColor(c,y,color);
+
+}
+
+
+void selWathToCheck::drawCentroid(int x, int y, Qt::GlobalColor color, QImage *img)
+{
+    const int len = 15;
+
     QGraphicsLineItem *horLine = new QGraphicsLineItem(
                                                             (qreal)(x-len),
                                                             (qreal)y,

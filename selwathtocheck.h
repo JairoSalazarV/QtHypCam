@@ -24,6 +24,7 @@ private slots:
     void fillLabelImg(QString imgPath);
 
     void drawCentroid(QString file, Qt::GlobalColor color , QImage *img);
+    void drawCentroid(int x, int y, Qt::GlobalColor color, QImage *img);
 
     //void showSensitivitiesArea();
 
@@ -43,7 +44,9 @@ private slots:
 
     void drawLimit(int side);
 
-    void drawAllCentoides();    
+    void drawAllCentoides();
+
+    void drawAllCalculatedCentoides();
 
     void on_pbCentroids_clicked();
 
