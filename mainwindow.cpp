@@ -6591,15 +6591,23 @@ void MainWindow::on_pbSelectFolder_clicked()
     //---------------------------------------
     //Display first photo
     //---------------------------------------
-    graphViewSmall = new GraphicsView(this);
-    connect( graphViewSmall, SIGNAL( signalMouseMove(QMouseEvent*) ),this, SLOT( funcMouseMoveReaction(QMouseEvent*) ));
-    graphViewSmall->resize(tmpImg.width(),tmpImg.height());
+    if( graphViewSmall == NULL )
+    {
+        graphViewSmall = new GraphicsView(this);
+        connect( graphViewSmall, SIGNAL( signalMouseMove(QMouseEvent*) ),this, SLOT( funcMouseMoveReaction(QMouseEvent*) ));
+        graphViewSmall->resize(tmpImg.width(),tmpImg.height());
+        QLayout *layout = new QVBoxLayout();
+        layout->addWidget(graphViewSmall);
+        layout->setEnabled(false);
+        ui->tabShowPixels->setLayout(layout);
+        graphViewSmall->move(20,50);
+    }
+    else
+    {
+        graphViewSmall->scene()->clear();
+        qDebug() << "Removiendo";
+    }
     funcLoadImageIntoGaphView(graphViewSmall,lstImages.at(0).absoluteFilePath());
-    QLayout *layout = new QVBoxLayout();
-    layout->addWidget(graphViewSmall);
-    layout->setEnabled(false);
-    ui->tabShowPixels->setLayout(layout);
-    graphViewSmall->move(20,50);
 
 
     //---------------------------------------
