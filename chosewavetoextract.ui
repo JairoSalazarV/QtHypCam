@@ -111,17 +111,17 @@
      <normaloff>:/new/icons/imagenInte/go-first.png</normaloff>:/new/icons/imagenInte/go-first.png</iconset>
    </property>
   </widget>
-  <widget class="QSpinBox" name="spinBoxStep">
+  <widget class="QDoubleSpinBox" name="spinBoxStep">
    <property name="geometry">
     <rect>
-     <x>160</x>
+     <x>159</x>
      <y>20</y>
      <width>111</width>
-     <height>31</height>
+     <height>29</height>
     </rect>
    </property>
    <property name="minimum">
-    <number>1</number>
+    <double>1.000000000000000</double>
    </property>
   </widget>
  </widget>
