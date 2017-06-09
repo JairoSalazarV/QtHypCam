@@ -215,6 +215,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             qreal x,y,w,h;
             this->rect().getRect(&x,&y,&w,&h);
             QString tmpPropMsg;
+            tmpPropMsg.append("Canvas("+QString::number(this->parameters.W)+" x " + QString::number(this->parameters.H)  +")\n");
             tmpPropMsg.append("Pos("+QString::number(x)+", " + QString::number(y)  +")\n");
             tmpPropMsg.append(QString::number(w)+" x " + QString::number(h)  +"\n");
             funcShowMsg("Rectangle properties",tmpPropMsg);

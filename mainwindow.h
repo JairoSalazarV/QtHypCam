@@ -49,7 +49,7 @@ public slots:
 
     structCamSelected* funcGetCamSelected();
 
-    int funcVideoToFrames();
+    int funcVideoToFrames(QString videoSource);
 
     void processEndOfPlayer(QMediaPlayer::MediaStatus status);
 
@@ -487,6 +487,10 @@ private slots:
     void funcDrawPlotLimits();
 
     void on_pbSelectFolderSlide_clicked();
+
+    void on_actionvideoToFrames_triggered();
+
+    void on_actionframesToCube_triggered();
 
 private:
     Ui::MainWindow *ui;

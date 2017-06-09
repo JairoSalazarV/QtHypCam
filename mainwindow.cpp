@@ -158,7 +158,7 @@ QList<QImage> lstFrames;
 QThread* progBarThread;
 
 
-int*** tmpHypCube;
+int*** tmpHypercube;
 static QList<QFileInfo> lstImages;
 GraphicsView* graphViewSmall;
 const int frameX    = 40;       //left and right
@@ -322,7 +322,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     //Allocate memory to the hypercube
     //
-    //funcAllocInteger3DMatrixMemo( 3, 3, 3, tmpHypCube, true );
+    //funcAllocInteger3DMatrixMemo( 3, 3, 3, tmpbe, true );
 
 
 
@@ -4862,8 +4862,9 @@ int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestin
 
         int fileLen;
         u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
-        funcLabelProgBarUpdate("Savin image locally",1);
+        funcLabelProgBarUpdate("Saving image locally",0);
         saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen);
+        funcLabelProgBarUpdate("",0);
         debugMsg("File received complete");
 
         ui->progBar->setValue(100.0);
@@ -5880,6 +5881,7 @@ void MainWindow::on_pbSnapVid_clicked()
             videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
         }
     }
+    qDebug() << "videoRemoteFilename: " << videoRemoteFilename;
     memcpy( reqImg->video.o, videoRemoteFilename.toStdString().c_str(), videoRemoteFilename.size() );
 
     //Others
@@ -5930,7 +5932,8 @@ void MainWindow::on_pbSnapVid_clicked()
         funcDeleteFile( _PATH_VIDEO_RECEIVED_MP4 );
 
         //Download new
-        qDebug() << "Video recorded";        
+        qDebug() << "Video recorded";
+        funcLabelProgBarUpdate("Transferring video",0);
         obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString() );
 
         //Convert into MP4        
@@ -5953,7 +5956,7 @@ void MainWindow::on_pbSnapVid_clicked()
         //
         //Send .mp4 to frames
         //
-        //funcVideoToFrames();
+        //funcVideoToFrames(_PATH_VIDEO_FRAMES, _PATH_VIDEO_RECEIVED_MP4);
 
 
 
@@ -6004,7 +6007,7 @@ class MyVideoSurface : public QAbstractVideoSurface
     }
 };
 
-int MainWindow::funcVideoToFrames()
+int MainWindow::funcVideoToFrames(QString videoSource)//_PATH_VIDEO_FRAMES, _PATH_VIDEO_RECEIVED_MP4
 {
 
     ui->progBar->setValue(0);
@@ -6024,7 +6027,7 @@ int MainWindow::funcVideoToFrames()
     probe->setSource(player); // Returns true, hopefully.
 
     player->setVideoOutput(myVideoSurface);
-    player->setMedia( QUrl::fromUserInput(_PATH_VIDEO_RECEIVED_MP4, qApp->applicationDirPath()) );
+    player->setMedia( QUrl::fromUserInput(videoSource, qApp->applicationDirPath()) );
 
     player->setPlaybackRate(0.1);
 
@@ -6575,7 +6578,7 @@ void MainWindow::on_pbSelectFolder_clicked()
     //---------------------------------------
     //Create Cube from HDD
     //---------------------------------------
-    tmpHypCube = (int***)funcAllocInteger3DMatrixMemo( H, W, L, tmpHypCube );
+    tmpHypercube = (int***)funcAllocInteger3DMatrixMemo( H, W, L, tmpHypercube );
     for( l=0; l<L; l++ )
     {
         tmpImg = QImage(lstImages.at(l).absoluteFilePath());
@@ -6583,7 +6586,7 @@ void MainWindow::on_pbSelectFolder_clicked()
         {
             for( c=0; c<W; c++ )
             {
-                tmpHypCube[r][c][l]    = qRed(tmpImg.pixel(c,r));
+                tmpHypercube[r][c][l]    = qRed(tmpImg.pixel(c,r));
             }
         }
     }
@@ -6671,8 +6674,8 @@ void MainWindow::funcDrawSpectralPixelIntoSmall(int x, int y)
         //Calculate coordinates
         wavelength1 = lstImages.at(l-1).completeBaseName().toFloat(0) - (float)rangeInit;
         wavelength2 = lstImages.at(l).completeBaseName().toFloat(0) - (float)rangeInit;
-        energy1     = ((float)tmpHypCube[y][x][l-1] / 255.0) * energyRange;
-        energy2     = ((float)tmpHypCube[y][x][l] / 255.0) * energyRange;
+        energy1     = ((float)tmpHypercube[y][x][l-1] / 255.0) * energyRange;
+        energy2     = ((float)tmpHypercube[y][x][l] / 255.0) * energyRange;
         x1          = (float)frameX + ( pixelsByNm * wavelength1 );
         y1          = H - (float)frameY - energy1;
         x2          = (float)frameX + ( pixelsByNm * wavelength2 );
@@ -6801,7 +6804,42 @@ void MainWindow::funcDrawPlotLimits()
 
 void MainWindow::on_pbSelectFolderSlide_clicked()
 {
-    int l;
+
+}
+
+void MainWindow::on_actionvideoToFrames_triggered()
+{
+    //-------------------------------------------------
+    //Select video
+    //-------------------------------------------------
+    auxQstring = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select video..."),
+                                                        _PATH_VIDEO_FRAMES,
+                                                        "(*.mp4);;"
+                                                     );
+    if( auxQstring.isEmpty() )
+    {
+        return (void)NULL;
+    }
+
+    //-------------------------------------------------
+    //Esport Video
+    //-------------------------------------------------
+    funcVideoToFrames(auxQstring);
+
+}
+
+void MainWindow::on_actionframesToCube_triggered()
+{
+    int sourceW         = 15;   //Diffraction width
+    int waveResolution  = 50.0; //Spectral Resolution
+    double minWave      = 430.0;//Spectral sensitivity
+    double maxWave      = 750.0;//Spectral sensitivity
+
+    int row, l;
+
+    mouseCursorWait();
 
     //---------------------------------------
     //Get directory
@@ -6810,6 +6848,7 @@ void MainWindow::on_pbSelectFolderSlide_clicked()
     if( pathSource.isNull() )
     {
         qDebug() << "Dir not selected";
+        mouseCursorReset();
         return (void)false;
     }
 
@@ -6820,6 +6859,7 @@ void MainWindow::on_pbSelectFolderSlide_clicked()
     if( lstImages.size() == 0 )
     {
         funcShowMsg("ERROR","Invalid directory");
+        mouseCursorReset();
         return (void)false;
     }
 
@@ -6827,24 +6867,229 @@ void MainWindow::on_pbSelectFolderSlide_clicked()
     //Validate imagery in Dir
     //---------------------------------------
     QImage tmpImg(lstImages.at(0).absoluteFilePath());
-    int W, H, L;
-    W = tmpImg.width();
-    H = tmpImg.height();
-    L = lstImages.size();
-    for( l=1; l<L; l++ )
+    int W, H, numSlides;
+    W           = tmpImg.width();
+    H           = tmpImg.height();
+    numSlides   = lstImages.size();
+    for( l=1; l<numSlides; l++ )
     {
         tmpImg = QImage(lstImages.at(l).absoluteFilePath());
         if( tmpImg.width() != W || tmpImg.height() != H )
         {
+            qDebug() << "W: " << W << " H: " << H << " image: " << lstImages.at(l).absoluteFilePath();
             funcShowMsg("ERROR","Dir selected contains image with different size");
+            mouseCursorReset();
             return (void)false;
         }
     }
 
-    funcShowMsg("OK","Image List Ready");
+    //---------------------------------------
+    //1) Calculates aberration (main curve)
+    //2) Define wavelength linear regression
+    //3) Define Source Area
+    //4) Define Rotation
+    //---------------------------------------
+    QList<int> mainCurveLeft, mainCurveRight;
+    double aux;
+    double fitLeft2, fitLeft1, fitLeft0;
+    double fitRight2, fitRight1, fitRight0;
+    fitLeft2 = -0.000086713; fitLeft1  = 0.099027;  fitLeft0  = 950.78;
+    fitRight2 = 0.00014989;  fitRight1 = -0.16814; fitRight0 = 989.78;
+    for( row=1; row<=tmpImg.height(); row++ )
+    {
+        //Left curve
+        aux = ((double)row*(double)row*fitLeft2) + ((double)row*fitLeft1) + fitLeft0;
+        mainCurveLeft.append( aux );
+        //Right curve
+        aux = ((double)row*(double)row*fitRight2) + ((double)row*fitRight1) + fitRight0;
+        mainCurveRight.append( aux );
+    }
+    //Wavelegth linear regression
+    double fitWave1, fitWave0;
+    fitWave1 = 0.85972; fitWave0 = -23.49514;
+    //Define source area
+    int sourceH;
+    int sourceY1, sourceY2;
+    //sourceX1 = 966;
+    sourceY1 = 200;
+    sourceY2 = 600;//988
+    //sourceX1 = 966;         sourceY1 = 400;
+    //sourceX2 = 966+sourceW; sourceY2 = 700;//988
+    sourceH  = sourceY2 -sourceY1;
+    //Define Rotation
+    double imgRotation;
+    imgRotation = 0.8;
+
+    //---------------------------------------
+    //Creates Final Image Container
+    //---------------------------------------
+    int frankiImgW, frankiImgH;
+    int L;
+    frankiImgW = sourceW * lstImages.size();
+    frankiImgH = sourceY2 - sourceY1;
+    //QImage frankyImage(frankiImgW,frankiImgH,QImage::Format_RGB32);
+
+    //---------------------------------------
+    //Test: Draw RGB Lines Into Image
+    //---------------------------------------
+    if( 0 )
+    {
+        int testX, testY, testWaveDistance, offsetLeft, offsetRight;
+        double waveR, waveG, waveB;
+        waveR = 618.0;
+        waveG = 548.0;
+        waveB = 438.0;
+        offsetLeft = 0;
+        offsetRight = 0;
+        QImage testImg = funcRotateImage( _PATH_DISPLAY_IMAGE, imgRotation );
+        //Red
+        testWaveDistance = (waveR*fitWave1)+fitWave0;
+        for( testY=sourceY1; testY<sourceY2; testY++ )
+        {
+            //Right
+            testX = mainCurveRight.at(testY) + testWaveDistance + offsetRight;
+            testImg.setPixel(testX,testY,qRgb(255,0,0));
+            //Left
+            testX = mainCurveLeft.at(testY) - testWaveDistance - offsetLeft;
+            testImg.setPixel(testX,testY,qRgb(255,0,0));
+        }
+        //Green
+        testWaveDistance = (waveG*fitWave1)+fitWave0;
+        for( testY=sourceY1; testY<sourceY2; testY++ )
+        {
+            //Right
+            testX = mainCurveRight.at(testY) + testWaveDistance + offsetRight;
+            testImg.setPixel(testX,testY,qRgb(0,255,0));
+            //Left
+            testX = mainCurveLeft.at(testY) - testWaveDistance - offsetLeft;
+            testImg.setPixel(testX,testY,qRgb(0,255,0));
+        }
+        //Blue
+        testWaveDistance = (waveB*fitWave1)+fitWave0;
+        for( testY=sourceY1; testY<sourceY2; testY++ )
+        {
+            //Right
+            testX = mainCurveRight.at(testY) + testWaveDistance + offsetRight;
+            testImg.setPixel(testX,testY,qRgb(0,0,255));
+            //Left
+            testX = mainCurveLeft.at(testY) - testWaveDistance - offsetLeft;
+            testImg.setPixel(testX,testY,qRgb(0,0,255));
+        }
+        testImg.save(_PATH_AUX_IMG);
+    }
+
+    //---------------------------------------
+    //Define Spectral Resolution
+    //---------------------------------------
+    double tmpWave;
+
+    //---------------------------------------
+    //Fill each wavelength into frankiImage
+    //---------------------------------------
+
+    //.......................................
+    //Creates one frankiImage for each
+    //wavelength
+    //.......................................
+    funcClearDirFolder(_PATH_TMP_HYPCUBES);
+    L = round((maxWave-minWave)/waveResolution);
+    //qDebug() << "frankiImgH: " << frankiImgH << " frankiImgW: " << frankiImgW << " frankiImgL: " << frankiImgL;
+    //int hypFranki[frankiImgH][frankiImgW][frankiImgL];
+    //qDebug() << "frankiImgH: " << frankiImgH << " frankiImgW: " << frankiImgW << " frankiImgL: " << frankiImgL;
+    int*** hypFranki;
+    hypFranki = (int***)funcAllocInteger3DMatrixMemo( frankiImgH/*Rows*/, frankiImgW/*Cols*/, L, hypFranki );
+    //qDebug() << "Después... frankiImgH: " << frankiImgH << " frankiImgW: " << frankiImgW << " L: " << L;
+
+    //.......................................
+    //List frankiImagery
+    //.......................................
+    QList<int> colorSensed;
+    QRgb tmpPixelLelft,tmpPixelRight;
+    int waveDistance, frankiID, frankiX, frankiY, frankiSlideXInit;
+    int diffFrameY, tmpDiffFrameXL, tmpDiffFrameXR;
+    int sourceX, sourceY;
+    QList<QFileInfo> lstFrankiFrames = funcListFilesInDir(_PATH_VIDEO_FRAMES);
+    if( lstFrankiFrames.size() == 0 )
+    {
+        funcShowMsg("ERROR","Invalid frankiDirectory");
+        return (void)false;
+    }
+
+    for( frankiID=0; frankiID<lstFrankiFrames.size(); frankiID++ )
+    {
+        //Obtain frame
+        QImage tmpImg = funcRotateImage( lstFrankiFrames.at(frankiID).filePath(), imgRotation );
+        //Calculates initial position for this slide
+        for(l=0; l<L; l++)
+        {
+            //Define x position in frankiImage
+            frankiSlideXInit = frankiID*sourceW;
+            //Define wavelength
+            tmpWave      = minWave + (l*waveResolution);
+            //Define distance respect to the source for that wavelength
+            waveDistance = (tmpWave*fitWave1)+fitWave0;
+            //qDebug() << "l: " << l << "waveDistance: " << waveDistance;
+            for(sourceX=0; sourceX<sourceW; sourceX++)
+            {
+                frankiX = frankiSlideXInit + sourceX;
+                for(sourceY=0; sourceY<sourceH; sourceY++)
+                {
+                    //Diffraction Y position
+                    diffFrameY      = sourceY + sourceY1;
+                    //Calculate position for diffraction wavelength in original image
+                    tmpDiffFrameXL  = mainCurveLeft.at(diffFrameY) - waveDistance;//Left
+                    tmpDiffFrameXR  = mainCurveRight.at(diffFrameY) + waveDistance;//Right
+                    if(tmpDiffFrameXL<0 || tmpDiffFrameXR>=tmpImg.width() )
+                    {
+                        qDebug() << "Wrong coordinates: tmpDiffFrameXL: " << tmpDiffFrameXL << " tmpDiffFrameXR: " << tmpDiffFrameXR;
+                        mouseCursorReset();
+                        exit(0);
+                    }
 
 
+                    //Obtain the maximum value for diffraction on left and
+                    //right in order to avoid emission light angle
+                    if( tmpImg.pixel(tmpDiffFrameXL,diffFrameY) )
+                    tmpPixelLelft = tmpImg.pixel(tmpDiffFrameXL,diffFrameY);
+                    tmpPixelRight = tmpImg.pixel(tmpDiffFrameXR,diffFrameY);
+                    colorSensed.clear();
+                    colorSensed.append(qRed(tmpPixelLelft));
+                    colorSensed.append(qGreen(tmpPixelLelft));
+                    colorSensed.append(qBlue(tmpPixelLelft));
+                    //colorSensed.append(qRed(tmpPixelRight));
+                    //colorSensed.append(qGreen(tmpPixelRight));
+                    //colorSensed.append(qBlue(tmpPixelRight));
+                    //Save value
+                    frankiY = sourceY;
+                    //qDebug() << "(" << frankiX << "," << frankiY << "): " << *std::max_element(colorSensed.begin(),colorSensed.end());
+                    hypFranki[frankiY][frankiX][l] = *std::max_element(colorSensed.begin(),colorSensed.end());
+                }
+            }
+        }
+    }
 
+    //.......................................
+    //Exports layers in the cube created
+    //Each layer is a gray-scale image
+    //.......................................
+    //qDebug() << "Exportando... L: " << L;
+    for(l=0; l<L; l++)
+    {
+        //Define wavelength
+        tmpWave      = minWave + (l*waveResolution);
+        //Copy values into a new gray-scale image
+        QImage imgFromCube(frankiImgW,frankiImgH,QImage::Format_Grayscale8);
+        for(sourceX=0; sourceX<sourceW; sourceX++)
+        {
+            for(sourceY=0; sourceY<sourceH; sourceY++)
+            {
+                imgFromCube.setPixel(sourceX,sourceY,hypFranki[sourceY][sourceX][l]);
+            }
+        }
+        //qDebug() << _PATH_TMP_HYPCUBES + QString::number(tmpWave) + ".png";
+        imgFromCube.save( _PATH_TMP_HYPCUBES + QString::number(tmpWave) + ".png" );
+    }
 
+    mouseCursorReset();
 
 }

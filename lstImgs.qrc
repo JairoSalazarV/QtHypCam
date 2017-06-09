@@ -245,6 +245,8 @@
         <file>imagenInte/takeSquare.png</file>
         <file>imagenInte/snapshot.png</file>
         <file>imagenInte/oneShotSnap.png</file>
+        <file>imagenInte/framesToCube.png</file>
+        <file>imagenInte/videoToFrames.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

@@ -31,7 +31,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -514,7 +514,7 @@
        <rect>
         <x>20</x>
         <y>302</y>
-        <width>219</width>
+        <width>311</width>
         <height>19</height>
        </rect>
       </property>
@@ -533,7 +533,7 @@
        <rect>
         <x>20</x>
         <y>340</y>
-        <width>219</width>
+        <width>311</width>
         <height>19</height>
        </rect>
       </property>
@@ -541,7 +541,7 @@
        <number>0</number>
       </property>
       <property name="maximum">
-       <number>15</number>
+       <number>60</number>
       </property>
       <property name="value">
        <number>3</number>
@@ -829,34 +829,6 @@
       </property>
       <property name="text">
        <string>Image name</string>
-      </property>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="SlideFromVideo">
-     <attribute name="title">
-      <string>Slide</string>
-     </attribute>
-     <widget class="QPushButton" name="pbSelectFolderSlide">
-      <property name="enabled">
-       <bool>true</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>10</y>
-        <width>31</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select Directory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="icon">
-       <iconset resource="lstImgs.qrc">
-        <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
       </property>
      </widget>
     </widget>
@@ -1206,6 +1178,8 @@ QSlider::handle:horizontal {
    <addaction name="actionChoseWavelength"/>
    <addaction name="actionGenHypercube"/>
    <addaction name="actionsquareSettings"/>
+   <addaction name="actionvideoToFrames"/>
+   <addaction name="actionframesToCube"/>
   </widget>
   <action name="actionExit">
    <property name="text">
@@ -1551,6 +1525,30 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Square Settings</string>
+   </property>
+  </action>
+  <action name="actionvideoToFrames">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/videoToFrames.png</normaloff>:/new/icons/imagenInte/videoToFrames.png</iconset>
+   </property>
+   <property name="text">
+    <string>videoToFrames</string>
+   </property>
+   <property name="toolTip">
+    <string>Video to Frames</string>
+   </property>
+  </action>
+  <action name="actionframesToCube">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/framesToCube.png</normaloff>:/new/icons/imagenInte/framesToCube.png</iconset>
+   </property>
+   <property name="text">
+    <string>framesToCube</string>
+   </property>
+   <property name="toolTip">
+    <string>Frames to Cuve</string>
    </property>
   </action>
  </widget>
