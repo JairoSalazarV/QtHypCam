@@ -5869,6 +5869,7 @@ void MainWindow::on_pbSnapVid_clicked()
     else
     {
         memcpy( reqImg->video.cd, "MJPEG", 5 );
+        qDebug() << "MJPEG";
 
         if( 1 )
         {
@@ -5885,12 +5886,15 @@ void MainWindow::on_pbSnapVid_clicked()
     memcpy( reqImg->video.o, videoRemoteFilename.toStdString().c_str(), videoRemoteFilename.size() );
 
     //Others
-    reqImg->idMsg           = (unsigned char)12;
+    reqImg->idMsg           = (unsigned char)12;    
     reqImg->video.t         = ui->slideTriggerTime->value();
+    reqImg->video.ss        = (int16_t)round(ui->spinBoxShuterSpeed->value());
+    reqImg->video.awb       = (int16_t)ui->cbAWB->currentIndex();
+    reqImg->video.ex        = (int16_t)ui->cbExposure->currentIndex();
     reqImg->video.md        = 2;//2    
     reqImg->video.w         = 0;//1640
     reqImg->video.h         = 0;//1232
-    reqImg->video.fps       = 0;//1-15
+    reqImg->video.fps       = 5;//1-15
 
     //
     //Motor walk
@@ -7092,4 +7096,232 @@ void MainWindow::on_actionframesToCube_triggered()
 
     mouseCursorReset();
 
+}
+
+void MainWindow::on_pbTimeLapse_clicked()
+{
+    mouseCursorWait();
+    QString tmpCommand;
+    //--------------------------------------
+    //Clear Directory
+    //--------------------------------------
+    tmpCommand.clear();
+    tmpCommand.append("sudo rm tmpSnapVideos/*");
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected);
+
+    //--------------------------------------
+    //Take Timelapse
+    //--------------------------------------
+    tmpCommand = genSlideTimelapseCommand();
+    qDebug() << "tmpCommand: " << tmpCommand;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected);
+
+    //--------------------------------------
+    //Get Number of Frames
+    //--------------------------------------
+    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected);
+    int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
+    qDebug() << "numOfFrames: " << numOfFrames;
+
+    //--------------------------------------
+    //Get Frames
+    //--------------------------------------
+    if( numOfFrames > 0 )
+    {
+        funcClearDirFolder( _PATH_VIDEO_FRAMES );
+        QString tmpRemoteFrame, tmpLocalFrame;
+        int framesTransmited = 0;
+        int i = 0;
+        int filesNotFound = 0;
+        int maxFilesError = 5;
+        while( framesTransmited < numOfFrames )
+        {
+            tmpRemoteFrame = "./tmpSnapVideos/" + QString::number(i) + ".RGB888";
+            tmpLocalFrame  = _PATH_VIDEO_FRAMES + QString::number(i) + ".RGB888";
+
+            //Get Remote File
+            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString() );
+
+            //Check if was transmited
+            if( fileExists(tmpLocalFrame) )
+            {
+                framesTransmited++;
+                filesNotFound = 0;
+            }
+            else
+            {
+                filesNotFound++;
+            }
+
+            //Next image to check
+            i++;
+
+            //Break if error
+            if( filesNotFound >= maxFilesError )
+            {
+                funcShowMsg("ERROR","maxFilesError Achieved");
+                break;
+            }
+        }
+    }
+
+    mouseCursorReset();
+}
+
+
+
+QString MainWindow::genSlideTimelapseCommand()
+{
+    QString tmpCommand;
+    tmpCommand.clear();
+    tmpCommand.append("raspistill -t");
+    tmpCommand.append(" " + QString::number(ui->slideTriggerTime->value()*1000));
+    tmpCommand.append(" -tl 1000 -o ./tmpSnapVideos/%d.RGB888");
+    tmpCommand.append(" -n -q 100 -gc");
+
+    //tmpCommand.append(" -tl 1000 -n -roi 0.221649485,0.313559322,0.416237113,0.372881356 -o ./tmpSnapVideos/%d.RGB888");
+    //tmpCommand.append(" -tl 1000 -n -roi 0.2200,0.3136,0.4162,0.3729 -o ./tmpSnapVideos/%d.RGB888");
+    //progBarTimer((ui->slideTriggerTime->value()+1)*1000);
+    //funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected);
+
+    //.................................
+    //Diffraction Area ROI
+    //.................................
+    double W, H;
+    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+    memset(aperture,'\0',sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, aperture ) )
+    {
+        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
+        tmpCommand.clear();
+        return tmpCommand;
+    }
+    W = (double)aperture->rectW/(double)aperture->canvasW;
+    H = (double)aperture->rectH/(double)aperture->canvasH;
+
+    tmpCommand.append(" -roi ");
+    tmpCommand.append(QString::number((double)aperture->rectX/(double)aperture->canvasW)+",");
+    tmpCommand.append(QString::number((double)aperture->rectY/(double)aperture->canvasH)+",");
+    tmpCommand.append(QString::number(W)+",");
+    tmpCommand.append(QString::number(H));
+
+    //.................................
+    //Image Size ROI
+    //.................................
+    camRes = getCamRes();
+    //Width
+    tmpCommand.append(" -w ");
+    tmpCommand.append(QString::number( round( W * (double)camRes->width ) ));
+    //Height
+    tmpCommand.append(" -h ");
+    tmpCommand.append(QString::number( round( H * (double)camRes->height ) ));
+
+    //.................................
+    //Colour balance?
+    //.................................
+    if(ui->cbColorBalance->isChecked() ){
+        tmpCommand.append(" -ifx colourbalance");
+    }
+
+    //.................................
+    //Denoise?
+    //.................................
+    if( ui->cbDenoise->isChecked() ){
+        tmpCommand.append(" -ifx denoise");
+    }
+
+    //.................................
+    //Diffraction Shuter speed
+    //.................................
+    int shutSpeed = ui->spinBoxShuterSpeed->value();
+    if( shutSpeed > 0 ){
+        tmpCommand.append(" -ss " + QString::number(shutSpeed));
+    }
+
+
+
+    /*
+    //Width
+    ss.str("");
+    ss<<reqImg->imgCols;
+    tmpCommand->append(" -w " + ss.str());
+
+    //Height
+    ss.str("");
+    ss<<reqImg->imgRows;
+    tmpCommand->append(" -h " + ss.str());*/
+
+    //.................................
+    //AWB
+    //.................................
+    if( ui->cbAWB->currentText() != "none" ){
+        tmpCommand.append(" -awb " + ui->cbAWB->currentText());
+    }
+
+    //.................................
+    //Exposure
+    //.................................
+    if( ui->cbExposure->currentText() != "none" ){
+        tmpCommand.append(" -ex " + ui->cbExposure->currentText());
+    }
+
+    //.................................
+    //ISO
+    //.................................
+    if( ui->slideISO->value() > 0 ){
+        tmpCommand.append(" -ISO " + QString::number(ui->slideISO->value()) );
+    }
+
+
+    return tmpCommand;
+}
+
+
+std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCamSelected *camSelected )
+{
+    //--------------------------------------
+    //Open socket
+    //--------------------------------------
+    int n;
+    int sockfd = connectSocket( camSelected );
+    qDebug() << "Socket opened";
+
+    //--------------------------------------
+    //Excecute command
+    //--------------------------------------
+    frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
+    memset(frame2send,'\0',sizeof(frameStruct));
+    frame2send->header.idMsg        = (unsigned char)2;
+    frame2send->header.numTotMsg    = 1;
+    frame2send->header.consecutive  = 1;
+    frame2send->header.bodyLen      = command.length();
+    bzero(frame2send->msg,command.length()+1);
+    memcpy( frame2send->msg, command.c_str(), command.length() );
+
+    //Request command result
+    n = ::write(sockfd,frame2send,sizeof(frameStruct)+1);
+    if(n<0){
+        qDebug() << "ERROR: Excecuting Remote Command";
+        return "";
+    }
+
+    //Receibing ack with file len
+    unsigned int fileLen;
+    unsigned char bufferRead[frameBodyLen];
+    n = read(sockfd,bufferRead,frameBodyLen);
+    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
+    fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
+    qDebug() << "fileLen: " << fileLen;
+    //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
+
+    //Receive File
+    unsigned char tmpFile[fileLen];
+    funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
+    qDebug() <<tmpFile;
+    ::close(sockfd);
+
+
+    //Return Command Result
+    std::string tmpTxt((char*)tmpFile);
+    return tmpTxt;
 }

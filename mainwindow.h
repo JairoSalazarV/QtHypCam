@@ -492,6 +492,12 @@ private slots:
 
     void on_actionframesToCube_triggered();
 
+    void on_pbTimeLapse_clicked();
+
+    std::__cxx11::string funcRemoteTerminalCommand( std::string command, structCamSelected *camSelected );
+
+    QString genSlideTimelapseCommand();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
