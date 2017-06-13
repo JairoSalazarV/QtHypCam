@@ -288,6 +288,7 @@
         int           SquareShutterSpeed;     // microsecs (0 - 3000000)
         int           ISO;                    // 100 to 800
         int           ExposureCompensation;   // -10 to 10
+        int           TimelapseMs;            // 100-5000 milliseconds
         u_int8_t      Format;                 // 1->raspicam::RASPICAM_FORMAT_GRAY | 2->raspicam::RASPICAM_FORMAT_YUV420
         u_int8_t      Red;                    // 0 to 8 set the value for the RED component of white balance
         u_int8_t      Green;                  // 0 to 8 set the value for the GREEN component of white balance

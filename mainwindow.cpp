@@ -658,6 +658,9 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     //SquareShuterSpeed
     ui->spinBoxSquareShuterSpeed->setValue(raspcamSettings->SquareShutterSpeed);
 
+    //Timelapse
+    ui->spinBoxTimelapse->setValue( raspcamSettings->TimelapseMs );
+
     //ISO
     ui->slideISO->setValue( raspcamSettings->ISO );
     ui->labelISO->setText( "ISO: " + QString::number(raspcamSettings->ISO) );
@@ -1743,6 +1746,7 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     newFileCon.append("    <TriggerTime>"+ QString::number( ui->slideTriggerTime->value() ) +"</TriggerTime>\n");
     newFileCon.append("    <ShutterSpeed>"+ QString::number( ui->spinBoxShuterSpeed->value() ) +"</ShutterSpeed>\n");
     newFileCon.append("    <SquareShutterSpeed>"+ QString::number( ui->spinBoxSquareShuterSpeed->value() ) +"</SquareShutterSpeed>\n");
+    newFileCon.append("    <TimelapseMs>"+ QString::number( ui->spinBoxTimelapse->value() ) +"</TimelapseMs>\n");
     //newFileCon.append("    <SquareShutterSpeedSmall>"+ QString::number( ui->slideSquareShuterSpeedSmall->value() ) +"</SquareShutterSpeedSmall>\n");
     //newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
@@ -7176,7 +7180,9 @@ QString MainWindow::genSlideTimelapseCommand()
     tmpCommand.clear();
     tmpCommand.append("raspistill -t");
     tmpCommand.append(" " + QString::number(ui->slideTriggerTime->value()*1000));
-    tmpCommand.append(" -tl 1000 -o ./tmpSnapVideos/%d.RGB888");
+    tmpCommand.append(" -tl ");
+    tmpCommand.append(QString::number( ui->spinBoxTimelapse->value() ));
+    tmpCommand.append(" -o ./tmpSnapVideos/%d.RGB888");
     tmpCommand.append(" -n -q 100 -gc");
 
     //tmpCommand.append(" -tl 1000 -n -roi 0.221649485,0.313559322,0.416237113,0.372881356 -o ./tmpSnapVideos/%d.RGB888");

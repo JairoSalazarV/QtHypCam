@@ -744,8 +744,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->ShutterSpeed = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="SquareShutterSpeed" )
                 raspcamSettings->SquareShutterSpeed = xmlReader->readElementText().toInt(0);
-            //if( xmlReader->name()=="SquareShutterSpeedSmall" )
-            //    raspcamSettings->SquareShutterSpeedSmall = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TimelapseMs" )
+                raspcamSettings->TimelapseMs = xmlReader->readElementText().toInt(0);
             //if( xmlReader->name()=="ShutterSpeedSmall" )
             //    raspcamSettings->ShutterSpeedSmall = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ISO" )
