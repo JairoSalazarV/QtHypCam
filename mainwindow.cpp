@@ -2,7 +2,6 @@
 
     ->Jun/05/2017 Ready to get one shot snapshot
 
-
     //----------------------------------------
     //Merge branch into master
     //----------------------------------------
@@ -10,6 +9,8 @@
     git merge -s ours master
     git checkout master
     git merge seotweaks
+
+    ->June/13/2017 Remote Terminal Command Execution Added
 
 
 */
@@ -5682,6 +5683,9 @@ strReqImg* MainWindow::funcFillSLIDESettings(strReqImg* reqImg)
 
 void MainWindow::on_pbDrawSlide_triggered()
 {
+    funcDrawRectangleFromXML( _PATH_SLIDE_DIFFRACTION );
+
+    /*
     //
     //Obtain square coordinates from XML file
     //
@@ -5718,7 +5722,7 @@ void MainWindow::on_pbDrawSlide_triggered()
     //Draw into scene
     canvasCalib->scene()->clear();
     funcDrawRectangleFromXML( _PATH_SLIDE_APERTURE );
-    funcDrawRectangleFromXML( _PATH_SLIDE_DIFFRACTION );
+    funcDrawRectangleFromXML( _PATH_SLIDE_DIFFRACTION );*/
 }
 
 int MainWindow::saveRectangleAs( squareAperture *square, QString fileName )
@@ -7111,19 +7115,19 @@ void MainWindow::on_pbTimeLapse_clicked()
     //--------------------------------------
     tmpCommand.clear();
     tmpCommand.append("sudo rm tmpSnapVideos/*");
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
 
     //--------------------------------------
     //Take Timelapse
     //--------------------------------------
     tmpCommand = genSlideTimelapseCommand();
     qDebug() << "tmpCommand: " << tmpCommand;
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
 
     //--------------------------------------
     //Get Number of Frames
     //--------------------------------------
-    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected);
+    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected,true);
     int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
     qDebug() << "numOfFrames: " << numOfFrames;
 
@@ -7283,8 +7287,13 @@ QString MainWindow::genSlideTimelapseCommand()
 }
 
 
-std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCamSelected *camSelected )
+std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCamSelected *camSelected, bool waitForAnswer )
 {
+    //* It is used when waitForAnswer==true
+    //* Wait for answer when you need to know a parameter or the
+    //  command result
+    std::string tmpTxt;
+
     //--------------------------------------
     //Open socket
     //--------------------------------------
@@ -7296,8 +7305,8 @@ std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCa
     //Excecute command
     //--------------------------------------
     frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
-    memset(frame2send,'\0',sizeof(frameStruct));
-    frame2send->header.idMsg        = (unsigned char)2;
+    memset(frame2send,'\0',sizeof(frameStruct));    
+    frame2send->header.idMsg        = (waitForAnswer==true)?(unsigned char)2:(unsigned char)5;
     frame2send->header.numTotMsg    = 1;
     frame2send->header.consecutive  = 1;
     frame2send->header.bodyLen      = command.length();
@@ -7311,23 +7320,27 @@ std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCa
         return "";
     }
 
-    //Receibing ack with file len
-    unsigned int fileLen;
+    //Receibing ack with file len    
     unsigned char bufferRead[frameBodyLen];
-    n = read(sockfd,bufferRead,frameBodyLen);
-    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
-    fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
-    qDebug() << "fileLen: " << fileLen;
-    //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
+    n = read(sockfd,bufferRead,frameBodyLen);    
 
-    //Receive File
-    unsigned char tmpFile[fileLen];
-    funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
-    qDebug() <<tmpFile;
+    if( waitForAnswer == true )
+    {
+        unsigned int fileLen;
+        memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
+        fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
+        qDebug() << "fileLen: " << fileLen;
+        //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
+
+        //Receive File
+        unsigned char tmpFile[fileLen];
+        funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
+        tmpTxt.clear();
+        tmpTxt.assign((char*)tmpFile);
+        qDebug() <<tmpFile;
+    }
     ::close(sockfd);
 
-
-    //Return Command Result
-    std::string tmpTxt((char*)tmpFile);
+    //Return Command Result    
     return tmpTxt;
 }

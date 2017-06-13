@@ -494,7 +494,7 @@ private slots:
 
     void on_pbTimeLapse_clicked();
 
-    std::__cxx11::string funcRemoteTerminalCommand( std::string command, structCamSelected *camSelected );
+    std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected , bool waitForAnswer);
 
     QString genSlideTimelapseCommand();
 
