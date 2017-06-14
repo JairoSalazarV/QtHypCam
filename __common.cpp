@@ -1455,6 +1455,19 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
     }
 
     //......................................
+    // Get Minimum Value
+    //......................................
+    QString stringMinimumValue;
+    double minimumValue;
+    stringMinimumValue = readFileParam( _PATH_NDVI_MIN_VALUE );
+    minimumValue = stringMinimumValue.toDouble(0);
+    if( minimumValue < 1.0 || minimumValue > 255.0 )
+    {
+        funcShowMsg("FAIL","minimumValue WRONG!, setted to 1.0");
+        minimumValue = 1.0;
+    }
+
+    //......................................
     // Validate lower bound
     //......................................
     if( lowerBound < -1.0 || lowerBound > 1.0 )
@@ -1481,9 +1494,15 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
             tmpPixel        = imgToNDVI->pixel(x,y);
             infraredSensed  = (double)qBlue(tmpPixel) * infraredWeightRatio;
             redSensed       = (double)qRed(tmpPixel);
-            NDVI            = (infraredSensed-redSensed)/(infraredSensed+redSensed);
+
+            //Validate measuremente
+            if( infraredSensed > minimumValue && redSensed > minimumValue )
+                NDVI        = (infraredSensed-redSensed)/(infraredSensed+redSensed);
+            else
+                NDVI        = -1.0;
+
             //Draw pixeñ
-            if( NDVI >= -1 && NDVI < -0.33 )
+            if( NDVI >= -1.0 && NDVI < -0.33 )
                 imgToNDVI->setPixel(x,y,qRgb(0,0,0));
             if( NDVI >= -0.33 && NDVI < -0.1 )
                 imgToNDVI->setPixel(x,y,qRgb(180,0,0));

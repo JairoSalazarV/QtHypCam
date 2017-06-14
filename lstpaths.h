@@ -39,6 +39,7 @@
     #define _PATH_NDVI_THRESHOLD            "./settings/NDVI/threshold.hypcam"
     #define _PATH_NDVI_BRILLIANT            "./settings/NDVI/brilliant.hypcam"
     #define _PATH_NDVI_INFRARED_WEIGHT      "./settings/NDVI/infraredWeight.hypcam"
+    #define _PATH_NDVI_MIN_VALUE            "./settings/NDVI/minimumValue.hypcam"
 
     #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
     #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"

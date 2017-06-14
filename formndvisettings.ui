@@ -62,7 +62,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>110</y>
+     <y>160</y>
      <width>141</width>
      <height>26</height>
     </rect>
@@ -100,20 +100,33 @@
     <string>Weight Ratio</string>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="spinBoxThreshold_2">
+  <widget class="QDoubleSpinBox" name="spinBoxMinimumValue">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>240</y>
+     <x>170</x>
+     <y>106</y>
      <width>91</width>
      <height>29</height>
     </rect>
    </property>
    <property name="minimum">
-    <double>-1.000000000000000</double>
+    <double>1.000000000000000</double>
    </property>
    <property name="maximum">
-    <double>1.000000000000000</double>
+    <double>255.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>110</y>
+     <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Minimum Value</string>
    </property>
   </widget>
  </widget>
