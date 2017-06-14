@@ -2061,6 +2061,7 @@ void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
 void MainWindow::on_pbSnapshot_clicked()
 {
 
+    /*
     mouseCursorWait();
 
     camRes = getCamRes();
@@ -2071,6 +2072,22 @@ void MainWindow::on_pbSnapshot_clicked()
 
 
     mouseCursorReset();
+    */
+
+    mouseCursorWait();
+
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Full Area";
+        return (void)NULL;
+    }
+
+    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT );
+    updateDisplayImageReceived(&snapShot);
+    snapShot.save(_PATH_DISPLAY_IMAGE);
+
+    mouseCursorReset();
+
 
 }
 

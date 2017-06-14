@@ -1442,6 +1442,19 @@ void displayImageFullScreen( QImage* tmpImg )
 void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
 {
     //......................................
+    // Get Infrared Weight
+    //......................................
+    QString infraredWeight;
+    double infraredWeightRatio;
+    infraredWeight = readFileParam( _PATH_NDVI_INFRARED_WEIGHT );
+    infraredWeightRatio = infraredWeight.toDouble(0);
+    if( infraredWeightRatio <= 0.0 )
+    {
+        funcShowMsg("FAIL","infraredWeightRatio WRONG!, setted to 1.0");
+        infraredWeightRatio = 1.0;
+    }
+
+    //......................................
     // Validate lower bound
     //......................................
     if( lowerBound < -1.0 || lowerBound > 1.0 )
@@ -1458,14 +1471,17 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
     QRgb tmpPixel;
     maxNDVI = 0.0;
     range   = 1.0 - lowerBound;
+    double infraredSensed;
+    double redSensed;
     for( x=0; x<imgToNDVI->width(); x++ )
     {
         for( y=0; y<imgToNDVI->height(); y++ )
         {
             //Calculate NDVI
-            tmpPixel    = imgToNDVI->pixel(x,y);
-            NDVI        = (double)(qBlue(tmpPixel)-qRed(tmpPixel))/(double)(qBlue(tmpPixel)+qRed(tmpPixel));
-            //NDVI        = (NDVI + 1.0)/2.0;
+            tmpPixel        = imgToNDVI->pixel(x,y);
+            infraredSensed  = (double)qBlue(tmpPixel) * infraredWeightRatio;
+            redSensed       = (double)qRed(tmpPixel);
+            NDVI            = (infraredSensed-redSensed)/(infraredSensed+redSensed);
             //Draw pixeñ
             if( NDVI >= -1 && NDVI < -0.33 )
                 imgToNDVI->setPixel(x,y,qRgb(0,0,0));
