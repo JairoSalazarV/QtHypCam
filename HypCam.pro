@@ -38,7 +38,8 @@ SOURCES += main.cpp\
     rasphypcam.cpp \
     arduinomotor.cpp \
     formslidesettings.cpp \
-    formsquareaperturesettings.cpp
+    formsquareaperturesettings.cpp \
+    formndvisettings.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -66,7 +67,8 @@ HEADERS  += mainwindow.h \
     formslidesettings.h \
     lstfilenames.h \
     lstraspividstruct.h \
-    formsquareaperturesettings.h
+    formsquareaperturesettings.h \
+    formndvisettings.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -78,7 +80,8 @@ FORMS    += mainwindow.ui \
     chosewavetoextract.ui \
     slidehypcam.ui \
     formslidesettings.ui \
-    formsquareaperturesettings.ui
+    formsquareaperturesettings.ui \
+    formndvisettings.ui
 
 RESOURCES += \
     lstImgs.qrc

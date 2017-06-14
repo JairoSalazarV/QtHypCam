@@ -125,6 +125,8 @@
 #include <QFuture>
 #include <QtConcurrent/QtConcurrent>
 
+#include <formndvisettings.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -703,6 +705,9 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     if( raspcamSettings->CameraMp == 5 )ui->radioRes5Mp->setChecked(true);
     else ui->radioRes8Mp->setChecked(true);
 
+    //FLIPPED
+    if( raspcamSettings->HorizontalFlipped )ui->cbFlipped->setChecked(true);
+    else ui->cbFlipped->setChecked(false);
 
 
 }
@@ -1273,19 +1278,20 @@ void MainWindow::progBarTimer( int ms )
 
     //this->moveToThread(progBarThread);
     ui->progBar->setVisible(true);
+    ui->progBar->setMinimum(0);
+    ui->progBar->setMaximum(100);
     ui->progBar->setValue(0);
     ui->progBar->update();
 
     int step = floor( (float)ms/100.0);
-    for( int i=1; i<=100; i++ )
+    int i;
+    for( i=0; i<=100; i++ )
     {
         ui->progBar->setValue(i);
         ui->progBar->update();
-        //QtDelay(step);
-
         QThread::msleep(step);
-
     }
+    i=0;
 
     ui->progBar->setValue(0);
     ui->progBar->update();
@@ -1313,13 +1319,13 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
         qDebug() << "Camera OK";
         ::close(sockfd);
 
-        funcLabelProgBarUpdate("Stabilizing camera",1);
+        progBarUpdateLabel("Stabilizing camera",0);
         progBarTimer( (reqImg->raspSett.TriggerTime + 1) * 1000 );
 
         //Get File
         if( saveImg )
         {
-            funcLabelProgBarUpdate("Stabilizing remote camera",0);
+            progBarUpdateLabel("Stabilizing remote camera",0);
             obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
         }
 
@@ -1373,7 +1379,7 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
     return true;
 }
 
-void MainWindow::funcLabelProgBarUpdate( QString txt, int color )
+void MainWindow::progBarUpdateLabel( QString txt, int color )
 {
     ui->labelProgBar->setVisible(true);
     ui->labelProgBar->setText(txt);
@@ -1730,6 +1736,7 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     //Prepare file contain
     //..
     QString newFileCon = "";
+    QString flipped = (ui->cbFlipped->isChecked())?"1":"0";
     QString denoiseFlag = (ui->cbDenoise->isChecked())?"1":"0";
     QString colbalFlag = (ui->cbColorBalance->isChecked())?"1":"0";
     //QString previewFlag = (ui->cbPreview->isChecked())?"1":"0";
@@ -1752,6 +1759,7 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     //newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
     newFileCon.append("    <CameraMp>"+ QString::number( tmpResInMp ) +"</CameraMp>\n");
+    newFileCon.append("    <HorizontalFlipped>"+ flipped +"</HorizontalFlipped>\n");
     newFileCon.append("</settings>");
     //Save
     //..
@@ -1887,12 +1895,12 @@ void MainWindow::funcGetSnapshot()
         QImage imgAperture( _PATH_IMAGE_RECEIVED );
 
         //Invert phot if required
-        if( _INVERTED_CAMERA )
-            imgAperture = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
+        //if( _INVERTED_CAMERA )
+        //    imgAperture = funcRotateImage( _PATH_DISPLAY_IMAGE , 180 );
         imgAperture.save( _PATH_DISPLAY_IMAGE );
 
         //Display image into qlabel
-        updateDisplayImageReceived(imgAperture);
+        updateDisplayImageReceived(&imgAperture);
     }
     else funcShowMsg("ERROR","Camera respond with error");
     funcLabelProgBarHide();
@@ -2015,6 +2023,7 @@ void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
 
 void MainWindow::updateDisplayImageReceived()
 {
+    mouseCursorWait();
     //Show snapshot
     //..
     QImage tmpImg( _PATH_DISPLAY_IMAGE );
@@ -2029,23 +2038,24 @@ void MainWindow::updateDisplayImageReceived()
     //..
     auxQstring = _PATH_DISPLAY_IMAGE;
     loadImageIntoCanvasEdit(auxQstring, true);
+    mouseCursorReset();
 }
 
-void MainWindow::updateDisplayImageReceived(QImage tmpImg)
+void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
 {
     //Show snapshot
     //..
     int maxW, maxH;
-    maxW = (_FRAME_THUMB_W<tmpImg.width())?_FRAME_THUMB_W:tmpImg.width();
-    maxH = (_FRAME_THUMB_H<tmpImg.height())?_FRAME_THUMB_H:tmpImg.height();
-    QImage tmpThumb = tmpImg.scaledToHeight(maxH);
+    maxW = (_FRAME_THUMB_W<tmpImg->width())?_FRAME_THUMB_W:tmpImg->width();
+    maxH = (_FRAME_THUMB_H<tmpImg->height())?_FRAME_THUMB_H:tmpImg->height();
+    QImage tmpThumb = tmpImg->scaledToHeight(maxH);
     tmpThumb = tmpThumb.scaledToWidth(maxW);
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
     ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
     //Update view
     //..
-    auxQstring = _PATH_DISPLAY_IMAGE;
-    loadImageIntoCanvasEdit(auxQstring, true);
+    auxQstring = _PATH_AUX_IMG;
+    loadImageIntoCanvasEdit(tmpImg, true);
 }
 
 void MainWindow::on_pbSnapshot_clicked()
@@ -3332,7 +3342,7 @@ void MainWindow::DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor col
 
 void MainWindow::reloadImage2Display(){
     //Load image to display
-    QPixmap pix(_PATH_DISPLAY_IMAGE);
+    QPixmap pix( auxQstring );
     pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);    
     //It creates the scene to be loaded into Layout
     QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());    
@@ -3387,6 +3397,49 @@ void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
     //..
     QImage origImg(fileName);
     origImg.save(_PATH_DISPLAY_IMAGE);
+
+    //Rotate if requires
+    //..
+    ask = false;
+    if(ask)
+    {
+        if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 )
+        {
+            float rotAngle = getLastAngle();
+            doImgRotation( rotAngle );
+            globaIsRotated = true;
+        }
+        else
+        {
+            globaIsRotated = false;
+        }
+    }
+
+    //Refresh image in scene
+    //..
+    //Show image
+    reloadImage2Display();
+    //Load layout
+    QLayout *layout = new QVBoxLayout();
+    layout->addWidget(canvasCalib);
+    layout->setEnabled(false);
+    ui->tab_6->setLayout(layout);
+
+    //It enables slides
+    //..
+    ui->toolBarDraw->setEnabled(true);
+    ui->toolBarDraw->setVisible(true);
+    //ui->slide2AxCalThre->setEnabled(true);
+
+
+    reloadImage2Display();
+}
+
+void MainWindow::loadImageIntoCanvasEdit(QImage* origImg, bool ask){
+    //Create a copy of the image selected
+    //..
+    //QImage origImg(fileName);
+    origImg->save(auxQstring);
 
     //Rotate if requires
     //..
@@ -4867,9 +4920,9 @@ int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestin
 
         int fileLen;
         u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
-        funcLabelProgBarUpdate("Saving image locally",0);
+        progBarUpdateLabel("Saving image locally",0);
         saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen);
-        funcLabelProgBarUpdate("",0);
+        progBarUpdateLabel("",0);
         debugMsg("File received complete");
 
         ui->progBar->setValue(100.0);
@@ -4902,10 +4955,10 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
         int fileLen;
         u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
 
-        funcLabelProgBarUpdate("Saving image locally",0);
+        progBarUpdateLabel("Saving image locally",0);
         if( saveBinFile_From_u_int8_T(_PATH_IMAGE_RECEIVED,fileReceived,fileLen) )
             img = QImage(_PATH_IMAGE_RECEIVED);
-        funcLabelProgBarUpdate("",0);
+        progBarUpdateLabel("",0);
 
         /*
         const unsigned char* fileReceivedQt = reinterpret_cast<const unsigned char*>(&fileReceived[0]);
@@ -4941,7 +4994,7 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
         ui->progBar->setValue(100.0);
         ui->progBar->update();
         ui->progBar->setVisible(false);
-        funcLabelProgBarUpdate("",0);
+        progBarUpdateLabel("",0);
 
         return img;
 
@@ -5935,7 +5988,7 @@ void MainWindow::on_pbSnapVid_clicked()
         //
         // STATUS BAR
         //
-        funcLabelProgBarUpdate("Recording video",0);
+        progBarUpdateLabel("Recording video",0);
         progBarTimer( (ui->slideTriggerTime->value() + 1) * 1000 );
 
         //Delete if file exists
@@ -5945,7 +5998,7 @@ void MainWindow::on_pbSnapVid_clicked()
 
         //Download new
         qDebug() << "Video recorded";
-        funcLabelProgBarUpdate("Transferring video",0);
+        progBarUpdateLabel("Transferring video",0);
         obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString() );
 
         //Convert into MP4        
@@ -6049,7 +6102,7 @@ int MainWindow::funcVideoToFrames(QString videoSource)//_PATH_VIDEO_FRAMES, _PAT
     //
     // STATUS BAR
     //
-    funcLabelProgBarUpdate(" .mp4 to frames",0);
+    progBarUpdateLabel(" .mp4 to frames",0);
 
     connect(player, SIGNAL(mediaStatusChanged(QMediaPlayer::MediaStatus)), this, SLOT(processEndOfPlayer(QMediaPlayer::MediaStatus)));
 
@@ -6308,12 +6361,12 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     qDebug() << "Img request sent";
 
     //Show progbar
-    funcLabelProgBarUpdate("Stabilizing camera",0);
+    progBarUpdateLabel("Stabilizing camera",0);
     progBarTimer( (ui->slideTriggerTime->value() + 1) * 1000 );
     ui->progBar->setValue(0);
     ui->progBar->setVisible(true);
     ui->progBar->update();
-    funcLabelProgBarUpdate("Transferring image",0);
+    progBarUpdateLabel("Transferring image",0);
 
 
     //Receive ACK with the camera status
@@ -6421,7 +6474,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                     //Save cropped image
                     //
                     diffImage.save(_PATH_DISPLAY_IMAGE);
-                    updateDisplayImageReceived(diffImage);
+                    updateDisplayImageReceived(&diffImage);
                 }
             }
         }
@@ -6532,7 +6585,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
             diffImage.save(_PATH_DISPLAY_IMAGE);
             qDebug() << "Images saved";
 
-            updateDisplayImageReceived(diffImage);
+            updateDisplayImageReceived(&diffImage);
         }
     }
 
@@ -7123,6 +7176,8 @@ void MainWindow::on_pbTimeLapse_clicked()
     tmpCommand = genSlideTimelapseCommand();
     qDebug() << "tmpCommand: " << tmpCommand;
     funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    progBarUpdateLabel("Timelapsing...",0);
+    progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
 
     //--------------------------------------
     //Get Number of Frames
@@ -7143,7 +7198,7 @@ void MainWindow::on_pbTimeLapse_clicked()
         int filesNotFound = 0;
         int maxFilesError = 5;
         while( framesTransmited < numOfFrames )
-        {
+        {           
             tmpRemoteFrame = "./tmpSnapVideos/" + QString::number(i) + ".RGB888";
             tmpLocalFrame  = _PATH_VIDEO_FRAMES + QString::number(i) + ".RGB888";
 
@@ -7173,6 +7228,7 @@ void MainWindow::on_pbTimeLapse_clicked()
         }
     }
 
+    progBarUpdateLabel("",0);
     mouseCursorReset();
 }
 
@@ -7282,6 +7338,13 @@ QString MainWindow::genSlideTimelapseCommand()
         tmpCommand.append(" -ISO " + QString::number(ui->slideISO->value()) );
     }
 
+    //.................................
+    //Flipped
+    //.................................
+    if( ui->cbFlipped->isChecked() ){
+        tmpCommand.append(" -hf " );
+    }
+
 
     return tmpCommand;
 }
@@ -7343,4 +7406,86 @@ std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCa
 
     //Return Command Result    
     return tmpTxt;
+}
+
+void MainWindow::on_actionRGB_to_XY_triggered()
+{
+    //Validate that exist pixel selected
+    //..
+    if( lstSelPix->count()<1){
+        funcShowMsg("Lack","Not pixels selected");
+        return (void)false;
+    }
+
+    //Create xycolor space
+    //..
+    GraphicsView *xySpace = new GraphicsView(this);
+    funcPutImageIntoGV(xySpace, "./imgResources/CIEManual.png");
+    xySpace->setWindowTitle( "XY color space" );
+    xySpace->show();
+
+    //Transform each pixel from RGB to xy and plot it
+    //..
+    QImage tmpImg(_PATH_DISPLAY_IMAGE);
+    int W = tmpImg.width();
+    int H = tmpImg.height();
+    int pixX, pixY;
+    QRgb tmpPix;
+    colSpaceXYZ *tmpXYZ = (colSpaceXYZ*)malloc(sizeof(colSpaceXYZ));
+    int tmpOffsetX = -13;
+    int tmpOffsetY = -55;
+    int tmpX, tmpY;
+    int i;
+    qDebug() << "<lstSelPix->count(): " << lstSelPix->count();
+    for( i=0; i<lstSelPix->count(); i++ ){
+        //Get pixel position in real image
+        pixX = (float)(lstSelPix->at(i).first * W) / (float)canvasAux->width();
+        pixY = (float)(lstSelPix->at(i).second * H) / (float)canvasAux->height();
+        tmpPix = tmpImg.pixel( pixX, pixY );
+        funcRGB2XYZ( tmpXYZ, (float)qRed(tmpPix), (float)qGreen(tmpPix), (float)qBlue(tmpPix) );
+        //funcRGB2XYZ( tmpXYZ, 255.0, 0, 0  );
+        tmpX = floor( (tmpXYZ->x * 441.0) / 0.75 ) + tmpOffsetX;
+        tmpY = 522 - floor( (tmpXYZ->y * 481.0) / 0.85 ) + tmpOffsetY;
+        funcAddPoit2Graph( xySpace, tmpX, tmpY, 1, 1,
+                           QColor(qRed(tmpPix),qGreen(tmpPix),qBlue(tmpPix)),
+                           QColor(qRed(tmpPix),qGreen(tmpPix),qBlue(tmpPix))
+                         );
+    }
+
+    //Save image plotted
+    //..
+    QPixmap pixMap = QPixmap::grabWidget(xySpace);
+    pixMap.save("./Results/Miscelaneas/RGBPloted.png");
+}
+
+void MainWindow::on_actionNDVI_triggered()
+{
+    mouseCursorWait();
+    QImage* tmpImg = new QImage(_PATH_DISPLAY_IMAGE);
+    QString stringThreshold;
+    QString stringBrilliant;
+    stringThreshold = readFileParam(_PATH_NDVI_THRESHOLD);
+    stringBrilliant = readFileParam(_PATH_NDVI_BRILLIANT);
+    int makeBrilliant = (stringBrilliant.toInt(0)==1)?1:0;
+    funcNDVI( tmpImg, stringThreshold.toDouble(0), makeBrilliant );
+    updateDisplayImageReceived(tmpImg);
+    mouseCursorReset();
+}
+
+void MainWindow::on_actionNDVI_Algorithm_triggered()
+{
+    formNDVISettings* ndviSettings = new formNDVISettings(this);
+    ndviSettings->setModal(true);
+    ndviSettings->show();
+}
+
+void MainWindow::on_actionFull_Screen_triggered()
+{
+    QImage tmpImg(auxQstring);
+    displayImageFullScreen(&tmpImg);
+}
+
+void MainWindow::on_actionDisplay_Original_triggered()
+{
+    updateDisplayImageReceived();
 }

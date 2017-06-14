@@ -36,12 +36,17 @@
     #define _PATH_LAST_IMG_OPEN             "./settings/lastPaths/selectImage.hypcam"
     #define _PATH_LAST_IMG_SAVED            "./settings/lastPaths/savedImage.hypcam"
 
+    #define _PATH_NDVI_THRESHOLD            "./settings/NDVI/threshold.hypcam"
+    #define _PATH_NDVI_BRILLIANT            "./settings/NDVI/brilliant.hypcam"
+
     #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
     #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"
     #define _PATH_LIMIT_L                   "./settings/Calib/limL.hypcam"
     #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
     #define _PATH_LIMIT_S_HALOGEN           "./settings/Calib/sourceHalogen.hypcam"
     #define _PATH_LIMIT_S_FLUORESCENT       "./settings/Calib/source.hypcam"
+
+
 
     #define _PATH_IMG_FILTERED              "./tmpImages/Filtered/"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"

@@ -386,6 +386,11 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
         tmpCommand->append(" -ISO " + ss.str());
     }
 
+    //FLIPPED
+    if( reqImg->raspSett.HorizontalFlipped ){
+        tmpCommand->append(" -hf ");
+    }
+
 
     return tmpCommand;
 }

@@ -360,7 +360,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>282</y>
+        <y>302</y>
         <width>219</width>
         <height>21</height>
        </rect>
@@ -427,7 +427,7 @@
         <x>21</x>
         <y>60</y>
         <width>122</width>
-        <height>61</height>
+        <height>92</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -445,13 +445,20 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QCheckBox" name="cbFlipped">
+         <property name="text">
+          <string>Flip</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QLabel" name="labelTriggerTime">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>320</y>
+        <y>340</y>
         <width>219</width>
         <height>21</height>
        </rect>
@@ -467,7 +474,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>137</y>
+        <y>157</y>
         <width>159</width>
         <height>29</height>
        </rect>
@@ -477,7 +484,7 @@
       <property name="geometry">
        <rect>
         <x>23</x>
-        <y>141</y>
+        <y>161</y>
         <width>121</width>
         <height>21</height>
        </rect>
@@ -490,7 +497,7 @@
       <property name="geometry">
        <rect>
         <x>22</x>
-        <y>175</y>
+        <y>195</y>
         <width>111</width>
         <height>21</height>
        </rect>
@@ -503,7 +510,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>173</y>
+        <y>193</y>
         <width>159</width>
         <height>29</height>
        </rect>
@@ -513,7 +520,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>302</y>
+        <y>320</y>
         <width>311</width>
         <height>19</height>
        </rect>
@@ -532,7 +539,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>340</y>
+        <y>360</y>
         <width>311</width>
         <height>19</height>
        </rect>
@@ -665,7 +672,7 @@
       <property name="geometry">
        <rect>
         <x>22</x>
-        <y>214</y>
+        <y>234</y>
         <width>91</width>
         <height>19</height>
        </rect>
@@ -678,7 +685,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>210</y>
+        <y>230</y>
         <width>101</width>
         <height>29</height>
        </rect>
@@ -691,7 +698,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>250</y>
+        <y>270</y>
         <width>151</width>
         <height>19</height>
        </rect>
@@ -704,7 +711,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>246</y>
+        <y>266</y>
         <width>101</width>
         <height>29</height>
        </rect>
@@ -786,7 +793,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>396</y>
+        <y>416</y>
         <width>101</width>
         <height>29</height>
        </rect>
@@ -802,7 +809,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>400</y>
+        <y>420</y>
         <width>151</width>
         <height>19</height>
        </rect>
@@ -815,7 +822,7 @@
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>400</y>
+        <y>420</y>
         <width>21</width>
         <height>19</height>
        </rect>
@@ -1187,8 +1194,25 @@ QSlider::handle:horizontal {
     </widget>
     <addaction name="menuFilter"/>
    </widget>
+   <widget class="QMenu" name="menuAnalysis">
+    <property name="title">
+     <string>Analysis</string>
+    </property>
+    <addaction name="actionNDVI"/>
+    <addaction name="actionRGB_to_XY"/>
+    <addaction name="actionFull_Screen"/>
+    <addaction name="actionDisplay_Original"/>
+   </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionNDVI_Algorithm"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
+   <addaction name="menuAnalysis"/>
+   <addaction name="menuSettings"/>
   </widget>
   <widget class="QToolBar" name="toolBarDraw">
    <property name="windowTitle">
@@ -1614,6 +1638,31 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Frames to Cuve</string>
+   </property>
+  </action>
+  <action name="actionNDVI">
+   <property name="text">
+    <string>NDVI</string>
+   </property>
+  </action>
+  <action name="actionRGB_to_XY">
+   <property name="text">
+    <string>RGB to XY</string>
+   </property>
+  </action>
+  <action name="actionNDVI_Algorithm">
+   <property name="text">
+    <string>NDVI Algorithm</string>
+   </property>
+  </action>
+  <action name="actionFull_Screen">
+   <property name="text">
+    <string>Full Screen</string>
+   </property>
+  </action>
+  <action name="actionDisplay_Original">
+   <property name="text">
+    <string>Display Original</string>
    </property>
   </action>
  </widget>

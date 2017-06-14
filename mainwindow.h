@@ -168,7 +168,7 @@ private slots:
     //QString getFilenameForRecImg();
 
     void updateDisplayImageReceived();
-    void updateDisplayImageReceived(QImage extImg);
+    void updateDisplayImageReceived(QImage* tmpImg);
 
     void on_pbSnapshot_clicked();
 
@@ -221,7 +221,7 @@ private slots:
 
     void funcLabelProgBarHide();
 
-    void funcLabelProgBarUpdate(QString txt , int color);
+    void progBarUpdateLabel(QString txt , int color);
 
     structRaspcamSettings funcFillSnapshotSettings(structRaspcamSettings raspSett );
 
@@ -338,6 +338,7 @@ private slots:
     void on_actionLoadCanvas_triggered();
 
     void loadImageIntoCanvasEdit(QString fileName, bool ask);
+    void loadImageIntoCanvasEdit(QImage *origImg, bool ask);
 
     void on_actionApplyThreshold_triggered();
 
@@ -497,6 +498,16 @@ private slots:
     std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected , bool waitForAnswer);
 
     QString genSlideTimelapseCommand();
+
+    void on_actionRGB_to_XY_triggered();
+
+    void on_actionNDVI_triggered();
+
+    void on_actionNDVI_Algorithm_triggered();
+
+    void on_actionFull_Screen_triggered();
+
+    void on_actionDisplay_Original_triggered();
 
 private:
     Ui::MainWindow *ui;

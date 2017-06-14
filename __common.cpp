@@ -21,7 +21,10 @@
 #include <iostream>
 #include <fstream>
 
-//#include <QObject>
+#include <QPixmap>
+#include <graphicsview.h>
+#include <QApplication>
+#include <QDesktopWidget>
 
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
@@ -772,6 +775,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="CameraMp" )
                 raspcamSettings->CameraMp = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="HorizontalFlipped" )
+                raspcamSettings->HorizontalFlipped = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -1412,4 +1417,99 @@ extern void* funcAllocInteger3DMatrixMemo( int rows, int cols, int layers, int**
         }
     }
     return M;
+}
+
+
+void displayImageFullScreen( QImage* tmpImg )
+{
+    //Set screem geometry
+    QPixmap tmpPix = QPixmap::fromImage(*tmpImg);
+    int screen2Work = (QApplication::desktop()->screenCount()>1)?1:-1;
+    QRect screen = QApplication::desktop()->screenGeometry(screen2Work);
+    int gvW = (tmpPix.width()<screen.width())?tmpPix.width():screen.width();
+    int gvH = (tmpPix.height()<screen.height())?tmpPix.height():screen.height();
+
+    //Fill image
+    GraphicsView *gvValCal = new GraphicsView(NULL);
+    QGraphicsScene *scene = new QGraphicsScene(0,0,tmpPix.width(),tmpPix.height());
+    scene->setBackgroundBrush(tmpPix);
+    gvValCal->setScene(scene);
+    gvValCal->setGeometry(QRect(0,0,gvW,gvH));
+    gvValCal->update();
+    gvValCal->show();
+}
+
+void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
+{
+    //......................................
+    // Validate lower bound
+    //......................................
+    if( lowerBound < -1.0 || lowerBound > 1.0 )
+    {
+        lowerBound = 0.0;
+        funcShowMsg("Alert!","Lower bound fixed to 0.0");
+    }
+
+    //......................................
+    // Apply Classic NDVI
+    //......................................
+    int x, y;
+    double NDVI, maxNDVI, range;
+    QRgb tmpPixel;
+    maxNDVI = 0.0;
+    range   = 1.0 - lowerBound;
+    for( x=0; x<imgToNDVI->width(); x++ )
+    {
+        for( y=0; y<imgToNDVI->height(); y++ )
+        {
+            //Calculate NDVI
+            tmpPixel    = imgToNDVI->pixel(x,y);
+            NDVI        = (double)(qBlue(tmpPixel)-qRed(tmpPixel))/(double)(qBlue(tmpPixel)+qRed(tmpPixel));
+            //NDVI        = (NDVI + 1.0)/2.0;
+            //Draw pixeñ
+            if( NDVI >= -1 && NDVI < -0.33 )
+                imgToNDVI->setPixel(x,y,qRgb(0,0,0));
+            if( NDVI >= -0.33 && NDVI < -0.1 )
+                imgToNDVI->setPixel(x,y,qRgb(180,0,0));
+            if( NDVI >= -0.1 && NDVI < 0.0 )
+                imgToNDVI->setPixel(x,y,qRgb(50,0,0));
+            if( NDVI >= 0.0 && NDVI < 0.1 )
+                imgToNDVI->setPixel(x,y,qRgb(0,50,0));
+            if( NDVI >= 0.1 && NDVI < 0.2 )
+                imgToNDVI->setPixel(x,y,qRgb(0,100,0));
+            if( NDVI >= 0.2 && NDVI < 0.3 )
+                imgToNDVI->setPixel(x,y,qRgb(0,150,0));
+            if( NDVI >= 0.3 && NDVI < 0.4 )
+                imgToNDVI->setPixel(x,y,qRgb(0,200,0));
+            if( NDVI >= 0.4 )
+                imgToNDVI->setPixel(x,y,qRgb(0,255,0));
+            //Save maximum
+            //NDVI        = (NDVI>=lowerBound)?NDVI:0.0;
+            maxNDVI     = (NDVI>maxNDVI)?NDVI:maxNDVI;
+        }
+    }
+    qDebug() << "maxNDVI: " << maxNDVI;
+
+    //......................................
+    // Remark identified plat pixels
+    //......................................
+    if( brilliant )
+    {
+        int curve;
+        curve = 255 - round( maxNDVI*255.0 );
+        qDebug() << "curve: " << curve;
+        if( curve > 5 )
+        {
+            for( x=0; x<imgToNDVI->width(); x++ )
+            {
+                for( y=0; y<imgToNDVI->height(); y++ )
+                {
+                    tmpPixel    = imgToNDVI->pixel(x,y);
+                    NDVI        = qRed(tmpPixel) + curve;
+                    if( qRed(tmpPixel) > 0 )
+                        imgToNDVI->setPixel(x,y,qRgb(NDVI,0,0));
+                }
+            }
+        }
+    }
 }
