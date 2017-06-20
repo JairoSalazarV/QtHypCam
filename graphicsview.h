@@ -34,6 +34,8 @@ class GraphicsView : public QGraphicsView
 
         void funcDisplayPixelProperties(QMouseEvent *e);
 
+        void funcDisplayWavelength(QMouseEvent *e);
+
         //void funcTestCalibration();
 
         void mousePressEvent(QMouseEvent *e);

@@ -123,6 +123,8 @@
 
     void funcNDVI(QImage *imgToNDVI , double lowerBound, int brilliant);
 
+    int funcReadAnalysePlot( structAnalysePlotSaved* structPlotSaved );
+
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
     //QImage *IplImageToQImage(const IplImage * iplImage, uchar **data,

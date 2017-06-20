@@ -39,12 +39,21 @@
     #define _BLUE   3
     #define _RGB    7
 
+    #define _ERROR  -1
+    #define _OK     1
+
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"
 
     #define SQUARE_BICUBIC_ITERATIONS       1        //Apply Bicubic k times
 
     #define _FRAME_EXTENSION                ".png"
+
+
+
+    #define _MSG_PROGBAR_STABILIZING        "Stabilizing Remote Camera"
+    #define _MSG_PROGBAR_TRANSF_FILE        "Transferring Requested File"
+    #define _MSG_PROGBAR_RESET              " "
 
 
 

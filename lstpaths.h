@@ -47,6 +47,7 @@
     #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
     #define _PATH_LIMIT_S_HALOGEN           "./settings/Calib/sourceHalogen.hypcam"
     #define _PATH_LIMIT_S_FLUORESCENT       "./settings/Calib/source.hypcam"
+    #define _PATH_SLIDE_FLUORESCENT         "./settings/Calib/slideFluorescent.hypcam"
 
 
 

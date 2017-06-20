@@ -387,8 +387,8 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
     }
 
     //FLIPPED
-    if( reqImg->raspSett.HorizontalFlipped ){
-        tmpCommand->append(" -hf ");
+    if( reqImg->raspSett.Flipped ){
+        tmpCommand->append(" -vf ");
     }
 
 

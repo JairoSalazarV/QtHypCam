@@ -44,6 +44,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if(request->text()=="Save view")
                 this->save(_PATH_CUSTOM_GV_DEFAULT);
 
+            if( request->text()=="Slide Display Wavelength" )
+                funcDisplayWavelength(e);
+
             //if(request->text()=="By wavelenght")
                 //funcTestCalibration();
 
@@ -284,6 +287,60 @@ void GraphicsView::funcDisplayPixelProperties(QMouseEvent *e)
     funcShowMsg("Pixel properties", tmpProp);
 }
 
+void GraphicsView::funcDisplayWavelength(QMouseEvent *e)
+{
+    //......................................
+    // Get Calibration Parameters
+    //......................................
+    structAnalysePlotSaved slideFluorescent;
+    if( funcReadAnalysePlot(&slideFluorescent) == _ERROR )
+    {
+        funcShowMsg("ERROR","Calibration Not Found or Wrong");
+        return (void)false;
+    }
+
+    QString tmpParam;
+    double wavelengthRed, wavelengthGreen, wavelengthBlue;
+    tmpParam = readFileParam(_PATH_SETTINGS_RED_WAVELEN);
+    wavelengthRed   = tmpParam.toDouble(0);
+    tmpParam        = readFileParam(_PATH_SETTINGS_GREEN_WAVELEN);
+    wavelengthGreen = tmpParam.toDouble(0);
+    tmpParam        = readFileParam(_PATH_SETTINGS_BLUE_WAVELEN);
+    wavelengthBlue  = tmpParam.toDouble(0);
+
+    //......................................
+    //Calculate Linear Regression
+    //......................................
+    double X[3];
+    double Y[3];
+    X[0]    = (double)slideFluorescent.red;
+    X[1]    = (double)slideFluorescent.green;
+    X[2]    = (double)slideFluorescent.blue;
+    Y[0]    = wavelengthRed;
+    Y[1]    = wavelengthGreen;
+    Y[2]    = wavelengthBlue;
+    linearRegresion linReg = funcLinearRegression(X,Y,3);
+
+    //......................................
+    //Translate x in canvas int x in image
+    //......................................
+    float x = ( (double)e->x() / (double)slideFluorescent.canvasW ) * (double)slideFluorescent.originalW;
+
+    //......................................
+    //Calculate Wavelength to that X (pixel)
+    //......................................
+    float pixelsWavelength = linReg.a + ( linReg.b * x );
+    //qDebug() << "X: " << X[0] << ", " << X[1] << ", " << X[2];
+    //qDebug() << "Y: " << Y[0] << ", " << Y[1] << ", " << Y[2];
+    //qDebug() << "x(): " << (float)e->x();
+
+    //......................................
+    //Display Wavelength
+    //......................................
+    funcShowMsg("Wavelength Calculated",QString::number(pixelsWavelength)+"nm");
+
+}
+
 /*
 void GraphicsView::funcTestCalibration()
 {
@@ -322,11 +379,21 @@ void GraphicsView::funcTestCalibration()
 */
 
 QAction *GraphicsView::showContextMenuLine(QPoint pos){
-    QMenu *xmenu = new QMenu();
 
-    //xmenu->addAction( "By wavelenght" );
+    //..........................................
+    //Main menu
+    //..........................................
+    QMenu *xmenu = new QMenu();
     xmenu->addAction( "Display information" );
     xmenu->addAction( "Save view" );
+
+    //..........................................
+    //Slide
+    //..........................................
+    xmenu->addSeparator();
+    QMenu* submenuSlide = xmenu->addMenu( "Slide" );
+    submenuSlide->addAction( "Slide Display Wavelength" );
+
 
 
     /*

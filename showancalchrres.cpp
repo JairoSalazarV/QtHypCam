@@ -34,6 +34,10 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     globalCalStruct.x2 = (int)rx2;
     globalCalStruct.y2 = (int)ry2;
 
+    globalCalStruct.canvasW = rect->parameters.W;
+    globalCalStruct.canvasH = rect->parameters.H;
+
+
     //Prepare variables
     //..
     int w, h, W, H;
@@ -601,6 +605,15 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         coordinates.append(QString::number(gPos));
         coordinates.append(",");
         coordinates.append(QString::number(bPos));
+        coordinates.append(",");
+        coordinates.append(QString::number(globalCalStruct.canvasW));
+        coordinates.append(",");
+        coordinates.append(QString::number(globalCalStruct.canvasH));
+        coordinates.append(",");
+        coordinates.append(QString::number(globalCalStruct.origImgW));
+        coordinates.append(",");
+        coordinates.append(QString::number(globalCalStruct.origImgH));
+
     }
 
     //Save

@@ -706,7 +706,7 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     else ui->radioRes8Mp->setChecked(true);
 
     //FLIPPED
-    if( raspcamSettings->HorizontalFlipped )ui->cbFlipped->setChecked(true);
+    if( raspcamSettings->Flipped )ui->cbFlipped->setChecked(true);
     else ui->cbFlipped->setChecked(false);
 
 
@@ -1759,7 +1759,7 @@ bool MainWindow::saveRaspCamSettings( QString tmpName ){
     //newFileCon.append("    <ShutterSpeedSmall>"+ QString::number( ui->slideShuterSpeedSmall->value() ) +"</ShutterSpeedSmall>\n");
     newFileCon.append("    <ISO>"+ QString::number( ui->slideISO->value() ) +"</ISO>\n");
     newFileCon.append("    <CameraMp>"+ QString::number( tmpResInMp ) +"</CameraMp>\n");
-    newFileCon.append("    <HorizontalFlipped>"+ flipped +"</HorizontalFlipped>\n");
+    newFileCon.append("    <Flipped>"+ flipped +"</Flipped>\n");
     newFileCon.append("</settings>");
     //Save
     //..
@@ -2054,8 +2054,10 @@ void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
     ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
     //Update view
     //..
-    auxQstring = _PATH_AUX_IMG;
+    auxQstring = _PATH_DISPLAY_IMAGE;
     loadImageIntoCanvasEdit(tmpImg, true);
+    //tmpImg->save( _PATH_DISPLAY_IMAGE );
+
 }
 
 void MainWindow::on_pbSnapshot_clicked()
@@ -3360,7 +3362,13 @@ void MainWindow::DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor col
 void MainWindow::reloadImage2Display(){
     //Load image to display
     QPixmap pix( auxQstring );
-    pix = pix.scaledToHeight(_GRAPH_CALIB_HEIGHT);    
+    QRect calibArea = ui->pbExpPixs->geometry();
+    int maxW, maxH;
+    maxW = calibArea.width() - 3;
+    maxH = calibArea.height() - 25;
+    pix = pix.scaledToHeight(maxH);
+    if( pix.width() > maxW )
+        pix = pix.scaledToWidth(maxW);
     //It creates the scene to be loaded into Layout
     QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());    
     canvasCalib->setBackgroundBrush(QBrush(Qt::black));
@@ -3436,12 +3444,11 @@ void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
     //..
     //Show image
     reloadImage2Display();
-    //Load layout
+    //Load layout    
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
     layout->setEnabled(false);
     ui->tab_6->setLayout(layout);
-
     //It enables slides
     //..
     ui->toolBarDraw->setEnabled(true);
@@ -3453,9 +3460,9 @@ void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
 }
 
 void MainWindow::loadImageIntoCanvasEdit(QImage* origImg, bool ask){
+
     //Create a copy of the image selected
     //..
-    //QImage origImg(fileName);
     origImg->save(auxQstring);
 
     //Rotate if requires
@@ -3475,11 +3482,9 @@ void MainWindow::loadImageIntoCanvasEdit(QImage* origImg, bool ask){
         }
     }
 
+
     //Refresh image in scene
     //..
-    //Show image
-    reloadImage2Display();
-    //Load layout
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
     layout->setEnabled(false);
@@ -3493,6 +3498,9 @@ void MainWindow::loadImageIntoCanvasEdit(QImage* origImg, bool ask){
 
 
     reloadImage2Display();
+
+
+
 }
 
 void MainWindow::on_actionApplyThreshold_triggered()
@@ -6327,7 +6335,6 @@ int MainWindow::createSubimageRemotelly(bool squareArea )
 
 int MainWindow::takeRemoteSnapshot(bool squareArea )
 {
-    int status = 0;
 
     //
     // Get cam resolution
@@ -6343,8 +6350,42 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     //Save lastest settings
     if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false ){
         funcShowMsg("ERROR","Saving last snap-settings");
+        return -1;
     }
 
+
+    //
+    //Generates Camera Command
+    //..
+    structRaspistillCommand* structRaspiCommand = (structRaspistillCommand*)malloc(sizeof(structRaspistillCommand));
+    strReqImg *reqImg                           = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    memset(structRaspiCommand,'\0',sizeof(structRaspistillCommand));
+    structRaspiCommand->idMsg                   = (unsigned char)4;
+    reqImg->squApert                            = squareArea;
+    reqImg->raspSett                            = funcFillSnapshotSettings( reqImg->raspSett );
+    reqImg->imgCols                             = camRes->width;//2592 | 640
+    reqImg->imgRows                             = camRes->height;//1944 | 480
+    reqImg->raspSett.Flipped                    = (ui->cbFlipped->isChecked())?1:0;
+
+    //--------------------------------------
+    //Create Command
+    //--------------------------------------
+    QString tmpCommand;
+    tmpCommand = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
+
+    //--------------------------------------
+    //Take Remote Photo
+    //--------------------------------------
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    progBarUpdateLabel("Stabilizing Remote Camera...",0);
+    progBarTimer((ui->slideTriggerTime->value()+1)*1000);
+    progBarUpdateLabel("",0);
+
+    //Get Remote File
+    //obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
+
+    /*
     //
     //Generates Camera Command
     //..
@@ -6363,7 +6404,9 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     memcpy( structRaspiCommand->fileName, tmp.c_str(), tmp.length() );
     tmp = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
     memcpy( structRaspiCommand->raspiCommand, tmp.c_str(), tmp.length() );
-    qDebug() << structRaspiCommand->raspiCommand;
+    qDebug() << structRaspiCommand->raspiCommand;    
+
+
 
     //
     // Send Command and Wait for ACK
@@ -6405,8 +6448,9 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     ::close(sockfd);
     delete[] structRaspiCommand;
     delete[] reqImg;
+    */
 
-    return status;
+    return 1;
 }
 
 void MainWindow::on_pbSnapshotSquare_clicked()
@@ -7181,7 +7225,7 @@ void MainWindow::on_pbTimeLapse_clicked()
     mouseCursorWait();
     QString tmpCommand;
     //--------------------------------------
-    //Clear Directory
+    //Clear Remote Directory
     //--------------------------------------
     tmpCommand.clear();
     tmpCommand.append("sudo rm tmpSnapVideos/*");
@@ -7359,7 +7403,119 @@ QString MainWindow::genSlideTimelapseCommand()
     //Flipped
     //.................................
     if( ui->cbFlipped->isChecked() ){
-        tmpCommand.append(" -hf " );
+        tmpCommand.append(" -vf " );
+    }
+
+
+    return tmpCommand;
+}
+
+
+QString MainWindow::genSubareaRaspistillCommand( QString remoteFilename, QString subareaRectangle )
+{
+    //.................................
+    //Basics Settings
+    //.................................
+    QString tmpCommand;
+    tmpCommand.clear();
+    tmpCommand.append("raspistill -o ");
+    tmpCommand.append(remoteFilename);
+    tmpCommand.append(" -t " + QString::number(ui->slideTriggerTime->value()*1000));
+    tmpCommand.append(" -n -q 100 -gc");
+
+    //.................................
+    //Diffraction Area ROI
+    //.................................
+    double W, H;
+    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+    memset(aperture,'\0',sizeof(squareAperture));
+    if( !funGetSquareXML( subareaRectangle, aperture ) )
+    {
+        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
+        tmpCommand.clear();
+        return tmpCommand;
+    }
+    W = (double)aperture->rectW/(double)aperture->canvasW;
+    H = (double)aperture->rectH/(double)aperture->canvasH;
+
+    tmpCommand.append(" -roi ");
+    tmpCommand.append(QString::number((double)aperture->rectX/(double)aperture->canvasW)+",");
+    tmpCommand.append(QString::number((double)aperture->rectY/(double)aperture->canvasH)+",");
+    tmpCommand.append(QString::number(W)+",");
+    tmpCommand.append(QString::number(H));
+
+    //.................................
+    //Image Size ROI
+    //.................................
+    camRes = getCamRes();
+    //Width
+    tmpCommand.append(" -w ");
+    tmpCommand.append(QString::number( round( W * (double)camRes->width ) ));
+    //Height
+    tmpCommand.append(" -h ");
+    tmpCommand.append(QString::number( round( H * (double)camRes->height ) ));
+
+    //.................................
+    //Colour balance?
+    //.................................
+    if(ui->cbColorBalance->isChecked() ){
+        tmpCommand.append(" -ifx colourbalance");
+    }
+
+    //.................................
+    //Denoise?
+    //.................................
+    if( ui->cbDenoise->isChecked() ){
+        tmpCommand.append(" -ifx denoise");
+    }
+
+    //.................................
+    //Diffraction Shuter speed
+    //.................................
+    int shutSpeed = ui->spinBoxShuterSpeed->value();
+    if( shutSpeed > 0 ){
+        tmpCommand.append(" -ss " + QString::number(shutSpeed));
+    }
+
+
+
+    /*
+    //Width
+    ss.str("");
+    ss<<reqImg->imgCols;
+    tmpCommand->append(" -w " + ss.str());
+
+    //Height
+    ss.str("");
+    ss<<reqImg->imgRows;
+    tmpCommand->append(" -h " + ss.str());*/
+
+    //.................................
+    //AWB
+    //.................................
+    if( ui->cbAWB->currentText() != "none" ){
+        tmpCommand.append(" -awb " + ui->cbAWB->currentText());
+    }
+
+    //.................................
+    //Exposure
+    //.................................
+    if( ui->cbExposure->currentText() != "none" ){
+        tmpCommand.append(" -ex " + ui->cbExposure->currentText());
+    }
+
+    //.................................
+    //ISO
+    //.................................
+    if( ui->slideISO->value() > 0 ){
+        tmpCommand.append(" -ISO " + QString::number(ui->slideISO->value()) );
+    }
+
+    //.................................
+    //Flipped
+    //.................................
+    if( ui->cbFlipped->isChecked() ){
+        tmpCommand.append(" -vf " );
     }
 
 
@@ -7505,4 +7661,456 @@ void MainWindow::on_actionFull_Screen_triggered()
 void MainWindow::on_actionDisplay_Original_triggered()
 {
     updateDisplayImageReceived();
+}
+
+void MainWindow::on_actionFull_photo_triggered()
+{
+    mouseCursorWait();
+
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Full Area";
+        return (void)NULL;
+    }
+
+    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT );
+    updateDisplayImageReceived(&snapShot);
+    snapShot.save(_PATH_DISPLAY_IMAGE);
+
+    mouseCursorReset();
+}
+
+void MainWindow::on_actionDiffraction_triggered()
+{
+    mouseCursorWait();
+
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Diffration Area";
+        return (void)NULL;
+    }
+    else
+    {
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        if( diffImage.isNull() )
+        {
+            qDebug() << "ERROR: Obtaining Diffration Area";
+            return (void)NULL;
+        }
+        else
+        {
+            //
+            //Crop original image to release the usable area
+            //
+            //Get usable area coordinates
+            squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+            memset(aperture,'\0',sizeof(squareAperture));
+            if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES2, aperture ) )
+            {
+                funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_REGION_OF_INTERES");
+                return (void)false;
+            }
+            //Crop and save
+            diffImage = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+            diffImage.save(_PATH_DISPLAY_IMAGE);
+            qDebug() << "Images saved";
+
+            updateDisplayImageReceived(&diffImage);
+        }
+    }
+
+    mouseCursorReset();
+}
+
+void MainWindow::on_actionComposed_triggered()
+{
+    mouseCursorWait();
+
+    if( !takeRemoteSnapshot(false) )
+    {
+        qDebug() << "ERROR: Taking Diffration Area";
+        return (void)NULL;
+    }
+    else
+    {
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        if( diffImage.isNull() )
+        {
+            qDebug() << "ERROR: Obtaining Diffration Area";
+            return (void)NULL;
+        }
+        else
+        {
+            if( !takeRemoteSnapshot(true) )
+            {
+                qDebug() << "ERROR: Taking Aperture Area";
+                return (void)NULL;
+            }
+            else
+            {
+                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+                if( apertureImage.isNull() )
+                {
+                    qDebug() << "ERROR: Obtaining Aperture Area";
+                    return (void)NULL;
+                }
+                else
+                {
+                    //-------------------------------------------
+                    //Merge image
+                    //-------------------------------------------
+
+                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+
+                    //
+                    //Crop original image to release the usable area
+                    //
+                    //Get usable area coordinates
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES2, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                        return (void)false;
+                    }
+                    diffImage       = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+                    apertureImage   = apertureImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+
+                    //
+                    //Get square aperture coordinates
+                    //
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE2, _PATH_REGION_OF_INTERES2, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
+                        return (void)false;
+                    }
+                    funcPrintRectangle( "Square Aperture", aperture );
+
+                    //
+                    //Copy square aperture into diffraction image
+                    //
+                    for( int y=aperture->rectY; y<=(aperture->rectY+aperture->rectH); y++ )
+                    {
+                        for( int x=aperture->rectX; x<=(aperture->rectX+aperture->rectW); x++ )
+                        {
+                            diffImage.setPixel( x, y, apertureImage.pixel( x, y ) );
+                        }
+                    }
+
+
+
+                    //
+                    //Save cropped image
+                    //
+                    diffImage.save(_PATH_DISPLAY_IMAGE);
+                    updateDisplayImageReceived(&diffImage);
+                }
+            }
+        }
+    }
+
+    mouseCursorReset();
+}
+
+void MainWindow::on_actionVideo_triggered()
+{
+    //Update camera resolution
+    //..
+    camRes = getCamRes();
+
+    //Set required image's settings
+    //..
+    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+
+    //Codec H264 or MJPEG
+    QString videoLocalFilename;
+    QString videoRemoteFilename;
+    //const u_int8_t videoCodec = _MJPEG;
+    const u_int8_t videoCodec = _H264;
+    if( videoCodec == _H264 )
+    {
+        videoRemoteFilename.append(_PATH_VIDEO_REMOTE_H264);
+        videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
+    }
+    else
+    {
+        memcpy( reqImg->video.cd, "MJPEG", 5 );
+        qDebug() << "MJPEG";
+
+        if( 1 )
+        {
+            videoRemoteFilename.append(_PATH_VIDEO_REMOTE_MJPEG);
+            videoLocalFilename.append(_PATH_VIDEO_RECEIVED_MJPEG);
+        }
+        else
+        {
+            videoRemoteFilename.append(_PATH_VIDEO_REMOTE_H264);
+            videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
+        }
+    }
+    qDebug() << "videoRemoteFilename: " << videoRemoteFilename;
+    memcpy( reqImg->video.o, videoRemoteFilename.toStdString().c_str(), videoRemoteFilename.size() );
+
+    //Others
+    reqImg->idMsg           = (unsigned char)12;
+    reqImg->video.t         = ui->slideTriggerTime->value();
+    reqImg->video.ss        = (int16_t)round(ui->spinBoxShuterSpeed->value());
+    reqImg->video.awb       = (int16_t)ui->cbAWB->currentIndex();
+    reqImg->video.ex        = (int16_t)ui->cbExposure->currentIndex();
+    reqImg->video.md        = 2;//2
+    reqImg->video.w         = 0;//1640
+    reqImg->video.h         = 0;//1232
+    reqImg->video.fps       = 5;//1-15
+
+    //
+    //Motor walk
+    //
+    // HELP
+    //
+    // (ERROR on binding: Address already in use) -> netstat -tulpn -> kill process
+    // Para saber el USB -> ls -l /dev/tty (tab)
+    reqImg->motorWalk.degreeIni     = 0;
+    reqImg->motorWalk.degreeEnd     = 180;
+    reqImg->motorWalk.durationMs    = 3000;
+    reqImg->motorWalk.stabilizingMs = 1000;
+
+    //Open socket
+    int n;
+    int sockfd = connectSocket( camSelected );
+    unsigned char bufferRead[frameBodyLen];
+    qDebug() << "Socket opened";
+    //Require photo size
+    //QtDelay(5);
+    n = ::write(sockfd,reqImg,sizeof(strReqImg));
+    qDebug() << "Video request sent";
+
+    //Receive ACK with the camera status
+    memset(bufferRead,'\0',3);
+    n = read(sockfd,bufferRead,2);
+    if( bufferRead[1] == 1 )
+    {//Begin the video adquisition routine
+
+        //
+        // STATUS BAR
+        //
+        progBarUpdateLabel("Recording video",0);
+        progBarTimer( (ui->slideTriggerTime->value() + 1) * 1000 );
+
+        //Delete if file exists
+        funcDeleteFile( _PATH_VIDEO_RECEIVED_H264 );
+        funcDeleteFile( _PATH_VIDEO_RECEIVED_MJPEG );
+        funcDeleteFile( _PATH_VIDEO_RECEIVED_MP4 );
+
+        //Download new
+        qDebug() << "Video recorded";
+        progBarUpdateLabel("Transferring video",0);
+        obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString() );
+
+        //Convert into MP4
+        if( videoCodec == _H264 )
+        {
+            //Convert into .MP4
+            QString converToMP4;
+            converToMP4 = "";
+            converToMP4.append( "MP4Box -add ");
+            converToMP4.append(_PATH_VIDEO_RECEIVED_H264);
+            converToMP4.append(" ");
+            converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
+            funcExecuteCommand( converToMP4 );
+            //Update permissions
+            //converToMP4 = "chmod +777 ";
+            //converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
+            //funcExecuteCommand( converToMP4 );
+        }
+
+        //
+        //Send .mp4 to frames
+        //
+        //funcVideoToFrames(_PATH_VIDEO_FRAMES, _PATH_VIDEO_RECEIVED_MP4);
+
+
+
+
+    }
+    else
+    {//Video does not generated by raspicam
+        funcShowMsg("ERROR on Camera","Recording video");
+    }
+
+    n = n;
+    ::close(sockfd);
+}
+
+void MainWindow::on_actionTimelapse_triggered()
+{
+    mouseCursorWait();
+    QString tmpCommand;
+    //--------------------------------------
+    //Clear Remote Directory
+    //--------------------------------------
+    tmpCommand.clear();
+    tmpCommand.append("sudo rm tmpSnapVideos/*");
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+
+    //--------------------------------------
+    //Take Timelapse
+    //--------------------------------------
+    tmpCommand = genSlideTimelapseCommand();
+    qDebug() << "tmpCommand: " << tmpCommand;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    progBarUpdateLabel("Timelapsing...",0);
+    progBarTimer((ui->slideTriggerTime->value()+1)*1000);
+
+    //--------------------------------------
+    //Get Number of Frames
+    //--------------------------------------
+    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected,true);
+    int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
+    qDebug() << "numOfFrames: " << numOfFrames;
+
+    //--------------------------------------
+    //Get Frames
+    //--------------------------------------
+    if( numOfFrames > 0 )
+    {
+        funcClearDirFolder( _PATH_VIDEO_FRAMES );
+        QString tmpRemoteFrame, tmpLocalFrame;
+        int framesTransmited = 0;
+        int i = 0;
+        int filesNotFound = 0;
+        int maxFilesError = 5;
+        while( framesTransmited < numOfFrames )
+        {
+            tmpRemoteFrame = "./tmpSnapVideos/" + QString::number(i) + ".RGB888";
+            tmpLocalFrame  = _PATH_VIDEO_FRAMES + QString::number(i) + ".RGB888";
+
+            //Get Remote File
+            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString() );
+
+            //Check if was transmited
+            if( fileExists(tmpLocalFrame) )
+            {
+                framesTransmited++;
+                filesNotFound = 0;
+            }
+            else
+            {
+                filesNotFound++;
+            }
+
+            //Next image to check
+            i++;
+
+            //Break if error
+            if( filesNotFound >= maxFilesError )
+            {
+                funcShowMsg("ERROR","maxFilesError Achieved");
+                break;
+            }
+        }
+    }
+
+    progBarUpdateLabel("",0);
+    mouseCursorReset();
+}
+
+void MainWindow::on_actionSave_triggered()
+{
+    //
+    //Read the filename
+    //
+    QString fileName;
+    QString lastPath = readFileParam(_PATH_LAST_IMG_SAVED);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = "./snapshots/";
+    }
+    fileName = QFileDialog::getSaveFileName(
+                                                this,
+                                                tr("Save Snapshot as..."),
+                                                lastPath,
+                                                tr("Documents (*.png)")
+                                            );
+    if( fileName.isEmpty() )
+    {
+        qDebug() << "Filename not typed";
+        return (void)false;
+    }
+    else
+    {
+        lastPath = funcRemoveFileNameFromPath(fileName);
+        saveFile(_PATH_LAST_IMG_SAVED,lastPath);
+    }
+
+    //
+    //Validate filename
+    //
+    fileName = funcRemoveImageExtension(fileName);
+
+    //
+    //Save image
+    //
+    QImage tmpImg( _PATH_DISPLAY_IMAGE );
+    tmpImg.save(fileName);
+}
+
+void MainWindow::on_actionSlideDiffraction_triggered()
+{
+    //----------------------------------------
+    // Validate Camera Connection
+    //----------------------------------------
+    if( camSelected->isConnected == false )
+    {
+        funcShowMsg("ERROR","Not Camera Connection Found");
+        return (void)false;
+    }
+
+
+    mouseCursorWait();
+    QString tmpCommand;
+
+    /*
+    //......................................
+    //Clear Remote Directory
+    //......................................
+    tmpCommand.clear();
+    tmpCommand.append("sudo rm tmpSnapshots/*");
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);*/
+
+    //......................................
+    //Generate Remote Command
+    //......................................
+    tmpCommand.clear();
+    tmpCommand = genSubareaRaspistillCommand( _PATH_REMOTE_SNAPSHOT, _PATH_SLIDE_DIFFRACTION );
+    qDebug() << "tmpCommand: " << tmpCommand;
+
+    //......................................
+    //Execute Remote Command
+    //......................................
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    progBarUpdateLabel(_MSG_PROGBAR_STABILIZING,0);
+    progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
+
+    //......................................
+    //Get Remote File
+    //......................................
+    obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
+
+    //......................................
+    //Check if the image was transmited
+    //......................................
+    if( !fileExists(_PATH_IMAGE_RECEIVED) )
+    {
+        funcShowMsg("ERROR","Image was not received");
+    }
+    else
+    {
+        QImage tmpImg(_PATH_IMAGE_RECEIVED);
+        updateDisplayImageReceived(&tmpImg);        
+    }
+
+    //Reset Mouse and Progress-Bar
+    progBarUpdateLabel(_MSG_PROGBAR_RESET,0);
+    mouseCursorReset();
 }

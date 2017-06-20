@@ -499,6 +499,8 @@ private slots:
 
     QString genSlideTimelapseCommand();
 
+    QString genSubareaRaspistillCommand(QString remoteFilename, QString subareaRectangle);
+
     void on_actionRGB_to_XY_triggered();
 
     void on_actionNDVI_triggered();
@@ -508,6 +510,20 @@ private slots:
     void on_actionFull_Screen_triggered();
 
     void on_actionDisplay_Original_triggered();
+
+    void on_actionFull_photo_triggered();
+
+    void on_actionDiffraction_triggered();
+
+    void on_actionComposed_triggered();
+
+    void on_actionVideo_triggered();
+
+    void on_actionTimelapse_triggered();
+
+    void on_actionSave_triggered();
+
+    void on_actionSlideDiffraction_triggered();
 
 private:
     Ui::MainWindow *ui;

@@ -31,7 +31,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -1209,10 +1209,37 @@ QSlider::handle:horizontal {
     </property>
     <addaction name="actionNDVI_Algorithm"/>
    </widget>
+   <widget class="QMenu" name="menuCamera">
+    <property name="title">
+     <string>Camera</string>
+    </property>
+    <widget class="QMenu" name="menuDouble_Axis">
+     <property name="title">
+      <string>Double Axis</string>
+     </property>
+     <addaction name="actionDiffraction"/>
+     <addaction name="actionAperture"/>
+     <addaction name="actionComposed"/>
+    </widget>
+    <widget class="QMenu" name="menuSlide">
+     <property name="title">
+      <string>Slide</string>
+     </property>
+     <addaction name="actionSlideDiffraction"/>
+     <addaction name="actionTimelapse"/>
+    </widget>
+    <addaction name="actionFull_photo"/>
+    <addaction name="menuDouble_Axis"/>
+    <addaction name="menuSlide"/>
+    <addaction name="actionVideo"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
    <addaction name="menuAnalysis"/>
    <addaction name="menuSettings"/>
+   <addaction name="menuCamera"/>
   </widget>
   <widget class="QToolBar" name="toolBarDraw">
    <property name="windowTitle">
@@ -1663,6 +1690,95 @@ QSlider::handle:horizontal {
   <action name="actionDisplay_Original">
    <property name="text">
     <string>Display Original</string>
+   </property>
+  </action>
+  <action name="actionFull_photo">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/snapshot.png</normaloff>:/new/icons/imagenInte/snapshot.png</iconset>
+   </property>
+   <property name="text">
+    <string>Full photo</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
+  <action name="actionDiffraction">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/oneShotSnap.png</normaloff>:/new/icons/imagenInte/oneShotSnap.png</iconset>
+   </property>
+   <property name="text">
+    <string>Diffraction</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+D</string>
+   </property>
+  </action>
+  <action name="actionAperture">
+   <property name="text">
+    <string>Aperture</string>
+   </property>
+  </action>
+  <action name="actionSlideDiffraction">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/slideDiff.png</normaloff>:/new/icons/imagenInte/slideDiff.png</iconset>
+   </property>
+   <property name="text">
+    <string>SlideDiffraction</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Y</string>
+   </property>
+  </action>
+  <action name="actionVideo">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/dragonplayer.png</normaloff>:/new/icons/imagenInte/dragonplayer.png</iconset>
+   </property>
+   <property name="text">
+    <string>Video</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+V</string>
+   </property>
+  </action>
+  <action name="actionTimelapse">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/slide.png</normaloff>:/new/icons/imagenInte/slide.png</iconset>
+   </property>
+   <property name="text">
+    <string>Timelapse</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="actionSave">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/download-icon.gif</normaloff>:/new/icons/imagenInte/download-icon.gif</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionComposed">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/takeSquare.png</normaloff>:/new/icons/imagenInte/takeSquare.png</iconset>
+   </property>
+   <property name="text">
+    <string>Composed</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+X</string>
    </property>
   </action>
  </widget>

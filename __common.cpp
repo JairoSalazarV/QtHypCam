@@ -775,8 +775,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="CameraMp" )
                 raspcamSettings->CameraMp = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="HorizontalFlipped" )
-                raspcamSettings->HorizontalFlipped = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Flipped" )
+                raspcamSettings->Flipped = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -1480,9 +1480,10 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
     // Apply Classic NDVI
     //......................................
     int x, y;
-    double NDVI, maxNDVI, range;
+    double NDVI, maxNDVI, minNDVI, range;
     QRgb tmpPixel;
     maxNDVI = 0.0;
+    minNDVI = 1.0;
     range   = 1.0 - lowerBound;
     double infraredSensed;
     double redSensed;
@@ -1501,7 +1502,40 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
             else
                 NDVI        = -1.0;
 
-            //Draw pixeñ
+
+            //Uses threshold
+            NDVI    = (NDVI>lowerBound)?NDVI:0.0;
+
+            /*
+            //Draw pixel
+            if( NDVI >= -1.0 && NDVI < -0.2 )
+                imgToNDVI->setPixel(x,y,qRgb(0,0,0));       //Negro
+            if( NDVI >= -0.2 && NDVI < -0.1 )
+                imgToNDVI->setPixel(x,y,qRgb(255,0,0));     //Rojo brillante
+            if( NDVI >= -0.1 && NDVI < 0.0 )
+                imgToNDVI->setPixel(x,y,qRgb(180,0,0));     //Rojo Sangre
+            if( NDVI >= 0.0 && NDVI < 0.1 )
+                imgToNDVI->setPixel(x,y,qRgb(90,0,0));      //Rojo Opaco
+            if( NDVI >= 0.1 && NDVI < 0.2 )
+                imgToNDVI->setPixel(x,y,qRgb(255,255,0));   //Amarillo Brillante
+            if( NDVI >= 0.2 && NDVI < 0.3 )
+                imgToNDVI->setPixel(x,y,qRgb(255,150,0));   //Amarillo Ocre
+            if( NDVI >= 0.3 && NDVI < 0.4 )
+                imgToNDVI->setPixel(x,y,qRgb(255,80,0));    //Verde Oliva
+            if( NDVI >= 0.4 && NDVI < 0.5 )
+                imgToNDVI->setPixel(x,y,qRgb(0,255,255));   //Azul Brillante
+            if( NDVI >= 0.5 && NDVI < 0.6 )
+                imgToNDVI->setPixel(x,y,qRgb(0,125,125));   //Azul Opaco
+            if( NDVI >= 0.6 && NDVI < 0.7 )
+                imgToNDVI->setPixel(x,y,qRgb(0,80,80));     //Azul obscuro
+            if( NDVI >= 0.7 && NDVI < 0.8 )
+                imgToNDVI->setPixel(x,y,qRgb(60,255,0));    //Verde Brillante
+            if( NDVI >= 0.8 && NDVI < 0.9 )
+                imgToNDVI->setPixel(x,y,qRgb(30,140,0));    //Verde Opaco
+            if( NDVI >= 0.9 && NDVI < 1.0 )
+                imgToNDVI->setPixel(x,y,qRgb(12,60,0));     //Verde militar*/
+
+            //Draw pixel
             if( NDVI >= -1.0 && NDVI < -0.33 )
                 imgToNDVI->setPixel(x,y,qRgb(0,0,0));
             if( NDVI >= -0.33 && NDVI < -0.1 )
@@ -1518,12 +1552,18 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
                 imgToNDVI->setPixel(x,y,qRgb(0,200,0));
             if( NDVI >= 0.4 )
                 imgToNDVI->setPixel(x,y,qRgb(0,255,0));
+
+
+
+
             //Save maximum
             //NDVI        = (NDVI>=lowerBound)?NDVI:0.0;
             maxNDVI     = (NDVI>maxNDVI)?NDVI:maxNDVI;
+            minNDVI     = (NDVI<minNDVI)?NDVI:minNDVI;
         }
     }
     qDebug() << "maxNDVI: " << maxNDVI;
+    qDebug() << "minNDVI: " << minNDVI;
 
     //......................................
     // Remark identified plat pixels
@@ -1547,4 +1587,26 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
             }
         }
     }
+}
+
+
+int funcReadAnalysePlot( structAnalysePlotSaved* structPlotSaved )
+{
+
+    QString tmpParameter = readFileParam( _PATH_SLIDE_FLUORESCENT );
+    if( tmpParameter.isEmpty() )
+    {
+        qDebug() << _PATH_SLIDE_FLUORESCENT << " is empty";
+        return _ERROR;
+    }
+
+    structPlotSaved->red        = tmpParameter.split(",").at(0).toInt(0);
+    structPlotSaved->green      = tmpParameter.split(",").at(1).toInt(0);
+    structPlotSaved->blue       = tmpParameter.split(",").at(2).toInt(0);
+    structPlotSaved->canvasW    = tmpParameter.split(",").at(3).toInt(0);
+    structPlotSaved->canvasH    = tmpParameter.split(",").at(4).toInt(0);
+    structPlotSaved->originalW  = tmpParameter.split(",").at(5).toInt(0);
+    structPlotSaved->originalH  = tmpParameter.split(",").at(6).toInt(0);
+
+    return _OK;
 }
