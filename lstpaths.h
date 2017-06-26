@@ -8,6 +8,12 @@
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
     #define _PATH_HALOGEN_FUNCTION          "./settings/halogenFunction.hypcam"
 
+    #define _PATH_LAST_REMOTE_FOLDER        "./settings/lastRemoteFolder.hypcam"
+    #define _PATH_LAST_REMOTE_FILE          "./settings/lastRemoteFile.hypcam"
+    #define _PATH_LAST_LOCAL_FOLDER         "./settings/lastLocalFolder.hypcam"
+    #define _PATH_LAST_LOCAL_FILE           "./settings/lastLocalFile.hypcam"
+
+
     #define _PATH_SETTINGS_RED_WAVELEN      "./settings/Wavelengths/RedWavelength.hypcam"
     #define _PATH_SETTINGS_GREEN_WAVELEN    "./settings/Wavelengths/GreenWavelength.hypcam"
     #define _PATH_SETTINGS_BLUE_WAVELEN     "./settings/Wavelengths/BlueWavelength.hypcam"

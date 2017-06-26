@@ -127,6 +127,8 @@
 
 #include <formndvisettings.h>
 
+#include <formobtainfolder.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -1389,7 +1391,7 @@ void MainWindow::progBarUpdateLabel( QString txt, int color )
         ui->labelProgBar->setStyleSheet("QLabel { color : white; }");
 
     ui->labelProgBar->update();
-    QtDelay(20);
+    QtDelay(10);
 }
 
 void MainWindow::funcLabelProgBarHide()
@@ -4920,6 +4922,11 @@ cameraResolution* MainWindow::getCamRes()
 
 }
 
+structCamSelected* MainWindow::getCameraSelected()
+{
+    return camSelected;
+}
+
 void MainWindow::on_actionslideHypCam_triggered()
 {
     slideHypCam* frmSlide = new slideHypCam(this);
@@ -4938,24 +4945,10 @@ int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestin
     }
     else
     {
-
-        ui->progBar->setVisible(true);
-        ui->progBar->setValue(0.0);
-        ui->progBar->update();
-
         int fileLen;
         u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
-        progBarUpdateLabel("Saving image locally",0);
         saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen);
-        progBarUpdateLabel("",0);
-        debugMsg("File received complete");
-
-        ui->progBar->setValue(100.0);
-        ui->progBar->update();
-        ui->progBar->setVisible(false);
-
-        //delete[] fileReceived;
-
+        delete[] fileReceived;
     }
 
     return 1;
@@ -5072,7 +5065,7 @@ u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fil
 
     //Read file from system buffer
     int filePos     = 0;
-    int remainder   = *fileLen+1;
+    int remainder   = *fileLen;
 
     //Read image from buffer
     while( remainder > 0 )
@@ -5094,7 +5087,7 @@ u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fil
     ::close(socketID);
 
     ui->progBar->setValue(0);
-    ui->progBar->setVisible(true);
+    ui->progBar->setVisible(false);
     ui->progBar->update();
 
     //Return file
@@ -7241,54 +7234,13 @@ void MainWindow::on_pbTimeLapse_clicked()
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
 
     //--------------------------------------
-    //Get Number of Frames
+    //Obtain Remote Folder
     //--------------------------------------
-    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected,true);
-    int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
-    qDebug() << "numOfFrames: " << numOfFrames;
+    obtainRemoteFolder( "./tmpSnapVideos/", _PATH_VIDEO_FRAMES );
 
     //--------------------------------------
-    //Get Frames
+    //Reset Progress Bar
     //--------------------------------------
-    if( numOfFrames > 0 )
-    {
-        funcClearDirFolder( _PATH_VIDEO_FRAMES );
-        QString tmpRemoteFrame, tmpLocalFrame;
-        int framesTransmited = 0;
-        int i = 0;
-        int filesNotFound = 0;
-        int maxFilesError = 5;
-        while( framesTransmited < numOfFrames )
-        {           
-            tmpRemoteFrame = "./tmpSnapVideos/" + QString::number(i) + ".RGB888";
-            tmpLocalFrame  = _PATH_VIDEO_FRAMES + QString::number(i) + ".RGB888";
-
-            //Get Remote File
-            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString() );
-
-            //Check if was transmited
-            if( fileExists(tmpLocalFrame) )
-            {
-                framesTransmited++;
-                filesNotFound = 0;
-            }
-            else
-            {
-                filesNotFound++;
-            }
-
-            //Next image to check
-            i++;
-
-            //Break if error
-            if( filesNotFound >= maxFilesError )
-            {
-                funcShowMsg("ERROR","maxFilesError Achieved");
-                break;
-            }
-        }
-    }
-
     progBarUpdateLabel("",0);
     mouseCursorReset();
 }
@@ -8070,13 +8022,13 @@ void MainWindow::on_actionSlideDiffraction_triggered()
     mouseCursorWait();
     QString tmpCommand;
 
-    /*
+
     //......................................
     //Clear Remote Directory
     //......................................
-    tmpCommand.clear();
-    tmpCommand.append("sudo rm tmpSnapshots/*");
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);*/
+    //tmpCommand.clear();
+    //tmpCommand.append("sudo rm tmpSnapshots/*");
+    //funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
 
     //......................................
     //Generate Remote Command
@@ -8113,4 +8065,92 @@ void MainWindow::on_actionSlideDiffraction_triggered()
     //Reset Mouse and Progress-Bar
     progBarUpdateLabel(_MSG_PROGBAR_RESET,0);
     mouseCursorReset();
+}
+
+void MainWindow::on_actionObtain_Folder_triggered()
+{
+    formObtainFolder* formObtRemoteFolder = new formObtainFolder(this);
+    formObtRemoteFolder->setModal(true);    
+    connect(
+                formObtRemoteFolder,
+                SIGNAL( signalObtainRemoteFolder(QString,QString) ),
+                this,
+                SLOT( obtainRemoteFolder(QString,QString) )
+           );
+    formObtRemoteFolder->show();
+}
+
+int MainWindow::obtainRemoteFolder( QString remoteFolder, QString localFolder )
+{
+    //--------------------------------------
+    //Get Number of Frames
+    //--------------------------------------
+    QString tmpCommand;
+    tmpCommand.append("ls ");
+    tmpCommand.append(remoteFolder);
+    tmpCommand.append(" -a | wc -l");
+    std::string stringNumOfFrames = funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,true);
+    int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
+    qDebug() << "numOfFrames: " << numOfFrames;
+
+    //--------------------------------------
+    //Get Frames
+    //--------------------------------------
+    if( numOfFrames > 0 )
+    {
+        QString barTxt;
+        funcClearDirFolder( localFolder );
+        QString tmpRemoteFrame, tmpLocalFrame;
+        int framesTransmited = 0;
+        int i = 0;
+        int filesNotFound = 0;
+        int maxFilesError = 5;
+        while( framesTransmited < numOfFrames )
+        {
+
+
+            tmpRemoteFrame = remoteFolder + "/" + QString::number(i) + ".RGB888";
+            tmpLocalFrame  = localFolder  + "/" + QString::number(i) + ".RGB888";
+
+            //Get Remote File
+            barTxt.clear();
+            barTxt.append("Transmitting ");
+            barTxt.append(QString::number((framesTransmited+1)));
+            barTxt.append(" of ");
+            barTxt.append(QString::number(numOfFrames));
+            progBarUpdateLabel(barTxt,0);
+            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString() );
+
+
+            //Check if was transmited
+            if( fileExists(tmpLocalFrame) )
+            {
+                framesTransmited++;
+                filesNotFound = 0;
+            }
+            else
+            {
+                filesNotFound++;
+            }
+
+            //Next image to check
+            i++;
+
+            //Break if error
+            if( filesNotFound >= maxFilesError )
+            {
+                funcShowMsg("ERROR","maxFilesError Achieved: "+QString(maxFilesError));
+                return _ERROR;
+                break;
+            }
+        }
+
+        progBarUpdateLabel("",0);
+    }
+    else
+    {
+        qDebug() << "Empty Remote Folder";
+        return _ERROR;
+    }
+    return _OK;
 }

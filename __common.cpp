@@ -26,6 +26,8 @@
 #include <QApplication>
 #include <QDesktopWidget>
 
+#include <lstcustoms.h>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -594,6 +596,8 @@ int fileIsValid(QString fileContain)
     return 1;
 }
 
+
+
 QString readFileParam(QString fileName){
     QString tmpFileContain = "";
     if( fileExists(fileName) )
@@ -610,6 +614,32 @@ QString readFileParam(QString fileName){
     }
     return tmpFileContain;
 }
+
+int readFileParam(QString fileName, QString* tmpFileContain)
+{
+    *tmpFileContain = "";
+    if( fileExists(fileName) )
+    {
+        *tmpFileContain = readAllFile(fileName);
+        if( fileIsValid(*tmpFileContain) )
+        {
+            *tmpFileContain = tmpFileContain->trimmed();
+            tmpFileContain->replace("\n","");
+        }
+        else
+        {
+            return _ERROR;
+        }
+    }else
+    {
+        saveFile(fileName,*tmpFileContain);
+        return _ERROR;
+    }
+    return _OK;
+}
+
+
+
 
 bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
 
@@ -858,6 +888,14 @@ void funcObtSettings( structSettings *lstSettings ){
 void funcShowMsg(QString title, QString msg){
     QMessageBox yesNoMsgBox;
     yesNoMsgBox.setWindowTitle(title);
+    yesNoMsgBox.setText(msg);
+    yesNoMsgBox.setDefaultButton(QMessageBox::Ok);
+    yesNoMsgBox.exec();
+}
+
+void funcShowMsgERROR(QString msg){
+    QMessageBox yesNoMsgBox;
+    yesNoMsgBox.setWindowTitle("ERROR");
     yesNoMsgBox.setText(msg);
     yesNoMsgBox.setDefaultButton(QMessageBox::Ok);
     yesNoMsgBox.exec();

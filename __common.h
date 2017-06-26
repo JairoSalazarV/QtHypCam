@@ -33,6 +33,7 @@
     void funcObtSettings( structSettings * lstSettings);
 
     void funcShowMsg( QString title, QString msg );
+    void funcShowMsgERROR(QString msg);
 
     QString funcShowSelDir(QString path);
 
@@ -66,7 +67,8 @@
 
     int fileIsValid(QString fileContain);
 
-    QString readFileParam(QString fileName);
+    int readFileParam(QString fileName, QString *tmpFileContain);
+    QString readFileParam(QString fileName);    
 
     bool funGetSquareXML( QString fileName, squareAperture *squareParam );
 

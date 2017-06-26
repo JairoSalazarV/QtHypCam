@@ -31,7 +31,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -548,7 +548,7 @@
        <number>0</number>
       </property>
       <property name="maximum">
-       <number>60</number>
+       <number>500</number>
       </property>
       <property name="value">
        <number>3</number>
@@ -1228,10 +1228,20 @@ QSlider::handle:horizontal {
      <addaction name="actionSlideDiffraction"/>
      <addaction name="actionTimelapse"/>
     </widget>
+    <widget class="QMenu" name="menuObtain">
+     <property name="title">
+      <string>Obtain</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="separator"/>
+     <addaction name="actionObtain_Folder"/>
+     <addaction name="actionObtain_File"/>
+    </widget>
     <addaction name="actionFull_photo"/>
     <addaction name="menuDouble_Axis"/>
     <addaction name="menuSlide"/>
     <addaction name="actionVideo"/>
+    <addaction name="menuObtain"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
    </widget>
@@ -1779,6 +1789,16 @@ QSlider::handle:horizontal {
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+X</string>
+   </property>
+  </action>
+  <action name="actionObtain_Folder">
+   <property name="text">
+    <string>Obtain Folder</string>
+   </property>
+  </action>
+  <action name="actionObtain_File">
+   <property name="text">
+    <string>Obtain File</string>
    </property>
   </action>
  </widget>

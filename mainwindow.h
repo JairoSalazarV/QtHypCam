@@ -45,6 +45,8 @@ public slots:
 
     cameraResolution* getCamRes();
 
+    structCamSelected* getCameraSelected();
+
     u_int8_t** funcGetSLIDESnapshot(int* numImages , bool saveFiles);
 
     structCamSelected* funcGetCamSelected();
@@ -63,6 +65,10 @@ public slots:
 
     void funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath );
 
+    std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected , bool waitForAnswer);
+
+    int obtainFile( std::string fileToObtain, std::string fileNameDestine );
+    QImage obtainFile( std::string fileToObtain );
 
 
 private slots:    
@@ -427,9 +433,6 @@ private slots:
 
     void on_actionslideHypCam_triggered();
 
-    int obtainFile( std::string fileToObtain, std::string fileNameDestine );
-    QImage obtainFile( std::string fileToObtain );
-
     u_int8_t* funcQtReceiveFile( std::string fileNameRequested, int* fileLen );
 
     //void on_pbGetSlideCube_clicked();
@@ -493,9 +496,7 @@ private slots:
 
     void on_actionframesToCube_triggered();
 
-    void on_pbTimeLapse_clicked();
-
-    std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected , bool waitForAnswer);
+    void on_pbTimeLapse_clicked();    
 
     QString genSlideTimelapseCommand();
 
@@ -524,6 +525,11 @@ private slots:
     void on_actionSave_triggered();
 
     void on_actionSlideDiffraction_triggered();
+
+    void on_actionObtain_Folder_triggered();
+
+    int obtainRemoteFolder( QString remoteFolder, QString localFolder );
+
 
 private:
     Ui::MainWindow *ui;

@@ -39,7 +39,8 @@ SOURCES += main.cpp\
     arduinomotor.cpp \
     formslidesettings.cpp \
     formsquareaperturesettings.cpp \
-    formndvisettings.cpp
+    formndvisettings.cpp \
+    formobtainfolder.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -68,7 +69,8 @@ HEADERS  += mainwindow.h \
     lstfilenames.h \
     lstraspividstruct.h \
     formsquareaperturesettings.h \
-    formndvisettings.h
+    formndvisettings.h \
+    formobtainfolder.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -81,7 +83,8 @@ FORMS    += mainwindow.ui \
     slidehypcam.ui \
     formslidesettings.ui \
     formsquareaperturesettings.ui \
-    formndvisettings.ui
+    formndvisettings.ui \
+    formobtainfolder.ui
 
 RESOURCES += \
     lstImgs.qrc
