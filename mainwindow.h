@@ -11,6 +11,8 @@
 #include <QVideoFrame>
 #include <QMediaPlayer>
 
+#include <QFileInfo>
+
 //QT_BEGIN_NAMESPACE
 
 class QLabel;
@@ -173,8 +175,8 @@ private slots:
 
     //QString getFilenameForRecImg();
 
-    void updateDisplayImageReceived();
     void updateDisplayImageReceived(QImage* tmpImg);
+    void updateDisplayImageReceived();    
 
     void on_pbSnapshot_clicked();
 
@@ -490,8 +492,6 @@ private slots:
 
     void funcDrawPlotLimits();
 
-    void on_pbSelectFolderSlide_clicked();
-
     void on_actionvideoToFrames_triggered();
 
     void on_actionframesToCube_triggered();
@@ -530,6 +530,9 @@ private slots:
 
     int obtainRemoteFolder( QString remoteFolder, QString localFolder );
 
+    void on_actionSlide_Build_Hypercube_triggered();
+
+    void buildHypercubeFromFilelist(QList<QFileInfo> lstFrames , structSlideHypCube slideCubeSettings);
 
 private:
     Ui::MainWindow *ui;

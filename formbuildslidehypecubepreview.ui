@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>formBuildSlideHypeCubePreview</class>
+ <widget class="QDialog" name="formBuildSlideHypeCubePreview">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>933</width>
+    <height>370</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Build Slide Hypercube Preview</string>
+  </property>
+  <widget class="QGraphicsView" name="gvSlideHypCubePreview">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>80</y>
+     <width>911</width>
+     <height>281</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbApply">
+   <property name="geometry">
+    <rect>
+     <x>830</x>
+     <y>40</y>
+     <width>84</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Apply</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>10</y>
+     <width>73</width>
+     <height>57</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_2">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Location %</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QSpinBox" name="spinSlideLocation">
+      <property name="minimum">
+       <number>5</number>
+      </property>
+      <property name="maximum">
+       <number>95</number>
+      </property>
+      <property name="value">
+       <number>50</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>240</x>
+     <y>10</y>
+     <width>145</width>
+     <height>57</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="1">
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Auto Step</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="pbAutoStepDecrement">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/add-66.png</normaloff>:/new/icons/imagenInte/add-66.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="spinAutoStep">
+      <property name="minimum">
+       <number>1</number>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="value">
+       <number>5</number>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="pbAutoStepIncrement">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/add-53.png</normaloff>:/new/icons/imagenInte/add-53.png</iconset>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>78</width>
+     <height>57</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Slide Width</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QSpinBox" name="spinSlideW">
+      <property name="minimum">
+       <number>3</number>
+      </property>
+      <property name="maximum">
+       <number>10000</number>
+      </property>
+      <property name="value">
+       <number>10</number>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QLineEdit" name="txtFolder">
+   <property name="geometry">
+    <rect>
+     <x>410</x>
+     <y>40</y>
+     <width>113</width>
+     <height>28</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>10</y>
+     <width>75</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Folder</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbFolder">
+   <property name="geometry">
+    <rect>
+     <x>525</x>
+     <y>40</y>
+     <width>31</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/folder-icon.png</normaloff>:/new/icons/imagenInte/folder-icon.png</iconset>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbFlip">
+   <property name="geometry">
+    <rect>
+     <x>590</x>
+     <y>40</y>
+     <width>51</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Flip</string>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="lstImgs.qrc"/>
+ </resources>
+ <connections/>
+</ui>

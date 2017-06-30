@@ -40,7 +40,8 @@ SOURCES += main.cpp\
     formslidesettings.cpp \
     formsquareaperturesettings.cpp \
     formndvisettings.cpp \
-    formobtainfolder.cpp
+    formobtainfolder.cpp \
+    formbuildslidehypecubepreview.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -70,7 +71,8 @@ HEADERS  += mainwindow.h \
     lstraspividstruct.h \
     formsquareaperturesettings.h \
     formndvisettings.h \
-    formobtainfolder.h
+    formobtainfolder.h \
+    formbuildslidehypecubepreview.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -84,7 +86,8 @@ FORMS    += mainwindow.ui \
     formslidesettings.ui \
     formsquareaperturesettings.ui \
     formndvisettings.ui \
-    formobtainfolder.ui
+    formobtainfolder.ui \
+    formbuildslidehypecubepreview.ui
 
 RESOURCES += \
     lstImgs.qrc

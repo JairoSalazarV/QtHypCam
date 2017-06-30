@@ -13,6 +13,8 @@
     #define _PATH_LAST_LOCAL_FOLDER         "./settings/lastLocalFolder.hypcam"
     #define _PATH_LAST_LOCAL_FILE           "./settings/lastLocalFile.hypcam"
 
+    #define _PATH_LAST_SLIDE_FRAMES_4CUBE   "./settings/lastSlideFrames.hypcam"
+
 
     #define _PATH_SETTINGS_RED_WAVELEN      "./settings/Wavelengths/RedWavelength.hypcam"
     #define _PATH_SETTINGS_GREEN_WAVELEN    "./settings/Wavelengths/GreenWavelength.hypcam"
@@ -39,21 +41,22 @@
     #define _PATH_HALOGEN_IRRADIATION       "./settings/Calib/responses/halogenIrradiation.hypcam"
     #define _PATH_RGB_SENSIVILITIES         "./settings/Calib/responses/sensitivities.hypcam"
 
-    #define _PATH_LAST_IMG_OPEN             "./settings/lastPaths/selectImage.hypcam"
-    #define _PATH_LAST_IMG_SAVED            "./settings/lastPaths/savedImage.hypcam"
+    #define _PATH_LAST_IMG_OPEN                     "./settings/lastPaths/selectImage.hypcam"
+    #define _PATH_LAST_IMG_SAVED                    "./settings/lastPaths/savedImage.hypcam"
 
-    #define _PATH_NDVI_THRESHOLD            "./settings/NDVI/threshold.hypcam"
-    #define _PATH_NDVI_BRILLIANT            "./settings/NDVI/brilliant.hypcam"
-    #define _PATH_NDVI_INFRARED_WEIGHT      "./settings/NDVI/infraredWeight.hypcam"
-    #define _PATH_NDVI_MIN_VALUE            "./settings/NDVI/minimumValue.hypcam"
+    #define _PATH_NDVI_THRESHOLD                    "./settings/NDVI/threshold.hypcam"
+    #define _PATH_NDVI_BRILLIANT                    "./settings/NDVI/brilliant.hypcam"
+    #define _PATH_NDVI_INFRARED_WEIGHT              "./settings/NDVI/infraredWeight.hypcam"
+    #define _PATH_NDVI_MIN_VALUE                    "./settings/NDVI/minimumValue.hypcam"
 
-    #define _PATH_LIMIT_R                   "./settings/Calib/limR.hypcam"
-    #define _PATH_LIMIT_U                   "./settings/Calib/limU.hypcam"
-    #define _PATH_LIMIT_L                   "./settings/Calib/limL.hypcam"
-    #define _PATH_LIMIT_D                   "./settings/Calib/limD.hypcam"
-    #define _PATH_LIMIT_S_HALOGEN           "./settings/Calib/sourceHalogen.hypcam"
-    #define _PATH_LIMIT_S_FLUORESCENT       "./settings/Calib/source.hypcam"
-    #define _PATH_SLIDE_FLUORESCENT         "./settings/Calib/slideFluorescent.hypcam"
+    #define _PATH_LIMIT_R                           "./settings/Calib/limR.hypcam"
+    #define _PATH_LIMIT_U                           "./settings/Calib/limU.hypcam"
+    #define _PATH_LIMIT_L                           "./settings/Calib/limL.hypcam"
+    #define _PATH_LIMIT_D                           "./settings/Calib/limD.hypcam"
+    #define _PATH_LIMIT_S_HALOGEN                   "./settings/Calib/sourceHalogen.hypcam"
+    #define _PATH_LIMIT_S_FLUORESCENT               "./settings/Calib/source.hypcam"
+    #define _PATH_SLIDE_FLUORESCENT                 "./settings/Calib/slideFluorescent.hypcam"
+    #define _PATH_SLIDE_HALOGEN_SENSITIVITIES       "./settings/Calib/slideHalogenSensitivities.hypcam"
 
 
 
@@ -96,6 +99,7 @@
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
 
     #define _PATH_LAST_SNAPPATH             "lastSnapPath.xml"
+
 
 
 

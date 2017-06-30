@@ -2,6 +2,8 @@
 #define __COMMON_H
 
     #include "lstStructs.h"
+    #include "lstfilenames.h"
+
     #include <QString>
     #include <QDebug>
     #include <QTime>
@@ -35,6 +37,7 @@
     void funcShowMsg( QString title, QString msg );
     void funcShowMsgERROR(QString msg);
 
+    int funcShowSelDir(QString startedPath, QString* dirSelected);
     QString funcShowSelDir(QString path);
 
     void funcShowFileError(int error, QString fileName);
@@ -105,7 +108,10 @@
 
     int funcPrintRectangle(QString title, squareAperture *rectangle);
 
-    QList<QFileInfo> funcListFilesInDir(QString Dir);
+    QList<QFileInfo> funcListFilesInDir(QString Dir, QString Suffix);
+    QList<QFileInfo> funcListFilesInDir(QString Dir);    
+
+    QList<QFileInfo> funcFilterFilelist(QList<QFileInfo> lstFiles, QString suffix);
 
     void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib);
 
@@ -126,6 +132,26 @@
     void funcNDVI(QImage *imgToNDVI , double lowerBound, int brilliant);
 
     int funcReadAnalysePlot( structAnalysePlotSaved* structPlotSaved );
+
+    void rotateQImage(QImage* tmpImg, int degree);
+
+    QRect screenResolution(QWidget* reference);
+
+    int* imageDecriptor(QImage *img, bool horizontal=true);
+
+    int pixelMaxValue(QRgb pixel );
+
+    QPoint imageSimilarity2D(QImage* img1, QImage* img2);
+
+    int vectorSimilarity(int* v1, int* v2, int n);
+
+    int* vectorConvolution(int* v1, int* v2, int n);
+
+    int* vectorCrossCorrelation(int* v1, int* v2, int n, float lang);
+
+    float vectorSimpleCorrelation(int* v1, int* v2, int n, int k);
+
+    float vectorCorrelation(int* v1, int* v2, int n, int k);
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);

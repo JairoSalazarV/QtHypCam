@@ -402,6 +402,25 @@
         int originalH;
     }structAnalysePlotSaved;
 
+    typedef struct structSlideHypCube
+    {
+        bool    rotateLeft = false;
+        int     width=9;
+        float   extraW=0.3;
+    }structSlideHypCube;
+
+
+
+
+
+
+
+
+
+
+
+
+
     const unsigned int streamLen = sizeof(frameStruct);
 
 

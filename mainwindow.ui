@@ -1227,6 +1227,7 @@ QSlider::handle:horizontal {
      </property>
      <addaction name="actionSlideDiffraction"/>
      <addaction name="actionTimelapse"/>
+     <addaction name="actionSlide_Build_Hypercube"/>
     </widget>
     <widget class="QMenu" name="menuObtain">
      <property name="title">
@@ -1799,6 +1800,14 @@ QSlider::handle:horizontal {
   <action name="actionObtain_File">
    <property name="text">
     <string>Obtain File</string>
+   </property>
+  </action>
+  <action name="actionSlide_Build_Hypercube">
+   <property name="text">
+    <string>Slide Build Hypercube</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+B</string>
    </property>
   </action>
  </widget>

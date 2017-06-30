@@ -597,24 +597,6 @@ int fileIsValid(QString fileContain)
 }
 
 
-
-QString readFileParam(QString fileName){
-    QString tmpFileContain = "";
-    if( fileExists(fileName) )
-    {
-        tmpFileContain = readAllFile(fileName);
-        if( fileIsValid(tmpFileContain) )
-        {
-            tmpFileContain = tmpFileContain.trimmed();
-            tmpFileContain.replace("\n","");
-        }
-    }else
-    {
-        saveFile(fileName,tmpFileContain);
-    }
-    return tmpFileContain;
-}
-
 int readFileParam(QString fileName, QString* tmpFileContain)
 {
     *tmpFileContain = "";
@@ -633,10 +615,29 @@ int readFileParam(QString fileName, QString* tmpFileContain)
     }else
     {
         saveFile(fileName,*tmpFileContain);
-        return _ERROR;
+        return _FAILURE;
     }
     return _OK;
 }
+
+QString readFileParam(QString fileName){
+    QString tmpFileContain = "";
+    if( fileExists(fileName) )
+    {
+        tmpFileContain = readAllFile(fileName);
+        if( fileIsValid(tmpFileContain) )
+        {
+            tmpFileContain = tmpFileContain.trimmed();
+            tmpFileContain.replace("\n","");
+        }
+    }else
+    {
+        saveFile(fileName,tmpFileContain);
+    }
+    return tmpFileContain;
+}
+
+
 
 
 
@@ -899,6 +900,24 @@ void funcShowMsgERROR(QString msg){
     yesNoMsgBox.setText(msg);
     yesNoMsgBox.setDefaultButton(QMessageBox::Ok);
     yesNoMsgBox.exec();
+}
+
+int funcShowSelDir(QString startedPath, QString* dirSelected)
+{
+    *dirSelected = QFileDialog::getExistingDirectory(
+                                                        NULL,
+                                                        "Open Directory",
+                                                        startedPath,
+                                                        QFileDialog::ShowDirsOnly
+                                                        | QFileDialog::DontResolveSymlinks);
+    if( dirSelected->isEmpty() || dirSelected->isNull() )
+    {
+        dirSelected->clear();
+        return _FAILURE;
+    }
+    dirSelected->append("/");
+    //dirSelected = dirSelected;
+    return _OK;
 }
 
 QString funcShowSelDir(QString path)
@@ -1327,6 +1346,38 @@ QList<QFileInfo> funcListFilesInDir(QString Dir)
     return lstFiles;
 }
 
+QList<QFileInfo> funcListFilesInDir(QString Dir, QString Suffix)
+{
+    //Only add files with suffix provided
+    QList<QFileInfo> lstFiles;
+    QDir dir(Dir);
+    if ( dir.exists() )
+    {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::Files, QDir::Time | QDir::Name | QDir::Reversed))
+        {
+            if( info.completeSuffix() == Suffix )
+            {
+                lstFiles.append(info);
+            }
+        }
+    }
+    return lstFiles;
+}
+
+QList<QFileInfo> funcFilterFilelist(QList<QFileInfo> lstFiles, QString suffix)
+{
+    int i;
+    QList<QFileInfo> lstResult;
+    for( i=0; i<lstFiles.size(); i++ )
+    {
+        if( lstFiles.at(i).completeSuffix() == suffix )
+        {
+            lstResult.append(lstFiles.at(i));
+        }
+    }
+    return lstResult;
+}
+
 void calcDiffProj(strDiffProj *diffProj, lstDoubleAxisCalibration *daCalib)
 {
     //int offsetX, offsetY;
@@ -1647,4 +1698,295 @@ int funcReadAnalysePlot( structAnalysePlotSaved* structPlotSaved )
     structPlotSaved->originalH  = tmpParameter.split(",").at(6).toInt(0);
 
     return _OK;
+}
+
+void rotateQImage(QImage* tmpImg, int degree)
+{
+    QTransform transformation;
+    transformation.rotate(degree);
+    *tmpImg = tmpImg->transformed(transformation);
+}
+
+QRect screenResolution(QWidget* reference)
+{
+    return QApplication::desktop()->screenGeometry(QApplication::desktop()->screenNumber(reference));
+}
+
+int* imageDecriptor(QImage* img, bool horizontal)
+{
+    int x, y;
+    int* descriptor;
+    int acum;
+    if( horizontal == true )
+    {
+        descriptor = (int*)malloc(img->width()*sizeof(int));
+        for( x=0; x<img->width(); x++ )
+        {
+            acum = 0;
+            for( y=0; y<img->height(); y++ )
+            {
+                acum += pixelMaxValue( img->pixel(x,y) );
+            }
+            descriptor[x] = acum;
+        }
+    }
+    else
+    {
+        descriptor = (int*)malloc(img->height()*sizeof(int));
+        for( y=0; y<img->height(); y++ )
+        {
+            acum = 0;
+            for( x=0; x<img->width(); x++ )
+            {
+                acum += pixelMaxValue( img->pixel(x,y) );
+            }
+            descriptor[y] = acum;
+        }
+    }
+    return descriptor;
+}
+
+int pixelMaxValue( QRgb pixel )
+{
+    int maxVal;
+    maxVal = (qRed(pixel)>=qGreen(pixel))?qRed(pixel):qGreen(pixel);
+    maxVal = (maxVal>=qBlue(pixel))?maxVal:qBlue(pixel);
+    return maxVal;
+}
+
+
+QPoint imageSimilarity2D(QImage* img1, QImage* img2)
+{
+    QPoint shift2D;
+    shift2D.setX(0);
+    shift2D.setY(0);
+
+    //-----------------------------------------------------
+    //Horizontal Shifting
+    //-----------------------------------------------------
+    int* leftHorizontalDescriptor   = imageDecriptor(img1);
+    int* rightHorizontalDescriptor  = imageDecriptor(img2);
+    shift2D.setX( vectorSimilarity(leftHorizontalDescriptor, rightHorizontalDescriptor, img1->width() ) );
+
+    //-----------------------------------------------------
+    //Vertical Shifting
+    //-----------------------------------------------------
+    int* leftVerticalDescriptor     = imageDecriptor(img1,false);
+    int* rightVerticalDescriptor    = imageDecriptor(img2,false);
+    shift2D.setY( vectorSimilarity(leftVerticalDescriptor, rightVerticalDescriptor, img1->height() ) );
+
+    return shift2D;
+}
+
+int vectorSimilarity(int* v1, int* v2, int n)
+{
+    //[Comment]: Apply Convolution, v1=x(n) and v2 = h(n)
+
+    int i, j, maxShift, maxAcum, aux, v1Pos, v2Pos;
+    maxShift = 0;
+    maxAcum  = 0;
+
+    /*
+    //Swap V2
+    for( i=0; i<floor((float)n/2.0); i++ )
+    {
+        aux         = v2[i];
+        v2[i]       = v2[n-1-i];
+        v2[n-1-i]   = aux;
+    }
+    */
+
+    //Outside-Left to the Overlapped
+    for( i=0; i<n; i++ )
+    {
+        aux = 0;
+        for( j=0; j<i; j++ )
+        {
+            v1Pos   = j;      //->
+            v2Pos   = i-j;    //<-
+            aux   += v1[v1Pos] * v2[v2Pos];
+        }
+        if( aux>maxAcum )
+        {
+            maxAcum  = aux;
+            maxShift = i*(-1);
+        }
+    }
+
+    //Overlapped to Outside-Right
+    for( i=1; i<n; i++ )
+    {
+        aux = 0;
+        for( j=i; j<n; j++ )
+        {
+            v1Pos   = j;      //->
+            v2Pos   = n+i-j;  //<-
+            aux   += v1[v1Pos] * v2[v2Pos];
+        }
+        if( aux>maxAcum )
+        {
+            maxAcum  = aux;
+            maxShift = i;
+        }
+    }
+
+    return maxShift;
+}
+
+int* vectorConvolution(int* v1, int* v2, int n)
+{
+
+    //[Comment]: Apply Convolution, v1=x(n) and v2 = h(n)
+    //           v1 and v3 have same dimensions
+    //           v3[0] contains the position with the bigger value
+    //           v3[1-n] contains the convolution result
+
+    int numElem = 2*n;
+    //qDebug() << "numElem: " << numElem;
+
+    int i, j, maxAcum, aux, v1Pos, v2Pos, cPos;
+    maxAcum  = 0;
+    cPos     = 1;
+
+    int* v3 = (int*)malloc(numElem*sizeof(int));
+    memset( v3, '\0', numElem*sizeof(int));
+
+    //Outside-Left to the Overlapped
+    for( i=0; i<n; i++ )
+    {
+        aux = 0;
+        for( j=0; j<=i; j++ )
+        {
+            v1Pos   = i-j;      //->
+            v2Pos   = j;    //<-
+            aux    += v1[v1Pos] * v2[v2Pos];
+            //qDebug() << v1[v1Pos] << " x " << v2[v2Pos] << " -> " << aux;
+        }
+        //qDebug() << "---";
+        //qDebug() << "i: " << i << " val: " << aux;
+        v3[cPos] = aux;
+        if( aux>maxAcum )
+        {
+            maxAcum  = aux;
+            v3[0]    = cPos;
+        }
+        cPos++;
+    }
+
+    /*
+    for( i=0; i<numElem; i++ )
+    {
+        qDebug() << v3[i];
+    }
+    exit(0);*/
+
+
+    //Overlapped to Outside-Right
+    for( i=1; i<n; i++ )
+    {
+        aux = 0;
+        for( j=0; j<n-i; j++ )
+        {
+            v1Pos   = i+j;      //->
+            v2Pos   = n-1-j;        //<-
+            aux    += v1[v1Pos] * v2[v2Pos];
+            //qDebug() << v1[v1Pos] << " x " << v2[v2Pos] << " -> " << aux;
+        }
+        //qDebug() << "---";
+        //qDebug() << "i: " << i << " val: " << aux;
+        v3[cPos] = aux;
+        if( aux>maxAcum )
+        {
+            maxAcum  = aux;
+            v3[0]    = cPos;
+        }
+        cPos++;
+    }
+
+    /*
+    for( i=0; i<numElem; i++ )
+    {
+        qDebug() << v3[i];
+    }
+    exit(0);*/
+
+    return v3;
+}
+
+
+int* vectorCrossCorrelation(int* v1, int* v2, int n, float lang)
+{
+
+    int numElem = 2*n;
+    int* v3 = (int*)malloc(numElem*sizeof(int));
+    memset( v3, '\0', numElem*sizeof(int));
+
+    //---------------------------------------------
+    //Calculate Correlation Zero Shift
+    //---------------------------------------------
+    float corr;
+    corr = vectorCorrelation(v1,v1,n,-3);
+    qDebug() << "corr: " << corr;
+
+    exit(0);
+
+
+    return v3;
+}
+
+float vectorSimpleCorrelation(int* v1, int* v2, int n, int k)
+{
+    if( k>=n || k<((-1)*n) )
+        return 0.0;
+    int vectorAux[n];
+    memset( vectorAux, '\0', (sizeof(int)*n) );
+
+    //--------------------------------------------
+    //Shift vectorAux=v2 if Required
+    //--------------------------------------------
+    int i, acum, begin, end;
+    if( k>0  ){memcpy(vectorAux,&v2[k],(sizeof(int)*(n-k)));begin=0;end=n-k;}
+    if( k<0  ){k=abs(k);memcpy(&vectorAux[k],v2,(sizeof(int)*(n-k)));begin=k;end=n;}
+    if( k==0 ){memcpy( vectorAux, v2, (sizeof(int)*n) );begin=0;end=n;}
+
+    //qDebug() << "begin: " << begin;
+    //qDebug() << "end: " << end;
+
+    //--------------------------------------------
+    //Multiply v1 and v2=vectorAux
+    //--------------------------------------------
+    acum = 0;
+    for( i=begin; i<end; i++ )
+    {        
+        acum += v1[i] * vectorAux[i];
+        //qDebug() << v1[i] << " x " << vectorAux[i] << ": " << acum;
+    }
+
+    //--------------------------------------------
+    //Calculate the Result
+    //--------------------------------------------
+    return (1.0/(float)n) * (float)acum;
+}
+
+
+float vectorCorrelation(int* v1, int* v2, int n, int k)
+{
+    //Calculate Raw Correlation
+    float zeroCorr, corr, error;
+    corr        = vectorSimpleCorrelation(v1,v2,n,k);
+
+    //Fix Shipping Errro
+    k = abs(k);
+    zeroCorr    = vectorSimpleCorrelation(v1,v2,n,0);
+    error       = 0;
+    if( k != 0 )
+    {
+        error = ((float)k/(float)n)*zeroCorr;
+        //qDebug() << "zeroCorr: " << zeroCorr << " corr: " << corr << " error: " << error;
+        corr += error;
+        //qDebug() << "corr final: " << corr;
+    }
+    //exit(0);
+
+    return corr;
 }

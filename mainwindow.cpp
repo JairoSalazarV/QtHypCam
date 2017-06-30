@@ -129,6 +129,8 @@
 
 #include <formobtainfolder.h>
 
+#include <formbuildslidehypecubepreview.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -156,7 +158,7 @@ calcAndCropSnap calStruct;
 bool globaIsRotated;
 
 qint64 numFrames;
-QList<QImage> lstFrames;
+//QList<QImage> lstFrames;
 
 
 
@@ -179,6 +181,28 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
+
+
+    int a[] = {4,2,-1,3,-2,-6,-5,4,5};
+    int b[] = {-4,1,3,7,4,-2,-8,-2,1};
+    int* c  = vectorCrossCorrelation(a,b,9,0.3);
+    //float corr = vectorSimpleCorrelation(a,b,9,-1);
+    //qDebug() << "corr: " << corr;
+    exit(0);
+    for(int i=0; i<8; i++)
+    {
+        //qDebug() << c[i];
+    }
+    exit(0);
+
+
+
+
+
+
+
+
+
 
     //ui->actionValidCal->trigger();
 
@@ -2023,6 +2047,26 @@ void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
     //return tmpFileName;
 //}
 
+
+
+void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
+{
+    //Show snapshot
+    //..
+    int maxW, maxH;
+    maxW = (_FRAME_THUMB_W<tmpImg->width())?_FRAME_THUMB_W:tmpImg->width();
+    maxH = (_FRAME_THUMB_H<tmpImg->height())?_FRAME_THUMB_H:tmpImg->height();
+    QImage tmpThumb = ( tmpImg->width() > tmpImg->height() )?tmpThumb.scaledToWidth(maxW):tmpImg->scaledToHeight(maxH);
+    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
+    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+    //Update view
+    //..
+    auxQstring = _PATH_DISPLAY_IMAGE;
+    loadImageIntoCanvasEdit(tmpImg, true);
+    //tmpImg->save( _PATH_DISPLAY_IMAGE );
+
+}
+
 void MainWindow::updateDisplayImageReceived()
 {
     mouseCursorWait();
@@ -2041,25 +2085,6 @@ void MainWindow::updateDisplayImageReceived()
     auxQstring = _PATH_DISPLAY_IMAGE;
     loadImageIntoCanvasEdit(auxQstring, true);
     mouseCursorReset();
-}
-
-void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
-{
-    //Show snapshot
-    //..
-    int maxW, maxH;
-    maxW = (_FRAME_THUMB_W<tmpImg->width())?_FRAME_THUMB_W:tmpImg->width();
-    maxH = (_FRAME_THUMB_H<tmpImg->height())?_FRAME_THUMB_H:tmpImg->height();
-    QImage tmpThumb = tmpImg->scaledToHeight(maxH);
-    tmpThumb = tmpThumb.scaledToWidth(maxW);
-    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
-    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
-    //Update view
-    //..
-    auxQstring = _PATH_DISPLAY_IMAGE;
-    loadImageIntoCanvasEdit(tmpImg, true);
-    //tmpImg->save( _PATH_DISPLAY_IMAGE );
-
 }
 
 void MainWindow::on_pbSnapshot_clicked()
@@ -6098,7 +6123,7 @@ int MainWindow::funcVideoToFrames(QString videoSource)//_PATH_VIDEO_FRAMES, _PAT
     ui->progBar->update();
 
     numFrames = 0;
-    lstFrames.clear();
+    //lstFrames.clear();
     funcClearDirFolder( _PATH_VIDEO_FRAMES );
 
     QMediaPlayer *player = new QMediaPlayer();
@@ -6918,11 +6943,6 @@ void MainWindow::funcDrawPlotLimits()
     }
 
 
-
-}
-
-void MainWindow::on_pbSelectFolderSlide_clicked()
-{
 
 }
 
@@ -8154,3 +8174,173 @@ int MainWindow::obtainRemoteFolder( QString remoteFolder, QString localFolder )
     }
     return _OK;
 }
+
+void MainWindow::on_actionSlide_Build_Hypercube_triggered()
+{
+
+
+    //------------------------------------------------------
+    //Show Form
+    //------------------------------------------------------
+    formBuildSlideHypeCubePreview* slidePreview = new formBuildSlideHypeCubePreview(this);
+    slidePreview->setModal(true);
+    slidePreview->show();
+
+
+    /*
+    //------------------------------------------------------
+    //Select Directory
+    //------------------------------------------------------
+    QString workDir, lastSlideFrames;
+    if( !readFileParam(_PATH_LAST_SLIDE_FRAMES_4CUBE,&lastSlideFrames) )
+    {
+        lastSlideFrames.clear();
+        lastSlideFrames.append(_PATH_VIDEO_FRAMES);
+    }
+    if( !funcShowSelDir(lastSlideFrames,&workDir) )
+    {
+        return (void)false;
+    }
+    saveFile(_PATH_LAST_SLIDE_FRAMES_4CUBE,workDir);
+
+    //------------------------------------------------------
+    //Define List With Imagery to Be Considered
+    //------------------------------------------------------
+
+    //......................................................
+    //Gel List of Files in Directory Selected
+    //......................................................
+    QList<QFileInfo> lstFiles = funcListFilesInDir( workDir, _FRAME_RECEIVED_EXTENSION );
+    qDebug() << "lstFiles: " << lstFiles.length();
+    if(lstFiles.size()==0)
+    {
+        funcShowMsgERROR("Empty Directory");
+        return (void)false;
+    }
+
+    //......................................................
+    //Read Hyperimage's Parameters
+    //......................................................
+    QString timelapseFile(workDir + _FILENAME_SLIDE_DIR_TIME);
+    std::string tmpParam;
+    if( !readParamFromFile( timelapseFile.toStdString(), &tmpParam) )
+    {
+        funcShowMsgERROR("Timelapse Parameter not found at: " + workDir);
+        return (void)false;
+    }
+    int timelapse           = atoi(tmpParam.c_str());
+    qDebug() << "numFrames: " << lstFiles.size() << " time: " << timelapse;
+
+    //......................................................
+    //Discard Stabilization Frames
+    //......................................................
+    int numFrame2Discard    = ceil( (float)_RASPBERRY_STABILIZATION_TIME / (float)timelapse );
+    int i;
+    for( i=0; i<numFrame2Discard; i++ )
+    {
+        //qDebug() << "file discarded: " << lstFiles.at(i).completeBaseName();
+        lstFiles.removeAt(0);
+    }*/
+
+
+    //structSlideHypCube slideCubeSettings;
+    //slideCubeSettings.rotateLeft  = true;
+    //slideCubeSettings.width = 70;
+    //buildHypercubeFromFilelist( lstFiles, slideCubeSettings );
+
+}
+
+void MainWindow::buildHypercubeFromFilelist(
+                                                QList<QFileInfo> lstFrames,
+                                                structSlideHypCube slideCubeSettings
+){
+    //[COMMENT]
+    //It assumes that lstFrames contains only usable frames
+
+    //----------------------------------------------------
+    // Create Image Container
+    //----------------------------------------------------
+    int resultImgW;
+    resultImgW = lstFrames.size() * slideCubeSettings.width;
+    QImage tmpImg( lstFrames.at(0).absoluteFilePath() );
+    QImage resultImg( resultImgW, tmpImg.height(), QImage::Format_RGB16 );
+
+    //----------------------------------------------------
+    // Read RGB Position
+    //----------------------------------------------------
+    QString tmpParam;
+    if( !readFileParam(_PATH_SLIDE_HALOGEN_SENSITIVITIES,&tmpParam) )
+    {
+        if( !readFileParam(_PATH_SLIDE_FLUORESCENT,&tmpParam) )
+        {
+            funcShowMsgERROR("RGB Positions Not Found");
+            return (void)false;
+        }
+    }
+    int rPosX, gPosX, bPosX;
+    //rPosX = tmpParam.split(",").at(0).toInt(0) - round((float)slideCubeSettings.width/2.0);
+    //gPosX = tmpParam.split(",").at(1).toInt(0) - round((float)slideCubeSettings.width/2.0);
+    //bPosX = tmpParam.split(",").at(2).toInt(0) - round((float)slideCubeSettings.width/2.0);
+    rPosX = 500;
+    gPosX = 500;
+    bPosX = 500;
+
+    //----------------------------------------------------
+    // Create Image To Display
+    //----------------------------------------------------
+    int i, w, h, r, c, slideX, red, green, blue;
+    w = slideCubeSettings.width;
+    h = tmpImg.height()-1;
+    for( i=0; i<lstFrames.size(); i++ )
+    {
+        tmpImg      = QImage( lstFrames.at(i).absoluteFilePath() );
+        slideX      = i*w;
+        for( r=0; r<h; r++ )
+        {
+            for(c=0; c<w; c++ )
+            {
+                red     = qRed(   tmpImg.pixel( rPosX+c, r ) );
+                green   = qGreen( tmpImg.pixel( gPosX+c, r ) );
+                blue    = qBlue(  tmpImg.pixel( bPosX+c, r ) );
+                resultImg.setPixel( QPoint( slideX+c, r ), qRgb( red, green, blue ) );
+            }
+        }
+    }
+    if( slideCubeSettings.rotateLeft == true )
+    {
+        rotateQImage(&resultImg,90);
+    }
+    resultImg.save( _PATH_DISPLAY_IMAGE );
+    updateDisplayImageReceived(&resultImg);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
