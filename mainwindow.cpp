@@ -182,18 +182,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-
-    int a[] = {4,2,-1,3,-2,-6,-5,4,5};
-    int b[] = {-4,1,3,7,4,-2,-8,-2,1};
-    int* c  = vectorCrossCorrelation(a,b,9,0.3);
-    //float corr = vectorSimpleCorrelation(a,b,9,-1);
-    //qDebug() << "corr: " << corr;
+    /*
+    int a[]     = {4,2,-1,3,-2,-6,-5,4,5};
+    int b[]     = {-4,1,3,7,4,-2,-8,-2,1};
+    int n       = 9;
+    float* c    = vectorCrossCorrelation(a,b,9,0.4);
+    int shift   = c[0]-n;
+    qDebug() << "shift: " << shift;
     exit(0);
-    for(int i=0; i<8; i++)
-    {
-        //qDebug() << c[i];
-    }
-    exit(0);
+    */
 
 
 

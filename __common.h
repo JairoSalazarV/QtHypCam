@@ -143,15 +143,16 @@
 
     QPoint imageSimilarity2D(QImage* img1, QImage* img2);
 
-    int vectorSimilarity(int* v1, int* v2, int n);
+    int vectorSimilarity(int* v1, int* v2, int n, float lang);
 
     int* vectorConvolution(int* v1, int* v2, int n);
 
-    int* vectorCrossCorrelation(int* v1, int* v2, int n, float lang);
+    float *vectorCrossCorrelation(int* v1, int* v2, int n, float lang);
 
     float vectorSimpleCorrelation(int* v1, int* v2, int n, int k);
 
     float vectorCorrelation(int* v1, int* v2, int n, int k);
+    float vectorCorrelation(int* v1, int* v2, int n, int k, float zeroCorr);
 
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);

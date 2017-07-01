@@ -1766,71 +1766,22 @@ QPoint imageSimilarity2D(QImage* img1, QImage* img2)
     //-----------------------------------------------------
     int* leftHorizontalDescriptor   = imageDecriptor(img1);
     int* rightHorizontalDescriptor  = imageDecriptor(img2);
-    shift2D.setX( vectorSimilarity(leftHorizontalDescriptor, rightHorizontalDescriptor, img1->width() ) );
+    shift2D.setX( vectorSimilarity(leftHorizontalDescriptor, rightHorizontalDescriptor, img1->width(), 0.5 ) );
 
     //-----------------------------------------------------
     //Vertical Shifting
     //-----------------------------------------------------
     int* leftVerticalDescriptor     = imageDecriptor(img1,false);
     int* rightVerticalDescriptor    = imageDecriptor(img2,false);
-    shift2D.setY( vectorSimilarity(leftVerticalDescriptor, rightVerticalDescriptor, img1->height() ) );
+    shift2D.setY( vectorSimilarity(leftVerticalDescriptor, rightVerticalDescriptor, img1->height(), 0.3 ) );
 
     return shift2D;
 }
 
-int vectorSimilarity(int* v1, int* v2, int n)
+int vectorSimilarity(int* v1, int* v2, int n, float lang)
 {
-    //[Comment]: Apply Convolution, v1=x(n) and v2 = h(n)
-
-    int i, j, maxShift, maxAcum, aux, v1Pos, v2Pos;
-    maxShift = 0;
-    maxAcum  = 0;
-
-    /*
-    //Swap V2
-    for( i=0; i<floor((float)n/2.0); i++ )
-    {
-        aux         = v2[i];
-        v2[i]       = v2[n-1-i];
-        v2[n-1-i]   = aux;
-    }
-    */
-
-    //Outside-Left to the Overlapped
-    for( i=0; i<n; i++ )
-    {
-        aux = 0;
-        for( j=0; j<i; j++ )
-        {
-            v1Pos   = j;      //->
-            v2Pos   = i-j;    //<-
-            aux   += v1[v1Pos] * v2[v2Pos];
-        }
-        if( aux>maxAcum )
-        {
-            maxAcum  = aux;
-            maxShift = i*(-1);
-        }
-    }
-
-    //Overlapped to Outside-Right
-    for( i=1; i<n; i++ )
-    {
-        aux = 0;
-        for( j=i; j<n; j++ )
-        {
-            v1Pos   = j;      //->
-            v2Pos   = n+i-j;  //<-
-            aux   += v1[v1Pos] * v2[v2Pos];
-        }
-        if( aux>maxAcum )
-        {
-            maxAcum  = aux;
-            maxShift = i;
-        }
-    }
-
-    return maxShift;
+    float* c    = vectorCrossCorrelation(v1,v2,n,lang);
+    return c[0]-n;
 }
 
 int* vectorConvolution(int* v1, int* v2, int n)
@@ -1914,21 +1865,39 @@ int* vectorConvolution(int* v1, int* v2, int n)
 }
 
 
-int* vectorCrossCorrelation(int* v1, int* v2, int n, float lang)
+float* vectorCrossCorrelation(int* v1, int* v2, int n, float lang)
 {
-
-    int numElem = 2*n;
-    int* v3 = (int*)malloc(numElem*sizeof(int));
-    memset( v3, '\0', numElem*sizeof(int));
+    int k;
+    int numElem = (2*n)+1;
+    float* v3 = (float*)malloc(numElem*sizeof(float));
+    memset( v3, '\0', numElem*sizeof(float));
+    //lang = (lang>0.5)?0.5:lang;
 
     //---------------------------------------------
     //Calculate Correlation Zero Shift
     //---------------------------------------------
-    float corr;
-    corr = vectorCorrelation(v1,v1,n,-3);
-    qDebug() << "corr: " << corr;
+    float zeroCorr;
+    zeroCorr        = vectorCorrelation(v1,v1,n,0);
+    int maxShift    = floor((float)n*lang);
+    maxShift        = ( maxShift > n-1 )?n-1:maxShift;
+    int minShift    = maxShift*(-1);
+    float maxCorr   = 0.0;
+    for( k=minShift; k<=maxShift; k++ )
+    {
+        v3[n+k] = (k!=0)?vectorCorrelation(v1,v2,n,k,zeroCorr):zeroCorr;
+        if( v3[n+k] > maxCorr )
+        {
+            maxCorr = v3[n+k];
+            v3[0]   = n+k;
+        }
+    }
 
-    exit(0);
+    /*
+    for( k=0; k<=((2*n)-1); k++ )
+    {
+        qDebug() << "k: " << k-n << " v3: " << v3[k];
+    }
+    exit(0);*/
 
 
     return v3;
@@ -1987,6 +1956,24 @@ float vectorCorrelation(int* v1, int* v2, int n, int k)
         //qDebug() << "corr final: " << corr;
     }
     //exit(0);
+
+    return corr;
+}
+
+float vectorCorrelation(int* v1, int* v2, int n, int k, float zeroCorr)
+{
+    //Calculate Raw Correlation
+    float corr, error;
+    corr        = vectorSimpleCorrelation(v1,v2,n,k);
+
+    //Fix Shipping Errro
+    k = abs(k);
+    error       = 0;
+    if( k != 0 )
+    {
+        error = ((float)k/(float)n)*zeroCorr;
+        corr += error;
+    }
 
     return corr;
 }
