@@ -26,7 +26,7 @@
   <widget class="QPushButton" name="pbApply">
    <property name="geometry">
     <rect>
-     <x>830</x>
+     <x>650</x>
      <y>40</y>
      <width>84</width>
      <height>28</height>

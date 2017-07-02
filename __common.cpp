@@ -1766,14 +1766,16 @@ QPoint imageSimilarity2D(QImage* img1, QImage* img2)
     //-----------------------------------------------------
     int* leftHorizontalDescriptor   = imageDecriptor(img1);
     int* rightHorizontalDescriptor  = imageDecriptor(img2);
-    shift2D.setX( vectorSimilarity(leftHorizontalDescriptor, rightHorizontalDescriptor, img1->width(), 0.5 ) );
+    //shift2D.setX( vectorSimilarity(leftHorizontalDescriptor, rightHorizontalDescriptor, img1->width(), 0.5 ) );
+    shift2D.setX(0);
 
     //-----------------------------------------------------
     //Vertical Shifting
     //-----------------------------------------------------
     int* leftVerticalDescriptor     = imageDecriptor(img1,false);
     int* rightVerticalDescriptor    = imageDecriptor(img2,false);
-    shift2D.setY( vectorSimilarity(leftVerticalDescriptor, rightVerticalDescriptor, img1->height(), 0.3 ) );
+    //shift2D.setY( vectorSimilarity(leftVerticalDescriptor, rightVerticalDescriptor, img1->height(), 0.3 ) );
+    shift2D.setY(0);
 
     return shift2D;
 }
@@ -1976,4 +1978,10 @@ float vectorCorrelation(int* v1, int* v2, int n, int k, float zeroCorr)
     }
 
     return corr;
+}
+
+
+int calcSlideExtraW(structSlideHypCube* slideSett)
+{
+    return floor((float)slideSett->width * slideSett->extraW);
 }

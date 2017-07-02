@@ -22,7 +22,9 @@ private slots:
 
     QImage buildSlideCubePreview(QList<QFileInfo> lstFrames, structSlideHypCube *slideCubeSettings);
 
-    QImage calculateSubimage(QList<QFileInfo> lstFrames, structSlideHypCube *slideCubeSettings, int x=0, int i=0, int j=0);
+    structSlideShifting calculateShifting(QList<QFileInfo> lstFrames, structSlideHypCube *slideCubeSettings, int x=0, int i=0, int j=0);
+
+    void mergeSlidePreview(QImage* canvas, structSlideShifting* slideShift, int x1, int y1, bool inside=true, bool right=true);
 
     void refreshGVImage(QImage* imgPreview);
 

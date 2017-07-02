@@ -154,6 +154,8 @@
     float vectorCorrelation(int* v1, int* v2, int n, int k);
     float vectorCorrelation(int* v1, int* v2, int n, int k, float zeroCorr);
 
+    int calcSlideExtraW(structSlideHypCube* slideSett);
+
     //inline int align(int size, int align);
     //IplImage *QImageToIplImage(const QImage * qImage);
     //QImage *IplImageToQImage(const IplImage * iplImage, uchar **data,
@@ -165,6 +167,7 @@
     //
     static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
 
+    ;
 
 
 #endif // __COMMON_H

@@ -12,6 +12,7 @@
     #include <lstraspividstruct.h>
 
 
+
     typedef struct strReqSubframe{
         int posIni;
         int len;
@@ -410,7 +411,13 @@
     }structSlideHypCube;
 
 
-
+    typedef struct structSlideShifting
+    {
+        QPoint shifting;
+        QImage imgLeft;
+        QImage imgRight;
+        int extraWPix;
+    }structSlideShifting;
 
 
 

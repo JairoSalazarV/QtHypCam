@@ -110,7 +110,6 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     slideCubeSett.extraW        = 0.3;
     QImage imgPreview           = buildSlideCubePreview(lstFiles,&slideCubeSett);
 
-
     //------------------------------------------------------
     //Display Result
     //------------------------------------------------------
@@ -166,7 +165,10 @@ void formBuildSlideHypeCubePreview::refreshGVImage(QImage* imgPreview)
 
 }
 
-QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(QList<QFileInfo> lstFrames,structSlideHypCube* slideCubeSettings){
+QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(
+                                                           QList<QFileInfo> lstFrames,
+                                                           structSlideHypCube* slideCubeSettings
+){
 
     //[COMMENT]
     //It assumes that lstFrames contains only usable frames
@@ -174,10 +176,23 @@ QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(QList<QFileInfo> lst
     //----------------------------------------------------
     // Create Image Container
     //----------------------------------------------------
-    int resultImgW;
-    resultImgW = lstFrames.size() * slideCubeSettings->width;
+    int resultImgW, resultImgH;
     QImage tmpImg( lstFrames.at(0).absoluteFilePath() );
-    QImage resultImg( resultImgW, tmpImg.height(), QImage::Format_RGB16 );
+    resultImgW  = (lstFrames.size() * slideCubeSettings->width);
+    resultImgH  = (3 * tmpImg.height());
+    QImage resultImg( resultImgW, resultImgH, QImage::Format_RGB16 );
+
+    //----------------------------------------------------
+    // Set Image Background
+    //----------------------------------------------------
+    int x, y;
+    for( x=0; x<resultImgW; x++ )
+    {
+        for( y=0; y<resultImgH; y++ )
+        {
+            resultImg.setPixel(x,y,qRgb(255,255,255));
+        }
+    }
 
     //----------------------------------------------------
     // Read RGB Position
@@ -197,16 +212,23 @@ QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(QList<QFileInfo> lst
     //----------------------------------------------------
     // Create Image To Display
     //----------------------------------------------------
-    int i, w, extraW, h, r, c, slideX, red, green, blue;
-    w       = slideCubeSettings->width;
-    h       = tmpImg.height()-1;
+    structSlideShifting structShifting;
+    structShifting    = calculateShifting(lstFrames,slideCubeSettings,posX,0,1);
+    int i;
+    x = 0;
+    y = structShifting.imgRight.height();
     for( i=0; i<lstFrames.size()-1; i++ )
     {
-        tmpImg      = calculateSubimage(lstFrames,slideCubeSettings,posX,i,i+1);
-
-
-
+        structShifting    = calculateShifting(lstFrames,slideCubeSettings,posX,i,i+1);        
+        if( i==0 )
+        {
+            mergeSlidePreview(&resultImg,&structShifting,x,y,false);
+        }
+        y += structShifting.shifting.y();
+        mergeSlidePreview(&resultImg,&structShifting,x,y);
+        x += slideCubeSettings->width;
     }
+    mergeSlidePreview(&resultImg,&structShifting,x-structShifting.extraWPix,y,false,true);
     if( slideCubeSettings->rotateLeft == true )
     {
         rotateQImage(&resultImg,90);
@@ -214,7 +236,76 @@ QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(QList<QFileInfo> lst
     return resultImg;
 }
 
-QImage formBuildSlideHypeCubePreview::calculateSubimage(
+void formBuildSlideHypeCubePreview::mergeSlidePreview(
+                                                        QImage* canvas,
+                                                        structSlideShifting* slideShift,
+                                                        int x1,
+                                                        int y1,
+                                                        bool inside,
+                                                        bool right
+){
+    //-----------------------------------------------
+    //Prepare Variables and Containers
+    //-----------------------------------------------
+    int x, y, w, h, red, green, blue;
+    w   = slideShift->imgRight.width();
+    h   = slideShift->imgRight.height();
+    QRgb sourcePixel, targetPixel;
+
+    //---------------------------------------------------
+    //Inside Pixels
+    //---------------------------------------------------
+    if(inside==true)
+    {
+        //...............................................
+        //Copy Overlapped Pixels as average
+        //...............................................
+        for( x=0; x<slideShift->extraWPix; x++ )
+        {
+            for( y=0; y<h; y++ )
+            {
+                sourcePixel = slideShift->imgRight.pixel(x,y);
+                targetPixel = canvas->pixel(x1+x,y1+y);
+                red         = (float)(qRed(targetPixel)+qRed(sourcePixel)) * 0.5;
+                green       = (float)(qGreen(targetPixel)+qGreen(sourcePixel)) * 0.5;
+                blue        = (float)(qBlue(targetPixel)+qBlue(sourcePixel)) * 0.5;
+                canvas->setPixel(x1+x,y1+y,qRgb(red,green,blue));
+            }
+        }
+
+        //...............................................
+        //Copy New Pixels Implanted
+        //...............................................
+        for( x=slideShift->extraWPix; x<w; x++ )
+        {
+            for( y=0; y<h; y++ )
+            {
+                canvas->setPixel(x1+x,y1+y,slideShift->imgRight.pixel(x,y));
+            }
+        }
+    }
+    else
+    {
+        //...............................................
+        //Outside Pixels
+        //...............................................
+        for( x=0; x<w; x++ )
+        {
+            for( y=0; y<h; y++ )
+            {
+                if(right==true)
+                    canvas->setPixel(x1+x,y1+y,slideShift->imgRight.pixel(x,y));
+                else
+                    canvas->setPixel(x1+x,y1+y,slideShift->imgLeft.pixel(x,y));
+            }
+        }
+    }
+
+    //qDebug() << "acumX: " << slideShift->acumX;
+    //slideShift->acumX += slideShift->shifting.x();
+}
+
+structSlideShifting formBuildSlideHypeCubePreview::calculateShifting(
                                                      QList<QFileInfo> lstFrames,
                                                      structSlideHypCube* slideCubeSettings,
                                                      int x, int i, int j
@@ -223,33 +314,38 @@ QImage formBuildSlideHypeCubePreview::calculateSubimage(
     //Prepare Imagery
     //--------------------------------------------------------------
 
+    structSlideShifting slideShift;
+
     //..............................................................
     //Read from HDD
     //..............................................................
-    QImage imgLeft( lstFrames.at(i).absoluteFilePath() );
-    QImage imgRight( lstFrames.at(j).absoluteFilePath() );
+    slideShift.imgLeft.load( lstFrames.at(i).absoluteFilePath() );
+    slideShift.imgRight.load( lstFrames.at(j).absoluteFilePath() );
+    slideShift.extraWPix = calcSlideExtraW(slideCubeSettings);
 
     //..............................................................
     //Cut Subimages Including Merge Band (Extra Width)
     //..............................................................
-    int leftX, rightX, extraW;
-    int w, h;
-    extraW      = round( (float)slideCubeSettings->width * slideCubeSettings->extraW );
-    w           = slideCubeSettings->width + extraW;
-    h           = imgLeft.height();
-    leftX       = x;
-    rightX      = x - extraW;
-    imgLeft     = imgLeft.copy(leftX,0,w,h);
-    imgRight    = imgRight.copy(rightX,0,w,h);
+    int leftX, rightX;
+    int w, h;    
+    w                           = slideCubeSettings->width + slideShift.extraWPix;
+    h                           = slideShift.imgLeft.height();
+    leftX                       = x;
+    rightX                      = x - slideShift.extraWPix;
+    slideShift.imgLeft          = slideShift.imgLeft.copy(leftX,0,w,h);
+    slideShift.imgRight         = slideShift.imgRight.copy(rightX,0,w,h);
+
+    slideShift.imgLeft.save("./tmpImages/frames/slidesForSimilarity/"+QString::number(i)+".png");
+    //imgRight.save("./tmpImages/frames/slidesForSimilarity/right.png");
 
     //..............................................................
     //Get Imagery Shifting by 2D Similarity
     //..............................................................
-    QPoint shift2D = imageSimilarity2D(&imgLeft, &imgLeft);
-    qDebug() << "Shifting: " << shift2D.x() << ", " << shift2D.y();
-    exit(0);
+    slideShift.shifting = imageSimilarity2D(&slideShift.imgLeft, &slideShift.imgRight);
+    //qDebug() << "Shifting: " << shift2D.x() << ", " << shift2D.y();
+    //exit(0);
 
-
+    return slideShift;
 }
 
 /*
