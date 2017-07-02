@@ -141,7 +141,9 @@
 
     int pixelMaxValue(QRgb pixel );
 
-    QPoint imageSimilarity2D(QImage* img1, QImage* img2);
+    QPoint imageSimilarity2D(QImage* img1, QImage* img2, bool horizontal=true);
+
+    int squareImageDifferenece(QImage* img1, QImage* img2, int k, bool horizontal=true);
 
     int vectorSimilarity(int* v1, int* v2, int n, float lang);
 

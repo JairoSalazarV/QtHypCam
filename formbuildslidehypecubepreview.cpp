@@ -58,7 +58,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //------------------------------------------------------
 
     //......................................................
-    //Save Excecution
+    //Save Execution
     //......................................................
     QString lastSlideFrames;
     lastSlideFrames = concatenateParameters();
@@ -107,7 +107,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     structSlideHypCube slideCubeSett;
     slideCubeSett.rotateLeft    = (ui->cbFlip->isChecked())?true:false;
     slideCubeSett.width         = ui->spinSlideW->value();
-    slideCubeSett.extraW        = 0.3;
+    slideCubeSett.extraW        = 0.1;
     QImage imgPreview           = buildSlideCubePreview(lstFiles,&slideCubeSett);
 
     //------------------------------------------------------
@@ -341,8 +341,12 @@ structSlideShifting formBuildSlideHypeCubePreview::calculateShifting(
     //..............................................................
     //Get Imagery Shifting by 2D Similarity
     //..............................................................
-    slideShift.shifting = imageSimilarity2D(&slideShift.imgLeft, &slideShift.imgRight);
-    //qDebug() << "Shifting: " << shift2D.x() << ", " << shift2D.y();
+    QImage mergeAreaLeft, mergeAreaRight;
+    int aux             = slideShift.imgLeft.width() - slideShift.extraWPix;
+    mergeAreaLeft       = slideShift.imgLeft.copy(aux,0,slideShift.extraWPix,h);
+    mergeAreaRight      = slideShift.imgRight.copy(0,0,slideShift.extraWPix,h);
+    slideShift.shifting = imageSimilarity2D(&mergeAreaLeft, &mergeAreaRight);
+    qDebug() << "Shifting: " << slideShift.shifting.x() << ", " << slideShift.shifting.y();
     //exit(0);
 
     return slideShift;

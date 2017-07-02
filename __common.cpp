@@ -1755,29 +1755,91 @@ int pixelMaxValue( QRgb pixel )
 }
 
 
-QPoint imageSimilarity2D(QImage* img1, QImage* img2)
+QPoint imageSimilarity2D(QImage* img1, QImage* img2, bool horizontal)
 {
+    //-----------------------------------------------------
+    //Containers and Variables
+    //-----------------------------------------------------
     QPoint shift2D;
     shift2D.setX(0);
     shift2D.setY(0);
+    return shift2D;
+    int k, n, pixelRange, numShifts, zeroError, kFix;
+    float shiftLen;
+    shiftLen = 0.2;//%
+    pixelRange  = (horizontal==true)?round(img1->width()*shiftLen):round(img1->height()*shiftLen);
+    numShifts   = (2*pixelRange)+1;
+    n           = (horizontal==true)?img1->width():img1->height();
 
     //-----------------------------------------------------
-    //Horizontal Shifting
+    //Shifting
     //-----------------------------------------------------
-    int* leftHorizontalDescriptor   = imageDecriptor(img1);
-    int* rightHorizontalDescriptor  = imageDecriptor(img2);
-    //shift2D.setX( vectorSimilarity(leftHorizontalDescriptor, rightHorizontalDescriptor, img1->width(), 0.5 ) );
-    shift2D.setX(0);
+    zeroError = squareImageDifferenece( img1, img2, 0, horizontal );
+    kFix        = (float)zeroError / (float)n;
+    qDebug() << "zeroError: " << zeroError << " kFix: " << kFix;
+    exit(0);
+    for( k=1; k<numShifts; k++ )
+    {
 
-    //-----------------------------------------------------
-    //Vertical Shifting
-    //-----------------------------------------------------
-    int* leftVerticalDescriptor     = imageDecriptor(img1,false);
-    int* rightVerticalDescriptor    = imageDecriptor(img2,false);
-    //shift2D.setY( vectorSimilarity(leftVerticalDescriptor, rightVerticalDescriptor, img1->height(), 0.3 ) );
-    shift2D.setY(0);
+    }
 
     return shift2D;
+}
+
+int squareImageDifferenece(QImage* img1, QImage* img2, int k, bool horizontal)
+{
+    int x, y, n, start, end, acum;
+    QRgb pixelLeft, pixelRight;
+    acum = 0;
+    if(horizontal==true)
+    {
+        //...........................................
+        //Horizontal
+        //...........................................
+        if( abs(k)>=img1->width() )
+        {
+            return 0;
+        }
+        n       = img1->width();
+        end     = (k>=0)?n:n+k;
+        start   = (k>=0)?k:0;
+        for( x=start; x<end; x++ )
+        {
+            for( y=0; y<img1->height(); y++ )
+            {
+                pixelLeft   = img1->pixel( x, y );
+                pixelRight  = img2->pixel( x-k, y );
+                acum       += (qRed(pixelLeft)-qRed(pixelRight))*(qRed(pixelLeft)-qRed(pixelRight));
+                acum       += (qGreen(pixelLeft)-qGreen(pixelRight))*(qGreen(pixelLeft)-qGreen(pixelRight));
+                acum       += (qBlue(pixelLeft)-qBlue(pixelRight))*(qBlue(pixelLeft)-qBlue(pixelRight));
+            }
+        }
+    }
+    else
+    {
+        //...........................................
+        //Vertical
+        //...........................................
+        if( abs(k)>=img1->height() )
+        {
+            return 0;
+        }
+        n       = img1->height();
+        end     = (k>=0)?n:n+k;
+        start   = (k>=0)?k:0;
+        for( y=start; y<end; y++ )
+        {
+            for( x=0; x<img1->width(); x++ )
+            {
+                pixelLeft   = img1->pixel( x, y );
+                pixelRight  = img2->pixel( x, y-k );
+                acum       += (qRed(pixelLeft)-qRed(pixelRight))*(qRed(pixelLeft)-qRed(pixelRight));
+                acum       += (qGreen(pixelLeft)-qGreen(pixelRight))*(qGreen(pixelLeft)-qGreen(pixelRight));
+                acum       += (qBlue(pixelLeft)-qBlue(pixelRight))*(qBlue(pixelLeft)-qBlue(pixelRight));
+            }
+        }
+    }
+    return acum;
 }
 
 int vectorSimilarity(int* v1, int* v2, int n, float lang)
@@ -1968,7 +2030,7 @@ float vectorCorrelation(int* v1, int* v2, int n, int k, float zeroCorr)
     float corr, error;
     corr        = vectorSimpleCorrelation(v1,v2,n,k);
 
-    //Fix Shipping Errro
+    //Fix Shipping Error
     k = abs(k);
     error       = 0;
     if( k != 0 )
