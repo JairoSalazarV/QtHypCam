@@ -1755,32 +1755,44 @@ int pixelMaxValue( QRgb pixel )
 }
 
 
-QPoint imageSimilarity2D(QImage* img1, QImage* img2, bool horizontal)
+QPoint imageSimilarity2D(QImage* img1, QImage* img2, float maxShift, bool horizontal)
 {
+    //maxShift is the percentage allowed to explore similarity
+
     //-----------------------------------------------------
     //Containers and Variables
     //-----------------------------------------------------
     QPoint shift2D;
     shift2D.setX(0);
     shift2D.setY(0);
-    return shift2D;
+    if( img1->width() < 1 || img1->height() < 1 )
+        return shift2D;
+
+
     int k, n, pixelRange, numShifts, zeroError, kFix;
-    float shiftLen;
-    shiftLen = 0.2;//%
-    pixelRange  = (horizontal==true)?round(img1->width()*shiftLen):round(img1->height()*shiftLen);
+    pixelRange  = (horizontal==true)?round(img1->width()*maxShift):round(img1->height()*maxShift);
     numShifts   = (2*pixelRange)+1;
     n           = (horizontal==true)?img1->width():img1->height();
 
     //-----------------------------------------------------
     //Shifting
     //-----------------------------------------------------
-    zeroError = squareImageDifferenece( img1, img2, 0, horizontal );
+    int kStart, kEnd;
+    float minError, tmpError, shiftFix;
+    kStart      = numShifts*(-1);
+    kEnd        = numShifts;
+    zeroError   = squareImageDifferenece( img1, img2, 0, horizontal );
     kFix        = (float)zeroError / (float)n;
-    qDebug() << "zeroError: " << zeroError << " kFix: " << kFix;
-    exit(0);
-    for( k=1; k<numShifts; k++ )
+    minError    = zeroError;
+    for( k=kStart; k<kEnd; k++ )
     {
-
+        shiftFix    = abs(k) * kFix;
+        tmpError    = squareImageDifferenece( img1, img2, k, horizontal ) + shiftFix;
+        if( tmpError < minError )
+        {
+            minError    = tmpError;
+            shift2D.setY(k);
+        }
     }
 
     return shift2D;

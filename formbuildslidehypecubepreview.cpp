@@ -107,7 +107,8 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     structSlideHypCube slideCubeSett;
     slideCubeSett.rotateLeft    = (ui->cbFlip->isChecked())?true:false;
     slideCubeSett.width         = ui->spinSlideW->value();
-    slideCubeSett.extraW        = 0.1;
+    slideCubeSett.extraW        = ui->spinOverlap->value();
+    slideCubeSett.shiftAllowed  = 0.5;
     QImage imgPreview           = buildSlideCubePreview(lstFiles,&slideCubeSett);
 
     //------------------------------------------------------
@@ -335,7 +336,8 @@ structSlideShifting formBuildSlideHypeCubePreview::calculateShifting(
     slideShift.imgLeft          = slideShift.imgLeft.copy(leftX,0,w,h);
     slideShift.imgRight         = slideShift.imgRight.copy(rightX,0,w,h);
 
-    slideShift.imgLeft.save("./tmpImages/frames/slidesForSimilarity/"+QString::number(i)+".png");
+    //funcClearDirFolder("./tmpImages/frames/slidesForSimilarity/");
+    //slideShift.imgLeft.save("./tmpImages/frames/slidesForSimilarity/"+QString::number(i)+".png");
     //imgRight.save("./tmpImages/frames/slidesForSimilarity/right.png");
 
     //..............................................................
@@ -345,8 +347,8 @@ structSlideShifting formBuildSlideHypeCubePreview::calculateShifting(
     int aux             = slideShift.imgLeft.width() - slideShift.extraWPix;
     mergeAreaLeft       = slideShift.imgLeft.copy(aux,0,slideShift.extraWPix,h);
     mergeAreaRight      = slideShift.imgRight.copy(0,0,slideShift.extraWPix,h);
-    slideShift.shifting = imageSimilarity2D(&mergeAreaLeft, &mergeAreaRight);
-    qDebug() << "Shifting: " << slideShift.shifting.x() << ", " << slideShift.shifting.y();
+    slideShift.shifting = imageSimilarity2D(&mergeAreaLeft, &mergeAreaRight, slideCubeSettings->shiftAllowed);
+    //qDebug() << "Shifting: " << slideShift.shifting.x() << ", " << slideShift.shifting.y();
     //exit(0);
 
     return slideShift;
@@ -466,11 +468,14 @@ QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
     lstParameters = (firstTime)?_PATH_VIDEO_FRAMES:ui->txtFolder->text();
     lstParameters.append(","+QString::number(ui->spinSlideW->value()));
     lstParameters.append(","+QString::number(ui->spinSlideLocation->value()));
+    lstParameters.append(","+QString::number(ui->spinOverlap->value()));
+    lstParameters.append(","+QString::number(ui->spinMaxShift->value()));
     lstParameters.append(","+QString::number(ui->spinAutoStep->value()));
     if(ui->cbFlip->isChecked())
         lstParameters.append(",1");
     else
         lstParameters.append(",0");
+
 
     return lstParameters;
 }
@@ -481,11 +486,14 @@ int formBuildSlideHypeCubePreview::setLastExecution(QString parameters)
     if( parameters.isEmpty() )
         return _ERROR;
 
-    ui->txtFolder->setText(parameters.split(",").at(0));
-    ui->spinSlideW->setValue(parameters.split(",").at(1).toInt(0));
-    ui->spinSlideLocation->setValue(parameters.split(",").at(2).toInt(0));
-    ui->spinAutoStep->setValue(parameters.split(",").at(3).toInt(0));
-    if( parameters.split(",").at(3).toInt(0) )
+    int intI = 0;
+    ui->txtFolder->setText(parameters.split(",").at(intI++));
+    ui->spinSlideW->setValue(parameters.split(",").at(intI++).toInt(0));
+    ui->spinSlideLocation->setValue(parameters.split(",").at(intI++).toInt(0));
+    ui->spinOverlap->setValue(parameters.split(",").at(intI++).toFloat(0));
+    ui->spinMaxShift->setValue(parameters.split(",").at(intI++).toFloat(0));
+    ui->spinAutoStep->setValue(parameters.split(",").at(intI++).toInt(0));
+    if( parameters.split(",").at(intI++).toInt(0) )
         ui->cbFlip->setChecked(true);
     return _OK;
 }

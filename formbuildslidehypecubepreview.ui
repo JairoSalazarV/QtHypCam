@@ -26,7 +26,7 @@
   <widget class="QPushButton" name="pbApply">
    <property name="geometry">
     <rect>
-     <x>650</x>
+     <x>835</x>
      <y>40</y>
      <width>84</width>
      <height>28</height>
@@ -39,7 +39,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>120</x>
      <y>10</y>
      <width>73</width>
      <height>57</height>
@@ -71,7 +71,7 @@
   <widget class="QWidget" name="layoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>425</x>
      <y>10</y>
      <width>145</width>
      <height>57</height>
@@ -157,7 +157,7 @@
   <widget class="QLineEdit" name="txtFolder">
    <property name="geometry">
     <rect>
-     <x>410</x>
+     <x>595</x>
      <y>40</y>
      <width>113</width>
      <height>28</height>
@@ -167,7 +167,7 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>450</x>
+     <x>635</x>
      <y>10</y>
      <width>75</width>
      <height>20</height>
@@ -180,7 +180,7 @@
   <widget class="QPushButton" name="pbFolder">
    <property name="geometry">
     <rect>
-     <x>525</x>
+     <x>710</x>
      <y>40</y>
      <width>31</width>
      <height>28</height>
@@ -197,7 +197,7 @@
   <widget class="QCheckBox" name="cbFlip">
    <property name="geometry">
     <rect>
-     <x>590</x>
+     <x>775</x>
      <y>40</y>
      <width>51</width>
      <height>26</height>
@@ -206,6 +206,64 @@
    <property name="text">
     <string>Flip</string>
    </property>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_4">
+   <property name="geometry">
+    <rect>
+     <x>220</x>
+     <y>10</y>
+     <width>73</width>
+     <height>57</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Overlap %</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QDoubleSpinBox" name="spinOverlap">
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="layoutWidget_5">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>10</y>
+     <width>79</width>
+     <height>57</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_5">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>max Shift %</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QDoubleSpinBox" name="spinMaxShift">
+      <property name="maximum">
+       <double>0.900000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.100000000000000</double>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources>

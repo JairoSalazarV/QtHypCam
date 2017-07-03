@@ -408,6 +408,7 @@
         bool    rotateLeft = false;
         int     width=9;
         float   extraW=0.3;
+        float   shiftAllowed;//%[0,0.8]: Recomended [0,0.5]
     }structSlideHypCube;
 
 
