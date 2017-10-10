@@ -12,6 +12,10 @@
 
     ->June/13/2017 Remote Terminal Command Execution Added
 
+    //----------------------------------------
+    //WORK TO DO
+    //----------------------------------------
+    //Integrate sensitivities at hypercube building
 
 */
 
@@ -2048,14 +2052,17 @@ void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
 
 void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
 {
+
     //Show snapshot
     //..
     int maxW, maxH;
     maxW = (_FRAME_THUMB_W<tmpImg->width())?_FRAME_THUMB_W:tmpImg->width();
     maxH = (_FRAME_THUMB_H<tmpImg->height())?_FRAME_THUMB_H:tmpImg->height();
-    QImage tmpThumb = ( tmpImg->width() > tmpImg->height() )?tmpThumb.scaledToWidth(maxW):tmpImg->scaledToHeight(maxH);
+    QImage tmpThumb = ( tmpImg->width() > tmpImg->height() )?tmpImg->scaledToWidth(maxW):tmpImg->scaledToHeight(maxH);
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
     ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
+    ui->labelVideo->update();
+    QtDelay(10);
     //Update view
     //..
     auxQstring = _PATH_DISPLAY_IMAGE;
@@ -2108,11 +2115,17 @@ void MainWindow::on_pbSnapshot_clicked()
         return (void)NULL;
     }
 
-    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT );
+    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
     updateDisplayImageReceived(&snapShot);
     snapShot.save(_PATH_DISPLAY_IMAGE);
 
     mouseCursorReset();
+
+
+    //
+    // Show Last Preview
+    //
+    //updateDisplayImageReceived();
 
 
 }
@@ -3821,7 +3834,7 @@ void MainWindow::on_actionGenHypercube_triggered()
 {
 
     //----------------------------------------
-    // Validate lst of wavelengths choised
+    // Validate lst of wavelengths selected
     //----------------------------------------
     QList<double> lstChoises;
     lstChoises  = getWavesChoised();
@@ -3848,9 +3861,12 @@ void MainWindow::on_actionGenHypercube_triggered()
 
 
     QTime timeStamp;
-    timeStamp.start();    
+    timeStamp.start();
+    int tmpEMNumIte;
+    tmpEMNumIte = readFileParam(_PATH_SETTINGS_EM_ITERATIONS).toInt(0);
+    qDebug() << "tmpEMNumIte: " << tmpEMNumIte;
 
-    if( generatesHypcube(readFileParam(_PATH_SETTINGS_EM_ITERATIONS).toInt(0), fileName) )
+    if( generatesHypcube(tmpEMNumIte, fileName) )
     {
         //Extracts hypercube
         extractsHyperCube(fileName);
@@ -3888,8 +3904,9 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     fGreen      = calculatesF(numIterations,_GREEN,&daCalib);
     fBlue       = calculatesF(numIterations,_BLUE,&daCalib);
 
+    //---------------------------------------------
     //Demosaicing hypercube
-    //..
+    //---------------------------------------------
     if(true)
     {
         if(false)
@@ -3916,8 +3933,9 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
 
 
 
+    //---------------------------------------------
     //Extracting spectral measure
-    //..
+    //---------------------------------------------
     //Get hash to the corresponding sensitivity
     QList<double> Sr;
     QList<double> Sg;
@@ -3926,7 +3944,7 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     {        
         //qDebug() << "Hola1" << l << " of "<< hypL << " size: " << daCalib.Sr.size();
         aux = ((floor(lstChoises.at(l)) - floor(daCalib.minWavelength) )==0)?0:floor( (floor(lstChoises.at(l)) - floor(daCalib.minWavelength) ) / (double)daCalib.minSpecRes );
-        Sr.append( daCalib.Sr.at(aux)  );
+        Sr.append( daCalib.Sr.at(aux) );
         Sg.append( daCalib.Sg.at(aux) );
         Sb.append( daCalib.Sb.at(aux) );
     }
@@ -3959,9 +3977,10 @@ bool MainWindow::generatesHypcube(int numIterations, QString fileName){
     printf("min(%lf,%d) max(%lf,%d)\n",min,minPos,max,maxPos);
     fflush(stdout);
 
+    //---------------------------------------------
     //Save hypercube
-    //..
-    //Format: Date,W,H,L,l1,...,lL,pix_1_l1,pix_2_l1,...pix_n_l1,pix_1_l2,pix_2_l2,...pix_n_l2,...,pix_1_L,pix_2_L,...pix_n_L
+    //---------------------------------------------
+    //Hypercube Format: Date,W,H,L,l1,...,lL,pix_1_l1,pix_2_l1,...pix_n_l1,pix_1_l2,pix_2_l2,...pix_n_l2,...,pix_1_L,pix_2_L,...pix_n_L
     QString hypercube;
     QDateTime dateTime = QDateTime::currentDateTime();
     hypercube.append(dateTime.toString("yyyy-MM-dd HH:mm:ss"));
@@ -4144,8 +4163,9 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
 {
     f = demosaiseF2D(f,L,H,W);
 
-
+    //...............................................
     //Variables
+    //...............................................
     int i, l, w, h;
     double ***aux;
     aux     = (double***)malloc(L*sizeof(double**));
@@ -4158,7 +4178,9 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
         }
     }
 
+    //...............................................
     //Fill a 3D matrix
+    //...............................................
     i=0;
     for(l=0;l<L;l++)
     {
@@ -4172,7 +4194,9 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
         }
     }
 
+    //...............................................
     //Demosaize 3D
+    //...............................................
     trilinear tmpNode;
     tmpNode.L = L;
     tmpNode.W = W;
@@ -4191,7 +4215,9 @@ double *MainWindow::demosaiseF3D(double *f, int L, int H, int W)
         }
     }
 
+    //...............................................
     //Free memory
+    //...............................................
     for(l=0;l<L;l++)
     {
         for(h=0;h<H;h++)
@@ -4432,6 +4458,7 @@ void MainWindow::improveF( double *fKPlusOne, pixel **Hcol, double *f, double *g
     int n;
     double avgMeasure;//average measure
     double relevance;//How relevant it is respect to all voxels overlaped
+                     //Error between g and g^ (g = original image)
     double numProj;//It is integer but is used double to evit many cast operations
     numProj = 5.0;
     for( n=0; n<N; n++ )
@@ -4460,13 +4487,15 @@ void MainWindow::createsGTmp(double *gTmp, double *g, int **Hrow, double *f, int
     for( m=0; m<M; m++ )
     {
         gTmp[m] = 0.0;
-        if( Hrow[m][0] > 0 )
+        //if( Hrow[m][0] > 0 )
+        if( Hrow[m][0] != 0 )
         {
             for( n=1; n<=Hrow[m][0]; n++ )
             {
                 gTmp[m] += f[Hrow[m][n]];
             }
-            gTmp[m] = ( g[m] > 0 && gTmp[m] > 0 )?(g[m]/gTmp[m]):0;
+            //gTmp[m] = ( g[m] > 0 && gTmp[m] > 0 )?(g[m]/gTmp[m]):0;
+            gTmp[m] = ( g[m] != 0 && gTmp[m] != 0 )?(g[m]/gTmp[m]):0;
         }
     }
 }
@@ -4927,16 +4956,20 @@ cameraResolution* MainWindow::getCamRes()
     {
         //#define _BIG_WIDTH 2592 //2592 | 640 | 320
         //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
-        camRes->width    = 2592;
-        camRes->height   = 1944;
+        camRes->width   = 2592;
+        camRes->height  = 1944;
+        camRes->videoW  = 1920; //1920 | 1640
+        camRes->videoH  = 1080; //1080 | 1232
     }
     else
     {
         if( ui->radioRes8Mp->isChecked() )
         {
             //https://www.raspberrypi.org/forums/viewtopic.php?t=145815
-            camRes->width    = 3240;
-            camRes->height   = 2464;
+            camRes->width   = 3240;
+            camRes->height  = 2464;
+            camRes->videoW  = 1920; //1920 | 1640
+            camRes->videoH  = 1080; //1080 | 1232
         }
     }
 
@@ -4958,26 +4991,40 @@ void MainWindow::on_actionslideHypCam_triggered()
     frmSlide->show();
 }
 
-int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestine )
+int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestine, QString txtBar )
 {
     if( funcRaspFileExists( fileToObtain ) == 0 )
     {
-        debugMsg("File does not exists");
+        debugMsg("Remote-File does not exists");
         return 0;
     }
     else
     {
+        QString tmpPath = QString::fromStdString(fileNameDestine);
+
+        //Remove local file
+        funcDeleteFile( tmpPath );
+
+        //Get remote file
         int fileLen;
-        u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
-        saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen);
+        u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen, txtBar );
+        saveBinFile_From_u_int8_T( fileNameDestine, fileReceived, fileLen );
         delete[] fileReceived;
+
+        //Check if remote file was transmitted
+        if( !fileExists( tmpPath ) )
+        {
+            debugMsg("Error acquiring Remote File: " + fileToObtain);
+            return 0;
+        }
+
     }
 
     return 1;
 }
 
 
-QImage MainWindow::obtainFile( std::string fileToObtain )
+QImage MainWindow::obtainFile( std::string fileToObtain, QString txtBar )
 {
     QImage img;
     if( funcRaspFileExists( fileToObtain ) == 0 )
@@ -4988,16 +5035,17 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
     else
     {
 
+        int fileLen;
+        u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen, txtBar );
+
         ui->progBar->setVisible(true);
         ui->progBar->setValue(0);
         ui->progBar->update();
-
-        int fileLen;
-        u_int8_t* fileReceived = funcQtReceiveFile( fileToObtain, &fileLen );
-
         progBarUpdateLabel("Saving image locally",0);
+
         if( saveBinFile_From_u_int8_T(_PATH_IMAGE_RECEIVED,fileReceived,fileLen) )
             img = QImage(_PATH_IMAGE_RECEIVED);
+
         progBarUpdateLabel("",0);
 
         /*
@@ -5031,10 +5079,11 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
         //img.save(_PATH_IMAGE_RECEIVED);
         debugMsg("File received complete");
 
+        /*
         ui->progBar->setValue(100.0);
         ui->progBar->update();
         ui->progBar->setVisible(false);
-        progBarUpdateLabel("",0);
+        progBarUpdateLabel("",0);*/
 
         return img;
 
@@ -5043,12 +5092,13 @@ QImage MainWindow::obtainFile( std::string fileToObtain )
     return img;
 }
 
-u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fileLen )
+u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fileLen, QString txtBar )
 {
 
     ui->progBar->setVisible(true);
     ui->progBar->setValue( 0.0 );
     ui->progBar->update();
+    progBarUpdateLabel(txtBar,0);
     //It assumes that file exists and this was verified by command 10
     //
     //Receive the path of a file into raspCamera and
@@ -5111,6 +5161,7 @@ u_int8_t* MainWindow::funcQtReceiveFile( std::string fileNameRequested, int* fil
     ui->progBar->setValue(0);
     ui->progBar->setVisible(false);
     ui->progBar->update();
+    progBarUpdateLabel("",0);
 
     //Return file
     return theFILE;
@@ -5948,6 +5999,154 @@ void MainWindow::on_pbShutdown_clicked()
 void MainWindow::on_pbSnapVid_clicked()
 {
 
+    //-----------------------------------------------------
+    // Save snapshots settings
+    //-----------------------------------------------------
+    // Get cam resolution
+    camRes = getCamRes();
+
+    //Getting calibration
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //Save lastest settings
+    if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false ){
+        funcShowMsg("ERROR","Saving last snap-settings");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Generate Video Command
+    //-----------------------------------------------------
+    QString getRemVidCommand = genRemoteVideoCommand();
+
+    //-----------------------------------------------------
+    //Start to Record Remote Video
+    //-----------------------------------------------------
+    funcRemoteTerminalCommand(getRemVidCommand.toStdString(),camSelected,false);
+    progBarUpdateLabel("Recording Remote Video...",0);
+    progBarTimer((ui->slideTriggerTime->value()+1)*1000);
+    progBarUpdateLabel("",0);
+
+    //-----------------------------------------------------
+    // Obtain Remote Video
+    //-----------------------------------------------------
+    //rm ./frames/tmp/*.*; ffmpeg -framerate 16 -i tmpVidRec.H264 ./frames/tmp/frame%d.png
+    if( obtainFile( _PATH_VIDEO_REMOTE_H264, _PATH_VIDEO_RECEIVED_H264, "Transmitting Remote Video" ) )
+    {
+        QString rmRemVidCommand;
+        rmRemVidCommand.append("rm ");
+        rmRemVidCommand.append(_PATH_VIDEO_REMOTE_H264);
+        funcRemoteTerminalCommand( rmRemVidCommand.toStdString(), camSelected, false );
+    }
+    else
+    {
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Extract Frames from Video
+    //-----------------------------------------------------
+
+    //Clear local folder
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    funcClearDirFolder( tmpFramesPath );
+
+    //Extract Frames from Local Video
+    QString locFrameExtrComm;
+    locFrameExtrComm.append("ffmpeg -framerate ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -r ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -i ");
+    locFrameExtrComm.append(_PATH_VIDEO_RECEIVED_H264);
+    locFrameExtrComm.append(" ");
+    locFrameExtrComm.append(tmpFramesPath);
+    locFrameExtrComm.append("%d");
+    locFrameExtrComm.append(_FRAME_EXTENSION);
+    qDebug() << locFrameExtrComm;
+    progBarUpdateLabel("Extracting Frames from Video",0);
+    if( !funcExecuteCommand(locFrameExtrComm) )
+    {
+        funcShowMsg("ERROR","Extracting Frames from Video");
+    }
+    progBarUpdateLabel("",0);
+
+
+    //-----------------------------------------------------
+    // Update mainImage from Frames
+    //-----------------------------------------------------
+    numFrames = funcAccountFilesInFolder( tmpFramesPath );
+    if( numFrames <= 0 )
+    {
+        funcShowMsgERROR("Empty Folder: " + tmpFramesPath);
+        return (void)false;
+    }
+    else
+    {
+        //Image Received Path
+        int idFrame;
+        idFrame = ceil( numFrames / 2 );
+        QString tmpImgRec;
+        tmpImgRec.append( tmpFramesPath );
+        tmpImgRec.append( QString::number(idFrame) );
+        tmpImgRec.append( _FRAME_EXTENSION );
+
+        //Update Received Image
+        QImage newImage(tmpImgRec);
+        updateDisplayImageReceived(&newImage);
+        qDebug() << tmpImgRec;
+
+    }
+
+
+
+    //
+    //Generates Camera Command
+    //..
+    /*
+    structRaspistillCommand* structRaspiCommand = (structRaspistillCommand*)malloc(sizeof(structRaspistillCommand));
+    strReqImg *reqImg                           = (strReqImg*)malloc(sizeof(strReqImg));
+    memset(reqImg,'\0',sizeof(strReqImg));
+    memset(structRaspiCommand,'\0',sizeof(structRaspistillCommand));
+    structRaspiCommand->idMsg                   = (unsigned char)4;
+    reqImg->squApert                            = squareArea;
+    reqImg->raspSett                            = funcFillSnapshotSettings( reqImg->raspSett );
+    reqImg->imgCols                             = camRes->width;//2592 | 640
+    reqImg->imgRows                             = camRes->height;//1944 | 480
+    reqImg->raspSett.Flipped                    = (ui->cbFlipped->isChecked())?1:0;
+    */
+
+    /*
+    //--------------------------------------
+    //Create Command
+    //--------------------------------------
+    QString tmpCommand;
+    tmpCommand = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
+
+    //--------------------------------------
+    //Take Remote Photo
+    //--------------------------------------
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    progBarUpdateLabel("Stabilizing Remote Camera...",0);
+    progBarTimer((ui->slideTriggerTime->value()+1)*1000);
+    progBarUpdateLabel("",0);
+    */
+
+    //
+    // Execute remote command
+    //
+
+
+
+
+
+
+
+
+    /*
     //Update camera resolution
     //..
     camRes = getCamRes();
@@ -6074,7 +6273,7 @@ void MainWindow::on_pbSnapVid_clicked()
 
     n = n;
     ::close(sockfd);
-
+    */
 
 
 
@@ -6480,7 +6679,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -6495,7 +6694,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
             }
             else
             {
-                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
                 if( apertureImage.isNull() )
                 {
                     qDebug() << "ERROR: Obtaining Aperture Area";
@@ -6637,7 +6836,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -7262,6 +7461,105 @@ void MainWindow::on_pbTimeLapse_clicked()
     mouseCursorReset();
 }
 
+QString MainWindow::genRemoteVideoCommand()
+{
+    QString tmpCommand;
+    tmpCommand.append("raspivid -n -t ");
+    tmpCommand.append( QString::number( ui->slideTriggerTime->value() * 1000 ) );
+    tmpCommand.append( " -vf -b 50000000 -fps " );
+    tmpCommand.append( QString::number(_VIDEO_FRAME_RATE) );
+    tmpCommand.append( " -o " );
+    tmpCommand.append( _PATH_VIDEO_REMOTE_H264 );
+
+    //.................................
+    //Diffraction Area ROI
+    //.................................
+    if( 1 )
+    {
+        double W, H;
+        squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+        memset(aperture,'\0',sizeof(squareAperture));
+        if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, aperture ) )
+        {
+            funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
+            tmpCommand.clear();
+            return tmpCommand;
+        }
+        W = (double)aperture->rectW/(double)aperture->canvasW;
+        H = (double)aperture->rectH/(double)aperture->canvasH;
+
+        tmpCommand.append(" -roi ");
+        tmpCommand.append(QString::number((double)aperture->rectX/(double)aperture->canvasW)+",");
+        tmpCommand.append(QString::number((double)aperture->rectY/(double)aperture->canvasH)+",");
+        tmpCommand.append(QString::number(W)+",");
+        tmpCommand.append(QString::number(H));
+    }
+
+    //.................................
+    //Image Size
+    //.................................
+    camRes          = getCamRes();
+    //Width
+    tmpCommand.append(" -w ");
+    tmpCommand.append(QString::number( camRes->videoW ));
+    //Height
+    tmpCommand.append(" -h ");
+    tmpCommand.append(QString::number( camRes->videoH ));
+
+    //.................................
+    //Colour balance?
+    //.................................
+    if(ui->cbColorBalance->isChecked() ){
+        tmpCommand.append(" -ifx colourbalance");
+    }
+
+    //.................................
+    //Denoise?
+    //.................................
+    if( ui->cbDenoise->isChecked() ){
+        tmpCommand.append(" -ifx denoise");
+    }
+
+    //.................................
+    //Diffraction Shuter speed
+    //.................................
+    int shutSpeed = ui->spinBoxShuterSpeed->value();
+    if( shutSpeed > 0 ){
+        tmpCommand.append(" -ss " + QString::number(shutSpeed));
+    }
+
+    //.................................
+    //AWB
+    //.................................
+    if( ui->cbAWB->currentText() != "none" ){
+        tmpCommand.append(" -awb " + ui->cbAWB->currentText());
+    }
+
+    //.................................
+    //Exposure
+    //.................................
+    if( ui->cbExposure->currentText() != "none" ){
+        tmpCommand.append(" -ex " + ui->cbExposure->currentText());
+    }
+
+    //.................................
+    //ISO
+    //.................................
+    if( ui->slideISO->value() > 0 ){
+        tmpCommand.append(" -ISO " + QString::number(ui->slideISO->value()) );
+    }
+
+    //.................................
+    //Flipped
+    //.................................
+    if( ui->cbFlipped->isChecked() ){
+        tmpCommand.append(" -vf " );
+    }
+
+
+    return tmpCommand;
+}
+
 
 
 QString MainWindow::genSlideTimelapseCommand()
@@ -7642,7 +7940,7 @@ void MainWindow::on_actionFull_photo_triggered()
         return (void)NULL;
     }
 
-    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT );
+    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
     updateDisplayImageReceived(&snapShot);
     snapShot.save(_PATH_DISPLAY_IMAGE);
 
@@ -7660,7 +7958,7 @@ void MainWindow::on_actionDiffraction_triggered()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -7702,7 +8000,7 @@ void MainWindow::on_actionComposed_triggered()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -7717,7 +8015,7 @@ void MainWindow::on_actionComposed_triggered()
             }
             else
             {
-                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT );
+                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
                 if( apertureImage.isNull() )
                 {
                     qDebug() << "ERROR: Obtaining Aperture Area";
@@ -7874,7 +8172,7 @@ void MainWindow::on_actionVideo_triggered()
         //Download new
         qDebug() << "Video recorded";
         progBarUpdateLabel("Transferring video",0);
-        obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString() );
+        obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString(), "" );
 
         //Convert into MP4
         if( videoCodec == _H264 )
@@ -7955,7 +8253,7 @@ void MainWindow::on_actionTimelapse_triggered()
             tmpLocalFrame  = _PATH_VIDEO_FRAMES + QString::number(i) + ".RGB888";
 
             //Get Remote File
-            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString() );
+            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString(), "" );
 
             //Check if was transmited
             if( fileExists(tmpLocalFrame) )
@@ -8136,7 +8434,7 @@ int MainWindow::obtainRemoteFolder( QString remoteFolder, QString localFolder )
             barTxt.append(" of ");
             barTxt.append(QString::number(numOfFrames));
             progBarUpdateLabel(barTxt,0);
-            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString() );
+            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString(), "" );
 
 
             //Check if was transmited
@@ -8312,6 +8610,21 @@ void MainWindow::buildHypercubeFromFilelist(
 }
 
 
+int MainWindow::funcAccountFilesInFolder( QString folder )
+{
+    //Generate the command
+    QString tmpCommand;
+    tmpCommand.append("ls ");
+    tmpCommand.append(folder);
+    tmpCommand.append(" -a | wc -l");
+    //qDebug() << "tmpCommand: " << tmpCommand;
+
+    //Execute command
+    QString numFrames;
+    numFrames = funcExecuteCommandAnswer( (char*)tmpCommand.toStdString().data() );
+    return numFrames.toInt(0);
+
+}
 
 
 

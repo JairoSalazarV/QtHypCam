@@ -29,6 +29,8 @@
     #define _H264                           0
     #define _MJPEG                          1
 
+    #define _VIDEO_FRAME_RATE               16
+
     #define _RIGHT                          1
     #define _ABOVE                          2
     #define _LEFT                           3

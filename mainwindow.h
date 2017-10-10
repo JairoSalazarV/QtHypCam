@@ -69,8 +69,8 @@ public slots:
 
     std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected , bool waitForAnswer);
 
-    int obtainFile( std::string fileToObtain, std::string fileNameDestine );
-    QImage obtainFile( std::string fileToObtain );
+    int obtainFile(std::string fileToObtain, std::string fileNameDestine, QString txtBar);
+    QImage obtainFile( std::string fileToObtain, QString txtBar );
 
 
 private slots:    
@@ -93,9 +93,9 @@ private slots:
 
     bool funcReceiveFile(
                             int sockfd,
-                            unsigned int fileLen,
+                            unsigned int Len,
                             unsigned char *bufferRead,
-                            unsigned char *tmpFile
+                            unsigned char *tmp
                         );
 
     void funcActivateProgBar();
@@ -173,7 +173,7 @@ private slots:
 
     void getMaxCalibRect(QRect *rect , lstDoubleAxisCalibration *calib);
 
-    //QString getFilenameForRecImg();
+    //QString getnameForRecImg();
 
     void updateDisplayImageReceived(QImage* tmpImg);
     void updateDisplayImageReceived();    
@@ -247,7 +247,7 @@ private slots:
 
     //void on_pbSaveSquare_clicked();
 
-    //bool funcSaveRect( QString fileName );
+    //bool funcSaveRect( QString Name );
 
     //void on_pbSaveBigSquare_clicked();
 
@@ -435,7 +435,7 @@ private slots:
 
     void on_actionslideHypCam_triggered();
 
-    u_int8_t* funcQtReceiveFile( std::string fileNameRequested, int* fileLen );
+    u_int8_t* funcQtReceiveFile(std::string fileNameRequested, int* fileLen , QString txtBar);
 
     //void on_pbGetSlideCube_clicked();
 
@@ -496,7 +496,9 @@ private slots:
 
     void on_actionframesToCube_triggered();
 
-    void on_pbTimeLapse_clicked();    
+    void on_pbTimeLapse_clicked();
+
+    QString genRemoteVideoCommand();
 
     QString genSlideTimelapseCommand();
 
@@ -533,6 +535,8 @@ private slots:
     void on_actionSlide_Build_Hypercube_triggered();
 
     void buildHypercubeFromFilelist(QList<QFileInfo> lstFrames , structSlideHypCube slideCubeSettings);
+
+    int funcAccountFilesInFolder( QString folder );
 
 private:
     Ui::MainWindow *ui;

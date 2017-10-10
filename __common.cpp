@@ -45,7 +45,9 @@ int funcDeleteFile( QString fileName )
         return 1;//File exists and removed
     }
     else
+    {
         return 2;//File does not exists but is equal to be removed
+    }
     return -1;//Error
 }
 
@@ -1223,6 +1225,32 @@ int funcExecuteCommand( QString command )
 }
 
 
+QString funcExecuteCommandAnswer( char* command )
+{
+    //Execute command
+    QString result;
+    result = "";//idMsg to send
+    FILE* pipe;
+    pipe = popen(command, "r");
+    char bufferComm[100];
+    try
+    {
+      while (!feof(pipe))
+      {
+        if (fgets(bufferComm, frameBodyLen, pipe) != NULL)
+        {
+          result.append( bufferComm );
+        }
+      }
+    }
+    catch (...)
+    {
+      pclose(pipe);
+      throw;
+    }
+    pclose(pipe);
+    return result;
+}
 
 /*
 void funcSourcePixToDiffPix(strDiffPix *diffPix, lstDoubleAxisCalibration *calSett ){

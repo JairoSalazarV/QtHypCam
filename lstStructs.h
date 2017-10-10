@@ -48,6 +48,8 @@
     typedef struct cameraResolution{
         int width;
         int height;
+        int videoW;
+        int videoH;
     }cameraResolution;
 
     typedef struct strDiffProj{

@@ -84,7 +84,6 @@
     #define _PATH_VIDEO_RECEIVED_MJPEG      "./tmpImages/tmpVidRec.MJPEG"
     #define _PATH_VIDEO_RECEIVED_MP4        "./tmpImages/tmpVIDEO.mp4"
 
-    #define _PATH_RASP_VIDEO_RECORDED       "./tmpSnapVideos/tmpVideo.h264"
     #define _PATH_SLIDE_TO_DISPLAY          "./tmpImages/tmpSlide/allSlide.png"
 
     #define _PATH_SQUARE_APERTURE2          "./XML/squareAperture.xml"

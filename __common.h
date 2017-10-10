@@ -125,6 +125,8 @@
 
     int funcExecuteCommand( QString command );
 
+    QString funcExecuteCommandAnswer(char* command );
+
     extern void *funcAllocInteger3DMatrixMemo(int rows, int cols, int layers, int*** M );
 
     void displayImageFullScreen(QImage *tmpImg );

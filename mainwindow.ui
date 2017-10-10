@@ -704,7 +704,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Aquare Shuter Speed</string>
+       <string>Square Shuter Speed</string>
       </property>
      </widget>
      <widget class="QSpinBox" name="spinBoxSquareShuterSpeed">
