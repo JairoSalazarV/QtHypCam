@@ -42,8 +42,7 @@ SOURCES += main.cpp\
     formndvisettings.cpp \
     formobtainfolder.cpp \
     formbuildslidehypecubepreview.cpp \
-    formtimertxt.cpp \
-    mythread.cpp
+    formtimertxt.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -75,8 +74,7 @@ HEADERS  += mainwindow.h \
     formndvisettings.h \
     formobtainfolder.h \
     formbuildslidehypecubepreview.h \
-    formtimertxt.h \
-    mythread.h
+    formtimertxt.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \

@@ -64,5 +64,5 @@ void formTimerTxt::updateTimer(int s)
     ui->label->setText(strClock);
     ui->label->update();    
     this->update();
-    qDebug() << "strClock: " << strClock;
+    //qDebug() << "strClock: " << strClock;
 }
