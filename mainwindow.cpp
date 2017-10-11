@@ -135,6 +135,8 @@
 
 #include <formbuildslidehypecubepreview.h>
 
+#include <formtimertxt.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -6002,7 +6004,7 @@ void MainWindow::on_pbSnapVid_clicked()
     //-----------------------------------------------------
     // Save snapshots settings
     //-----------------------------------------------------
-    // Get cam resolution
+    // Get camera resolution
     camRes = getCamRes();
 
     //Getting calibration
@@ -6023,9 +6025,9 @@ void MainWindow::on_pbSnapVid_clicked()
     //-----------------------------------------------------
     //Start to Record Remote Video
     //-----------------------------------------------------
-    funcRemoteTerminalCommand(getRemVidCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(getRemVidCommand.toStdString(),camSelected,ui->slideTriggerTime->value(),false);
     progBarUpdateLabel("Recording Remote Video...",0);
-    progBarTimer((ui->slideTriggerTime->value()+1)*1000);
+    progBarTimer((ui->spinBoxVideoDuration->value()+1)*1000);
     progBarUpdateLabel("",0);
 
     //-----------------------------------------------------
@@ -6037,7 +6039,7 @@ void MainWindow::on_pbSnapVid_clicked()
         QString rmRemVidCommand;
         rmRemVidCommand.append("rm ");
         rmRemVidCommand.append(_PATH_VIDEO_REMOTE_H264);
-        funcRemoteTerminalCommand( rmRemVidCommand.toStdString(), camSelected, false );
+        funcRemoteTerminalCommand( rmRemVidCommand.toStdString(), camSelected, 0, false );
     }
     else
     {
@@ -6591,7 +6593,7 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     //--------------------------------------
     //Take Remote Photo
     //--------------------------------------
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
     progBarUpdateLabel("Stabilizing Remote Camera...",0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);
     progBarUpdateLabel("",0);
@@ -7438,14 +7440,14 @@ void MainWindow::on_pbTimeLapse_clicked()
     //--------------------------------------
     tmpCommand.clear();
     tmpCommand.append("sudo rm tmpSnapVideos/*");
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
 
     //--------------------------------------
     //Take Timelapse
     //--------------------------------------
     tmpCommand = genSlideTimelapseCommand();
     qDebug() << "tmpCommand: " << tmpCommand;
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
     progBarUpdateLabel("Timelapsing...",0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
 
@@ -7465,7 +7467,7 @@ QString MainWindow::genRemoteVideoCommand()
 {
     QString tmpCommand;
     tmpCommand.append("raspivid -n -t ");
-    tmpCommand.append( QString::number( ui->slideTriggerTime->value() * 1000 ) );
+    tmpCommand.append( QString::number( ui->spinBoxVideoDuration->value() * 1000 ) );
     tmpCommand.append( " -vf -b 50000000 -fps " );
     tmpCommand.append( QString::number(_VIDEO_FRAME_RATE) );
     tmpCommand.append( " -o " );
@@ -7790,8 +7792,12 @@ QString MainWindow::genSubareaRaspistillCommand( QString remoteFilename, QString
 }
 
 
-std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCamSelected *camSelected, bool waitForAnswer )
-{
+std::string MainWindow::funcRemoteTerminalCommand(
+                                                    std::string command,
+                                                    structCamSelected *camSelected,
+                                                    int trigeredTime,
+                                                    bool waitForAnswer
+){
     //* It is used when waitForAnswer==true
     //* Wait for answer when you need to know a parameter or the
     //  command result
@@ -7810,6 +7816,7 @@ std::string MainWindow::funcRemoteTerminalCommand( std::string command, structCa
     frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
     memset(frame2send,'\0',sizeof(frameStruct));    
     frame2send->header.idMsg        = (waitForAnswer==true)?(unsigned char)2:(unsigned char)5;
+    frame2send->header.trigeredTime = trigeredTime;
     frame2send->header.numTotMsg    = 1;
     frame2send->header.consecutive  = 1;
     frame2send->header.bodyLen      = command.length();
@@ -8218,23 +8225,23 @@ void MainWindow::on_actionTimelapse_triggered()
     //--------------------------------------
     tmpCommand.clear();
     tmpCommand.append("sudo rm tmpSnapVideos/*");
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
 
     //--------------------------------------
     //Take Timelapse
     //--------------------------------------
     tmpCommand = genSlideTimelapseCommand();
     qDebug() << "tmpCommand: " << tmpCommand;
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
     progBarUpdateLabel("Timelapsing...",0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);
 
     //--------------------------------------
     //Get Number of Frames
     //--------------------------------------
-    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected,true);
+    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected,0,true);
     int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
-    qDebug() << "numOfFrames: " << numOfFrames;
+    //qDebug() << "numOfFrames: " << numOfFrames;
 
     //--------------------------------------
     //Get Frames
@@ -8355,7 +8362,7 @@ void MainWindow::on_actionSlideDiffraction_triggered()
     //......................................
     //Execute Remote Command
     //......................................
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
     progBarUpdateLabel(_MSG_PROGBAR_STABILIZING,0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
 
@@ -8404,7 +8411,7 @@ int MainWindow::obtainRemoteFolder( QString remoteFolder, QString localFolder )
     tmpCommand.append("ls ");
     tmpCommand.append(remoteFolder);
     tmpCommand.append(" -a | wc -l");
-    std::string stringNumOfFrames = funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,true);
+    std::string stringNumOfFrames = funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,true);
     int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
     qDebug() << "numOfFrames: " << numOfFrames;
 
@@ -8626,31 +8633,44 @@ int MainWindow::funcAccountFilesInFolder( QString folder )
 
 }
 
+void MainWindow::on_actionVideo_2_triggered()
+{
+    //-----------------------------------------------------
+    // Save snapshots settings
+    //-----------------------------------------------------
+    // Get camera resolution
+    camRes = getCamRes();
+
+    //Getting calibration
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //Save lastest settings
+    if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false ){
+        funcShowMsg("ERROR","Saving last snap-settings");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Generate Video Command
+    //-----------------------------------------------------
+    QString getRemVidCommand = genRemoteVideoCommand();
+
+    //-----------------------------------------------------
+    //Start to Record Remote Video
+    //-----------------------------------------------------
+    funcRemoteTerminalCommand(getRemVidCommand.toStdString(),camSelected,ui->slideTriggerTime->value(),false);
+
+    //-----------------------------------------------------
+    //Start Timer
+    //-----------------------------------------------------
+    int triggeringTime;
+    triggeringTime = ui->slideTriggerTime->value();
+    formTimerTxt* timerTxt = new formTimerTxt(this,"Countdown to Recording...",triggeringTime);
+    timerTxt->setModal(true);
+    timerTxt->show();
+    QtDelay(200);
+    timerTxt->startMyTimer(triggeringTime);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}

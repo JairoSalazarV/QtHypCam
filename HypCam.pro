@@ -41,7 +41,9 @@ SOURCES += main.cpp\
     formsquareaperturesettings.cpp \
     formndvisettings.cpp \
     formobtainfolder.cpp \
-    formbuildslidehypecubepreview.cpp
+    formbuildslidehypecubepreview.cpp \
+    formtimertxt.cpp \
+    mythread.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -72,7 +74,9 @@ HEADERS  += mainwindow.h \
     formsquareaperturesettings.h \
     formndvisettings.h \
     formobtainfolder.h \
-    formbuildslidehypecubepreview.h
+    formbuildslidehypecubepreview.h \
+    formtimertxt.h \
+    mythread.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -87,7 +91,8 @@ FORMS    += mainwindow.ui \
     formsquareaperturesettings.ui \
     formndvisettings.ui \
     formobtainfolder.ui \
-    formbuildslidehypecubepreview.ui
+    formbuildslidehypecubepreview.ui \
+    formtimertxt.ui
 
 RESOURCES += \
     lstImgs.qrc

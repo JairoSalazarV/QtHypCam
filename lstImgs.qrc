@@ -248,6 +248,8 @@
         <file>imagenInte/framesToCube.png</file>
         <file>imagenInte/videoToFrames.png</file>
         <file>imagenInte/slideDiff.png</file>
+        <file>imagenInte/timelapse.png</file>
+        <file>imagenInte/startVideo.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

@@ -251,14 +251,15 @@
     }calcAndCropSnap;
 
     typedef struct frameHeader{
-        unsigned char idMsg;					// Id instruction
+        unsigned char idMsg;		// Id instruction
         unsigned int consecutive;	// Consecutive
         unsigned int numTotMsg;		// Total number of message to send
         unsigned int bodyLen;		// Message lenght
+        int trigeredTime;           // Time before to apply console command
     }frameHeader;
 
     typedef struct frameStruct{
-      frameHeader header;
+      frameHeader header;      
       char msg[frameBodyLen];				// Usable message
     }frameStruct;
 

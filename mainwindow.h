@@ -67,7 +67,7 @@ public slots:
 
     void funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath );
 
-    std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected , bool waitForAnswer);
+    std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected, int trigeredTime, bool waitForAnswer);
 
     int obtainFile(std::string fileToObtain, std::string fileNameDestine, QString txtBar);
     QImage obtainFile( std::string fileToObtain, QString txtBar );
@@ -537,6 +537,8 @@ private slots:
     void buildHypercubeFromFilelist(QList<QFileInfo> lstFrames , structSlideHypCube slideCubeSettings);
 
     int funcAccountFilesInFolder( QString folder );
+
+    void on_actionVideo_2_triggered();
 
 private:
     Ui::MainWindow *ui;

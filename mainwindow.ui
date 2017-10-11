@@ -360,7 +360,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>302</y>
+        <y>378</y>
         <width>219</width>
         <height>21</height>
        </rect>
@@ -458,13 +458,13 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>340</y>
+        <y>416</y>
         <width>219</width>
         <height>21</height>
        </rect>
       </property>
       <property name="text">
-       <string>Trigger time</string>
+       <string>Triggering time</string>
       </property>
      </widget>
      <widget class="QComboBox" name="cbAWB">
@@ -520,7 +520,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>320</y>
+        <y>396</y>
         <width>311</width>
         <height>19</height>
        </rect>
@@ -539,7 +539,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>360</y>
+        <y>436</y>
         <width>311</width>
         <height>19</height>
        </rect>
@@ -793,7 +793,7 @@
       <property name="geometry">
        <rect>
         <x>170</x>
-        <y>416</y>
+        <y>342</y>
         <width>101</width>
         <height>29</height>
        </rect>
@@ -809,7 +809,7 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>420</y>
+        <y>346</y>
         <width>151</width>
         <height>19</height>
        </rect>
@@ -822,13 +822,42 @@
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>420</y>
+        <y>346</y>
         <width>21</width>
         <height>19</height>
        </rect>
       </property>
       <property name="text">
        <string>ms</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="spinBoxVideoDuration">
+      <property name="geometry">
+       <rect>
+        <x>170</x>
+        <y>304</y>
+        <width>101</width>
+        <height>29</height>
+       </rect>
+      </property>
+      <property name="minimum">
+       <number>2</number>
+      </property>
+      <property name="maximum">
+       <number>180</number>
+      </property>
+     </widget>
+     <widget class="QLabel" name="labelSquareShuterSpeed_5">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>308</y>
+        <width>151</width>
+        <height>19</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Video Duration (sec)</string>
       </property>
      </widget>
     </widget>
@@ -1246,11 +1275,20 @@ QSlider::handle:horizontal {
     <addaction name="separator"/>
     <addaction name="actionSave"/>
    </widget>
+   <widget class="QMenu" name="menuStart">
+    <property name="title">
+     <string>Start Remote</string>
+    </property>
+    <addaction name="actionVideo_2"/>
+    <addaction name="actionTimelapse_2"/>
+    <addaction name="actionSnapshot"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
    <addaction name="menuAnalysis"/>
    <addaction name="menuSettings"/>
    <addaction name="menuCamera"/>
+   <addaction name="menuStart"/>
   </widget>
   <widget class="QToolBar" name="toolBarDraw">
    <property name="windowTitle">
@@ -1808,6 +1846,36 @@ QSlider::handle:horizontal {
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+B</string>
+   </property>
+  </action>
+  <action name="actionVideo_2">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/startVideo.png</normaloff>:/new/icons/imagenInte/startVideo.png</iconset>
+   </property>
+   <property name="text">
+    <string>Video</string>
+   </property>
+   <property name="toolTip">
+    <string>Start Remote Video</string>
+   </property>
+  </action>
+  <action name="actionTimelapse_2">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/timelapse.png</normaloff>:/new/icons/imagenInte/timelapse.png</iconset>
+   </property>
+   <property name="text">
+    <string>Timelapse</string>
+   </property>
+  </action>
+  <action name="actionSnapshot">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/digikam.png</normaloff>:/new/icons/imagenInte/digikam.png</iconset>
+   </property>
+   <property name="text">
+    <string>Snapshot</string>
    </property>
   </action>
  </widget>
