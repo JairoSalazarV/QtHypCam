@@ -67,7 +67,12 @@ public slots:
 
     void funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath );
 
-    std::__cxx11::string funcRemoteTerminalCommand(std::string command, structCamSelected *camSelected, int trigeredTime, bool waitForAnswer);
+    std::__cxx11::string funcRemoteTerminalCommand(
+                                                    std::string command,
+                                                    structCamSelected *camSelected,
+                                                    int trigeredTime,
+                                                    bool waitForAnswer,
+                                                    bool* ok);
 
     int obtainFile(std::string fileToObtain, std::string fileNameDestine, QString txtBar);
     QImage obtainFile( std::string fileToObtain, QString txtBar );
@@ -474,7 +479,7 @@ private slots:
 
     int createSubimageRemotelly(bool squareArea);
 
-    int takeRemoteSnapshot(bool squareArea);
+    int takeRemoteSnapshot(QString fileDestiny, bool squareArea);
 
     void on_pbSnapshotSquare_clicked();
 
@@ -498,9 +503,9 @@ private slots:
 
     void on_pbTimeLapse_clicked();
 
-    QString genRemoteVideoCommand();
+    QString genRemoteVideoCommand(QString remoteVideo);
 
-    QString genSlideTimelapseCommand();
+    QString genTimelapseCommand(QString folder,bool setROI=true);
 
     QString genSubareaRaspistillCommand(QString remoteFilename, QString subareaRectangle);
 
@@ -530,7 +535,15 @@ private slots:
 
     void on_actionObtain_Folder_triggered();
 
-    int obtainRemoteFolder( QString remoteFolder, QString localFolder );
+    int obtainRemoteFolder(
+                                QString remoteFolder,
+                                QString localFolder,
+                                QString *errTrans,
+                                QString *errDel,
+                                bool delFolder=false
+                           );
+
+    bool funcRemoveRemoteFile( QString fileName );
 
     void on_actionSlide_Build_Hypercube_triggered();
 
@@ -538,7 +551,25 @@ private slots:
 
     int funcAccountFilesInFolder( QString folder );
 
+    void funcShowMsgERROR_Timeout(QString msg, int ms=3000);
+
+    void funcStartRemoteTimelapse( bool setROI=false );
+
+    int funcValidateFileDirNameDuplicated(QString remoteFile, QString localFile);
+
+    QString funcGetSyncFolder();
+
     void on_actionVideo_2_triggered();
+
+    void on_actionTimelapse_2_triggered();
+
+    void on_actionSnapvideos_triggered();
+
+    void on_actionSnapshot_triggered();
+
+    void on_actionSynchronize_triggered();
+
+    void on_actionSync_Folder_triggered();
 
 private:
     Ui::MainWindow *ui;

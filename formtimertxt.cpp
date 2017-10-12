@@ -26,7 +26,10 @@ void formTimerTxt::startMyTimer(int seconds)
     for(i=seconds; i>=0; i--)
     {        
         emit signalTimerRefresh(i);
-        QtDelay(1000);
+        if( i == 0 )
+            QtDelay(100);
+        else
+            QtDelay(1000);
     }
     this->close();
 }

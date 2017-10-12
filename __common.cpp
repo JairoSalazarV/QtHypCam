@@ -28,6 +28,8 @@
 
 #include <lstcustoms.h>
 
+#include <QInputDialog>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -2086,4 +2088,12 @@ float vectorCorrelation(int* v1, int* v2, int n, int k, float zeroCorr)
 int calcSlideExtraW(structSlideHypCube* slideSett)
 {
     return floor((float)slideSett->width * slideSett->extraW);
+}
+
+QString funcGetParam(QString field)
+{
+    bool ok;
+    return QInputDialog::getText(NULL, "Input required...",
+                                                        field+":", QLineEdit::Normal,
+                                                        "", &ok);
 }

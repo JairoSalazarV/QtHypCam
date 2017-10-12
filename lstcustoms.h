@@ -53,7 +53,8 @@
 
     #define _FRAME_EXTENSION                ".png"
     #define _FRAME_RECEIVED_EXTENSION       "RGB888"
-
+    #define _VIDEO_EXTENSION                ".H264"
+    #define _SNAPSHOT_REMOTE_EXTENSION      ".RGB888"
 
 
     #define _MSG_PROGBAR_STABILIZING        "Stabilizing Remote Camera"

@@ -136,6 +136,7 @@
 #include <formbuildslidehypecubepreview.h>
 
 #include <formtimertxt.h>
+#include <QMessageBox>
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -2111,7 +2112,7 @@ void MainWindow::on_pbSnapshot_clicked()
 
     mouseCursorWait();
 
-    if( !takeRemoteSnapshot(false) )
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
     {
         qDebug() << "ERROR: Taking Full Area";
         return (void)NULL;
@@ -6020,12 +6021,19 @@ void MainWindow::on_pbSnapVid_clicked()
     //-----------------------------------------------------
     // Generate Video Command
     //-----------------------------------------------------
-    QString getRemVidCommand = genRemoteVideoCommand();
+    QString getRemVidCommand = genRemoteVideoCommand(_PATH_VIDEO_REMOTE_H264);
 
     //-----------------------------------------------------
     //Start to Record Remote Video
     //-----------------------------------------------------
-    funcRemoteTerminalCommand(getRemVidCommand.toStdString(),camSelected,ui->slideTriggerTime->value(),false);
+    bool ok;
+    funcRemoteTerminalCommand(
+                                getRemVidCommand.toStdString(),
+                                camSelected,
+                                ui->slideTriggerTime->value(),
+                                false,
+                                &ok
+                            );
     progBarUpdateLabel("Recording Remote Video...",0);
     progBarTimer((ui->spinBoxVideoDuration->value()+1)*1000);
     progBarUpdateLabel("",0);
@@ -6039,7 +6047,7 @@ void MainWindow::on_pbSnapVid_clicked()
         QString rmRemVidCommand;
         rmRemVidCommand.append("rm ");
         rmRemVidCommand.append(_PATH_VIDEO_REMOTE_H264);
-        funcRemoteTerminalCommand( rmRemVidCommand.toStdString(), camSelected, 0, false );
+        funcRemoteTerminalCommand( rmRemVidCommand.toStdString(), camSelected, 0, false, &ok );
     }
     else
     {
@@ -6549,7 +6557,7 @@ int MainWindow::createSubimageRemotelly(bool squareArea )
     return status;
 }
 
-int MainWindow::takeRemoteSnapshot(bool squareArea )
+int MainWindow::takeRemoteSnapshot( QString fileDestiny, bool squareArea )
 {
 
     //
@@ -6588,15 +6596,23 @@ int MainWindow::takeRemoteSnapshot(bool squareArea )
     //Create Command
     //--------------------------------------
     QString tmpCommand;
-    tmpCommand = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
+    tmpCommand = genCommand(reqImg, fileDestiny.toStdString())->c_str();
 
     //--------------------------------------
     //Take Remote Photo
     //--------------------------------------
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
+    bool executedCommand;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&executedCommand);
+    if( !executedCommand )
+    {
+        funcShowMsgERROR_Timeout("Applying Remote Snapshot Command");
+        return -1;
+    }
+
+    /*
     progBarUpdateLabel("Stabilizing Remote Camera...",0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);
-    progBarUpdateLabel("",0);
+    progBarUpdateLabel("",0);*/
 
     //Get Remote File
     //obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
@@ -6674,7 +6690,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
 
     mouseCursorWait();
 
-    if( !takeRemoteSnapshot(false) )
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
     {
         qDebug() << "ERROR: Taking Diffration Area";
         return (void)NULL;
@@ -6689,7 +6705,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
         }
         else
         {
-            if( !takeRemoteSnapshot(true) )
+            if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,true) )
             {
                 qDebug() << "ERROR: Taking Aperture Area";
                 return (void)NULL;
@@ -6831,7 +6847,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
 {
     mouseCursorWait();    
 
-    if( !takeRemoteSnapshot(false) )
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
     {
         qDebug() << "ERROR: Taking Diffration Area";
         return (void)NULL;
@@ -7440,21 +7456,23 @@ void MainWindow::on_pbTimeLapse_clicked()
     //--------------------------------------
     tmpCommand.clear();
     tmpCommand.append("sudo rm tmpSnapVideos/*");
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
+    bool ok;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&ok);
 
     //--------------------------------------
     //Take Timelapse
     //--------------------------------------
-    tmpCommand = genSlideTimelapseCommand();
+    tmpCommand = genTimelapseCommand(_PATH_REMOTE_FOLDER_SLIDELAPSE);
     qDebug() << "tmpCommand: " << tmpCommand;
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&ok);
     progBarUpdateLabel("Timelapsing...",0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
 
     //--------------------------------------
     //Obtain Remote Folder
     //--------------------------------------
-    obtainRemoteFolder( "./tmpSnapVideos/", _PATH_VIDEO_FRAMES );
+    QString errorTrans, errorDel;
+    obtainRemoteFolder( "./tmpSnapVideos/", _PATH_VIDEO_FRAMES, &errorTrans, &errorDel );
 
     //--------------------------------------
     //Reset Progress Bar
@@ -7463,7 +7481,7 @@ void MainWindow::on_pbTimeLapse_clicked()
     mouseCursorReset();
 }
 
-QString MainWindow::genRemoteVideoCommand()
+QString MainWindow::genRemoteVideoCommand(QString remoteVideo)
 {
     QString tmpCommand;
     tmpCommand.append("raspivid -n -t ");
@@ -7471,7 +7489,7 @@ QString MainWindow::genRemoteVideoCommand()
     tmpCommand.append( " -vf -b 50000000 -fps " );
     tmpCommand.append( QString::number(_VIDEO_FRAME_RATE) );
     tmpCommand.append( " -o " );
-    tmpCommand.append( _PATH_VIDEO_REMOTE_H264 );
+    tmpCommand.append( remoteVideo );
 
     //.................................
     //Diffraction Area ROI
@@ -7564,15 +7582,15 @@ QString MainWindow::genRemoteVideoCommand()
 
 
 
-QString MainWindow::genSlideTimelapseCommand()
+QString MainWindow::genTimelapseCommand(QString folder,bool setROI)
 {
     QString tmpCommand;
     tmpCommand.clear();
     tmpCommand.append("raspistill -t");
-    tmpCommand.append(" " + QString::number(ui->slideTriggerTime->value()*1000));
+    tmpCommand.append(" " + QString::number(ui->spinBoxTimelapseDuration->value()*1000));
     tmpCommand.append(" -tl ");
     tmpCommand.append(QString::number( ui->spinBoxTimelapse->value() ));
-    tmpCommand.append(" -o ./tmpSnapVideos/%d.RGB888");
+    tmpCommand.append(" -o "+ folder +"%d.RGB888");
     tmpCommand.append(" -n -q 100 -gc");
 
     //tmpCommand.append(" -tl 1000 -n -roi 0.221649485,0.313559322,0.416237113,0.372881356 -o ./tmpSnapVideos/%d.RGB888");
@@ -7580,37 +7598,53 @@ QString MainWindow::genSlideTimelapseCommand()
     //progBarTimer((ui->slideTriggerTime->value()+1)*1000);
     //funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected);
 
-    //.................................
-    //Diffraction Area ROI
-    //.................................
-    double W, H;
-    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
-    memset(aperture,'\0',sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, aperture ) )
+    if( setROI == true )
     {
-        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
-        tmpCommand.clear();
-        return tmpCommand;
+        //.................................
+        //Diffraction Area ROI
+        //.................................
+        double W, H;
+        squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+        memset(aperture,'\0',sizeof(squareAperture));
+        if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, aperture ) )
+        {
+            funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
+            tmpCommand.clear();
+            return tmpCommand;
+        }
+        W = (double)aperture->rectW/(double)aperture->canvasW;
+        H = (double)aperture->rectH/(double)aperture->canvasH;
+
+        tmpCommand.append(" -roi ");
+        tmpCommand.append(QString::number((double)aperture->rectX/(double)aperture->canvasW)+",");
+        tmpCommand.append(QString::number((double)aperture->rectY/(double)aperture->canvasH)+",");
+        tmpCommand.append(QString::number(W)+",");
+        tmpCommand.append(QString::number(H));
+
+        //.................................
+        //Image Size ROI
+        //.................................
+        camRes = getCamRes();
+        //Width
+        tmpCommand.append(" -w ");
+        tmpCommand.append(QString::number( round( W * (double)camRes->width ) ));
+        //Height
+        tmpCommand.append(" -h ");
+        tmpCommand.append(QString::number( round( H * (double)camRes->height ) ));
     }
-    W = (double)aperture->rectW/(double)aperture->canvasW;
-    H = (double)aperture->rectH/(double)aperture->canvasH;
-
-    tmpCommand.append(" -roi ");
-    tmpCommand.append(QString::number((double)aperture->rectX/(double)aperture->canvasW)+",");
-    tmpCommand.append(QString::number((double)aperture->rectY/(double)aperture->canvasH)+",");
-    tmpCommand.append(QString::number(W)+",");
-    tmpCommand.append(QString::number(H));
-
-    //.................................
-    //Image Size ROI
-    //.................................
-    camRes = getCamRes();
-    //Width
-    tmpCommand.append(" -w ");
-    tmpCommand.append(QString::number( round( W * (double)camRes->width ) ));
-    //Height
-    tmpCommand.append(" -h ");
-    tmpCommand.append(QString::number( round( H * (double)camRes->height ) ));
+    else
+    {
+        //.................................
+        //Image Size WITHOUT ROI
+        //.................................
+        camRes = getCamRes();
+        //Width
+        tmpCommand.append(" -w ");
+        tmpCommand.append(QString::number( camRes->width ));
+        //Height
+        tmpCommand.append(" -h ");
+        tmpCommand.append(QString::number( camRes->height ));
+    }
 
     //.................................
     //Colour balance?
@@ -7796,11 +7830,13 @@ std::string MainWindow::funcRemoteTerminalCommand(
                                                     std::string command,
                                                     structCamSelected *camSelected,
                                                     int trigeredTime,
-                                                    bool waitForAnswer
+                                                    bool waitForAnswer,
+                                                    bool* ok
 ){
     //* It is used when waitForAnswer==true
     //* Wait for answer when you need to know a parameter or the
     //  command result
+    *ok = true;
     std::string tmpTxt;
 
     //--------------------------------------
@@ -7827,6 +7863,7 @@ std::string MainWindow::funcRemoteTerminalCommand(
     n = ::write(sockfd,frame2send,sizeof(frameStruct)+1);
     if(n<0){
         qDebug() << "ERROR: Excecuting Remote Command";
+        *ok = false;
         return "";
     }
 
@@ -7844,7 +7881,10 @@ std::string MainWindow::funcRemoteTerminalCommand(
 
         //Receive File
         unsigned char tmpFile[fileLen];
-        funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
+        if( funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile ) == false )
+        {
+            *ok = false;
+        }
         tmpTxt.clear();
         tmpTxt.assign((char*)tmpFile);
         qDebug() <<tmpFile;
@@ -7941,7 +7981,7 @@ void MainWindow::on_actionFull_photo_triggered()
 {
     mouseCursorWait();
 
-    if( !takeRemoteSnapshot(false) )
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
     {
         qDebug() << "ERROR: Taking Full Area";
         return (void)NULL;
@@ -7958,7 +7998,7 @@ void MainWindow::on_actionDiffraction_triggered()
 {
     mouseCursorWait();
 
-    if( !takeRemoteSnapshot(false) )
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
     {
         qDebug() << "ERROR: Taking Diffration Area";
         return (void)NULL;
@@ -8000,7 +8040,7 @@ void MainWindow::on_actionComposed_triggered()
 {
     mouseCursorWait();
 
-    if( !takeRemoteSnapshot(false) )
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
     {
         qDebug() << "ERROR: Taking Diffration Area";
         return (void)NULL;
@@ -8015,7 +8055,7 @@ void MainWindow::on_actionComposed_triggered()
         }
         else
         {
-            if( !takeRemoteSnapshot(true) )
+            if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,true) )
             {
                 qDebug() << "ERROR: Taking Aperture Area";
                 return (void)NULL;
@@ -8225,21 +8265,28 @@ void MainWindow::on_actionTimelapse_triggered()
     //--------------------------------------
     tmpCommand.clear();
     tmpCommand.append("sudo rm tmpSnapVideos/*");
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
+    bool ok;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&ok);
 
     //--------------------------------------
     //Take Timelapse
     //--------------------------------------
-    tmpCommand = genSlideTimelapseCommand();
+    tmpCommand = genTimelapseCommand(_PATH_REMOTE_FOLDER_SLIDELAPSE);
     qDebug() << "tmpCommand: " << tmpCommand;
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&ok);
     progBarUpdateLabel("Timelapsing...",0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);
 
     //--------------------------------------
     //Get Number of Frames
     //--------------------------------------
-    std::string stringNumOfFrames = funcRemoteTerminalCommand("ls ./tmpSnapVideos/ -a | wc -l",camSelected,0,true);
+    std::string stringNumOfFrames = funcRemoteTerminalCommand(
+                                                                "ls ./tmpSnapVideos/ -a | wc -l",
+                                                                camSelected,
+                                                                0,
+                                                                true,
+                                                                &ok
+                                                            );
     int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
     //qDebug() << "numOfFrames: " << numOfFrames;
 
@@ -8362,7 +8409,8 @@ void MainWindow::on_actionSlideDiffraction_triggered()
     //......................................
     //Execute Remote Command
     //......................................
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false);
+    bool ok;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&ok);
     progBarUpdateLabel(_MSG_PROGBAR_STABILIZING,0);
     progBarTimer((ui->slideTriggerTime->value()+1)*1000);    
 
@@ -8402,78 +8450,185 @@ void MainWindow::on_actionObtain_Folder_triggered()
     formObtRemoteFolder->show();
 }
 
-int MainWindow::obtainRemoteFolder( QString remoteFolder, QString localFolder )
-{
-    //--------------------------------------
-    //Get Number of Frames
-    //--------------------------------------
+int MainWindow::obtainRemoteFolder(
+                                        QString remoteFolder,
+                                        QString localFolder,
+                                        QString* errTrans,
+                                        QString* errDel,
+                                        bool delFolder
+){
+
+    bool delDir = true;
+
+    //------------------------------------------------------
+    // Obtain list of files in Remote Folder
+    //------------------------------------------------------
     QString tmpCommand;
     tmpCommand.append("ls ");
     tmpCommand.append(remoteFolder);
-    tmpCommand.append(" -a | wc -l");
-    std::string stringNumOfFrames = funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,true);
-    int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
-    qDebug() << "numOfFrames: " << numOfFrames;
+    tmpCommand.append("*.*");
+    bool executedCommand;
+    std::string stringLstFiles = funcRemoteTerminalCommand(
+                                                                tmpCommand.toStdString(),
+                                                                camSelected,
+                                                                0,
+                                                                true,
+                                                                &executedCommand
+                                                           );
+    if( !executedCommand )return _ERROR;
 
-    //--------------------------------------
-    //Get Frames
-    //--------------------------------------
-    if( numOfFrames > 0 )
+    //------------------------------------------------------
+    // Create local folder if not exists
+    //------------------------------------------------------
+    QString remoteFile, localFile, barTxt, tmpFileName;
+    QString tmpAnswer(stringLstFiles.data());
+    QList<QString> tmpFileParts;
+    QList<QString> lstFiles = tmpAnswer.split('\n');
+    if( lstFiles.size() > 0 )
     {
-        QString barTxt;
-        funcClearDirFolder( localFolder );
-        QString tmpRemoteFrame, tmpLocalFrame;
-        int framesTransmited = 0;
-        int i = 0;
-        int filesNotFound = 0;
-        int maxFilesError = 5;
-        while( framesTransmited < numOfFrames )
+        //qDebug() << "localFolder: " << localFolder;
+        if( !fileExists(localFolder) )
         {
+            if( !funcExecuteCommand( "mkdir " + localFolder ) )
+            {
+                funcShowMsgERROR_Timeout("Creating Local Folder: " + localFolder, 1800 );
+                return _ERROR;
+            }
+        }
+    }
 
+    //------------------------------------------------------
+    // Get each element into the folder
+    //------------------------------------------------------
+    int i;
+    //qDebug() << "lstFiles.size(): " << lstFiles.size() << " remoteFolder: " << remoteFolder;
+    for( i=0; i<lstFiles.size(); i++ )
+    {
+        tmpFileName = lstFiles.at(i).trimmed();
+        if(
+            !tmpFileName.isEmpty()  &&
+            tmpFileName != "./"     &&
+            tmpFileName != "../"    &&
+            tmpFileName != "."      &&
+            tmpFileName != ".."
+        ){
+            //Define File Names
+            tmpFileParts.clear();
+            tmpFileParts    = lstFiles.at(i).trimmed().split("/");
+            localFile       = localFolder  + tmpFileParts.at(tmpFileParts.size()-1);
+            remoteFile      = remoteFolder + tmpFileParts.at(tmpFileParts.size()-1);
 
-            tmpRemoteFrame = remoteFolder + "/" + QString::number(i) + ".RGB888";
-            tmpLocalFrame  = localFolder  + "/" + QString::number(i) + ".RGB888";
+            //qDebug() << "remoteFile: " << remoteFile;
+            //qDebug() << "localFile: " << localFile;
+            //exit(0);
 
-            //Get Remote File
+            //Transmit Remote File
             barTxt.clear();
             barTxt.append("Transmitting ");
-            barTxt.append(QString::number((framesTransmited+1)));
-            barTxt.append(" of ");
-            barTxt.append(QString::number(numOfFrames));
-            progBarUpdateLabel(barTxt,0);
-            obtainFile( tmpRemoteFrame.toStdString(), tmpLocalFrame.toStdString(), "" );
+            barTxt.append(lstFiles.at(i));
+            barTxt.append("...");
+            obtainFile( remoteFile.toStdString(), localFile.toStdString(), barTxt );
 
-
-            //Check if was transmited
-            if( fileExists(tmpLocalFrame) )
+            //Check if file was transmited successfully
+            if( !fileExists(localFile) )
             {
-                framesTransmited++;
-                filesNotFound = 0;
+                errTrans->append(remoteFile+"\n");
+                delDir = false;
             }
             else
             {
-                filesNotFound++;
-            }
-
-            //Next image to check
-            i++;
-
-            //Break if error
-            if( filesNotFound >= maxFilesError )
-            {
-                funcShowMsg("ERROR","maxFilesError Achieved: "+QString(maxFilesError));
-                return _ERROR;
-                break;
+                //Remove Remote File
+                if( !funcRemoveRemoteFile(remoteFile) )
+                {
+                    errDel->append(remoteFile+"\n");
+                    delDir = false;
+                }
             }
         }
+    }
 
-        progBarUpdateLabel("",0);
-    }
-    else
+    //------------------------------------------------------
+    // Copy Folders Recursivelly
+    //------------------------------------------------------
+
+    //Get List of Folders
+    tmpCommand.clear();
+    tmpCommand.append("ls -d ");
+    tmpCommand.append(remoteFolder);
+    tmpCommand.append("*/");
+    std::string stringLstFolders = funcRemoteTerminalCommand(
+                                                                tmpCommand.toStdString(),
+                                                                camSelected,
+                                                                0,
+                                                                true,
+                                                                &executedCommand
+                                                            );
+    if( !executedCommand )return _ERROR;
+
+    //......................................................
+    // Get each folder into the main folder
+    //......................................................
+    //QString remoteFile, localFile, barTxt, tmpFileName;
+    QString tmpRemoteSubfolder, tmpLocalSubfolder;
+    QString tmpAnswerFolder(stringLstFolders.data());
+    QList<QString> lstFolders = tmpAnswerFolder.split('\n');
+    QList<QString> tmpFolderParts;
+    //qDebug() << "lstFolders.size(): " << lstFolders.size() << " remoteFolder: " << remoteFolder;
+    for( i=0; i<lstFolders.size(); i++ )
     {
-        qDebug() << "Empty Remote Folder";
-        return _ERROR;
+        tmpRemoteSubfolder = lstFolders.at(i).trimmed();
+        if(
+            !tmpRemoteSubfolder.isEmpty()  &&
+             tmpRemoteSubfolder != "./"    &&
+             tmpRemoteSubfolder != "../"   &&
+             tmpRemoteSubfolder != "."     &&
+             tmpRemoteSubfolder != ".."
+        ){
+            //Extract folder name
+            tmpFolderParts.clear();
+            tmpFolderParts = tmpRemoteSubfolder.split('/');
+
+            //Obtain Subfolder
+            tmpLocalSubfolder  = localFolder  + tmpFolderParts.at(tmpFolderParts.size()-2)+"/";
+            //qDebug() << "tmpRemoteSubfolder2: " << tmpRemoteSubfolder;
+            //qDebug() << "tmpFolderParts.at(tmpFolderParts.size()): " << tmpFolderParts.at(tmpFolderParts.size()-2);
+            //qDebug() << "tmpLocalSubfolder: " << tmpLocalSubfolder;
+            //qDebug() << "tmpRemoteSubfolder: " << tmpRemoteSubfolder;
+            //fflush(stdout);
+            //exit(0);
+            obtainRemoteFolder(tmpRemoteSubfolder,tmpLocalSubfolder,errTrans,errDel,true);
+        }
     }
+
+    if( delFolder && delDir )
+    {
+        tmpCommand.clear();
+        tmpCommand.append("sudo rm -R " + remoteFolder );
+        funcRemoteTerminalCommand(
+                                        tmpCommand.toStdString(),
+                                        camSelected,
+                                        0,
+                                        false,
+                                        &executedCommand
+                                 );
+        if( !executedCommand )
+        {
+            errDel->append(remoteFolder+"\n");
+        }
+    }
+
+    //Return
+    return _OK;
+}
+
+bool MainWindow::funcRemoveRemoteFile( QString fileName )
+{
+    QString tmpCommand;
+    tmpCommand.append("sudo rm " + fileName);
+    bool executedCommand;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&executedCommand);
+    if( !executedCommand )
+        return _ERROR;
     return _OK;
 }
 
@@ -8635,6 +8790,57 @@ int MainWindow::funcAccountFilesInFolder( QString folder )
 
 void MainWindow::on_actionVideo_2_triggered()
 {
+
+    //---------------------------------------------------
+    //Get Video-ID Destine
+    //---------------------------------------------------
+    QString videoID;
+    videoID = funcGetParam("Video-ID");
+    if(videoID.isEmpty())
+    {
+        funcShowMsgERROR_Timeout("Invalid Video-ID");
+        return (void)false;
+    }
+
+    //---------------------------------------------------
+    //Validate File/Dir Name
+    //---------------------------------------------------
+    QString remoteFile, localFile;
+    remoteFile = _PATH_REMOTE_FOLDER_VIDEOS + videoID + _VIDEO_EXTENSION;
+
+    //Local File
+    QString syncFolder;
+    syncFolder = funcGetSyncFolder();
+    localFile.clear();
+    localFile.append(syncFolder);
+    localFile.append(_PATH_LOCAL_FOLDER_VIDEOS);
+    localFile.append(videoID);
+    localFile.append(_VIDEO_EXTENSION);
+
+    if( !funcValidateFileDirNameDuplicated( remoteFile, localFile ) )
+    {
+        funcShowMsgERROR_Timeout("Video-ID Exists: Please, use another");
+        return (void)false;
+    }
+
+
+    //---------------------------------------------------
+    //Prepare Remote Scenary
+    //---------------------------------------------------
+
+    //Delete Remote File if Exists
+    videoID = _PATH_REMOTE_FOLDER_VIDEOS + videoID + _VIDEO_EXTENSION;
+    QString tmpCommand;
+    tmpCommand.clear();
+    tmpCommand.append("sudo rm "+ videoID);
+    bool commandExecuted;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Deleting Remote videoID");
+        return (void)false;
+    }
+
     //-----------------------------------------------------
     // Save snapshots settings
     //-----------------------------------------------------
@@ -8652,25 +8858,402 @@ void MainWindow::on_actionVideo_2_triggered()
     }
 
     //-----------------------------------------------------
-    // Generate Video Command
-    //-----------------------------------------------------
-    QString getRemVidCommand = genRemoteVideoCommand();
-
-    //-----------------------------------------------------
     //Start to Record Remote Video
     //-----------------------------------------------------
-    funcRemoteTerminalCommand(getRemVidCommand.toStdString(),camSelected,ui->slideTriggerTime->value(),false);
+
+    // Generate Video Command
+    QString getRemVidCommand = genRemoteVideoCommand(videoID);
+
+    // Execute Remote Command
+    funcRemoteTerminalCommand(
+                                getRemVidCommand.toStdString(),
+                                camSelected,
+                                ui->slideTriggerTime->value(),
+                                false,
+                                &commandExecuted
+                            );
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Starting Remote Recording");
+        return (void)false;
+    }
 
     //-----------------------------------------------------
     //Start Timer
     //-----------------------------------------------------
     int triggeringTime;
     triggeringTime = ui->slideTriggerTime->value();
-    formTimerTxt* timerTxt = new formTimerTxt(this,"Countdown to Recording...",triggeringTime);
-    timerTxt->setModal(true);
-    timerTxt->show();
-    QtDelay(200);
-    timerTxt->startMyTimer(triggeringTime);
+    if( triggeringTime > 0 )
+    {
+        formTimerTxt* timerTxt = new formTimerTxt(this,"Countdown to Recording...",triggeringTime);
+        timerTxt->setModal(true);
+        timerTxt->show();
+        QtDelay(200);
+        timerTxt->startMyTimer(triggeringTime);
+    }
 
 
 }
+
+void MainWindow::on_actionTimelapse_2_triggered()
+{
+
+    funcStartRemoteTimelapse( false );
+
+}
+
+void MainWindow::funcShowMsgERROR_Timeout(QString msg, int ms)
+{
+    QMessageBox *msgBox         = new QMessageBox(QMessageBox::Warning,"ERROR",msg,NULL);
+    QTimer *msgBoxCloseTimer    = new QTimer(this);
+    msgBoxCloseTimer->setInterval(ms);
+    msgBoxCloseTimer->setSingleShot(true);
+    connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject()));
+    msgBoxCloseTimer->start();
+    msgBox->exec();
+}
+
+void MainWindow::funcStartRemoteTimelapse( bool setROI )
+{
+    //---------------------------------------------------
+    //Get Folder Destine
+    //---------------------------------------------------
+    QString remoteFolder;
+    remoteFolder = funcGetParam("Folder-Name");
+    if(remoteFolder.isEmpty())
+    {
+        funcShowMsgERROR_Timeout("Invalid Folder");
+        return (void)false;
+    }
+
+    //---------------------------------------------------
+    //Validate File/Dir Name
+    //---------------------------------------------------
+    QString remoteFile, localFile;
+    if( setROI == true )
+    {
+        remoteFile = _PATH_REMOTE_FOLDER_SLIDELAPSE + remoteFolder + "/";
+
+        //Local File
+        QString syncFolder;
+        syncFolder = funcGetSyncFolder();
+        localFile.clear();
+        localFile.append(syncFolder);
+        localFile.append(_PATH_LOCAL_FOLDER_SLIDELAPSE);
+        localFile.append("/");
+    }
+    else
+    {
+        remoteFile = _PATH_REMOTE_FOLDER_TIMELAPSE + remoteFolder + "/";
+
+        //Local File
+        QString syncFolder;
+        syncFolder = funcGetSyncFolder();
+        localFile.clear();
+        localFile.append(syncFolder);
+        localFile.append(_PATH_LOCAL_FOLDER_TIMELAPSE);
+        localFile.append("/");
+    }
+    if( !funcValidateFileDirNameDuplicated( remoteFile, localFile ) )
+    {
+        funcShowMsgERROR_Timeout("Folder-Name Exists: Please, use another");
+        return (void)false;
+    }
+
+    //--------------------------------------
+    //Prepare an Empty Remote Directory
+    //--------------------------------------
+
+    //Delete folder
+    if( setROI == true )
+        remoteFolder = _PATH_REMOTE_FOLDER_SLIDELAPSE + remoteFolder + "/";
+    else
+        remoteFolder = _PATH_REMOTE_FOLDER_TIMELAPSE + remoteFolder + "/";
+    QString tmpCommand;
+    tmpCommand.clear();
+    tmpCommand.append("sudo rm -R "+ remoteFolder);
+    bool commandExecuted;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Deleting Remote Folder");
+        return (void)false;
+    }
+
+    //Create folder
+    tmpCommand.clear();
+    tmpCommand.append("mkdir "+remoteFolder);
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Creating Remote Folder");
+        return (void)false;
+    }
+
+    //Check if Folder is Empty
+    tmpCommand.clear();
+    tmpCommand.append("ls ");
+    tmpCommand.append(remoteFolder);
+    tmpCommand.append(" -a | wc -l");
+    std::string stringNumOfFrames = funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,true,&commandExecuted);
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Accounting Files into Remote Folder");
+        return (void)false;
+    }
+    int numOfFrames = atoi(stringNumOfFrames.c_str()) - 2;
+    if( numOfFrames > 0 )
+    {
+        funcShowMsgERROR_Timeout("Remote Folder Exists!, Use another identifier");
+        return (void)false;
+    }
+
+    //--------------------------------------
+    //Take Timelapse
+    //--------------------------------------
+    int triggeringTime;
+    triggeringTime = ui->slideTriggerTime->value();
+    tmpCommand = genTimelapseCommand(remoteFolder,setROI);
+    qDebug() << "tmpCommand: " << tmpCommand;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,triggeringTime,false,&commandExecuted);
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Starting Remote Timelapse");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    //Start Timer
+    //-----------------------------------------------------
+    if( triggeringTime > 0 )
+    {
+        formTimerTxt* timerTxt = new formTimerTxt(this,"Countdown to Recording...",triggeringTime);
+        timerTxt->setModal(true);
+        timerTxt->show();
+        QtDelay(200);
+        timerTxt->startMyTimer(triggeringTime);
+    }
+}
+
+void MainWindow::on_actionSnapvideos_triggered()
+{
+    funcStartRemoteTimelapse( true );
+}
+
+void MainWindow::on_actionSnapshot_triggered()
+{
+    //---------------------------------------------------
+    //Get Snapshot-ID Destine
+    //---------------------------------------------------
+    QString fileName;
+    fileName = funcGetParam("Snapshot-ID");
+    if(fileName.isEmpty())
+    {
+        funcShowMsgERROR_Timeout("Invalid Snapshot-ID");
+        return (void)false;
+    }
+
+    //---------------------------------------------------
+    //Validate File/Dir Name
+    //---------------------------------------------------
+    QString remoteFile, localFile;
+    remoteFile = _PATH_REMOTE_FOLDER_SNAPSHOTS + fileName + _SNAPSHOT_REMOTE_EXTENSION;
+
+    //Local File
+    QString syncFolder;
+    syncFolder = funcGetSyncFolder();
+    localFile.clear();
+    localFile.append(syncFolder);
+    localFile.append(_PATH_LOCAL_FOLDER_SNAPSHOTS);
+    localFile.append(fileName);
+    localFile.append(_SNAPSHOT_REMOTE_EXTENSION);
+
+    if( !funcValidateFileDirNameDuplicated( remoteFile, localFile ) )
+    {
+        funcShowMsgERROR_Timeout("Snapshot-ID Exists: Please, use another");
+        return (void)false;
+    }
+
+    //--------------------------------------
+    //Prepare Remote Scenary
+    //--------------------------------------
+
+    //Delete Remote File if Exists
+    fileName = _PATH_REMOTE_FOLDER_SNAPSHOTS + fileName + _SNAPSHOT_REMOTE_EXTENSION;
+    QString tmpCommand;
+    tmpCommand.clear();
+    tmpCommand.append("sudo rm "+ fileName);
+    bool commandExecuted;
+    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
+    if( !commandExecuted )
+    {
+        funcShowMsgERROR_Timeout("Deleting Remote Snapshot-ID");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Save snapshots settings
+    //-----------------------------------------------------
+
+    // Get camera resolution
+    camRes = getCamRes();
+
+    //Getting calibration
+    lstDoubleAxisCalibration daCalib;
+    funcGetCalibration(&daCalib);
+
+    //Save lastest settings
+    if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false )
+    {
+        funcShowMsgERROR_Timeout("Saving last Snap-settings");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Take Remote Snapshot
+    //-----------------------------------------------------
+    if( !takeRemoteSnapshot(fileName,false) )
+    {
+        funcShowMsgERROR_Timeout("Taking Full Area Snapshot");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    //Start Timer
+    //-----------------------------------------------------
+    int triggeringTime;
+    triggeringTime = ui->slideTriggerTime->value();
+    if( triggeringTime > 0 )
+    {
+        formTimerTxt* timerTxt = new formTimerTxt(this,"Remainning Time to Shoot...",triggeringTime);
+        timerTxt->setModal(true);
+        timerTxt->show();
+        QtDelay(200);
+        timerTxt->startMyTimer(triggeringTime);
+    }
+
+
+
+}
+
+void MainWindow::on_actionSynchronize_triggered()
+{
+
+    //-----------------------------------------------------
+    // Get All New Files
+    //-----------------------------------------------------
+    int status;
+    QString errorTrans, errorDel, tmpLocalPath;
+
+    //Read Sync Destiny Folder
+    QString syncFolder;
+    syncFolder = funcGetSyncFolder();
+
+    //Videos
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_VIDEOS, syncFolder+_PATH_LOCAL_FOLDER_VIDEOS, &errorTrans, &errorDel );
+    if( status == _ERROR )
+    {
+        funcShowMsgERROR_Timeout("Obtaining Videos");
+        return (void)false;
+    }
+
+    //Timelapse
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_TIMELAPSE, syncFolder+_PATH_LOCAL_FOLDER_TIMELAPSE, &errorTrans, &errorDel );
+    if( status == _ERROR )
+    {
+        funcShowMsgERROR_Timeout("Obtaining Timelapse");
+        return (void)false;
+    }
+
+    //Snapshots
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SNAPSHOTS, syncFolder+_PATH_LOCAL_FOLDER_SNAPSHOTS, &errorTrans, &errorDel );
+    if( status == _ERROR )
+    {
+        funcShowMsgERROR_Timeout("Obtaining Snapshots");
+        return (void)false;
+    }
+
+    //Slidelapses
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SLIDELAPSE, syncFolder+_PATH_LOCAL_FOLDER_SLIDELAPSE, &errorTrans, &errorDel );
+    if( status == _ERROR )
+    {
+        funcShowMsgERROR_Timeout("Obtaining Slidelapses");
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Display Result
+    //-----------------------------------------------------
+    if( !errorTrans.isEmpty() || !errorDel.isEmpty() )
+    {
+        QString strDisplayStatus;
+        strDisplayStatus.append("Some Files/Dirs Produced Errors...\n\n\n");
+        strDisplayStatus.append("Transmission: \n\n" + errorTrans);
+        strDisplayStatus.append("Delations: \n\n" + errorDel);
+        funcShowMsgERROR_Timeout(strDisplayStatus);
+    }
+    else
+    {
+        funcShowMsg("SUCCESS","Remote Camera Syncronized Successfully");
+    }
+
+}
+
+
+int MainWindow::funcValidateFileDirNameDuplicated(QString remoteFile, QString localFile)
+{
+    //Check if exists locally
+    if( fileExists(localFile) )
+        return 0;
+
+    //Check if exists remotelly
+    if( funcRaspFileExists( remoteFile.toStdString() ) == 1 )
+        return 0;
+
+    //File does not exists locally or remotelly
+    return 1;
+}
+
+void MainWindow::on_actionSync_Folder_triggered()
+{
+    //--------------------------------------------------
+    // Read Parameter
+    //--------------------------------------------------
+    QString syncFolder;
+    syncFolder = funcGetSyncFolder();
+
+    //--------------------------------------------------
+    // Require Folder Destiny
+    //--------------------------------------------------
+    QString newDir;
+    newDir = funcShowSelDir(syncFolder);
+    if( !newDir.isEmpty() )
+    {
+        saveFile(_PATH_LAST_SYNC_FOLDER,newDir+"/");
+    }
+
+}
+
+QString MainWindow::funcGetSyncFolder()
+{
+    QString tmpParam;
+    if( !readFileParam( _PATH_LAST_SYNC_FOLDER, &tmpParam) )
+    {
+        saveFile(_PATH_LAST_SYNC_FOLDER,_PATH_LOCAL_SYNC_FOLDERS);
+        tmpParam.clear();
+        tmpParam.append(_PATH_LOCAL_SYNC_FOLDERS);
+    }
+    return tmpParam;
+}
+
+
+
+
+
+
+
+
+
+
+
+

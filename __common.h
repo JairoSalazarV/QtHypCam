@@ -171,7 +171,7 @@
     //
     static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
 
-    ;
+    QString funcGetParam(QString field);
 
 
 #endif // __COMMON_H

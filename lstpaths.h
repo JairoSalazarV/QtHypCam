@@ -43,6 +43,7 @@
 
     #define _PATH_LAST_IMG_OPEN                     "./settings/lastPaths/selectImage.hypcam"
     #define _PATH_LAST_IMG_SAVED                    "./settings/lastPaths/savedImage.hypcam"
+    #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"
 
     #define _PATH_NDVI_THRESHOLD                    "./settings/NDVI/threshold.hypcam"
     #define _PATH_NDVI_BRILLIANT                    "./settings/NDVI/brilliant.hypcam"
@@ -100,6 +101,16 @@
     #define _PATH_LAST_SNAPPATH             "lastSnapPath.xml"
 
 
+    #define _PATH_REMOTE_FOLDER_VIDEOS      "./tmpVideos/"
+    #define _PATH_REMOTE_FOLDER_SNAPSHOTS   "./tmpSnapshots/"
+    #define _PATH_REMOTE_FOLDER_TIMELAPSE   "./tmpTimeLapse/"
+    #define _PATH_REMOTE_FOLDER_SLIDELAPSE  "./tmpSlideLapse/"
+
+    #define _PATH_LOCAL_SYNC_FOLDERS        "./SYNC/"
+    #define _PATH_LOCAL_FOLDER_VIDEOS       "tmpVideos/"
+    #define _PATH_LOCAL_FOLDER_SNAPSHOTS    "tmpSnapshots/"
+    #define _PATH_LOCAL_FOLDER_TIMELAPSE    "tmpTimeLapse/"
+    #define _PATH_LOCAL_FOLDER_SLIDELAPSE   "tmpSlideLapse/"
 
 
 
