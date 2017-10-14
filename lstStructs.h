@@ -290,17 +290,19 @@
         int           Sharpness;              // -100 to 100
         int           Contrast;               // -100 to 100
         int           Saturation;             // -100 to 100
-        int           ShutterSpeed;           // microsecs (0 - 3000000)
-        int           SquareShutterSpeed;     // microsecs (0 - 3000000)
+        int           ShutterSpeedMs;         // microsecs (0 - 3000000)
+        int           SquareShutterSpeedMs;   // microsecs (0 - 3000000)
         int           ISO;                    // 100 to 800
         int           ExposureCompensation;   // -10 to 10
-        int           TimelapseMs;            // 100-5000 milliseconds
+        int           TimelapseInterval_ms;   // 100-5000 milliseconds
+        int           TimelapseDurationSecs;  // 2-86400 seconds
+        int           VideoDurationSecs;      // 2-86400 seconds
         u_int8_t      Format;                 // 1->raspicam::RASPICAM_FORMAT_GRAY | 2->raspicam::RASPICAM_FORMAT_YUV420
         u_int8_t      Red;                    // 0 to 8 set the value for the RED component of white balance
         u_int8_t      Green;                  // 0 to 8 set the value for the GREEN component of white balance
         u_int8_t      Preview;                // 0v1: Request a preview
         u_int8_t      OneShot;                // 0: Video streaming | 1:Snapshot
-        u_int8_t      TriggerTime;            // Seconds before to take a photo
+        u_int8_t      TriggeringTimeSecs;     // 0 to 500 Seconds before to take a photo
         u_int8_t      Denoise;                // 0v1: Denoise efx
         u_int8_t      FullPhoto;              // 1: No Cut | 0: Require cut
         u_int8_t      ColorBalance;           // 0v1: ColorBalance efx

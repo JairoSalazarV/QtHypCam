@@ -1,7 +1,10 @@
 #ifndef LSTPATHS_H
 #define LSTPATHS_H
 
-    #define _PATH_SETTINGS                  "./settings/"
+    #define _PATH_SETTINGS_FOLDER           "./settings/"
+
+    #define _PATH_STARTING_SETTINGS         "./XML/settings.xml"
+    #define _PATH_RASPICAM_SETTINGS         "./XML/camPerfils/raspcamSettings.xml"
 
     #define _PATH_LAST_IP                   "./settings/socketIP.hypcam"
     #define _PATH_PORT_TO_CONNECT           "./settings/socketPort.hypcam"
@@ -76,7 +79,7 @@
 
     #define _PATH_REMOTE_SNAPSHOT           "./tmpSnapshots/tmpImg.RGB888"
 
-    #define _PATH_VIDEO_REMOTE_H264         "./tmpSnapVideos/tmpVideo.H264"
+    #define _PATH_VIDEO_REMOTE_H264         "./tmpVideos/tmpVideo.H264"
     #define _PATH_VIDEO_REMOTE_MJPEG        "./tmpSnapVideos/tmpVideo.MJPEG"
 
     #define _PATH_VIDEO                     "./tmpImages/"
@@ -105,12 +108,14 @@
     #define _PATH_REMOTE_FOLDER_SNAPSHOTS   "./tmpSnapshots/"
     #define _PATH_REMOTE_FOLDER_TIMELAPSE   "./tmpTimeLapse/"
     #define _PATH_REMOTE_FOLDER_SLIDELAPSE  "./tmpSlideLapse/"
+    #define _PATH_REMOTE_FOLDER_TEST_SLIDE  "./tmpSlideLapse/tmp/"
 
     #define _PATH_LOCAL_SYNC_FOLDERS        "./SYNC/"
     #define _PATH_LOCAL_FOLDER_VIDEOS       "tmpVideos/"
     #define _PATH_LOCAL_FOLDER_SNAPSHOTS    "tmpSnapshots/"
     #define _PATH_LOCAL_FOLDER_TIMELAPSE    "tmpTimeLapse/"
     #define _PATH_LOCAL_FOLDER_SLIDELAPSE   "tmpSlideLapse/"
+    #define _PATH_LOCAL_FOLDER_TEST_SLIDE   "tmp/"
 
 
 

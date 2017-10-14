@@ -472,6 +472,8 @@ private slots:
 
     void on_pbSnapVid_clicked();
 
+    int funcUpdateImageFromFolder(QString folder , QString fileExtension);
+
     //void on_pbSnapshot_2_clicked();
 
     int rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle );
@@ -486,6 +488,8 @@ private slots:
     void on_pbSaveImage_clicked();
 
     QString funcRemoveImageExtension( QString imgName );
+
+    void funcResetStatusBar();
 
     void on_pbOneShotSnapshot_clicked();
 
@@ -570,6 +574,10 @@ private slots:
     void on_actionSynchronize_triggered();
 
     void on_actionSync_Folder_triggered();
+
+    void funcMainCall_RecordVideo(QString* videoID, bool defaultPath=false);
+
+    void funcMainCall_GetSnapshot();
 
 private:
     Ui::MainWindow *ui;

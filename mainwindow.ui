@@ -357,6 +357,9 @@
          <height>19</height>
         </rect>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;milliseconds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>ms</string>
        </property>
@@ -427,6 +430,9 @@
          <width>41</width>
          <height>19</height>
         </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Seconds&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>secs</string>
@@ -619,6 +625,9 @@
           <height>26</height>
          </rect>
         </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Megapixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
         <property name="text">
          <string>5Mp</string>
         </property>
@@ -631,6 +640,9 @@
           <width>51</width>
           <height>26</height>
          </rect>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Megapixels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>8Mp</string>
@@ -691,8 +703,43 @@
          <height>19</height>
         </rect>
        </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Seconds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>secs</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelSquareShuterSpeed_9">
+       <property name="geometry">
+        <rect>
+         <x>264</x>
+         <y>217</y>
+         <width>41</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Microseconds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Ms</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="labelSquareShuterSpeed_10">
+       <property name="geometry">
+        <rect>
+         <x>264</x>
+         <y>181</y>
+         <width>41</width>
+         <height>19</height>
+        </rect>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Microseconds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Ms</string>
        </property>
       </widget>
      </widget>

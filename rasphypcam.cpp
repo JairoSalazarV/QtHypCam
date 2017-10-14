@@ -319,7 +319,7 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
     }
 
     //Square Shuter speed
-    int shutSpeed = reqImg->raspSett.SquareShutterSpeed;
+    int shutSpeed = reqImg->raspSett.SquareShutterSpeedMs;
     if( (reqImg->squApert && shutSpeed>0))
     {
         ss.str("");
@@ -328,7 +328,7 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
     }
 
     //Diffraction Shuter speed
-    shutSpeed = reqImg->raspSett.ShutterSpeed;
+    shutSpeed = reqImg->raspSett.ShutterSpeedMs;
     if(
         (!reqImg->squApert && shutSpeed>0) ||	//Whe is by parts
         (reqImg->fullFrame  && shutSpeed>0)	//Whe is unique and shutter speed has been setted
@@ -340,10 +340,10 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
     }
 
     //Trigering timer
-    if( reqImg->raspSett.TriggerTime > 0 )
+    if( reqImg->raspSett.TriggeringTimeSecs > 0 )
     {
         ss.str("");
-        ss<<(reqImg->raspSett.TriggerTime*1000);
+        ss<<(reqImg->raspSett.TriggeringTimeSecs*1000);
         tmpCommand->append(" -t " + ss.str());
     }
     else

@@ -291,7 +291,7 @@ bool funcGetCalibration(lstDoubleAxisCalibration *doubAxisCal){
         }
     }
     if(xmlReader->hasError()) {
-        funcShowMsg("settings.xml Parse Error",xmlReader->errorString());
+        funcShowMsg("_PATH_STARTING_SETTINGS Parse Error",xmlReader->errorString());
     }
     xmlReader->clear();
     xmlFile->close();
@@ -778,14 +778,14 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Contrast = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Saturation" )
                 raspcamSettings->Saturation = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="ShutterSpeed" )
-                raspcamSettings->ShutterSpeed = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="SquareShutterSpeed" )
-                raspcamSettings->SquareShutterSpeed = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="TimelapseMs" )
-                raspcamSettings->TimelapseMs = xmlReader->readElementText().toInt(0);
-            //if( xmlReader->name()=="ShutterSpeedSmall" )
-            //    raspcamSettings->ShutterSpeedSmall = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="ShutterSpeedMs" )
+                raspcamSettings->ShutterSpeedMs = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="SquareShutterSpeedMs" )
+                raspcamSettings->SquareShutterSpeedMs = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TimelapseDurationSecs" )
+                raspcamSettings->TimelapseDurationSecs = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TimelapseInterval_ms" )
+                raspcamSettings->TimelapseInterval_ms = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ISO" )
                 raspcamSettings->ISO = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="ExposureCompensation" )
@@ -806,8 +806,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->Preview = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="OneShot" )
                 raspcamSettings->OneShot = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="TriggerTime" )
-                raspcamSettings->TriggerTime = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="TriggeringTimeSecs" )
+                raspcamSettings->TriggeringTimeSecs = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="CameraMp" )
                 raspcamSettings->CameraMp = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Flipped" )
@@ -858,9 +858,9 @@ int connectSocket( structCamSelected *camSelected ){
 
 void funcObtSettings( structSettings *lstSettings ){
 
-    QFile *xmlFile = new QFile("settings.xml");
+    QFile *xmlFile = new QFile(_PATH_STARTING_SETTINGS);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        funcShowMsg("ERROR","Couldn't open settings.xml to load settings for download");
+        funcShowMsg("ERROR","Couldn't open _PATH_STARTING_SETTINGS to load settings for download");
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
 
@@ -884,7 +884,7 @@ void funcObtSettings( structSettings *lstSettings ){
         }
     }
     if(xmlReader->hasError()) {
-        funcShowMsg("settings.xml Parse Error",xmlReader->errorString());
+        funcShowMsg("_PATH_STARTING_SETTINGS Parse Error",xmlReader->errorString());
     }
     xmlReader->clear();
     xmlFile->close();
