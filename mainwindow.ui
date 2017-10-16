@@ -1440,6 +1440,7 @@ QSlider::handle:horizontal {
      <addaction name="actionSlideDiffraction"/>
      <addaction name="actionTimelapse"/>
      <addaction name="actionSlide_Build_Hypercube"/>
+     <addaction name="actionFull_Video"/>
     </widget>
     <widget class="QMenu" name="menuObtain">
      <property name="title">
@@ -2107,6 +2108,15 @@ QSlider::handle:horizontal {
    </property>
    <property name="text">
     <string>Sync Folder</string>
+   </property>
+  </action>
+  <action name="actionFull_Video">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/dragonplayer.png</normaloff>:/new/icons/imagenInte/dragonplayer.png</iconset>
+   </property>
+   <property name="text">
+    <string>Full Video</string>
    </property>
   </action>
  </widget>

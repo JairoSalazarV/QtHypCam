@@ -7538,7 +7538,7 @@ void MainWindow::on_pbTimeLapse_clicked()
 
 }
 
-QString MainWindow::genRemoteVideoCommand(QString remoteVideo)
+QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
 {
     QString tmpCommand;
     tmpCommand.append("raspivid -n -t ");
@@ -7551,7 +7551,7 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo)
     //.................................
     //Diffraction Area ROI
     //.................................
-    if( 1 )
+    if( ROI == true )
     {
         double W, H;
         squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
@@ -7564,24 +7564,40 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo)
         }
         W = (double)aperture->rectW/(double)aperture->canvasW;
         H = (double)aperture->rectH/(double)aperture->canvasH;
+        qDebug() << "W: " << W << " H: " << H;
 
         tmpCommand.append(" -roi ");
         tmpCommand.append(QString::number((double)aperture->rectX/(double)aperture->canvasW)+",");
         tmpCommand.append(QString::number((double)aperture->rectY/(double)aperture->canvasH)+",");
         tmpCommand.append(QString::number(W)+",");
         tmpCommand.append(QString::number(H));
+
+        //.................................
+        //Image Size
+        //.................................
+        camRes          = getCamRes();
+        //Width
+        tmpCommand.append(" -w ");
+        tmpCommand.append(QString::number( aperture->rectW ));
+        //Height
+        tmpCommand.append(" -h ");
+        tmpCommand.append(QString::number( aperture->rectH ));
+    }
+    else
+    {
+        //.................................
+        //Image Size: Full Resolution
+        //.................................
+        camRes          = getCamRes();
+        //Width
+        tmpCommand.append(" -w ");
+        tmpCommand.append(QString::number( camRes->videoW ));
+        //Height
+        tmpCommand.append(" -h ");
+        tmpCommand.append(QString::number( camRes->videoH ));
     }
 
-    //.................................
-    //Image Size
-    //.................................
-    camRes          = getCamRes();
-    //Width
-    tmpCommand.append(" -w ");
-    tmpCommand.append(QString::number( camRes->videoW ));
-    //Height
-    tmpCommand.append(" -h ");
-    tmpCommand.append(QString::number( camRes->videoH ));
+
 
     //.................................
     //Colour balance?
@@ -9097,7 +9113,7 @@ QString MainWindow::funcGetSyncFolder()
 }
 
 
-void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath)
+void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bool ROI)
 {
     bool commandExecuted;
 
@@ -9180,7 +9196,7 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath)
     //-----------------------------------------------------
 
     // Generate Video Command
-    QString getRemVidCommand = genRemoteVideoCommand(*videoID);
+    QString getRemVidCommand = genRemoteVideoCommand(*videoID,ROI);
 
     // Execute Remote Command
     funcRemoteTerminalCommand(
@@ -9304,14 +9320,68 @@ void MainWindow::funcMainCall_GetSnapshot()
     }
 }
 
+void MainWindow::on_actionFull_Video_triggered()
+{
+    bool ok;
+
+    //-----------------------------------------------------
+    // Record Remote Video
+    //-----------------------------------------------------
+    QString videoID;
+    funcMainCall_RecordVideo(&videoID,true,false);
+
+    //-----------------------------------------------------
+    // Obtain Remote Video
+    //-----------------------------------------------------
+    if( obtainFile( _PATH_VIDEO_REMOTE_H264, _PATH_VIDEO_RECEIVED_H264, "Transmitting Remote Video" ) )
+    {
+        QString rmRemVidCommand;
+        rmRemVidCommand.append("rm ");
+        rmRemVidCommand.append(_PATH_VIDEO_REMOTE_H264);
+        funcRemoteTerminalCommand( rmRemVidCommand.toStdString(), camSelected, 0, false, &ok );
+    }
+    else
+    {
+        return (void)false;
+    }
+
+    //-----------------------------------------------------
+    // Extract Frames from Video
+    //-----------------------------------------------------
+
+    //Clear local folder
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    funcClearDirFolder( tmpFramesPath );
+
+    //Extract Frames from Local Video
+    QString locFrameExtrComm;
+    locFrameExtrComm.append("ffmpeg -framerate ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -r ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -i ");
+    locFrameExtrComm.append(_PATH_VIDEO_RECEIVED_H264);
+    locFrameExtrComm.append(" ");
+    locFrameExtrComm.append(tmpFramesPath);
+    locFrameExtrComm.append("%d");
+    locFrameExtrComm.append(_FRAME_EXTENSION);
+    qDebug() << locFrameExtrComm;
+    progBarUpdateLabel("Extracting Frames from Video",0);
+    if( !funcExecuteCommand(locFrameExtrComm) )
+    {
+        funcShowMsg("ERROR","Extracting Frames from Video");
+    }
+    progBarUpdateLabel("",0);
+
+
+    //-----------------------------------------------------
+    // Update mainImage from Frames
+    //-----------------------------------------------------
+    funcUpdateImageFromFolder(tmpFramesPath,_FRAME_EXTENSION);
 
 
 
-
-
-
-
-
-
-
-
+    funcResetStatusBar();
+}

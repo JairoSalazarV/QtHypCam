@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>933</width>
-    <height>370</height>
+    <width>1161</width>
+    <height>435</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,7 +26,7 @@
   <widget class="QPushButton" name="pbApply">
    <property name="geometry">
     <rect>
-     <x>835</x>
+     <x>860</x>
      <y>40</y>
      <width>84</width>
      <height>28</height>
@@ -41,7 +41,7 @@
     <rect>
      <x>120</x>
      <y>10</y>
-     <width>73</width>
+     <width>95</width>
      <height>57</height>
     </rect>
    </property>
@@ -49,7 +49,7 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>Location %</string>
+       <string>Wavelength %</string>
       </property>
      </widget>
     </item>
@@ -71,7 +71,7 @@
   <widget class="QWidget" name="layoutWidget_2">
    <property name="geometry">
     <rect>
-     <x>425</x>
+     <x>450</x>
      <y>10</y>
      <width>145</width>
      <height>57</height>
@@ -157,7 +157,7 @@
   <widget class="QLineEdit" name="txtFolder">
    <property name="geometry">
     <rect>
-     <x>595</x>
+     <x>620</x>
      <y>40</y>
      <width>113</width>
      <height>28</height>
@@ -167,7 +167,7 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>635</x>
+     <x>660</x>
      <y>10</y>
      <width>75</width>
      <height>20</height>
@@ -180,7 +180,7 @@
   <widget class="QPushButton" name="pbFolder">
    <property name="geometry">
     <rect>
-     <x>710</x>
+     <x>735</x>
      <y>40</y>
      <width>31</width>
      <height>28</height>
@@ -197,7 +197,7 @@
   <widget class="QCheckBox" name="cbFlip">
    <property name="geometry">
     <rect>
-     <x>775</x>
+     <x>800</x>
      <y>40</y>
      <width>51</width>
      <height>26</height>
@@ -210,7 +210,7 @@
   <widget class="QWidget" name="layoutWidget_4">
    <property name="geometry">
     <rect>
-     <x>220</x>
+     <x>240</x>
      <y>10</y>
      <width>73</width>
      <height>57</height>
@@ -239,7 +239,7 @@
   <widget class="QWidget" name="layoutWidget_5">
    <property name="geometry">
     <rect>
-     <x>320</x>
+     <x>340</x>
      <y>10</y>
      <width>79</width>
      <height>57</height>

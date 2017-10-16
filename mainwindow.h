@@ -507,7 +507,7 @@ private slots:
 
     void on_pbTimeLapse_clicked();
 
-    QString genRemoteVideoCommand(QString remoteVideo);
+    QString genRemoteVideoCommand(QString remoteVideo, bool ROI=true);
 
     QString genTimelapseCommand(QString folder,bool setROI=true);
 
@@ -575,9 +575,11 @@ private slots:
 
     void on_actionSync_Folder_triggered();
 
-    void funcMainCall_RecordVideo(QString* videoID, bool defaultPath=false);
+    void funcMainCall_RecordVideo(QString* videoID, bool defaultPath=false, bool ROI=true);
 
     void funcMainCall_GetSnapshot();
+
+    void on_actionFull_Video_triggered();
 
 private:
     Ui::MainWindow *ui;
