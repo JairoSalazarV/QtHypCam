@@ -4927,20 +4927,20 @@ cameraResolution* MainWindow::getCamRes()
     {
         //#define _BIG_WIDTH 2592 //2592 | 640 | 320
         //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
-        camRes->width   = 2592;
-        camRes->height  = 1944;
-        camRes->videoW  = 1920; //1920 | 1640
-        camRes->videoH  = 1080; //1080 | 1232
+        camRes->width   = _RASP_CAM_5MP_IMAGE_W;
+        camRes->height  = _RASP_CAM_5MP_IMAGE_H;
+        camRes->videoW  = _RASP_CAM_5MP_VIDEO_W; //1920 | 1640
+        camRes->videoH  = _RASP_CAM_5MP_VIDEO_H; //1080 | 1232
     }
     else
     {
         if( ui->radioRes8Mp->isChecked() )
         {
             //https://www.raspberrypi.org/forums/viewtopic.php?t=145815
-            camRes->width   = 3240;
-            camRes->height  = 2464;
-            camRes->videoW  = 1920; //1920 | 1640
-            camRes->videoH  = 1080; //1080 | 1232
+            camRes->width   = _RASP_CAM_8MP_IMAGE_W;
+            camRes->height  = _RASP_CAM_8MP_IMAGE_H;
+            camRes->videoW  = _RASP_CAM_8MP_VIDEO_W; //1920 | 1640
+            camRes->videoH  = _RASP_CAM_8MP_VIDEO_H; //1080 | 1232
         }
     }
 
