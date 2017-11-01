@@ -13,7 +13,7 @@ class formTimerTxt : public QDialog
     Q_OBJECT
 
 public:
-    explicit formTimerTxt(QWidget *parent = 0, QString text="", int seconds=0);
+    explicit formTimerTxt(QWidget *parent = 0, QString text="", int seconds=0, QColor color=Qt::black );
     ~formTimerTxt();
     void startMyTimer(int seconds=0);
 

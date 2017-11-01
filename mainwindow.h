@@ -581,6 +581,8 @@ private slots:
 
     void on_actionFull_Video_triggered();
 
+    int funcDisplayTimer(QString title, int timeMs, QColor color);
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

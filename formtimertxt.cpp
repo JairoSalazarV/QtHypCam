@@ -5,11 +5,19 @@
 
 #include <QThread>
 
-formTimerTxt::formTimerTxt(QWidget *parent, QString text, int seconds) :
+//QColor timerColor;
+
+formTimerTxt::formTimerTxt(QWidget *parent, QString text, int seconds, QColor color) :
     QDialog(parent),
     ui(new Ui::formTimerTxt)
 {
     ui->setupUi(this);
+
+    //Set timer's color
+    QPalette palette = ui->label->palette();
+    palette.setColor(QPalette::WindowText, color);
+    ui->label->setPalette(palette);
+    ui->label_2->setPalette(palette);
 
     // connect signal/slot
     connect(this, SIGNAL(signalTimerRefresh(int)),
@@ -65,6 +73,7 @@ void formTimerTxt::updateTimer(int s)
     strClock = (s<10)?strClock+"0"+QString::number(s):strClock+QString::number(s);
     //Refresh clock    
     ui->label->setText(strClock);
+    //ui->label->setStyle();
     ui->label->update();    
     this->update();
     //qDebug() << "strClock: " << strClock;

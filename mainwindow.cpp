@@ -3328,7 +3328,7 @@ void MainWindow::on_actionDoubAxisDiff_triggered()
 
 void MainWindow::on_slideTriggerTime_valueChanged(int value)
 {
-    ui->labelTriggerTime->setText( "Trigger at: " + QString::number(value) + "s" );
+    ui->labelTriggerTime->setText( "Trigger at: " + QString::number(value) + " secs" );
 }
 
 void MainWindow::on_actionRotateImg_triggered()
@@ -8973,14 +8973,8 @@ void MainWindow::funcStartRemoteTimelapse( bool setROI )
     //-----------------------------------------------------
     //Start Timer
     //-----------------------------------------------------
-    if( triggeringTime > 0 )
-    {
-        formTimerTxt* timerTxt = new formTimerTxt(this,"Countdown to Recording...",triggeringTime);
-        timerTxt->setModal(true);
-        timerTxt->show();
-        QtDelay(200);
-        timerTxt->startMyTimer(triggeringTime);
-    }
+    funcDisplayTimer("Countdown to Recording...",triggeringTime,Qt::black);
+
 }
 
 void MainWindow::on_actionSnapvideos_triggered()
@@ -9000,14 +8994,13 @@ void MainWindow::on_actionSynchronize_triggered()
     // Get All New Files
     //-----------------------------------------------------
     int status;
-    QString errorTrans, errorDel, tmpLocalPath;
+    QString errorTrans, errorDel, syncLocalFolder;
 
     //Read Sync Destiny Folder
-    QString syncFolder;
-    syncFolder = funcGetSyncFolder();
+    syncLocalFolder = funcGetSyncFolder();
 
     //Videos
-    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_VIDEOS, syncFolder+_PATH_LOCAL_FOLDER_VIDEOS, &errorTrans, &errorDel );
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_VIDEOS, syncLocalFolder+_PATH_LOCAL_FOLDER_VIDEOS, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
         funcShowMsgERROR_Timeout("Obtaining Videos");
@@ -9015,7 +9008,7 @@ void MainWindow::on_actionSynchronize_triggered()
     }
 
     //Timelapse
-    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_TIMELAPSE, syncFolder+_PATH_LOCAL_FOLDER_TIMELAPSE, &errorTrans, &errorDel );
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_TIMELAPSE, syncLocalFolder+_PATH_LOCAL_FOLDER_TIMELAPSE, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
         funcShowMsgERROR_Timeout("Obtaining Timelapse");
@@ -9023,7 +9016,7 @@ void MainWindow::on_actionSynchronize_triggered()
     }
 
     //Snapshots
-    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SNAPSHOTS, syncFolder+_PATH_LOCAL_FOLDER_SNAPSHOTS, &errorTrans, &errorDel );
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SNAPSHOTS, syncLocalFolder+_PATH_LOCAL_FOLDER_SNAPSHOTS, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
         funcShowMsgERROR_Timeout("Obtaining Snapshots");
@@ -9031,7 +9024,7 @@ void MainWindow::on_actionSynchronize_triggered()
     }
 
     //Slidelapses
-    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SLIDELAPSE, syncFolder+_PATH_LOCAL_FOLDER_SLIDELAPSE, &errorTrans, &errorDel );
+    status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SLIDELAPSE, syncLocalFolder+_PATH_LOCAL_FOLDER_SLIDELAPSE, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
         funcShowMsgERROR_Timeout("Obtaining Slidelapses");
@@ -9077,7 +9070,7 @@ int MainWindow::funcValidateFileDirNameDuplicated(QString remoteFile, QString lo
     }
 
     //File does not exists locally or remotelly
-    return 1;
+    return _OK;
 }
 
 void MainWindow::on_actionSync_Folder_triggered()
@@ -9144,17 +9137,21 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
         remoteFile.append(_VIDEO_EXTENSION);
 
         //Local File
-        QString syncFolder;
-        syncFolder = funcGetSyncFolder();
+        QString syncLocalFolder = funcGetSyncFolder();
         localFile.clear();
-        localFile.append(syncFolder);
-        localFile.append(_PATH_LOCAL_FOLDER_VIDEOS);
+        localFile.append(syncLocalFolder);
+        localFile.append(_PATH_REMOTE_FOLDER_VIDEOS);
         localFile.append(videoID);
         localFile.append(_VIDEO_EXTENSION);
 
-        if( !funcValidateFileDirNameDuplicated( remoteFile, localFile ) )
+        //Check if exists
+        int itExists = funcValidateFileDirNameDuplicated( remoteFile, localFile );
+        if( itExists != _OK )
         {
-            funcShowMsgERROR_Timeout("Video-ID Exists: Please, use another");
+            if( itExists == -1 )
+                funcShowMsgERROR_Timeout("Video-ID Exists Locally: Please, use another");
+            else
+                funcShowMsgERROR_Timeout("Video-ID Exists Remotelly: Please, use another");
             return (void)false;
         }
 
@@ -9213,18 +9210,13 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
     }
 
     //-----------------------------------------------------
-    //Start Timer
+    //Display Timer
     //-----------------------------------------------------
-    int triggeringTime;
-    triggeringTime = ui->slideTriggerTime->value();
-    if( triggeringTime > 0 )
-    {
-        formTimerTxt* timerTxt = new formTimerTxt(this,"Countdown to Recording...",triggeringTime);
-        timerTxt->setModal(true);
-        timerTxt->show();
-        QtDelay(200);
-        timerTxt->startMyTimer(triggeringTime);
-    }
+    //Before to Start Recording
+    funcDisplayTimer("Countdown to Recording...",ui->slideTriggerTime->value(),Qt::black);
+
+    //During Recording
+    funcDisplayTimer("Recording...",ui->spinBoxVideoDuration->value(),Qt::red);
 }
 
 void MainWindow::funcMainCall_GetSnapshot()
@@ -9384,4 +9376,18 @@ void MainWindow::on_actionFull_Video_triggered()
 
 
     funcResetStatusBar();
+}
+
+
+int MainWindow::funcDisplayTimer(QString title, int timeMs, QColor color)
+{
+    if( timeMs > 0 )
+    {
+        formTimerTxt* timerTxt = new formTimerTxt(this,title,timeMs,color);
+        timerTxt->setModal(true);
+        timerTxt->show();
+        QtDelay(200);
+        timerTxt->startMyTimer(timeMs);
+    }
+    return 1;
 }

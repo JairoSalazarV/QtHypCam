@@ -68,7 +68,8 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //Gel List of Files in Directory Selected
     //......................................................
     QString workDir = ui->txtFolder->text();
-    QList<QFileInfo> lstFiles = funcListFilesInDir( workDir, _FRAME_RECEIVED_EXTENSION );
+    qDebug() << "workDir: " << workDir;
+    QList<QFileInfo> lstFiles = funcListFilesInDir( workDir, _FRAME_EXTENSION );
     //qDebug() << "lstFiles: " << lstFiles.length();
     if(lstFiles.size()==0)
     {

@@ -1378,6 +1378,8 @@ QList<QFileInfo> funcListFilesInDir(QString Dir)
 
 QList<QFileInfo> funcListFilesInDir(QString Dir, QString Suffix)
 {
+    Suffix = Suffix.replace(".","");
+
     //Only add files with suffix provided
     QList<QFileInfo> lstFiles;
     QDir dir(Dir);
