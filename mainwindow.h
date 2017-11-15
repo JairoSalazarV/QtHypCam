@@ -487,8 +487,6 @@ private slots:
 
     void on_pbSaveImage_clicked();
 
-    QString funcRemoveImageExtension( QString imgName );
-
     void funcResetStatusBar();
 
     void on_pbOneShotSnapshot_clicked();
@@ -582,6 +580,15 @@ private slots:
     void on_actionFull_Video_triggered();
 
     int funcDisplayTimer(QString title, int timeMs, QColor color);
+
+    void on_actionMultiImageAverage_triggered();
+
+    int func_MultiImageMerge( QString type );
+
+
+    void on_actionMultiImageMinimum_triggered();
+
+    void on_actionMultiImageMaximum_triggered();
 
 private:
     Ui::MainWindow *ui;

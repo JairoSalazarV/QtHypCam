@@ -30,6 +30,9 @@
 
 #include <QInputDialog>
 
+#include <QFileDialog>
+#include <QImage>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -931,6 +934,126 @@ QString funcShowSelDir(QString path)
                                                  QFileDialog::ShowDirsOnly
                                                  | QFileDialog::DontResolveSymlinks);
     return dir;
+}
+
+int func_getFilenameFromUser(QString* fileName, QWidget* parent)
+{
+    //
+    //Read the filename
+    //
+    QString lastPath = readFileParam(_PATH_LAST_IMG_SAVED);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = "./snapshots/";
+    }
+    *fileName = QFileDialog::getSaveFileName(
+                                                parent,
+                                                "Save Snapshot as...",
+                                                lastPath,
+                                                "Documents (*.png)"
+                                            );
+    if( fileName->isEmpty() )
+    {
+        qDebug() << "Filename not typed";
+        return _ERROR;
+    }
+    else
+    {
+        lastPath = funcRemoveFileNameFromPath(*fileName);
+        saveFile(_PATH_LAST_IMG_SAVED,lastPath);
+    }
+
+    //
+    //Validate filename
+    //
+    *fileName = funcRemoveImageExtension(*fileName);
+
+    return _OK;
+}
+
+QString funcRemoveImageExtension( QString imgName )
+{
+    imgName.replace(".png","");
+    imgName.replace(".PNG","");
+
+    imgName.replace(".jpg","");
+    imgName.replace(".JPG","");
+
+    imgName.replace(".jpeg","");
+    imgName.replace(".JPEG","");
+
+    imgName.replace(".gif","");
+    imgName.replace(".GIF","");
+
+    imgName.replace(".rgb888","");
+    imgName.replace(".RGB888","");
+
+    imgName.replace(".bmp","");
+    imgName.replace(".BMP","");
+
+    imgName.append( _FRAME_EXTENSION );
+
+    return imgName;
+
+}
+
+int func_MergeImages(QImage* source, QImage* destine, QString type)
+{
+    if( source->width() != destine->width() || source->height() != destine->height() )
+    {
+        qDebug() << "Image Dimensions Mismatch";
+        return _ERROR;
+    }
+    int x, y, r, g, b;
+    for( x=0; x<source->width(); x++ )
+    {
+        for( y=0; y<source->height(); y++ )
+        {
+            if( type == "Average" )
+            {
+                r = round( (float)( qRed(source->pixel( x, y ))   + qRed(destine->pixel( x, y )) ) / 2.0 );
+                g = round( (float)( qGreen(source->pixel( x, y )) + qGreen(destine->pixel( x, y )) ) / 2.0 );
+                b = round( (float)( qBlue(source->pixel( x, y ))  + qBlue(destine->pixel( x, y )) ) / 2.0 );
+            }
+            if( type == "Maximum" )
+            {
+                r = MAX( qRed(source->pixel( x, y )),   qRed(destine->pixel( x, y )) );
+                g = MAX( qGreen(source->pixel( x, y )), qGreen(destine->pixel( x, y )) );
+                b = MAX( qBlue(source->pixel( x, y )),  qBlue(destine->pixel( x, y )) );
+            }
+            if( type == "Minimum" )
+            {
+                r = MIN( qRed(source->pixel( x, y )),   qRed(destine->pixel( x, y )) );
+                g = MIN( qGreen(source->pixel( x, y )), qGreen(destine->pixel( x, y )) );
+                b = MIN( qBlue(source->pixel( x, y )),  qBlue(destine->pixel( x, y )) );
+            }
+            destine->setPixel( x, y, qRgb(r,g,b) );
+        }
+    }
+    return _OK;
+}
+
+int func_getMultiImages(QStringList* fileNames, QWidget* parent)
+{
+    //Get last path
+    QString lastPath = readFileParam(_PATH_LAST_IMG_SAVED);
+    if( lastPath.isEmpty() )lastPath = "./snapshots/";
+
+    //Get lst Images
+    QFileDialog dialog(parent);
+    dialog.setDirectory(lastPath);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    dialog.setNameFilter("Images (*.png *.RGB888)");
+    dialog.setFileMode(QFileDialog::ExistingFiles);
+    int dialogCode;
+    dialogCode = dialog.exec();
+    if( dialogCode )
+        *fileNames = dialog.selectedFiles();
+    if( dialogCode == QDialog::Accepted )
+        return _OK;
+
+    //Default
+    return _FAILURE;
 }
 
 void funcShowFileError(int error, QString fileName){

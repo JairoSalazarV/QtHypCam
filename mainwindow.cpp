@@ -6766,32 +6766,6 @@ void MainWindow::on_pbSaveImage_clicked()
 
 }
 
-QString MainWindow::funcRemoveImageExtension( QString imgName )
-{
-    imgName.replace(".png","");
-    imgName.replace(".PNG","");
-
-    imgName.replace(".jpg","");
-    imgName.replace(".JPG","");
-
-    imgName.replace(".jpeg","");
-    imgName.replace(".JPEG","");
-
-    imgName.replace(".gif","");
-    imgName.replace(".GIF","");
-
-    imgName.replace(".rgb888","");
-    imgName.replace(".RGB888","");
-
-    imgName.replace(".bmp","");
-    imgName.replace(".BMP","");
-
-    imgName.append( _FRAME_EXTENSION );
-
-    return imgName;
-
-}
-
 void MainWindow::on_pbOneShotSnapshot_clicked()
 {
     mouseCursorWait();    
@@ -9390,4 +9364,68 @@ int MainWindow::funcDisplayTimer(QString title, int timeMs, QColor color)
         timerTxt->startMyTimer(timeMs);
     }
     return 1;
+}
+
+int MainWindow::func_MultiImageMerge( QString type )
+{
+    mouseCursorWait();
+
+    QStringList lstImages;
+    if( func_getMultiImages(&lstImages, this) == _OK && lstImages.size() < 2 )
+    {
+        funcShowMsgERROR_Timeout("Insufficient Selected Images",2000);
+        mouseCursorReset();
+        return _ERROR;
+    }
+    else
+    {
+        QImage imgDestine(lstImages.first());
+        lstImages.removeFirst();
+
+        //Merge Images
+        while( !lstImages.isEmpty() )
+        {
+            QImage imgSource(lstImages.first());
+            lstImages.removeFirst();
+            if( func_MergeImages(&imgSource,&imgDestine,type) == _ERROR )
+            {
+                mouseCursorReset();
+                return _ERROR;
+            }
+        }
+        //Get Filename
+        mouseCursorReset();
+        QString fileName;
+        if( func_getFilenameFromUser(&fileName, this) == _OK )
+        {
+            mouseCursorWait();
+            imgDestine.save(fileName);
+            mouseCursorReset();
+        }
+        return _OK;
+    }
+}
+
+void MainWindow::on_actionMultiImageAverage_triggered()
+{
+    if( func_MultiImageMerge("Average") == _ERROR )
+    {
+        funcShowMsgERROR("Merging Images");
+    }
+}
+
+void MainWindow::on_actionMultiImageMinimum_triggered()
+{
+    if( func_MultiImageMerge("Minimum") == _ERROR )
+    {
+        funcShowMsgERROR("Merging Images");
+    }
+}
+
+void MainWindow::on_actionMultiImageMaximum_triggered()
+{
+    if( func_MultiImageMerge("Maximum") == _ERROR )
+    {
+        funcShowMsgERROR("Merging Images");
+    }
 }

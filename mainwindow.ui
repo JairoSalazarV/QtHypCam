@@ -1403,7 +1403,22 @@ QSlider::handle:horizontal {
      </property>
      <addaction name="actionBilinear_interpolation"/>
     </widget>
+    <widget class="QMenu" name="menuMultiselected">
+     <property name="title">
+      <string>Multiselected</string>
+     </property>
+     <widget class="QMenu" name="menuMerge">
+      <property name="title">
+       <string>Merge</string>
+      </property>
+      <addaction name="actionMultiImageAverage"/>
+      <addaction name="actionMultiImageMinimum"/>
+      <addaction name="actionMultiImageMaximum"/>
+     </widget>
+     <addaction name="menuMerge"/>
+    </widget>
     <addaction name="menuFilter"/>
+    <addaction name="menuMultiselected"/>
    </widget>
    <widget class="QMenu" name="menuAnalysis">
     <property name="title">
@@ -2117,6 +2132,21 @@ QSlider::handle:horizontal {
    </property>
    <property name="text">
     <string>Full Video</string>
+   </property>
+  </action>
+  <action name="actionMultiImageAverage">
+   <property name="text">
+    <string>Average</string>
+   </property>
+  </action>
+  <action name="actionMultiImageMinimum">
+   <property name="text">
+    <string>Minimum</string>
+   </property>
+  </action>
+  <action name="actionMultiImageMaximum">
+   <property name="text">
+    <string>Maximum</string>
    </property>
   </action>
  </widget>

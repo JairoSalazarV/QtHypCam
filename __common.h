@@ -1,6 +1,9 @@
 #ifndef __COMMON_H
 #define __COMMON_H
 
+    //#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+    //#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
     #include "lstStructs.h"
     #include "lstfilenames.h"
 
@@ -39,6 +42,14 @@
 
     int funcShowSelDir(QString startedPath, QString* dirSelected);
     QString funcShowSelDir(QString path);
+
+    int func_getFilenameFromUser(QString* fileName, QWidget *parent);
+
+    QString funcRemoveImageExtension( QString imgName );
+
+    int func_MergeImages(QImage* source, QImage* destine, QString type);
+
+    int func_getMultiImages(QStringList *fileNames, QWidget* parent);
 
     void funcShowFileError(int error, QString fileName);
 
