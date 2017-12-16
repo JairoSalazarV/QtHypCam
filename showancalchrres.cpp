@@ -1,5 +1,5 @@
 #include "showancalchrres.h"
-#include "ui_showancalchrres.h"
+#include <ui_showancalchrres.h>
 #include <customline.h>
 #include <QPen>
 #include <__common.h>
@@ -124,6 +124,9 @@ void showAnCalChrRes::updColSenVert(){
     maxR = 0;
     maxG = 0;
     maxB = 0;
+    yR   = 0;
+    yG   = 0;
+    yB   = 0;
     QRgb pixel;
     for(r=0;r<tmpImg.height();r++){
         Red[r]   = 0;
@@ -245,6 +248,9 @@ void showAnCalChrRes::updColSenHoriz(){
     maxR = 0;
     maxG = 0;
     maxB = 0;
+    xR   = 0;
+    xG   = 0;
+    xB   = 0;
     QRgb pixel;
     for(c=0;c<tmpImg.width();c++){
         Red[c]   = 0;

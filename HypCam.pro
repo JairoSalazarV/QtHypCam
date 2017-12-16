@@ -24,7 +24,6 @@ SOURCES += main.cpp\
     customline.cpp \
     selcolor.cpp \
     customrect.cpp \
-    showancalchrres.cpp \
     gencalibxml.cpp \
     rotationfrm.cpp \
     recparamfrm.cpp \
@@ -42,7 +41,8 @@ SOURCES += main.cpp\
     formndvisettings.cpp \
     formobtainfolder.cpp \
     formbuildslidehypecubepreview.cpp \
-    formtimertxt.cpp
+    formtimertxt.cpp \
+    showancalchrres.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -52,7 +52,6 @@ HEADERS  += mainwindow.h \
     customline.h \
     selcolor.h \
     customrect.h \
-    showancalchrres.h \
     gencalibxml.h \
     rotationfrm.h \
     recparamfrm.h \
@@ -73,8 +72,10 @@ HEADERS  += mainwindow.h \
     formsquareaperturesettings.h \
     formndvisettings.h \
     formobtainfolder.h \
-    formbuildslidehypecubepreview.h \
-    formtimertxt.h
+    formbuildslidehypecubepreview.h \    
+    formtimertxt.h \
+    showancalchrres.h \
+    ui_showancalchrres.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
