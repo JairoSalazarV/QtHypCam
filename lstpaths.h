@@ -16,6 +16,8 @@
     #define _PATH_LAST_LOCAL_FOLDER         "./settings/lastLocalFolder.hypcam"
     #define _PATH_LAST_LOCAL_FILE           "./settings/lastLocalFile.hypcam"
 
+    #define _PATH_REMOTE_TMPSETTINGS        "./tmpSettings/slideSettings.hypcam"
+
     #define _PATH_LAST_SLIDE_FRAMES_4CUBE   "./settings/lastSlideFrames.hypcam"
 
 

@@ -7354,6 +7354,7 @@ void MainWindow::on_actionframesToCube_triggered()
             }
         }
     }
+    tmpPixelRight = tmpPixelRight;
 
     //.......................................
     //Exports layers in the cube created
@@ -8860,6 +8861,17 @@ void MainWindow::funcShowMsgERROR_Timeout(QString msg, int ms)
     msgBox->exec();
 }
 
+void MainWindow::funcShowMsgSUCCESS_Timeout(QString msg, int ms)
+{
+    QMessageBox *msgBox         = new QMessageBox(QMessageBox::Warning,"SUCCESS",msg,NULL);
+    QTimer *msgBoxCloseTimer    = new QTimer(this);
+    msgBoxCloseTimer->setInterval(ms);
+    msgBoxCloseTimer->setSingleShot(true);
+    connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject()));
+    msgBoxCloseTimer->start();
+    msgBox->exec();
+}
+
 void MainWindow::funcStartRemoteTimelapse( bool setROI )
 {
     //---------------------------------------------------
@@ -9428,4 +9440,40 @@ void MainWindow::on_actionMultiImageMaximum_triggered()
     {
         funcShowMsgERROR("Merging Images");
     }
+}
+
+void MainWindow::on_actionSlide_Settings_triggered()
+{
+    //Get Slide Area
+    squareAperture *tmpArea = (squareAperture*)malloc(sizeof(squareAperture));
+    memset(tmpArea,'\0',sizeof(squareAperture));
+    if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, tmpArea ) )
+    {
+        funcShowMsgERROR_Timeout("Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
+    }
+
+    //Create File-Contain
+    QString fileContain;
+    fileContain.append("echo 'slideBeta1.0,");
+    fileContain.append(QString::number(tmpArea->canvasW)+",");
+    fileContain.append(QString::number(tmpArea->canvasH)+",");
+    fileContain.append(QString::number(tmpArea->rectW)+",");
+    fileContain.append(QString::number(tmpArea->rectH)+",");
+    fileContain.append(QString::number(tmpArea->rectX)+",");
+    fileContain.append(QString::number(tmpArea->rectY));
+    fileContain.append("' > ");
+    fileContain.append(_PATH_REMOTE_TMPSETTINGS);
+
+    //Excecute Remote Command
+    bool ok;
+    funcRemoteTerminalCommand( fileContain.toStdString(), camSelected, 0, false, &ok );
+    if(ok==true)
+        funcShowMsgSUCCESS_Timeout("Settings Send");
+    else
+        funcShowMsgERROR_Timeout("Sending Settings");
+
+
+
+
+
 }

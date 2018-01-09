@@ -1466,11 +1466,19 @@ QSlider::handle:horizontal {
      <addaction name="actionObtain_Folder"/>
      <addaction name="actionObtain_File"/>
     </widget>
+    <widget class="QMenu" name="menuSend">
+     <property name="title">
+      <string>Send</string>
+     </property>
+     <addaction name="actionSlide_Settings"/>
+     <addaction name="actionSquare_Location"/>
+    </widget>
     <addaction name="actionFull_photo"/>
     <addaction name="menuDouble_Axis"/>
     <addaction name="menuSlide"/>
     <addaction name="actionVideo"/>
     <addaction name="menuObtain"/>
+    <addaction name="menuSend"/>
     <addaction name="separator"/>
     <addaction name="actionSave"/>
    </widget>
@@ -2147,6 +2155,16 @@ QSlider::handle:horizontal {
   <action name="actionMultiImageMaximum">
    <property name="text">
     <string>Maximum</string>
+   </property>
+  </action>
+  <action name="actionSlide_Settings">
+   <property name="text">
+    <string>Slide Location</string>
+   </property>
+  </action>
+  <action name="actionSquare_Location">
+   <property name="text">
+    <string>Square Location</string>
    </property>
   </action>
  </widget>

@@ -67,7 +67,7 @@ public slots:
 
     void funcLoadImageIntoGaphView( QGraphicsView* canvas, QString filePath );
 
-    std::__cxx11::string funcRemoteTerminalCommand(
+    std::string funcRemoteTerminalCommand(
                                                     std::string command,
                                                     structCamSelected *camSelected,
                                                     int trigeredTime,
@@ -555,6 +555,8 @@ private slots:
 
     void funcShowMsgERROR_Timeout(QString msg, int ms=3000);
 
+    void funcShowMsgSUCCESS_Timeout(QString msg, int ms=3000);
+
     void funcStartRemoteTimelapse( bool setROI=false );
 
     int funcValidateFileDirNameDuplicated(QString remoteFile, QString localFile);
@@ -589,6 +591,9 @@ private slots:
     void on_actionMultiImageMinimum_triggered();
 
     void on_actionMultiImageMaximum_triggered();
+
+
+    void on_actionSlide_Settings_triggered();
 
 private:
     Ui::MainWindow *ui;
