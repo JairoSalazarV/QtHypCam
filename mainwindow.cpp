@@ -9445,22 +9445,19 @@ void MainWindow::on_actionMultiImageMaximum_triggered()
 void MainWindow::on_actionSlide_Settings_triggered()
 {
     //Get Slide Area
-    squareAperture *tmpArea = (squareAperture*)malloc(sizeof(squareAperture));
-    memset(tmpArea,'\0',sizeof(squareAperture));
-    if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, tmpArea ) )
+    QString slideArea;
+    slideArea = readAllFile(_PATH_SLIDE_DIFFRACTION);
+    if( slideArea == _ERROR_FILE_NOTEXISTS || slideArea == _ERROR_FILE )
     {
-        funcShowMsgERROR_Timeout("Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
+        funcShowMsgERROR_Timeout(slideArea);
+        return (void)false;
     }
+
 
     //Create File-Contain
     QString fileContain;
-    fileContain.append("echo 'slideBeta1.0,");
-    fileContain.append(QString::number(tmpArea->canvasW)+",");
-    fileContain.append(QString::number(tmpArea->canvasH)+",");
-    fileContain.append(QString::number(tmpArea->rectW)+",");
-    fileContain.append(QString::number(tmpArea->rectH)+",");
-    fileContain.append(QString::number(tmpArea->rectX)+",");
-    fileContain.append(QString::number(tmpArea->rectY));
+    fileContain.append("echo '");
+    fileContain.append(slideArea);
     fileContain.append("' > ");
     fileContain.append(_PATH_REMOTE_TMPSETTINGS);
 

@@ -78,6 +78,7 @@ public slots:
     QImage obtainFile( std::string fileToObtain, QString txtBar );
 
 
+
 private slots:    
 
     void funcEndRect(QMouseEvent *e, GraphicsView *tmpCanvas);
