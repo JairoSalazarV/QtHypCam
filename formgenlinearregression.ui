@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>formGenLinearRegression</class>
+ <widget class="QDialog" name="formGenLinearRegression">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>365</width>
+    <height>387</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Generate Linear Regression</string>
+  </property>
+  <widget class="QPushButton" name="pbSelectFile">
+   <property name="geometry">
+    <rect>
+     <x>114</x>
+     <y>60</y>
+     <width>31</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="spinWavelen">
+   <property name="geometry">
+    <rect>
+     <x>114</x>
+     <y>16</y>
+     <width>121</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="maximum">
+    <double>2400.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Wavelength</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>64</y>
+     <width>91</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Centroid</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableLstPoints">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>120</y>
+     <width>321</width>
+     <height>211</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>Wavelength</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>X</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Y</string>
+    </property>
+   </column>
+  </widget>
+  <widget class="QPushButton" name="pbRemoveItem">
+   <property name="geometry">
+    <rect>
+     <x>310</x>
+     <y>340</y>
+     <width>31</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Remove Item&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/stop.svg</normaloff>:/new/icons/imagenInte/stop.svg</iconset>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbGenRegression">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>340</y>
+     <width>161</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Generate Regression</string>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="lstImgs.qrc"/>
+ </resources>
+ <connections/>
+</ui>

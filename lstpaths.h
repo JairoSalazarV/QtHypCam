@@ -31,6 +31,9 @@
     #define _PATH_CALIB_IMAGES              "./settings/Calib/images/"
     #define _PATH_CALIB_RESPONSES           "./settings/Calib/responses/"
 
+    #define _PATH_CALIB_LR                  "./settings/Calib/LR.hypcam"
+    #define _PATH_CALIB_LR_TMP_ORIGIN       "./settings/Calib/diffractionOrigin.hypcam"
+
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
 

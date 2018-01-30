@@ -42,7 +42,8 @@ SOURCES += main.cpp\
     formobtainfolder.cpp \
     formbuildslidehypecubepreview.cpp \
     formtimertxt.cpp \
-    showancalchrres.cpp
+    showancalchrres.cpp \
+    formgenlinearregression.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -75,7 +76,8 @@ HEADERS  += mainwindow.h \
     formbuildslidehypecubepreview.h \    
     formtimertxt.h \
     showancalchrres.h \
-    ui_showancalchrres.h
+    ui_showancalchrres.h \
+    formgenlinearregression.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -91,7 +93,8 @@ FORMS    += mainwindow.ui \
     formndvisettings.ui \
     formobtainfolder.ui \
     formbuildslidehypecubepreview.ui \
-    formtimertxt.ui
+    formtimertxt.ui \
+    formgenlinearregression.ui
 
 RESOURCES += \
     lstImgs.qrc

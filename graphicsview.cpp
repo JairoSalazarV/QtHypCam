@@ -47,6 +47,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
             if( request->text()=="Slide Display Wavelength" )
                 funcDisplayWavelength(e);
 
+            if( request->text()=="Display Wavelength" )
+                funcDiffractionDisplayWavelength(e);
+
             //if(request->text()=="By wavelenght")
                 //funcTestCalibration();
 
@@ -275,6 +278,19 @@ void GraphicsView::enableScrolls(){
 
 void GraphicsView::funcDisplayPixelProperties(QMouseEvent *e)
 {
+    //Translate to Real Coordinates
+    int w, h, W, H;
+    QPixmap tmpPix(_PATH_DISPLAY_IMAGE);
+    W = tmpPix.width();
+    H = tmpPix.height();
+    w = this->width();
+    h = this->height();
+
+    double tmpPos[2];
+    tmpPos[0] = round( ((float)W/(float)w)*e->x() );
+    tmpPos[1] = round( ((float)H/(float)h)*e->y() );
+
+
     //Get the position clicked into scene
     //..
     QString tmpProp;
@@ -283,7 +299,8 @@ void GraphicsView::funcDisplayPixelProperties(QMouseEvent *e)
     tmpProp.append("CanvasH: "+QString::number(this->scene()->height())+"\n");
     tmpProp.append("x: "+QString::number(tmpPoint.x())+"\n");
     tmpProp.append("y: "+QString::number(tmpPoint.y())+"\n");
-    //Show point
+    tmpProp.append("X: "+QString::number(tmpPos[0])+"\n");
+    tmpProp.append("Y: "+QString::number(tmpPos[1])+"\n");
     funcShowMsg("Pixel properties", tmpProp);
 }
 
@@ -341,6 +358,55 @@ void GraphicsView::funcDisplayWavelength(QMouseEvent *e)
 
 }
 
+void GraphicsView::funcDiffractionDisplayWavelength(QMouseEvent *e)
+{
+    //Extract Linear Regression
+    QString LR_Contain;
+    LR_Contain = readAllFile( _PATH_CALIB_LR ); // dist2Wave | wave2Dist
+    QList<QString> LR;
+    LR = LR_Contain.split(",");
+    linearRegresion LR_Dist2Wavelen;
+    LR_Dist2Wavelen.a = LR.at(0).toDouble(0);
+    LR_Dist2Wavelen.b = LR.at(1).toDouble(0);
+
+    //Extract Origin
+    QString LR_Origin_Path, LR_Origin_Contain;
+    LR_Origin_Path    = readAllFile( _PATH_CALIB_LR_TMP_ORIGIN );
+    LR_Origin_Contain = readAllFile( LR_Origin_Path.trimmed() );
+    QList<QString> LR_Origin;
+    LR_Origin = LR_Origin_Contain.trimmed().split(",");
+    double tmpOrigin[2];
+    tmpOrigin[0] = LR_Origin.at(0).toDouble(0);
+    tmpOrigin[1] = LR_Origin.at(1).toDouble(0);
+
+    //Translate to Real Coordinates
+    int w, h, W, H;
+    QPixmap tmpPix(_PATH_DISPLAY_IMAGE);
+    W = tmpPix.width();
+    H = tmpPix.height();
+    w = this->width();
+    h = this->height();
+
+    double tmpPoint[2];
+    tmpPoint[0] = round( ((float)W/(float)w)*e->x() );
+    tmpPoint[1] = round( ((float)H/(float)h)*e->y() );
+
+    //funcShowMsg("Origin: "+QString::number(tmpOrigin[0])+","+QString::number(tmpOrigin[1]),"Point: "+QString::number(tmpPoint[0])+","+QString::number(tmpPoint[1]));
+
+    //Calc Distance
+    double distance;
+    distance = sqrt( pow( (tmpOrigin[0]-tmpPoint[0])+(tmpOrigin[1]-tmpPoint[1]),2.0) );
+
+    //Calc Wavelength
+    double wavelength;
+    wavelength = LR_Dist2Wavelen.a + (distance * LR_Dist2Wavelen.b);
+
+    //Display Wavelength
+    funcShowMsg("Wavelength","Distance: "+QString::number(distance) + " -> " + QString::number(wavelength)+"nm");
+
+}
+
+
 /*
 void GraphicsView::funcTestCalibration()
 {
@@ -393,6 +459,13 @@ QAction *GraphicsView::showContextMenuLine(QPoint pos){
     xmenu->addSeparator();
     QMenu* submenuSlide = xmenu->addMenu( "Slide" );
     submenuSlide->addAction( "Slide Display Wavelength" );
+
+    //..........................................
+    //Diffraction
+    //..........................................
+    xmenu->addSeparator();
+    QMenu* submenuDiffraction = xmenu->addMenu( "Diffraction" );
+    submenuDiffraction->addAction( "Display Wavelength" );
 
 
 

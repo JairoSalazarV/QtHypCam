@@ -31,7 +31,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -1433,8 +1433,15 @@ QSlider::handle:horizontal {
     <property name="title">
      <string>Settings</string>
     </property>
+    <widget class="QMenu" name="menuSet">
+     <property name="title">
+      <string>Set</string>
+     </property>
+     <addaction name="actionDiffraction_Origin"/>
+    </widget>
     <addaction name="actionNDVI_Algorithm"/>
     <addaction name="actionSync_Folder"/>
+    <addaction name="menuSet"/>
    </widget>
    <widget class="QMenu" name="menuCamera">
     <property name="title">
@@ -1500,9 +1507,16 @@ QSlider::handle:horizontal {
     <addaction name="actionAbout_this"/>
     <addaction name="actionTechnical_Support"/>
    </widget>
+   <widget class="QMenu" name="menuMake">
+    <property name="title">
+     <string>Make</string>
+    </property>
+    <addaction name="actionLinear_Regression"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
    <addaction name="menuAnalysis"/>
+   <addaction name="menuMake"/>
    <addaction name="menuSettings"/>
    <addaction name="menuCamera"/>
    <addaction name="menuStart"/>
@@ -2165,6 +2179,16 @@ QSlider::handle:horizontal {
   <action name="actionSquare_Location">
    <property name="text">
     <string>Square Location</string>
+   </property>
+  </action>
+  <action name="actionLinear_Regression">
+   <property name="text">
+    <string>Linear Regression</string>
+   </property>
+  </action>
+  <action name="actionDiffraction_Origin">
+   <property name="text">
+    <string>Diffraction Origin</string>
    </property>
   </action>
  </widget>

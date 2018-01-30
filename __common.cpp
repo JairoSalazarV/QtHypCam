@@ -950,7 +950,7 @@ int func_getFilenameFromUser(QString* fileName, QWidget* parent)
                                                 parent,
                                                 "Save Snapshot as...",
                                                 lastPath,
-                                                "Documents (*.png)"
+                                                "Documents (*.*)"
                                             );
     if( fileName->isEmpty() )
     {
@@ -1288,13 +1288,14 @@ linearRegresion funcLinearRegression( double *X, double *Y, int numItems ){
     linReg.b   = aux1 / aux2;
     linReg.a   = mY-(linReg.b*mX);
 
-    //printf("linReg->b: %lf \n",linReg->b);
+    //printf("linReg->b: %lf \n",linReg.b);
+    //printf("linReg->a: %lf \n",linReg.a);
     //printf("aux1: %lf \n",aux1);
     //printf("aux2: %lf \n",aux2);
     //printf("mX: %lf \n",mX);
     //printf("mY: %lf \n",mY);
 
-    //
+
     return linReg;
 }
 

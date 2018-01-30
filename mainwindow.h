@@ -596,6 +596,10 @@ private slots:
 
     void on_actionSlide_Settings_triggered();
 
+    void on_actionLinear_Regression_triggered();
+
+    void on_actionDiffraction_Origin_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

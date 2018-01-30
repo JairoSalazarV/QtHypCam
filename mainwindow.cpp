@@ -138,6 +138,9 @@
 #include <formtimertxt.h>
 #include <QMessageBox>
 
+
+#include <formgenlinearregression.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -3404,11 +3407,11 @@ void MainWindow::on_actionLoadCanvas_triggered()
     //Select image
     //..
     auxQstring = QFileDialog::getOpenFileName(
-                                                        this,
-                                                        tr("Select image..."),
-                                                        lastPath,
-                                                        "(*.ppm *.RGB888 *.tif *.png *.jpg *.jpeg *.JPEG *.JPG *.bmp);;"
-                                                     );
+                                                this,
+                                                tr("Select image..."),
+                                                lastPath,
+                                                "(*.ppm *.RGB888 *.tif *.png *.jpg *.jpeg *.JPEG *.JPG *.bmp);;"
+                                             );
     if( auxQstring.isEmpty() )
     {
         return (void)NULL;
@@ -5944,27 +5947,7 @@ void MainWindow::on_pbShutdown_clicked()
     ui->pbShutdown->setEnabled(false);
 
 
-    /*
-    //Receibing ack with file len
-    unsigned int fileLen;
-    unsigned char bufferRead[frameBodyLen];
-    n = read(sockfd,bufferRead,frameBodyLen);
-    memcpy(&fileLen,&bufferRead,sizeof(unsigned int));
-    fileLen = (fileLen<frameBodyLen)?frameBodyLen:fileLen;
-    qDebug() << "fileLen: " << fileLen;
-    //funcShowMsg("FileLen n("+QString::number(n)+")",QString::number(fileLen));
 
-    //Receive File
-    unsigned char tmpFile[fileLen];
-    funcReceiveFile( sockfd, fileLen, bufferRead, tmpFile );
-    qDebug() <<tmpFile;
-    ::close(sockfd);
-
-    //Show command result
-    std::string tmpTxt((char*)tmpFile);
-    qDebug() << "Get: " << (char*)tmpFile;
-    ui->txtCommRes->setText( QString(tmpTxt.c_str()) ) ;
-    */
 }
 
 void MainWindow::on_pbSnapVid_clicked()
@@ -8863,7 +8846,7 @@ void MainWindow::funcShowMsgERROR_Timeout(QString msg, int ms)
 
 void MainWindow::funcShowMsgSUCCESS_Timeout(QString msg, int ms)
 {
-    QMessageBox *msgBox         = new QMessageBox(QMessageBox::Warning,"SUCCESS",msg,NULL);
+    QMessageBox *msgBox         = new QMessageBox(QMessageBox::Information,"SUCCESS",msg,NULL);
     QTimer *msgBoxCloseTimer    = new QTimer(this);
     msgBoxCloseTimer->setInterval(ms);
     msgBoxCloseTimer->setSingleShot(true);
@@ -9474,3 +9457,41 @@ void MainWindow::on_actionSlide_Settings_triggered()
 
 
 }
+
+void MainWindow::on_actionLinear_Regression_triggered()
+{
+    formGenLinearRegression* tmpForm = new formGenLinearRegression(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
+}
+
+void MainWindow::on_actionDiffraction_Origin_triggered()
+{
+    //Get Filename
+    QString filePath = QFileDialog::getOpenFileName(
+                                                        this,
+                                                        tr("Select File..."),
+                                                        _PATH_CALIB,
+                                                        "(*.hypcam);;"
+                                                     );
+    //Add Row
+    if( !filePath.isEmpty() )
+    {
+        if( saveFile(_PATH_CALIB_LR_TMP_ORIGIN,filePath) == false )
+        {
+            funcShowMsgERROR("Saving: " + QString(_PATH_CALIB_LR_TMP_ORIGIN) );
+        }
+        else
+            funcShowMsgSUCCESS_Timeout("Diffraction Origin Set");
+    }
+    else
+    {
+        funcShowMsgERROR("Origin was not Set");
+    }
+}
+
+
+
+
+
+
