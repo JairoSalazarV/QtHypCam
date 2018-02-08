@@ -7982,10 +7982,15 @@ void MainWindow::on_actionNDVI_triggered()
     QImage* tmpImg = new QImage(_PATH_DISPLAY_IMAGE);
     QString stringThreshold;
     QString stringBrilliant;
+    QString infraredChanel;
+    QString redChanel;
     stringThreshold = readFileParam(_PATH_NDVI_THRESHOLD);
     stringBrilliant = readFileParam(_PATH_NDVI_BRILLIANT);
+    infraredChanel  = readFileParam(_PATH_NDVI_IR_CHANEL);
+    redChanel       = readFileParam(_PATH_NDVI_RED_CHANEL);
+
     int makeBrilliant = (stringBrilliant.toInt(0)==1)?1:0;
-    funcNDVI( tmpImg, stringThreshold.toDouble(0), makeBrilliant );
+    funcNDVI( tmpImg, stringThreshold.toDouble(0), makeBrilliant, infraredChanel, redChanel );
     updateDisplayImageReceived(tmpImg);
     mouseCursorReset();
 }

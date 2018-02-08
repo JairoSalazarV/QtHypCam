@@ -35,6 +35,14 @@ formNDVISettings::formNDVISettings(QWidget *parent) :
     else
         ui->cbBrilliant->setChecked(false);
 
+    //Infrared
+    tmpParameter = readFileParam(_PATH_NDVI_IR_CHANEL).trimmed();
+    ui->comboBoxInfrared->setCurrentText(tmpParameter);
+
+    //Red
+    tmpParameter = readFileParam(_PATH_NDVI_RED_CHANEL).trimmed();
+    ui->comboBoxRed->setCurrentText(tmpParameter);
+
 
 
 }
@@ -50,7 +58,8 @@ void formNDVISettings::on_buttonBox_accepted()
     saveFile(_PATH_NDVI_THRESHOLD,QString::number(ui->spinBoxThreshold->value()));
     saveFile(_PATH_NDVI_INFRARED_WEIGHT,QString::number(ui->spinBoxWeightRatio->value()));
     saveFile(_PATH_NDVI_MIN_VALUE,QString::number(ui->spinBoxMinimumValue->value()));
+    saveFile(_PATH_NDVI_IR_CHANEL,ui->comboBoxInfrared->itemText(ui->comboBoxInfrared->currentIndex()));
+    saveFile(_PATH_NDVI_RED_CHANEL,ui->comboBoxRed->itemText(ui->comboBoxRed->currentIndex()));
     tmpParameter = (ui->cbBrilliant->isChecked())?"1":"0";
     saveFile(_PATH_NDVI_BRILLIANT,tmpParameter);
-
 }

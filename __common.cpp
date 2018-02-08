@@ -1684,8 +1684,13 @@ void displayImageFullScreen( QImage* tmpImg )
     gvValCal->show();
 }
 
-void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
-{
+void funcNDVI(
+                QImage* imgToNDVI,
+                double lowerBound,
+                int brilliant,
+                QString Infrared,
+                QString Red
+){
     //......................................
     // Get Infrared Weight
     //......................................
@@ -1736,10 +1741,11 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
     {
         for( y=0; y<imgToNDVI->height(); y++ )
         {
-            //Calculate NDVI
+            //Get wavelengths
             tmpPixel        = imgToNDVI->pixel(x,y);
-            infraredSensed  = (double)qBlue(tmpPixel) * infraredWeightRatio;
-            redSensed       = (double)qRed(tmpPixel);
+            infraredSensed  = funcGetPixelColor( &tmpPixel, &Infrared );
+            redSensed       = funcGetPixelColor( &tmpPixel, &Red );
+            infraredSensed  = (double)infraredSensed * infraredWeightRatio;
 
             //Validate measuremente
             if( infraredSensed > minimumValue && redSensed > minimumValue )
@@ -1834,6 +1840,18 @@ void funcNDVI( QImage* imgToNDVI, double lowerBound, int brilliant )
     }
 }
 
+int funcGetPixelColor( QRgb* Pixel, QString* Infrared )
+{
+    int tmpValue;
+    tmpValue = 0;
+    if( *Infrared == "Red" )
+        tmpValue = qRed(*Pixel);
+    if( *Infrared == "Green" )
+        tmpValue = qGreen(*Pixel);
+    if( *Infrared == "Blue" )
+        tmpValue = qBlue(*Pixel);
+    return tmpValue;
+}
 
 int funcReadAnalysePlot( structAnalysePlotSaved* structPlotSaved )
 {

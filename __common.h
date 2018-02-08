@@ -142,7 +142,15 @@
 
     void displayImageFullScreen(QImage *tmpImg );
 
-    void funcNDVI(QImage *imgToNDVI , double lowerBound, int brilliant);
+    void funcNDVI(
+                    QImage *imgToNDVI,
+                    double lowerBound,
+                    int brilliant,
+                    QString Infrared,
+                    QString Red
+                 );
+
+    int funcGetPixelColor(QRgb* Pixel, QString* Infrared );
 
     int funcReadAnalysePlot( structAnalysePlotSaved* structPlotSaved );
 
