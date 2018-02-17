@@ -700,6 +700,9 @@ void MainWindow::funcIniCamParam( structRaspcamSettings *raspcamSettings )
     //Timelapse Interval
     ui->spinBoxTimelapse->setValue( raspcamSettings->TimelapseInterval_ms );
 
+    //Video Duration
+    ui->spinBoxVideoDuration->setValue( raspcamSettings->VideoDurationSecs );
+
     //ISO
     ui->slideISO->setValue( raspcamSettings->ISO );
     ui->labelISO->setText( "ISO: " + QString::number(raspcamSettings->ISO) );

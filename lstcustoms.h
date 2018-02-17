@@ -66,7 +66,7 @@
     #define _RASP_CAM_5MP_IMAGE_W           2592
     #define _RASP_CAM_5MP_IMAGE_H           1944
     #define _RASP_CAM_5MP_VIDEO_W           1920 //1920 | 1640
-    #define _RASP_CAM_5MP_VIDEO_H           1080 //1080 | 1232
+    #define _RASP_CAM_5MP_VIDEO_H           1080 //1080 | 1232    
 
     #define _RASP_CAM_8MP_IMAGE_W           3240
     #define _RASP_CAM_8MP_IMAGE_H           2464

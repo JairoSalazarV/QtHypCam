@@ -811,6 +811,8 @@ bool funcGetRaspParamFromXML( structRaspcamSettings *raspcamSettings, QString fi
                 raspcamSettings->OneShot = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="TriggeringTimeSecs" )
                 raspcamSettings->TriggeringTimeSecs = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="VideoDurationSecs" )
+                raspcamSettings->VideoDurationSecs = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="CameraMp" )
                 raspcamSettings->CameraMp = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="Flipped" )
