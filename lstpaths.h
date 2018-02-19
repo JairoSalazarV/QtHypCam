@@ -50,6 +50,7 @@
     #define _PATH_RGB_SENSIVILITIES         "./settings/Calib/responses/sensitivities.hypcam"
 
     #define _PATH_LAST_IMG_OPEN                     "./settings/lastPaths/selectImage.hypcam"
+    #define _PATH_LAST_USED_IMG_FILENAME            "./settings/lastPaths/lastImageOpen.hypcam"
     #define _PATH_LAST_IMG_SAVED                    "./settings/lastPaths/savedImage.hypcam"
     #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"
 
@@ -81,6 +82,7 @@
     #define _PATH_SNAPSHOT_DIFFRACTION      "./tmpImages/snapDiffraction.png"
     #define _PATH_SNAPSHOT_APERTURE         "./tmpImages/snapAperture.png"
     #define _PATH_DISPLAY_IMAGE             "./tmpImages/tmpImg2Disp.png"
+    #define _PATH_IMAGE_BACKUP              "./tmpImages/tmpImg2Backup.png"
     #define _PATH_AUX_IMG                   "./tmpImages/tmp.png"
     #define _PATH_IMAGE_RECEIVED            "./tmpImages/tmpImgRec.RGB888"
 

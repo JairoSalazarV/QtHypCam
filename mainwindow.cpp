@@ -184,6 +184,8 @@ const int rangeInit = 300;      //Wavelength(nm) at the origin
 const int rangeEnd  = 1100;     //Wavelength(nm) max limit
 const int rangeStep = 50;       //Wavelength(nm) between slides
 
+QImage* editImg;
+QImage* backEditImg;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -333,7 +335,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     disableAllToolBars();
 
-    loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
+    //loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
 
     //
     //Try to connect to the last IP
@@ -352,7 +354,10 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     // Show Last Preview
     //
-    updateDisplayImageReceived();
+    QString lastFileOpen = readFileParam(_PATH_LAST_USED_IMG_FILENAME);
+    editImg = new QImage(lastFileOpen);
+    updateDisplayImage(editImg);
+
 
 
     //
@@ -1365,7 +1370,7 @@ bool MainWindow::funcGetRemoteImg( strReqImg *reqImg, bool saveImg ){
         if( saveImg )
         {
             progBarUpdateLabel("Stabilizing remote camera",0);
-            obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
+            obtainImageFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
         }
 
     }else{//Do nothing becouse camera is not accessible
@@ -1903,7 +1908,7 @@ void MainWindow::funcGetSnapshot()
         imgAperture.save( _PATH_DISPLAY_IMAGE );
 
         //Display image into qlabel
-        updateDisplayImageReceived(&imgAperture);
+        updateDisplayImage(&imgAperture);
     }
     else funcShowMsg("ERROR","Camera respond with error");
     funcLabelProgBarHide();
@@ -2026,33 +2031,43 @@ void MainWindow::getMaxCalibRect( QRect *rect, lstDoubleAxisCalibration *calib )
 
 
 
-void MainWindow::updateDisplayImageReceived(QImage* tmpImg)
+void MainWindow::updateDisplayImage(QImage* tmpImg)
 {
+    mouseCursorWait();
 
-    //Show snapshot
-    //..
-    int maxW, maxH;
-    maxW = (_FRAME_THUMB_W<tmpImg->width())?_FRAME_THUMB_W:tmpImg->width();
-    maxH = (_FRAME_THUMB_H<tmpImg->height())?_FRAME_THUMB_H:tmpImg->height();
-    QImage tmpThumb = ( tmpImg->width() > tmpImg->height() )?tmpImg->scaledToWidth(maxW):tmpImg->scaledToHeight(maxH);
-    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
-    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
-    ui->labelVideo->update();
-    QtDelay(10);
-    //Update view
-    //..
-    auxQstring = _PATH_DISPLAY_IMAGE;
-    loadImageIntoCanvasEdit(tmpImg, true);
-    //tmpImg->save( _PATH_DISPLAY_IMAGE );
+    //Update Image Preview
+    updatePreviewImage(tmpImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(tmpImg);
+
+    mouseCursorReset();
 
 }
 
-void MainWindow::updateDisplayImageReceived()
+void MainWindow::updateDisplayImage(QString fileName)
 {
     mouseCursorWait();
-    //Show snapshot
-    //..
-    QImage tmpImg( _PATH_DISPLAY_IMAGE );
+
+    //Load Image
+    auxQstring = fileName;
+    QImage tmpImg(auxQstring);
+
+    //Update Image Preview
+    updatePreviewImage(&tmpImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(&tmpImg);
+
+    mouseCursorReset();
+}
+
+void MainWindow::updatePreviewImage(QString* fileName)
+{
+    //
+    //Display Snapshot
+    //
+    QImage tmpImg( *fileName );
     int maxW, maxH;
     maxW = (_FRAME_THUMB_W<tmpImg.width())?_FRAME_THUMB_W:tmpImg.width();
     maxH = (_FRAME_THUMB_H<tmpImg.height())?_FRAME_THUMB_H:tmpImg.height();
@@ -2060,11 +2075,20 @@ void MainWindow::updateDisplayImageReceived()
     tmpThumb = tmpThumb.scaledToWidth(maxW);
     ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
     ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
-    //Update view
-    //..
-    auxQstring = _PATH_DISPLAY_IMAGE;
-    loadImageIntoCanvasEdit(auxQstring, true);
-    mouseCursorReset();
+}
+
+void MainWindow::updatePreviewImage(QImage* tmpImg)
+{
+    //
+    //Display Snapshot
+    //
+    int maxW, maxH;
+    maxW = (_FRAME_THUMB_W<tmpImg->width())?_FRAME_THUMB_W:tmpImg->width();
+    maxH = (_FRAME_THUMB_H<tmpImg->height())?_FRAME_THUMB_H:tmpImg->height();
+    QImage tmpThumb = tmpImg->scaledToHeight(maxH);
+    tmpThumb = tmpThumb.scaledToWidth(maxW);
+    ui->labelVideo->setPixmap( QPixmap::fromImage(tmpThumb) );
+    ui->labelVideo->setFixedSize( tmpThumb.width(), tmpThumb.height() );
 }
 
 void MainWindow::on_pbSnapshot_clicked()
@@ -2091,9 +2115,11 @@ void MainWindow::on_pbSnapshot_clicked()
         return (void)NULL;
     }
 
-    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
-    updateDisplayImageReceived(&snapShot);
-    snapShot.save(_PATH_DISPLAY_IMAGE);
+    //QImage snapShot = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
+    *editImg = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
+    saveFile(_PATH_LAST_USED_IMG_FILENAME,_PATH_IMAGE_RECEIVED);
+    updateDisplayImage(editImg);
+    //snapShot.save(_PATH_DISPLAY_IMAGE);
 
     funcResetStatusBar();
     mouseCursorReset();
@@ -3355,7 +3381,7 @@ void MainWindow::doImgRotation( float angle ){
     QImage tmpImg(auxQstring);
     tmpImg = tmpImg.transformed(transformation);
     tmpImg.save(_PATH_DISPLAY_IMAGE);
-    reloadImage2Display();
+    //reloadImage2Display();
     DrawVerAndHorLines( canvasCalib, Qt::magenta );
 }
 
@@ -3373,6 +3399,7 @@ void MainWindow::DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor col
     tmpCanvas->update();
 }
 
+/*
 void MainWindow::reloadImage2Display(){
     //Load image to display
     QPixmap pix( auxQstring );
@@ -3396,7 +3423,7 @@ void MainWindow::reloadImage2Display(){
     //qDebug() << "CanvasSceneH: "<< canvasCalib->scene()->height();
     //qDebug() << "CanvasW: "<< canvasCalib->width();
     //qDebug() << "CanvasH: "<< canvasCalib->height();
-}
+}*/
 
 void MainWindow::on_actionLoadCanvas_triggered()
 {
@@ -3421,100 +3448,103 @@ void MainWindow::on_actionLoadCanvas_triggered()
     }
     else
     {
+        //Save last file open
+        saveFile(_PATH_LAST_USED_IMG_FILENAME,auxQstring);
+
+        //Save Folder in order to Speed up File Selection
         lastPath = funcRemoveFileNameFromPath(auxQstring);
         saveFile(_PATH_LAST_IMG_OPEN,lastPath);
     }
 
-    loadImageIntoCanvasEdit(auxQstring, true);
-    updateDisplayImageReceived();
+    //Load Image Selected
+    editImg = new QImage(auxQstring);
 
+    //Update Thumb and Edit Canvas
+    updateDisplayImage(editImg);
+
+    //Save Image to Display Path
+    //mouseCursorWait();
+    //editImg->save(_PATH_DISPLAY_IMAGE);
+    //mouseCursorReset();
 
 }
 
-void MainWindow::loadImageIntoCanvasEdit(QString fileName, bool ask){
-    //Create a copy of the image selected
-    //..
-    QImage origImg(fileName);
-    origImg.save(_PATH_DISPLAY_IMAGE);
-
-    //Rotate if requires
-    //..
-    ask = false;
-    if(ask)
-    {
-        if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 )
-        {
-            float rotAngle = getLastAngle();
-            doImgRotation( rotAngle );
-            globaIsRotated = true;
-        }
-        else
-        {
-            globaIsRotated = false;
-        }
-    }
-
+void MainWindow::updateImageCanvasEdit(QString fileName){
+    //
     //Refresh image in scene
-    //..
-    //Show image
-    reloadImage2Display();
+    //
     //Load layout    
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
     layout->setEnabled(false);
     ui->tab_6->setLayout(layout);
+
+    //
     //It enables slides
-    //..
+    //
     ui->toolBarDraw->setEnabled(true);
     ui->toolBarDraw->setVisible(true);
-    //ui->slide2AxCalThre->setEnabled(true);
 
+    //
+    //Load image to display
+    //
+    QPixmap pix( fileName );
+    QRect calibArea = ui->pbExpPixs->geometry();
+    int maxW, maxH;
+    maxW = calibArea.width() - 3;
+    maxH = calibArea.height() - 25;
+    pix = pix.scaledToHeight(maxH);
+    if( pix.width() > maxW )
+        pix = pix.scaledToWidth(maxW);
+    //It creates the scene to be loaded into Layout
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    canvasCalib->setBackgroundBrush(QBrush(Qt::black));
+    canvasCalib->setBackgroundBrush(pix);
+    canvasCalib->setScene( sceneCalib );
+    canvasCalib->resize(pix.width(),pix.height());
+    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->update();
 
-    reloadImage2Display();
 }
 
-void MainWindow::loadImageIntoCanvasEdit(QImage* origImg, bool ask){
-
-    //Create a copy of the image selected
-    //..
-    origImg->save(auxQstring);
-
-    //Rotate if requires
-    //..
-    ask = false;
-    if(ask)
-    {
-        if( funcShowMsgYesNo("Alert","Rotate using saved rotation?") == 1 )
-        {
-            float rotAngle = getLastAngle();
-            doImgRotation( rotAngle );
-            globaIsRotated = true;
-        }
-        else
-        {
-            globaIsRotated = false;
-        }
-    }
-
-
+void MainWindow::updateImageCanvasEdit(QImage* origImg)
+{
+    //
     //Refresh image in scene
-    //..
+    //
+    //Load layout
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
     layout->setEnabled(false);
     ui->tab_6->setLayout(layout);
 
+    //
     //It enables slides
-    //..
+    //
     ui->toolBarDraw->setEnabled(true);
     ui->toolBarDraw->setVisible(true);
-    //ui->slide2AxCalThre->setEnabled(true);
 
-
-    reloadImage2Display();
-
-
-
+    //
+    //Load image to display
+    //
+    QPixmap pix = QPixmap::fromImage(*origImg);
+    QRect calibArea = ui->pbExpPixs->geometry();
+    int maxW, maxH;
+    maxW = calibArea.width() - 3;
+    maxH = calibArea.height() - 25;
+    pix = pix.scaledToHeight(maxH);
+    if( pix.width() > maxW )
+        pix = pix.scaledToWidth(maxW);
+    //It creates the scene to be loaded into Layout
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    canvasCalib->setBackgroundBrush(QBrush(Qt::black));
+    canvasCalib->setBackgroundBrush(pix);
+    canvasCalib->setScene( sceneCalib );
+    canvasCalib->resize(pix.width(),pix.height());
+    canvasCalib->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    canvasCalib->update();
 }
 
 void MainWindow::on_actionApplyThreshold_triggered()
@@ -3546,7 +3576,7 @@ void MainWindow::applyThreshol2Scene(QString threshold){
     }
     //Update canvas
     //..
-    reloadImage2Display();
+    //reloadImage2Display();
 
     /*
     if( imgThre->save(_PATH_DISPLAY_IMAGE) ){
@@ -5001,7 +5031,7 @@ int MainWindow::obtainFile( std::string fileToObtain, std::string fileNameDestin
 }
 
 
-QImage MainWindow::obtainFile( std::string fileToObtain, QString txtBar )
+QImage MainWindow::obtainImageFile( std::string fileToObtain, QString txtBar )
 {
     QImage img;
     if( funcRaspFileExists( fileToObtain ) == 0 )
@@ -5459,8 +5489,8 @@ u_int8_t** MainWindow::funcGetSLIDESnapshot( int* numImages, bool saveFiles )
         {
             QImage tmpImg( firstImageName.c_str() );
             tmpImg.save( _PATH_DISPLAY_IMAGE );
-            updateDisplayImageReceived();
-            reloadImage2Display();            
+            updateDisplayImage(_PATH_DISPLAY_IMAGE);
+            //reloadImage2Display();
         }
 
         //
@@ -6225,7 +6255,7 @@ int MainWindow::funcUpdateImageFromFolder( QString folder, QString fileExtension
 
         //Update Received Image
         QImage newImage(tmpImgRec);
-        updateDisplayImageReceived(&newImage);
+        updateDisplayImage(&newImage);
         qDebug() << tmpImgRec;
 
     }
@@ -6308,7 +6338,7 @@ void MainWindow::processEndOfPlayer(QMediaPlayer::MediaStatus status)
             QString imgFilename = _PATH_VIDEO_FRAMES + QString::number(idFrameToShow) + _FRAME_EXTENSION;
             QImage tmpImg(imgFilename);
             tmpImg.save( _PATH_DISPLAY_IMAGE );
-            updateDisplayImageReceived();
+            updateDisplayImage(&tmpImg);
         }
     }
 }
@@ -6631,7 +6661,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
+        QImage diffImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -6646,7 +6676,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
             }
             else
             {
-                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
+                QImage apertureImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
                 if( apertureImage.isNull() )
                 {
                     qDebug() << "ERROR: Obtaining Aperture Area";
@@ -6701,7 +6731,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
                     //Save cropped image
                     //
                     diffImage.save(_PATH_DISPLAY_IMAGE);
-                    updateDisplayImageReceived(&diffImage);
+                    updateDisplayImage(&diffImage);
                 }
             }
         }
@@ -6747,8 +6777,9 @@ void MainWindow::on_pbSaveImage_clicked()
     //
     //Save image
     //
-    QImage tmpImg( _PATH_DISPLAY_IMAGE );
-    tmpImg.save(fileName);
+    mouseCursorWait();
+    editImg->save(fileName);
+    mouseCursorReset();
 
 }
 
@@ -6763,7 +6794,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
+        QImage diffImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -6787,7 +6818,7 @@ void MainWindow::on_pbOneShotSnapshot_clicked()
             diffImage.save(_PATH_DISPLAY_IMAGE);
             qDebug() << "Images saved";
 
-            updateDisplayImageReceived(&diffImage);
+            updateDisplayImage(&diffImage);
         }
     }
 
@@ -7982,7 +8013,7 @@ void MainWindow::on_actionRGB_to_XY_triggered()
 void MainWindow::on_actionNDVI_triggered()
 {
     mouseCursorWait();
-    QImage* tmpImg = new QImage(_PATH_DISPLAY_IMAGE);
+
     QString stringThreshold;
     QString stringBrilliant;
     QString infraredChanel;
@@ -7993,8 +8024,9 @@ void MainWindow::on_actionNDVI_triggered()
     redChanel       = readFileParam(_PATH_NDVI_RED_CHANEL);
 
     int makeBrilliant = (stringBrilliant.toInt(0)==1)?1:0;
-    funcNDVI( tmpImg, stringThreshold.toDouble(0), makeBrilliant, infraredChanel, redChanel );
-    updateDisplayImageReceived(tmpImg);
+    funcNDVI( editImg, stringThreshold.toDouble(0), makeBrilliant, infraredChanel, redChanel );
+    updateDisplayImage(editImg);
+
     mouseCursorReset();
 }
 
@@ -8013,7 +8045,7 @@ void MainWindow::on_actionFull_Screen_triggered()
 
 void MainWindow::on_actionDisplay_Original_triggered()
 {
-    updateDisplayImageReceived();
+    updateDisplayImage(_PATH_DISPLAY_IMAGE);
 }
 
 void MainWindow::on_actionFull_photo_triggered()
@@ -8026,8 +8058,8 @@ void MainWindow::on_actionFull_photo_triggered()
         return (void)NULL;
     }
 
-    QImage snapShot = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
-    updateDisplayImageReceived(&snapShot);
+    QImage snapShot = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
+    updateDisplayImage(&snapShot);
     snapShot.save(_PATH_DISPLAY_IMAGE);
 
     mouseCursorReset();
@@ -8044,7 +8076,7 @@ void MainWindow::on_actionDiffraction_triggered()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
+        QImage diffImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -8068,7 +8100,7 @@ void MainWindow::on_actionDiffraction_triggered()
             diffImage.save(_PATH_DISPLAY_IMAGE);
             qDebug() << "Images saved";
 
-            updateDisplayImageReceived(&diffImage);
+            updateDisplayImage(&diffImage);
         }
     }
 
@@ -8086,7 +8118,7 @@ void MainWindow::on_actionComposed_triggered()
     }
     else
     {
-        QImage diffImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
+        QImage diffImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
         if( diffImage.isNull() )
         {
             qDebug() << "ERROR: Obtaining Diffration Area";
@@ -8101,7 +8133,7 @@ void MainWindow::on_actionComposed_triggered()
             }
             else
             {
-                QImage apertureImage = obtainFile( _PATH_REMOTE_SNAPSHOT, "" );
+                QImage apertureImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
                 if( apertureImage.isNull() )
                 {
                     qDebug() << "ERROR: Obtaining Aperture Area";
@@ -8156,7 +8188,7 @@ void MainWindow::on_actionComposed_triggered()
                     //Save cropped image
                     //
                     diffImage.save(_PATH_DISPLAY_IMAGE);
-                    updateDisplayImageReceived(&diffImage);
+                    updateDisplayImage(&diffImage);
                 }
             }
         }
@@ -8456,7 +8488,7 @@ void MainWindow::on_actionSlideDiffraction_triggered()
     //......................................
     //Get Remote File
     //......................................
-    obtainFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
+    obtainImageFile( _PATH_REMOTE_SNAPSHOT, _PATH_IMAGE_RECEIVED );
 
     //......................................
     //Check if the image was transmited
@@ -8468,7 +8500,7 @@ void MainWindow::on_actionSlideDiffraction_triggered()
     else
     {
         QImage tmpImg(_PATH_IMAGE_RECEIVED);
-        updateDisplayImageReceived(&tmpImg);        
+        updateDisplayImage(&tmpImg);
     }
 
     //Reset Mouse and Progress-Bar
@@ -8807,7 +8839,7 @@ void MainWindow::buildHypercubeFromFilelist(
         rotateQImage(&resultImg,90);
     }
     resultImg.save( _PATH_DISPLAY_IMAGE );
-    updateDisplayImageReceived(&resultImg);
+    updateDisplayImage(&resultImg);
 }
 
 

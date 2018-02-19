@@ -75,7 +75,8 @@ public slots:
                                                     bool* ok);
 
     int obtainFile(std::string fileToObtain, std::string fileNameDestine, QString txtBar);
-    QImage obtainFile( std::string fileToObtain, QString txtBar );
+
+    QImage obtainImageFile( std::string fileToObtain, QString txtBar );
 
 
 
@@ -181,8 +182,11 @@ private slots:
 
     //QString getnameForRecImg();
 
-    void updateDisplayImageReceived(QImage* tmpImg);
-    void updateDisplayImageReceived();    
+    void updateDisplayImage(QImage* tmpImg);
+    void updateDisplayImage(QString fileName);
+
+    void updatePreviewImage(QString* fileName);
+    void updatePreviewImage(QImage* tmpImg);
 
     void on_pbSnapshot_clicked();
 
@@ -347,12 +351,12 @@ private slots:
 
     void DrawVerAndHorLines(GraphicsView *tmpCanvas, Qt::GlobalColor color);
 
-    void reloadImage2Display();
+    //void reloadImage2Display();
 
     void on_actionLoadCanvas_triggered();
 
-    void loadImageIntoCanvasEdit(QString fileName, bool ask);
-    void loadImageIntoCanvasEdit(QImage *origImg, bool ask);
+    void updateImageCanvasEdit(QString fileName);
+    void updateImageCanvasEdit(QImage* origImg);
 
     void on_actionApplyThreshold_triggered();
 
