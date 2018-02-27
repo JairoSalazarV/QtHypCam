@@ -2428,3 +2428,11 @@ void funcShowMsgSUCCESS_Timeout(QString msg, QWidget* parent, int ms)
     msgBoxCloseTimer->start();
     msgBox->exec();
 }
+
+void mouseCursorWait(){
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+}
+
+void mouseCursorReset(){
+    QApplication::restoreOverrideCursor();
+}

@@ -32,6 +32,7 @@
     #define _PATH_CALIB_RESPONSES           "./settings/Calib/responses/"
 
     #define _PATH_CALIB_LR                  "./settings/Calib/LR.hypcam"
+    #define _PATH_SLIDE_CALIB_LR            "./settings/Calib/slideLR.hypcam"
     #define _PATH_CALIB_LR_TMP_ORIGIN       "./settings/Calib/diffractionOrigin.hypcam"
 
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"

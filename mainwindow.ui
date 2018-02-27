@@ -1512,6 +1512,7 @@ QSlider::handle:horizontal {
      <string>Make</string>
     </property>
     <addaction name="actionLinear_Regression"/>
+    <addaction name="actionSlide_Linear_Regression"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -2202,6 +2203,11 @@ QSlider::handle:horizontal {
    </property>
    <property name="toolTip">
     <string>Open Line</string>
+   </property>
+  </action>
+  <action name="actionSlide_Linear_Regression">
+   <property name="text">
+    <string>Slide Linear Regression</string>
    </property>
   </action>
  </widget>

@@ -17,9 +17,9 @@ public:
 
 private slots:
 
-    void mouseCursorWait();
+    //void mouseCursorWait();
 
-    void mouseCursorReset();
+    //void mouseCursorReset();
 
     void on_pbSelectFile_clicked();
 

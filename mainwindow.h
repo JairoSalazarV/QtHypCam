@@ -606,6 +606,8 @@ private slots:
 
     void on_openLine_triggered();
 
+    void on_actionSlide_Linear_Regression_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

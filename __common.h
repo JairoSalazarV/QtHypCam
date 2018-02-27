@@ -208,5 +208,9 @@
 
     void funcShowMsgSUCCESS_Timeout(QString msg, QWidget *parent, int ms=2000);
 
+    void mouseCursorWait();
+
+    void mouseCursorReset();
+
 
 #endif // __COMMON_H

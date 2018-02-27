@@ -1,74 +1,62 @@
-#include "formgenlinearregression.h"
-#include "ui_formgenlinearregression.h"
-
-#include <__common.h>
+#include "formslidelinearregression.h"
+#include "ui_formslidelinearregression.h"
 #include <QFileDialog>
+#include <__common.h>
 
-formGenLinearRegression::formGenLinearRegression(QWidget *parent) :
+formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::formGenLinearRegression)
+    ui(new Ui::formSlideLinearRegression)
 {
     ui->setupUi(this);
+
+    ui->tableLstPoints->setColumnWidth(0,133);
+    ui->tableLstPoints->setColumnWidth(1,105);
+    ui->tableLstPoints->setColumnWidth(2,105);
+    ui->tableLstPoints->setColumnWidth(3,115);
 }
 
-formGenLinearRegression::~formGenLinearRegression()
+formSlideLinearRegression::~formSlideLinearRegression()
 {
     delete ui;
 }
 
-/*
-void formGenLinearRegression::mouseCursorWait(){
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-}
-
-void formGenLinearRegression::mouseCursorReset(){
-    QApplication::restoreOverrideCursor();
-}
-*/
-
-void formGenLinearRegression::on_pbSelectFile_clicked()
+void formSlideLinearRegression::on_pbSelectFile_clicked()
 {
-    //Get Filename
-    QString filePath = QFileDialog::getOpenFileName(
-                                                        this,
-                                                        tr("Select XML..."),
-                                                        _PATH_CALIB,
-                                                        "(*.hypcam);;"
-                                                     );
-    //Add Row
-    if( !filePath.isEmpty() )
+    //Get Line
+    structLine tmpNewLine;
+    if( funcReadLineFromXML(&tmpNewLine) == _OK )
     {
-        //Read file
-        QString tmpFileContain;
-        tmpFileContain = readAllFile(filePath);
-        QList<QString> tmpParamters = tmpFileContain.split(",");
-
         //Add Row to Table
         ui->tableLstPoints->insertRow( ui->tableLstPoints->rowCount() );
         ui->tableLstPoints->setItem(
                                         ui->tableLstPoints->rowCount()-1,
                                         0,
-                                        new QTableWidgetItem(QString( QString::number(ui->spinWavelen->value()) ))
+                                        new QTableWidgetItem(QString::number(tmpNewLine.wavelength))
                                   );
         ui->tableLstPoints->setItem(
                                         ui->tableLstPoints->rowCount()-1,
                                         1,
-                                        new QTableWidgetItem(QString(tmpParamters.at(0)))
+                                        new QTableWidgetItem(QString::number(tmpNewLine.x1)+", "+QString::number(tmpNewLine.y1))
                                   );
         ui->tableLstPoints->setItem(
                                         ui->tableLstPoints->rowCount()-1,
                                         2,
-                                        new QTableWidgetItem(QString(tmpParamters.at(1)))
+                                        new QTableWidgetItem(QString::number(tmpNewLine.x2)+", "+QString::number(tmpNewLine.y2))
                                   );
+        ui->tableLstPoints->setItem(
+                                        ui->tableLstPoints->rowCount()-1,
+                                        3,
+                                        new QTableWidgetItem(QString::number(tmpNewLine.canvasW)+", "+QString::number(tmpNewLine.canvasH))
+                                  );
+        ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,0)->setTextAlignment(Qt::AlignCenter);
+        ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,1)->setTextAlignment(Qt::AlignCenter);
+        ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,2)->setTextAlignment(Qt::AlignCenter);
+        ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,3)->setTextAlignment(Qt::AlignCenter);
+        //ui->tableLstPoints->rowAt(ui->tableLstPoints->rowCount()-1)->setTextAlignment(Qt::AlignCenter);
     }
 }
 
-void formGenLinearRegression::on_pbRemoveItem_clicked()
-{
-    ui->tableLstPoints->removeRow( ui->tableLstPoints->currentRow() );
-}
-
-void formGenLinearRegression::on_pbGenRegression_clicked()
+void formSlideLinearRegression::on_pbGenRegression_clicked()
 {
     mouseCursorWait();
     //Obtain Points and Distances
@@ -98,12 +86,13 @@ void formGenLinearRegression::on_pbGenRegression_clicked()
     QString LR;
     LR = QString::number(LR_Dist2Wavelebgth.a)+","+QString::number(LR_Dist2Wavelebgth.b)+","+QString::number(LR_Wavelebgth2Dist.a)+","+QString::number(LR_Wavelebgth2Dist.b);
     mouseCursorReset();
-    if( saveFile(_PATH_CALIB_LR,LR) == false )
-        funcShowMsgERROR("Saving "+QString(_PATH_CALIB_LR));
+    if( saveFile(_PATH_SLIDE_CALIB_LR,LR) == false )
+        funcShowMsgERROR("Saving "+QString(_PATH_SLIDE_CALIB_LR));
     else
         funcShowMsg("Success","File Saved Sucessfully");
-
 }
 
-
-
+void formSlideLinearRegression::on_pbRemoveItem_clicked()
+{
+    ui->tableLstPoints->removeRow( ui->tableLstPoints->currentRow() );
+}

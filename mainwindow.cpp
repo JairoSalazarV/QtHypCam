@@ -143,6 +143,8 @@
 
 #include <formgenlinearregression.h>
 
+#include <formslidelinearregression.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -9585,4 +9587,11 @@ void MainWindow::on_openLine_triggered()
     tmpLine->parentSize.setHeight(tmpLineData.canvasH);
     canvasCalib->scene()->addItem( tmpLine );
     canvasCalib->update();
+}
+
+void MainWindow::on_actionSlide_Linear_Regression_triggered()
+{
+    formSlideLinearRegression* tmpForm = new formSlideLinearRegression(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
 }
