@@ -19,7 +19,7 @@ GraphicsView *globalGvValCal;
 lstDoubleAxisCalibration doubAxisCalib;
 lstDoubleAxisCalibration *daCalib;
 
-selWathToCheck::selWathToCheck(QWidget *parent) :
+selWathToCheck::selWathToCheck(QImage* origEditImg, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::selWathToCheck)
 {
@@ -35,6 +35,8 @@ selWathToCheck::selWathToCheck(QWidget *parent) :
     ui->douubleSpinWave->setMinimum(daCalib->minWavelength);
     ui->douubleSpinWave->setMaximum(daCalib->maxWavelength);
 
+    this->internOrigEditImg = origEditImg;
+
 }
 
 selWathToCheck::~selWathToCheck()
@@ -45,7 +47,7 @@ selWathToCheck::~selWathToCheck()
 void selWathToCheck::showSqUsable(int x, int y, int w, int h , Qt::GlobalColor color)
 {
     showGV();
-    customRect *tmpRect = new customRect(QPoint(x,y),QPoint(w,h));
+    customRect *tmpRect = new customRect(QPoint(x,y),QPoint(w,h),this->internOrigEditImg);
     tmpRect->parameters.W = globalGvValCal->sceneRect().width();
     tmpRect->parameters.H = globalGvValCal->sceneRect().height();
     tmpRect->setPen(QPen(color));

@@ -17,11 +17,13 @@ customLine *globalHLine;
 customLine *globalVLine;
 customLine *globalTmpLine;
 
-showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
+showAnCalChrRes::showAnCalChrRes(customRect *rect, QImage* origEditImg, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::showAnCalChrRes)
 {
     ui->setupUi(this);
+
+    //internOrigEditImg = origEditImg;
 
     //Get rectangle
     //..
@@ -41,7 +43,8 @@ showAnCalChrRes::showAnCalChrRes(customRect *rect, QWidget *parent) :
     //Prepare variables
     //..
     int w, h, W, H;
-    QPixmap tmpPix(_PATH_DISPLAY_IMAGE);
+    //QPixmap tmpPix(_PATH_DISPLAY_IMAGE);
+    QPixmap tmpPix = QPixmap::fromImage(*origEditImg);
     W = tmpPix.width();
     H = tmpPix.height();
     w = rect->parameters.canvas->width();

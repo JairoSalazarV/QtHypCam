@@ -14,12 +14,12 @@
 
 class customRect : public QGraphicsRectItem
 {
-    //Q_OBJECT
+    //Q_OBJECT    
 
 public:
     customRectParameters parameters;
 
-    customRect(QPoint p1, QPoint p2);
+    customRect(QPoint p1, QPoint p2, QImage* originalImage);
 
     bool saveSquareAs(QString fileName);
 
@@ -36,6 +36,8 @@ signals:
 
     virtual void saveRegionOfInteres(customRect* tmpRect);
     */
+private:
+    QImage* internOrigEditImg;
 
 protected:
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);

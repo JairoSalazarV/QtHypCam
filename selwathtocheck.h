@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <lstStructs.h>
 namespace Ui {
-class selWathToCheck;
+    class selWathToCheck;
 }
 
 class selWathToCheck : public QDialog
@@ -12,15 +12,16 @@ class selWathToCheck : public QDialog
     Q_OBJECT
 
 public:
-    explicit selWathToCheck(QWidget *parent = 0);
+    explicit selWathToCheck(QImage* origEditImg, QWidget *parent = 0);
     ~selWathToCheck();
 
     void showSqUsable(int x, int y, int w, int h, Qt::GlobalColor color);
 
     void showGV();
 
-private slots:
+    QImage* internOrigEditImg;
 
+private slots:
     void fillLabelImg(QString imgPath);
 
     void drawCentroid(QString file, Qt::GlobalColor color , QImage *img);

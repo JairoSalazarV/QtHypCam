@@ -190,8 +190,9 @@
     typedef struct customLineParameters{
         bool movible = false;
         bool rotate = false;
-        int orientation; //0:Rotated | 1:Horizontal | 2:Vertical
+        int orientation; //1:Horizontal | 2:Vertical
         int lenght;
+        int wavelength=0; //Nanometers
         QString name;
     }customLineParameters;
 
@@ -255,7 +256,7 @@
         unsigned int consecutive;	// Consecutive
         unsigned int numTotMsg;		// Total number of message to send
         unsigned int bodyLen;		// Message lenght
-        int trigeredTime;           // Time before to apply console command
+        int trigeredTime = 0;           // Time before to apply console command
     }frameHeader;
 
     typedef struct frameStruct{
@@ -424,6 +425,21 @@
         QImage imgRight;
         int extraWPix;
     }structSlideShifting;
+
+    typedef struct structLine
+    {
+        int  canvasW;
+        int  canvasH;
+        int  x1;
+        int  y1;
+        int  x2;
+        int  y2;
+        int  colorR;
+        int  colorG;
+        int  colorB;
+        int  oritation;
+        int  wavelength;
+    }structLine;
 
 
 

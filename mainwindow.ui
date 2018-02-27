@@ -1540,6 +1540,7 @@ QSlider::handle:horizontal {
    <addaction name="actionRect"/>
    <addaction name="actionHorizontalLine"/>
    <addaction name="actionVerticalLine"/>
+   <addaction name="openLine"/>
    <addaction name="actionToolPenArea"/>
    <addaction name="actionRotateImg"/>
    <addaction name="actionApplyThreshold"/>
@@ -2189,6 +2190,18 @@ QSlider::handle:horizontal {
   <action name="actionDiffraction_Origin">
    <property name="text">
     <string>Diffraction Origin</string>
+   </property>
+  </action>
+  <action name="openLine">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/lineOpen.png</normaloff>:/new/icons/imagenInte/lineOpen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open Line</string>
+   </property>
+   <property name="toolTip">
+    <string>Open Line</string>
    </property>
   </action>
  </widget>

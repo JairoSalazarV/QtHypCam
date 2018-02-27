@@ -250,6 +250,7 @@
         <file>imagenInte/slideDiff.png</file>
         <file>imagenInte/timelapse.png</file>
         <file>imagenInte/startVideo.png</file>
+        <file>imagenInte/lineOpen.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

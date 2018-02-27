@@ -45,6 +45,9 @@
     #define _FAILURE                        0
     #define _ERROR                          -1
 
+    #define _HORIZONTAL                     1
+    #define _VERTICAL                       2
+
 
     #define _ERROR_FILE_NOTEXISTS           "~FileDoesNotExists"
     #define _ERROR_FILE                     "~UnknowError"

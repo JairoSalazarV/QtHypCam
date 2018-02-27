@@ -56,6 +56,8 @@
 
 #include <formsquareaperturesettings.h>
 
+#include <lstcustoms.h>
+
 //OpenCV
 /*
 #include <opencv2/imgproc/imgproc.hpp>
@@ -1147,6 +1149,7 @@ void MainWindow::on_pbSendComm_clicked()
     }
     frame2send->header.numTotMsg = 1;
     frame2send->header.consecutive = 1;
+    frame2send->header.trigeredTime = 0;
     frame2send->header.bodyLen   = ui->txtCommand->text().length();
     bzero(frame2send->msg,ui->txtCommand->text().length()+1);
     memcpy(
@@ -2115,6 +2118,20 @@ void MainWindow::on_pbSnapshot_clicked()
         return (void)NULL;
     }
 
+    //
+    //Timer
+    //
+    int triggeringTime;
+    triggeringTime = ui->slideTriggerTime->value();
+    if( triggeringTime > 0 )
+    {
+        formTimerTxt* timerTxt = new formTimerTxt(this,"Remainning Time to Shoot...",triggeringTime);
+        timerTxt->setModal(true);
+        timerTxt->show();
+        QtDelay(200);
+        timerTxt->startMyTimer(triggeringTime);
+    }
+
     //QImage snapShot = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
     *editImg = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
     saveFile(_PATH_LAST_USED_IMG_FILENAME,_PATH_IMAGE_RECEIVED);
@@ -2492,7 +2509,7 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     QPoint p1, p2;
     p1.setX(x1);   p1.setY(y1);
     p2.setX(w);    p2.setY(h);
-    customRect* tmpRect = new customRect(p1,p2);
+    customRect* tmpRect = new customRect(p1,p2,editImg);
     tmpRect->mapToScene(p1.x(),p1.y(),p2.x(),p2.y());
     //customRect* tmpRect = new customRect(this);
     tmpRect->parameters.W = canvasCalib->scene()->width();
@@ -3209,9 +3226,10 @@ void MainWindow::addVertLine2Calib(QString colSeld){
     QPoint p1(x,0);
     QPoint p2(x, canvasCalib->height());
     customLine *tmpVLine = new customLine(p1, p2, QPen(QColor(colSeld)));
+    tmpVLine->parameters.orientation = _VERTICAL;
+    tmpVLine->parentSize.setWidth(canvasCalib->width());
+    tmpVLine->parentSize.setHeight(canvasCalib->height());
     globalCanvVLine = tmpVLine;
-    //globalCanvVLine->setRotation(-90.0);
-    //globalCanvVLine->moveBy(60,this->height());
     canvasCalib->scene()->addItem( globalCanvVLine );
     canvasCalib->update();
 }
@@ -3221,6 +3239,9 @@ void MainWindow::addHorLine2Calib(QString colSeld){
     QPoint p1(0,y);
     QPoint p2( canvasCalib->width(), y);
     customLine *tmpHLine = new customLine(p1, p2, QPen(QColor(colSeld)));
+    tmpHLine->parameters.orientation = _HORIZONTAL;
+    tmpHLine->parentSize.setWidth(canvasCalib->width());
+    tmpHLine->parentSize.setHeight(canvasCalib->height());
     globalCanvHLine = tmpHLine;
     canvasCalib->scene()->addItem( globalCanvHLine );
     canvasCalib->update();
@@ -3624,7 +3645,7 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
     QPoint p2(w,h);
-    customRect *tmpRect = new customRect(p1,p2);
+    customRect *tmpRect = new customRect(p1,p2,editImg);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -3653,7 +3674,7 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
     QPoint p2(w,h);
-    customRect *tmpRect = new customRect(p1,p2);
+    customRect *tmpRect = new customRect(p1,p2,editImg);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -3674,7 +3695,7 @@ int MainWindow::funcDrawRectangleFromXML(QString fileName)
     //Draw a rectangle of the square aperture
     QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
     QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
-    customRect *tmpRect = new customRect(p1,p2);
+    customRect *tmpRect = new customRect(p1,p2,editImg);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -4664,7 +4685,7 @@ void MainWindow::on_actionValidCal_triggered()
 
 void MainWindow::on_actionValCal_triggered()
 {
-    selWathToCheck *tmpFrm = new selWathToCheck(this);
+    selWathToCheck *tmpFrm = new selWathToCheck(editImg,this);
     tmpFrm->setModal(false);
     tmpFrm->show();
 }
@@ -4681,7 +4702,7 @@ void MainWindow::on_actionSquareUsable_triggered()
         return (void)false;
     }
 
-    selWathToCheck *checkCalib = new selWathToCheck(this);
+    selWathToCheck *checkCalib = new selWathToCheck(editImg,this);
     checkCalib->showSqUsable(
                                 rectSquare->rectX,
                                 rectSquare->rectY,
@@ -5834,7 +5855,10 @@ strReqImg* MainWindow::funcFillSLIDESettings(strReqImg* reqImg)
 
 void MainWindow::on_pbDrawSlide_triggered()
 {
-    funcDrawRectangleFromXML( _PATH_SLIDE_DIFFRACTION );
+    if( funcShowMsgYesNo("I have to options...","Video Diffraction Area?") )
+        funcDrawRectangleFromXML( _PATH_VIDEO_SLIDE_DIFFRACTION );
+    else
+        funcDrawRectangleFromXML( _PATH_SLIDE_DIFFRACTION );
 
     /*
     //
@@ -5926,6 +5950,7 @@ void MainWindow::on_pbShutdown_clicked()
     frame2send->header.idMsg = (unsigned char)2;
     frame2send->header.numTotMsg = 1;
     frame2send->header.consecutive = 1;
+    frame2send->header.trigeredTime = 0;
     frame2send->header.bodyLen   = cmdShutdown.length();
     bzero(frame2send->msg,cmdShutdown.length()+1);
     memcpy(
@@ -6247,15 +6272,16 @@ int MainWindow::funcUpdateImageFromFolder( QString folder, QString fileExtension
     {
         //Image Received Path
         int idFrame;
-        idFrame = ceil( numFrames / 2 );
+        idFrame = ceil( numFrames * 0.6 );
         QString tmpImgRec;
         tmpImgRec.append( folder );
         tmpImgRec.append( QString::number(idFrame) );
         tmpImgRec.append( fileExtension );
 
         //Update Received Image
-        QImage newImage(tmpImgRec);
-        updateDisplayImage(&newImage);
+        free(editImg);
+        editImg = new QImage(tmpImgRec);
+        updateDisplayImage(editImg);
         qDebug() << tmpImgRec;
 
     }
@@ -6569,7 +6595,7 @@ int MainWindow::takeRemoteSnapshot( QString fileDestiny, bool squareArea )
     funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&executedCommand);
     if( !executedCommand )
     {
-        funcShowMsgERROR_Timeout("Applying Remote Snapshot Command");
+        funcShowMsgERROR_Timeout("Applying Remote Snapshot Command",this);
         return -1;
     }
 
@@ -7421,7 +7447,7 @@ void MainWindow::on_pbTimeLapse_clicked()
     qDebug() << "tmpCommand: " << tmpCommand;
     if( !ok )
     {
-        funcShowMsgERROR_Timeout("Clearing Remote Folder");
+        funcShowMsgERROR_Timeout("Clearing Remote Folder",this);
         return (void)false;
     }
 
@@ -7433,7 +7459,7 @@ void MainWindow::on_pbTimeLapse_clicked()
     funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&ok);
     if( !ok )
     {
-        funcShowMsgERROR_Timeout("Clearing Remote Folder");
+        funcShowMsgERROR_Timeout("Clearing Remote Folder",this);
         return (void)false;
     }
 
@@ -7518,7 +7544,7 @@ void MainWindow::on_pbTimeLapse_clicked()
     status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_TEST_SLIDE, tmpLocalFolder, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
-        funcShowMsgERROR_Timeout("Obtaining Remote Slides");
+        funcShowMsgERROR_Timeout("Obtaining Remote Slides",this);
         return (void)false;
     }
 
@@ -7548,7 +7574,7 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
         double W, H;
         squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
         memset(aperture,'\0',sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_SLIDE_DIFFRACTION, aperture ) )
+        if( !funGetSquareXML( _PATH_VIDEO_SLIDE_DIFFRACTION, aperture ) )
         {
             funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SLIDE_DIFFRACTION");
             tmpCommand.clear();
@@ -7570,10 +7596,10 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
         camRes          = getCamRes();
         //Width
         tmpCommand.append(" -w ");
-        tmpCommand.append(QString::number( aperture->rectW ));
+        tmpCommand.append(QString::number( round((double)camRes->videoW*W) ));
         //Height
         tmpCommand.append(" -h ");
-        tmpCommand.append(QString::number( aperture->rectH ));
+        tmpCommand.append(QString::number( round((double)camRes->videoH*H) ));
     }
     else
     {
@@ -7916,10 +7942,10 @@ std::string MainWindow::funcRemoteTerminalCommand(
     //--------------------------------------
     frameStruct *frame2send = (frameStruct*)malloc(sizeof(frameStruct));
     memset(frame2send,'\0',sizeof(frameStruct));    
-    frame2send->header.idMsg        = (waitForAnswer==true)?(unsigned char)2:(unsigned char)5;
-    frame2send->header.trigeredTime = trigeredTime;
+    frame2send->header.idMsg        = (waitForAnswer==true)?(unsigned char)2:(unsigned char)5;    
     frame2send->header.numTotMsg    = 1;
     frame2send->header.consecutive  = 1;
+    frame2send->header.trigeredTime = trigeredTime;
     frame2send->header.bodyLen      = command.length();
     bzero(frame2send->msg,command.length()+1);
     memcpy( frame2send->msg, command.c_str(), command.length() );
@@ -8562,7 +8588,7 @@ int MainWindow::obtainRemoteFolder(
         {
             if( !funcExecuteCommand( "mkdir " + localFolder ) )
             {
-                funcShowMsgERROR_Timeout("Creating Local Folder: " + localFolder, 1800 );
+                funcShowMsgERROR_Timeout("Creating Local Folder: " + localFolder, this, 1800 );
                 return _ERROR;
             }
         }
@@ -8862,8 +8888,7 @@ int MainWindow::funcAccountFilesInFolder( QString folder )
 void MainWindow::on_actionVideo_2_triggered()
 {
     QString remoteVideoID;
-    funcMainCall_RecordVideo(&remoteVideoID);
-
+    funcMainCall_RecordVideo(&remoteVideoID,false,true);
 }
 
 void MainWindow::on_actionTimelapse_2_triggered()
@@ -8873,6 +8898,7 @@ void MainWindow::on_actionTimelapse_2_triggered()
 
 }
 
+/*
 void MainWindow::funcShowMsgERROR_Timeout(QString msg, int ms)
 {
     QMessageBox *msgBox         = new QMessageBox(QMessageBox::Warning,"ERROR",msg,NULL);
@@ -8884,6 +8910,7 @@ void MainWindow::funcShowMsgERROR_Timeout(QString msg, int ms)
     msgBox->exec();
 }
 
+
 void MainWindow::funcShowMsgSUCCESS_Timeout(QString msg, int ms)
 {
     QMessageBox *msgBox         = new QMessageBox(QMessageBox::Information,"SUCCESS",msg,NULL);
@@ -8893,7 +8920,7 @@ void MainWindow::funcShowMsgSUCCESS_Timeout(QString msg, int ms)
     connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject()));
     msgBoxCloseTimer->start();
     msgBox->exec();
-}
+}*/
 
 void MainWindow::funcStartRemoteTimelapse( bool setROI )
 {
@@ -8904,7 +8931,7 @@ void MainWindow::funcStartRemoteTimelapse( bool setROI )
     folderID = funcGetParam("Folder-Name");
     if(folderID.isEmpty())
     {
-        funcShowMsgERROR_Timeout("Invalid Folder");
+        funcShowMsgERROR_Timeout("Invalid Folder",this);
         return (void)false;
     }
 
@@ -8942,12 +8969,12 @@ void MainWindow::funcStartRemoteTimelapse( bool setROI )
     whereExists = funcValidateFileDirNameDuplicated( remoteFile, localFile );
     if( whereExists == -1 )
     {
-        funcShowMsgERROR_Timeout("ID Exists Locally: Please, use another");
+        funcShowMsgERROR_Timeout("ID Exists Locally: Please, use another",this);
         return (void)false;
     }
     if( whereExists == -2 )
     {
-        funcShowMsgERROR_Timeout("ID Exists Remotelly: Please, use another");
+        funcShowMsgERROR_Timeout("ID Exists Remotelly: Please, use another",this);
         return (void)false;
     }
 
@@ -8961,7 +8988,7 @@ void MainWindow::funcStartRemoteTimelapse( bool setROI )
     funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
     if( !commandExecuted )
     {
-        funcShowMsgERROR_Timeout("Creating Remote Folder");
+        funcShowMsgERROR_Timeout("Creating Remote Folder",this);
         return (void)false;
     }
 
@@ -8975,7 +9002,7 @@ void MainWindow::funcStartRemoteTimelapse( bool setROI )
     funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,triggeringTime,false,&commandExecuted);
     if( !commandExecuted )
     {
-        funcShowMsgERROR_Timeout("Starting Remote Timelapse");
+        funcShowMsgERROR_Timeout("Starting Remote Timelapse",this);
         return (void)false;
     }
 
@@ -9012,7 +9039,7 @@ void MainWindow::on_actionSynchronize_triggered()
     status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_VIDEOS, syncLocalFolder+_PATH_LOCAL_FOLDER_VIDEOS, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
-        funcShowMsgERROR_Timeout("Obtaining Videos");
+        funcShowMsgERROR_Timeout("Obtaining Videos",this);
         return (void)false;
     }
 
@@ -9020,7 +9047,7 @@ void MainWindow::on_actionSynchronize_triggered()
     status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_TIMELAPSE, syncLocalFolder+_PATH_LOCAL_FOLDER_TIMELAPSE, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
-        funcShowMsgERROR_Timeout("Obtaining Timelapse");
+        funcShowMsgERROR_Timeout("Obtaining Timelapse",this);
         return (void)false;
     }
 
@@ -9028,7 +9055,7 @@ void MainWindow::on_actionSynchronize_triggered()
     status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SNAPSHOTS, syncLocalFolder+_PATH_LOCAL_FOLDER_SNAPSHOTS, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
-        funcShowMsgERROR_Timeout("Obtaining Snapshots");
+        funcShowMsgERROR_Timeout("Obtaining Snapshots",this);
         return (void)false;
     }
 
@@ -9036,7 +9063,7 @@ void MainWindow::on_actionSynchronize_triggered()
     status = obtainRemoteFolder( _PATH_REMOTE_FOLDER_SLIDELAPSE, syncLocalFolder+_PATH_LOCAL_FOLDER_SLIDELAPSE, &errorTrans, &errorDel );
     if( status == _ERROR )
     {
-        funcShowMsgERROR_Timeout("Obtaining Slidelapses");
+        funcShowMsgERROR_Timeout("Obtaining Slidelapses",this);
         return (void)false;
     }
 
@@ -9049,7 +9076,7 @@ void MainWindow::on_actionSynchronize_triggered()
         strDisplayStatus.append("Some Files/Dirs Produced Errors...\n\n\n");
         strDisplayStatus.append("Transmission: \n\n" + errorTrans);
         strDisplayStatus.append("Delations: \n\n" + errorDel);
-        funcShowMsgERROR_Timeout(strDisplayStatus);
+        funcShowMsgERROR_Timeout(strDisplayStatus,this);
     }
     else
     {
@@ -9133,7 +9160,7 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
         *videoID = funcGetParam("Video-ID");
         if(videoID->isEmpty())
         {
-            funcShowMsgERROR_Timeout("Invalid Video-ID");
+            funcShowMsgERROR_Timeout("Invalid Video-ID",this);
             return (void)false;
         }
 
@@ -9158,9 +9185,9 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
         if( itExists != _OK )
         {
             if( itExists == -1 )
-                funcShowMsgERROR_Timeout("Video-ID Exists Locally: Please, use another");
+                funcShowMsgERROR_Timeout("Video-ID Exists Locally: Please, use another",this);
             else
-                funcShowMsgERROR_Timeout("Video-ID Exists Remotelly: Please, use another");
+                funcShowMsgERROR_Timeout("Video-ID Exists Remotelly: Please, use another",this);
             return (void)false;
         }
 
@@ -9173,10 +9200,16 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
         QString tmpCommand;
         tmpCommand.clear();
         tmpCommand.append("sudo rm "+ *videoID);
-        funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
+        funcRemoteTerminalCommand(
+                                    tmpCommand.toStdString(),
+                                    camSelected,
+                                    0,
+                                    false,
+                                    &commandExecuted
+                                );
         if( !commandExecuted )
         {
-            funcShowMsgERROR_Timeout("Deleting Remote videoID");
+            funcShowMsgERROR_Timeout("Deleting Remote videoID",this);
             return (void)false;
         }
     }
@@ -9214,7 +9247,7 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
                             );
     if( !commandExecuted )
     {
-        funcShowMsgERROR_Timeout("Starting Remote Recording");
+        funcShowMsgERROR_Timeout("Starting Remote Recording",this);
         return (void)false;
     }
 
@@ -9237,7 +9270,7 @@ void MainWindow::funcMainCall_GetSnapshot()
     fileName = funcGetParam("Snapshot-ID");
     if(fileName.isEmpty())
     {
-        funcShowMsgERROR_Timeout("Invalid Snapshot-ID");
+        funcShowMsgERROR_Timeout("Invalid Snapshot-ID",this);
         return (void)false;
     }
 
@@ -9258,7 +9291,7 @@ void MainWindow::funcMainCall_GetSnapshot()
 
     if( !funcValidateFileDirNameDuplicated( remoteFile, localFile ) )
     {
-        funcShowMsgERROR_Timeout("Snapshot-ID Exists: Please, use another");
+        funcShowMsgERROR_Timeout("Snapshot-ID Exists: Please, use another",this);
         return (void)false;
     }
 
@@ -9275,7 +9308,7 @@ void MainWindow::funcMainCall_GetSnapshot()
     funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,0,false,&commandExecuted);
     if( !commandExecuted )
     {
-        funcShowMsgERROR_Timeout("Deleting Remote Snapshot-ID");
+        funcShowMsgERROR_Timeout("Deleting Remote Snapshot-ID",this);
         return (void)false;
     }
 
@@ -9293,7 +9326,7 @@ void MainWindow::funcMainCall_GetSnapshot()
     //Save lastest settings
     if( saveRaspCamSettings( _PATH_LAST_SNAPPATH ) == false )
     {
-        funcShowMsgERROR_Timeout("Saving last Snap-settings");
+        funcShowMsgERROR_Timeout("Saving last Snap-settings",this);
         return (void)false;
     }
 
@@ -9302,7 +9335,7 @@ void MainWindow::funcMainCall_GetSnapshot()
     //-----------------------------------------------------
     if( !takeRemoteSnapshot(fileName,false) )
     {
-        funcShowMsgERROR_Timeout("Taking Full Area Snapshot");
+        funcShowMsgERROR_Timeout("Taking Full Area Snapshot",this);
         return (void)false;
     }
 
@@ -9408,7 +9441,7 @@ int MainWindow::func_MultiImageMerge( QString type )
     QStringList lstImages;
     if( func_getMultiImages(&lstImages, this) == _OK && lstImages.size() < 2 )
     {
-        funcShowMsgERROR_Timeout("Insufficient Selected Images",2000);
+        funcShowMsgERROR_Timeout("Insufficient Selected Images",this,2000);
         mouseCursorReset();
         return _ERROR;
     }
@@ -9431,8 +9464,14 @@ int MainWindow::func_MultiImageMerge( QString type )
         //Get Filename
         mouseCursorReset();
         QString fileName;
-        if( func_getFilenameFromUser(&fileName, this) == _OK )
-        {
+        if(
+                func_getFilenameFromUser(
+                                            &fileName,
+                                            _PATH_LAST_LINE_SAVED,
+                                            "./snapshots/",
+                                            this
+                                        ) == _OK
+        ){
             mouseCursorWait();
             imgDestine.save(fileName);
             mouseCursorReset();
@@ -9472,7 +9511,7 @@ void MainWindow::on_actionSlide_Settings_triggered()
     slideArea = readAllFile(_PATH_SLIDE_DIFFRACTION);
     if( slideArea == _ERROR_FILE_NOTEXISTS || slideArea == _ERROR_FILE )
     {
-        funcShowMsgERROR_Timeout(slideArea);
+        funcShowMsgERROR_Timeout(slideArea,this);
         return (void)false;
     }
 
@@ -9488,9 +9527,9 @@ void MainWindow::on_actionSlide_Settings_triggered()
     bool ok;
     funcRemoteTerminalCommand( fileContain.toStdString(), camSelected, 0, false, &ok );
     if(ok==true)
-        funcShowMsgSUCCESS_Timeout("Settings Send");
+        funcShowMsgSUCCESS_Timeout("Settings Send",this);
     else
-        funcShowMsgERROR_Timeout("Sending Settings");
+        funcShowMsgERROR_Timeout("Sending Settings",this);
 
 
 
@@ -9522,7 +9561,7 @@ void MainWindow::on_actionDiffraction_Origin_triggered()
             funcShowMsgERROR("Saving: " + QString(_PATH_CALIB_LR_TMP_ORIGIN) );
         }
         else
-            funcShowMsgSUCCESS_Timeout("Diffraction Origin Set");
+            funcShowMsgSUCCESS_Timeout("Diffraction Origin Set",this);
     }
     else
     {
@@ -9530,8 +9569,20 @@ void MainWindow::on_actionDiffraction_Origin_triggered()
     }
 }
 
+void MainWindow::on_openLine_triggered()
+{
+    //Get line from user
+    structLine tmpLineData;
+    funcReadLineFromXML(&tmpLineData);
 
-
-
-
-
+    //Draw line in canvasEdit
+    QPoint p1(tmpLineData.x1,tmpLineData.y1);
+    QPoint p2(tmpLineData.x2,tmpLineData.y2);
+    customLine* tmpLine = new customLine(p1,p2,QPen(QColor(qRgb(tmpLineData.colorR,tmpLineData.colorG,tmpLineData.colorB))));
+    tmpLine->parameters.orientation = tmpLineData.oritation;
+    tmpLine->parameters.wavelength  = tmpLineData.wavelength;
+    tmpLine->parentSize.setWidth(tmpLineData.canvasW);
+    tmpLine->parentSize.setHeight(tmpLineData.canvasH);
+    canvasCalib->scene()->addItem( tmpLine );
+    canvasCalib->update();
+}

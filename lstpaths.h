@@ -52,6 +52,8 @@
     #define _PATH_LAST_IMG_OPEN                     "./settings/lastPaths/selectImage.hypcam"
     #define _PATH_LAST_USED_IMG_FILENAME            "./settings/lastPaths/lastImageOpen.hypcam"
     #define _PATH_LAST_IMG_SAVED                    "./settings/lastPaths/savedImage.hypcam"
+    #define _PATH_LAST_LINE_SAVED                   "./settings/lastPaths/lastLineSaved.hypcam"
+    #define _PATH_LAST_LINE_OPENED                  "./settings/lastPaths/lastLineOpened.hypcam"
     #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"
 
     #define _PATH_NDVI_THRESHOLD                    "./settings/NDVI/threshold.hypcam"
@@ -104,6 +106,7 @@
     #define _PATH_REGION_OF_INTERES2        "./XML/regionOfInteres.xml"
     #define _PATH_SLIDE_APERTURE            "./XML/slideAperture.xml"
     #define _PATH_SLIDE_DIFFRACTION         "./XML/slideDiffraction.xml"
+    #define _PATH_VIDEO_SLIDE_DIFFRACTION   "./XML/videoSlideDiffraction.xml"
     #define _PATH_SLIDE_SETTINGS            "./XML/slideSettings.xml"
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"

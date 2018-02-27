@@ -5,7 +5,7 @@
 #include <customrect.h>
 
 namespace Ui {
-class showAnCalChrRes;
+    class showAnCalChrRes;
 }
 
 class showAnCalChrRes : public QDialog
@@ -13,8 +13,9 @@ class showAnCalChrRes : public QDialog
     Q_OBJECT
 
 public:
-    explicit showAnCalChrRes(customRect *rect, QWidget *parent = 0);
+    explicit showAnCalChrRes(customRect *rect, QImage* origEditImg, QWidget *parent = 0);
     ~showAnCalChrRes();
+    //QImage* internOrigEditImg;
 
 private slots:
     void on_pbCloseDialog_clicked();

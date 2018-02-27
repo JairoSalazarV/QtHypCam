@@ -43,7 +43,7 @@
     int funcShowSelDir(QString startedPath, QString* dirSelected);
     QString funcShowSelDir(QString path);
 
-    int func_getFilenameFromUser(QString* fileName, QWidget *parent);
+    int func_getFilenameFromUser(QString* fileName, QString lastPathSaved, QString lastDefaultPath, QWidget *parent);
 
     QString funcRemoveImageExtension( QString imgName );
 
@@ -191,6 +191,22 @@
     static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
 
     QString funcGetParam(QString field);
+
+
+
+
+    //
+    int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* lstValues);
+
+    void funcGuaranteeExtension(QString* filename, QString extension);
+
+    bool funcReadLineFromXML( structLine* tmpLine );
+
+    bool funcLetUserSelectFile(QString* filePath);
+
+    void funcShowMsgERROR_Timeout(QString msg, QWidget *parent, int ms=2000);
+
+    void funcShowMsgSUCCESS_Timeout(QString msg, QWidget *parent, int ms=2000);
 
 
 #endif // __COMMON_H

@@ -558,9 +558,9 @@ private slots:
 
     int funcAccountFilesInFolder( QString folder );
 
-    void funcShowMsgERROR_Timeout(QString msg, int ms=3000);
+    //void funcShowMsgERROR_Timeout(QString msg, int ms=3000);
 
-    void funcShowMsgSUCCESS_Timeout(QString msg, int ms=3000);
+    //void funcShowMsgSUCCESS_Timeout(QString msg, int ms=3000);
 
     void funcStartRemoteTimelapse( bool setROI=false );
 
@@ -580,7 +580,7 @@ private slots:
 
     void on_actionSync_Folder_triggered();
 
-    void funcMainCall_RecordVideo(QString* videoID, bool defaultPath=false, bool ROI=true);
+    void funcMainCall_RecordVideo(QString* videoID, bool defaultPath=false, bool ROI=false);
 
     void funcMainCall_GetSnapshot();
 
@@ -603,6 +603,8 @@ private slots:
     void on_actionLinear_Regression_triggered();
 
     void on_actionDiffraction_Origin_triggered();
+
+    void on_openLine_triggered();
 
 private:
     Ui::MainWindow *ui;

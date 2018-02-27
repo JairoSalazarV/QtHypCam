@@ -40,23 +40,83 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
         if(tmpA->text()=="Rotate"){
             this->parameters.rotate = true;
         }
+        if(tmpA->text()=="Save"){
+            funcSaveLineParameters();
+        }
         if(tmpA->text()=="Remove"){
             this->removeFromIndex();
         }
         if(tmpA->text()=="Right"){
         }
+        if(tmpA->text()=="Set Wavelength"){
+            this->parameters.wavelength = funcGetParam("Wavelegth").trimmed().toInt(0);
+            funcShowMsgSUCCESS_Timeout("Wavelength Updated",Q_NULLPTR);
+        }
         update();
+    }
+}
+
+void customLine::funcSaveLineParameters()
+{
+    //----------------------------------------
+    //Get the filename
+    //----------------------------------------
+    QString tmpName;
+    if(
+            func_getFilenameFromUser(
+                                        &tmpName,
+                                        _PATH_LAST_LINE_SAVED,
+                                        "./XML/lines/",
+                                        Q_NULLPTR
+                                     ) != _OK
+    ){
+        return (void)false;
+    }
+    else
+    {
+        //Do nothing
+        //funcShowMsg("Obt",tmpName);
+    }
+
+    //----------------------------------------
+    //Save line parameters
+    //----------------------------------------
+    QList<QString> lstFixtures;
+    QList<QString> lstValues;
+    lstFixtures.clear();
+    lstValues.clear();
+    lstFixtures << "canvasW" << "canvasH" << "x1" << "y1" << "x2" << "y2" << "colorR" << "colorG" << "colorB" << "wavelength" << "orientation";
+    lstValues.append(QString::number(this->parentSize.width()));
+    lstValues.append(QString::number(this->parentSize.height()));
+    lstValues.append(QString::number(this->line().p1().x() ));
+    lstValues.append(QString::number(this->line().p1().y()));
+    lstValues.append(QString::number(this->line().p2().x()));
+    lstValues.append(QString::number(this->line().p2().y()));
+    lstValues.append(QString::number(this->pen().color().red()));
+    lstValues.append(QString::number(this->pen().color().green()));
+    lstValues.append(QString::number(this->pen().color().blue()));
+    lstValues.append(QString::number(this->parameters.wavelength));
+    lstValues.append(QString::number(this->parameters.orientation));
+    //Save line
+    if( funcSaveXML(&tmpName,&lstFixtures,&lstValues) != _OK )
+    {
+        funcShowMsgERROR("Saving Line Parameters");
     }
 }
 
 QAction *customLine::showContMenuLine(QPoint pos){
     QMenu *xmenu = new QMenu();
     xmenu->addAction( "Move" );
-    xmenu->addAction( "Rotate" );    
+    xmenu->addAction( "Rotate" );
+    xmenu->addAction( "Set Wavelength" );
+    xmenu->addSeparator();
+    xmenu->addAction( "Save" );
 
+    /*
     xmenu->addSeparator();
     QMenu* submenu2 = xmenu->addMenu( "Save" );
     submenu2->addAction( "its rotation" );
+    */
 
     /*
     xmenu->addSeparator();
@@ -79,35 +139,89 @@ void customLine::keyPressEvent(QKeyEvent *event){
     if(this->parameters.movible){
         switch( event->key() ){
             case Qt::Key_Right:{
-                moveBy(1,0);
+                if( this->parameters.orientation == _VERTICAL )
+                    this->setLine(
+                                    this->line().x1()+1,
+                                    this->line().y1(),
+                                    this->line().x2()+1,
+                                    this->line().y2()
+                                 );
                 break;
             }
             case Qt::Key_Left:{
-                moveBy(-1,0);
+                if( this->parameters.orientation == _VERTICAL )
+                    this->setLine(
+                                    this->line().x1()-1,
+                                    this->line().y1(),
+                                    this->line().x2()-1,
+                                    this->line().y2()
+                                 );
                 break;
             }
             case Qt::Key_Up:{
-                moveBy(0,-1);
+                if( this->parameters.orientation == _HORIZONTAL )
+                    this->setLine(
+                                    this->line().x1(),
+                                    this->line().y1()-1,
+                                    this->line().x2(),
+                                    this->line().y2()-1
+                                 );
                 break;
             }
             case Qt::Key_Down:{
-                moveBy(0,1);
+                if( this->parameters.orientation == _HORIZONTAL )
+                    this->setLine(
+                                    this->line().x1(),
+                                    this->line().y1()+1,
+                                    this->line().x2(),
+                                    this->line().y2()+1
+                                 );
                 break;
             }
         }
         update();
     }
     if(this->parameters.rotate){
-        float inc = 0.1;
+        float inc = 1;
         switch( event->key() ){
+            case Qt::Key_Right:{
+                if( this->parameters.orientation == _VERTICAL )
+                    this->setLine(
+                                    this->line().x1()+1,
+                                    this->line().y1(),
+                                    this->line().x2()-1,
+                                    this->line().y2()
+                                 );
+                break;
+            }
+            case Qt::Key_Left:{
+                if( this->parameters.orientation == _VERTICAL )
+                    this->setLine(
+                                    this->line().x1()-1,
+                                    this->line().y1(),
+                                    this->line().x2()+1,
+                                    this->line().y2()
+                                 );
+                break;
+            }
             case Qt::Key_Up:{
-                //this->parameters.rotation -= inc;
-                setRotation(this->rotation()-inc);
+                if( this->parameters.orientation == _HORIZONTAL )
+                    this->setLine(
+                                    this->line().x1(),
+                                    this->line().y1()+inc,
+                                    this->line().x2(),
+                                    this->line().y2()-inc
+                                 );
                 break;
             }
             case Qt::Key_Down:{
-                //this->parameters.rotation += inc;
-                setRotation(this->rotation()+inc);
+                if( this->parameters.orientation == _HORIZONTAL )
+                    this->setLine(
+                                    this->line().x1(),
+                                    this->line().y1()-inc,
+                                    this->line().x2(),
+                                    this->line().y2()+inc
+                                 );
                 break;
             }
         }

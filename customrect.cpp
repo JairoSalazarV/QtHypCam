@@ -6,7 +6,7 @@
 
 #include <showancalchrres.h>
 
-customRect::customRect(QPoint p1, QPoint p2)
+customRect::customRect(QPoint p1, QPoint p2, QImage* originalImage)
 {
     setRect(p1.x(),p1.y(),p2.x(),p2.y());
     //this->parameters.x = p1.x();
@@ -18,6 +18,8 @@ customRect::customRect(QPoint p1, QPoint p2)
     setAcceptHoverEvents(true);
     setAcceptTouchEvents(true);
     this->refreshTooltip();
+
+    internOrigEditImg = originalImage;
 
 }
 
@@ -44,6 +46,7 @@ QAction *customRect::showContMenuLine(QPoint pos){
     submenu3->addAction( "Region of interes" );
     submenu3->addAction( "Slide" );
     submenu3->addAction( "Slide diffraction" );
+    submenu3->addAction( "Video Slide diffraction" );
 
     xmenu->addSeparator();
     QMenu* submenu4 = xmenu->addMenu( "Modify" );
@@ -149,7 +152,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
         if(a->text()=="Analize"){
             //Call the results GUI
             //..
-            showAnCalChrRes *anaRes = new showAnCalChrRes(this);
+            showAnCalChrRes *anaRes = new showAnCalChrRes(this,internOrigEditImg);
             anaRes->setModal(true);
             anaRes->exec();
         }
@@ -157,7 +160,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             this->parameters.analCentroid = 1;
-            showAnCalChrRes *anaRes = new showAnCalChrRes(this);
+            showAnCalChrRes *anaRes = new showAnCalChrRes(this,internOrigEditImg);
             anaRes->setModal(true);
             anaRes->exec();
         }
@@ -165,7 +168,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             this->parameters.analCentroid = 2;
-            showAnCalChrRes *anaRes = new showAnCalChrRes(this);
+            showAnCalChrRes *anaRes = new showAnCalChrRes(this,internOrigEditImg);
             anaRes->setModal(true);
             anaRes->exec();
         }
@@ -173,7 +176,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             this->parameters.analCentroid = 3;
-            showAnCalChrRes *anaRes = new showAnCalChrRes(this);
+            showAnCalChrRes *anaRes = new showAnCalChrRes(this,internOrigEditImg);
             anaRes->setModal(true);
             anaRes->exec();
         }
@@ -181,7 +184,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             this->parameters.analCentroid = 4;
-            showAnCalChrRes *anaRes = new showAnCalChrRes(this);
+            showAnCalChrRes *anaRes = new showAnCalChrRes(this,internOrigEditImg);
             anaRes->setModal(true);
             anaRes->exec();
         }
@@ -210,6 +213,11 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //Call the centroid
             //..
             saveSquareAs(_PATH_SLIDE_DIFFRACTION);
+        }
+        if(a->text()=="Video Slide diffraction"){
+            //Call the centroid
+            //..
+            saveSquareAs(_PATH_VIDEO_SLIDE_DIFFRACTION);
         }
         if(a->text()=="Properties"){
             qreal x,y,w,h;

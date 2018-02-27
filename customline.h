@@ -9,8 +9,10 @@
 class customLine : public QGraphicsLineItem
 {
 public:
+    QRect parentSize;
     customLineParameters parameters;
     customLine(QPoint p1, QPoint p2, QPen pen);
+    void funcSaveLineParameters();
     QAction *showContMenuLine(QPoint pos);
     void refreshTooltip();
 

@@ -33,6 +33,8 @@
 #include <QFileDialog>
 #include <QImage>
 
+#include <QTimer>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -545,7 +547,8 @@ bool saveFile( QString fileName, QString contain ){
     QFile file(fileName);
     if(file.exists()){
         if(!file.remove()){
-            return false;
+            funcShowMsgERROR("Removing file: " + fileName);
+            return false;            
         }
     }
     if (file.open(QIODevice::ReadWrite)) {
@@ -553,6 +556,7 @@ bool saveFile( QString fileName, QString contain ){
         stream << contain << endl;
         file.close();
     }else{
+        funcShowMsgERROR("Opening file: " + fileName);
         return false;
     }
     return true;
@@ -938,19 +942,23 @@ QString funcShowSelDir(QString path)
     return dir;
 }
 
-int func_getFilenameFromUser(QString* fileName, QWidget* parent)
-{
+int func_getFilenameFromUser(
+                                QString* fileName,
+                                QString lastPathSaved,
+                                QString lastDefaultPath,
+                                QWidget* parent
+){
     //
     //Read the filename
     //
-    QString lastPath = readFileParam(_PATH_LAST_IMG_SAVED);
+    QString lastPath = readFileParam(lastPathSaved);
     if( lastPath.isEmpty() )//First time using this parameter
     {
-        lastPath = "./snapshots/";
+        lastPath = lastDefaultPath;
     }
     *fileName = QFileDialog::getSaveFileName(
                                                 parent,
-                                                "Save Snapshot as...",
+                                                "Save as...",
                                                 lastPath,
                                                 "Documents (*.*)"
                                             );
@@ -962,13 +970,8 @@ int func_getFilenameFromUser(QString* fileName, QWidget* parent)
     else
     {
         lastPath = funcRemoveFileNameFromPath(*fileName);
-        saveFile(_PATH_LAST_IMG_SAVED,lastPath);
+        saveFile(lastPathSaved,lastPath);
     }
-
-    //
-    //Validate filename
-    //
-    *fileName = funcRemoveImageExtension(*fileName);
 
     return _OK;
 }
@@ -2242,4 +2245,186 @@ QString funcGetParam(QString field)
     return QInputDialog::getText(NULL, "Input required...",
                                                         field+":", QLineEdit::Normal,
                                                         "", &ok);
+}
+
+int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* lstValues)
+{
+    //Receives filename only, without path
+    //[path=null][filename].xml
+
+    //-----------------------------------
+    //Validate XML contain
+    //-----------------------------------
+    if( lstFixtures->size() != lstValues->size() )
+    {
+        funcShowMsgERROR(
+                            "Fixtures("+
+                            QString::number(lstFixtures->size())+
+                            ") and Values("+
+                            QString::number(lstValues->size())+
+                            ") have diferent size"
+                        );
+        return _ERROR;
+    }
+
+    //-----------------------------------
+    //Save File XML
+    //-----------------------------------
+    //Validate Filename
+    funcGuaranteeExtension(fileName,"xml");
+    //Prepare file contain
+    QString tmpContain;
+    tmpContain.append( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
+    tmpContain.append("<Variables>\n");
+    int i;
+    for(i=0; i<lstFixtures->size(); i++)
+    {
+        tmpContain.append("\t");
+        tmpContain.append("<"+ lstFixtures->at(i) +">");
+        tmpContain.append(lstValues->at(i));
+        tmpContain.append("</"+ lstFixtures->at(i) +">\n");
+    }
+    tmpContain.append("</Variables>");
+
+    //Save file
+    if( saveFile( *fileName, tmpContain ) == false )
+    {
+        //funcShowMsg("ERROR","Saving XML");
+        return _ERROR;
+    }
+    else
+    {
+        funcShowMsg("Success","XML saved successfully");
+    }
+    return _OK;
+}
+
+void funcGuaranteeExtension(QString* filename, QString extension)
+{
+    //Asumes that extension = "ext" without "."
+    QFileInfo fi(*filename);
+    *filename = filename->replace("."+fi.suffix(),"") + "." + extension.replace(".","");
+}
+
+bool funcReadLineFromXML(structLine* tmpLine)
+{
+    //---------------------------------------
+    //Let the user select the file
+    //---------------------------------------
+    QString fileOrigin;
+    if( funcLetUserSelectFile(&fileOrigin) != _OK )
+    {
+        return _ERROR;
+    }
+
+    //---------------------------------------
+    //Extract XML
+    //---------------------------------------
+    QFile *xmlFile = new QFile(fileOrigin);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening: "+fileOrigin);
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="canvasW" )
+                tmpLine->canvasW = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="canvasH" )
+                tmpLine->canvasH = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="x1" )
+                tmpLine->x1 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="y1" )
+                tmpLine->y1 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="x2" )
+                tmpLine->x2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="y2" )
+                tmpLine->y2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="colorR" )
+                tmpLine->colorR = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="colorG" )
+                tmpLine->colorG = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="colorB" )
+                tmpLine->colorB = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="wavelength" )
+                tmpLine->wavelength = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="orientation" )
+                tmpLine->oritation = xmlReader->readElementText().trimmed().toInt(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    return _OK;
+}
+
+bool funcLetUserSelectFile(QString* filePath)
+{
+    QString lastPath = readFileParam(_PATH_LAST_LINE_OPENED);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = "./XML/lines/";
+    }
+
+    //Select image
+    //..
+
+    *filePath = QFileDialog::getOpenFileName(
+                                                Q_NULLPTR,
+                                                "Select file...",
+                                                lastPath,
+                                                "(*.*);;"
+                                             );
+    if( filePath->isEmpty() )
+    {
+        return _ERROR;
+    }
+    else
+    {
+        //Save Folder in order to Speed up File Selection
+        lastPath = funcRemoveFileNameFromPath(*filePath);
+        saveFile(_PATH_LAST_LINE_OPENED,lastPath);
+    }
+    return _OK;
+}
+
+void funcShowMsgERROR_Timeout(QString msg, QWidget* parent, int ms)
+{
+    QMessageBox *msgBox         = new QMessageBox(QMessageBox::Warning,"ERROR",msg,NULL);
+    QTimer *msgBoxCloseTimer    = new QTimer(parent);
+    msgBoxCloseTimer->setInterval(ms);
+    msgBoxCloseTimer->setSingleShot(true);
+    parent->connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject()));
+    msgBoxCloseTimer->start();
+    msgBox->exec();
+}
+
+
+void funcShowMsgSUCCESS_Timeout(QString msg, QWidget* parent, int ms)
+{
+    QMessageBox *msgBox         = new QMessageBox(QMessageBox::Information,"SUCCESS",msg,NULL);
+    QTimer *msgBoxCloseTimer    = new QTimer(parent);
+    msgBoxCloseTimer->setInterval(ms);
+    msgBoxCloseTimer->setSingleShot(true);
+    parent->connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject()));
+    msgBoxCloseTimer->start();
+    msgBox->exec();
 }
