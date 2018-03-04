@@ -52,6 +52,10 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
             this->parameters.wavelength = funcGetParam("Wavelegth").trimmed().toInt(0);
             funcShowMsgSUCCESS_Timeout("Wavelength Updated",Q_NULLPTR);
         }
+        if(tmpA->text()=="Set Color"){
+            QString newColor = funcGetParam("Color","#FFF");
+            this->setPen(QPen(QColor(newColor)));
+        }
         update();
     }
 }
@@ -109,6 +113,7 @@ QAction *customLine::showContMenuLine(QPoint pos){
     xmenu->addAction( "Move" );
     xmenu->addAction( "Rotate" );
     xmenu->addAction( "Set Wavelength" );
+    xmenu->addAction( "Set Color" );
     xmenu->addSeparator();
     xmenu->addAction( "Save" );
 

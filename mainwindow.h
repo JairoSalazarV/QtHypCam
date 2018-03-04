@@ -608,6 +608,23 @@ private slots:
 
     void on_actionSlide_Linear_Regression_triggered();
 
+    void on_actionarcLine_triggered();
+
+    bool funcDrawLineIntoCanvasEdit(const QString &filePath);
+
+    void on_actionPlot_Calculated_Line_triggered();
+
+    void on_actionPlot_Upper_Line_Rotation_triggered();
+
+    int funcReadVerticalCalibration(
+                                        QString* filePath,
+                                        structVerticalCalibration* vertCal
+                                   );
+
+    int funcReadHorizCalibration(QString *filePath, linearRegresion* horizLR);
+
+    void on_actionOrigin_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

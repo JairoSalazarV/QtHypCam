@@ -20,6 +20,10 @@
 
     #include <QFileInfo>
 
+    #include <QMessageBox>
+
+    #include <iostream>
+
     QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib );
 
     double funcDet2x2(double **M);
@@ -191,6 +195,7 @@
     static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
 
     QString funcGetParam(QString field);
+    QString funcGetParam(QString field, QString defaultValue);
 
 
 
@@ -200,17 +205,28 @@
 
     void funcGuaranteeExtension(QString* filename, QString extension);
 
-    bool funcReadLineFromXML( structLine* tmpLine );
+    int funcReadLineFromXML(QString* filePath, structLine *tmpLine);
 
-    bool funcLetUserSelectFile(QString* filePath);
+    int funcLetUserSelectFile(QString* filePath);
+    int funcLetUserSelectFile(QString* filePath, QString title, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
 
-    void funcShowMsgERROR_Timeout(QString msg, QWidget *parent, int ms=2000);
+    int funcLetUserDefineFile(QString* filePath, QString title, QString extension, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
 
-    void funcShowMsgSUCCESS_Timeout(QString msg, QWidget *parent, int ms=2000);
+    void funcShowMsg_Timeout(QString title, QString msg, QMessageBox::Icon=QMessageBox::NoIcon, QWidget *parent=Q_NULLPTR, int ms=1800);
+
+    void funcShowMsgERROR_Timeout(QString msg, QWidget *parent=Q_NULLPTR, int ms=1800);
+
+    void funcShowMsgSUCCESS_Timeout(QString msg, QWidget *parent=Q_NULLPTR, int ms=1800);
 
     void mouseCursorWait();
 
     void mouseCursorReset();
+
+    void funcExportLineToXML(structLine* tmpLine, const QString filePath);
+
+    int funcCalc_X_SlopToPoint(int newY, structLine* internLine);
+
+    int funcCalc_Y_SlopToPoint(int newX, structLine* internLine);
 
 
 #endif // __COMMON_H

@@ -1509,10 +1509,19 @@ QSlider::handle:horizontal {
    </widget>
    <widget class="QMenu" name="menuMake">
     <property name="title">
-     <string>Make</string>
+     <string>One Axis LR</string>
     </property>
+    <widget class="QMenu" name="menuPlot">
+     <property name="title">
+      <string>Plot</string>
+     </property>
+     <addaction name="actionPlot_Upper_Line_Rotation"/>
+     <addaction name="actionPlot_Calculated_Line"/>
+     <addaction name="actionOrigin"/>
+    </widget>
     <addaction name="actionLinear_Regression"/>
     <addaction name="actionSlide_Linear_Regression"/>
+    <addaction name="menuPlot"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -1543,6 +1552,7 @@ QSlider::handle:horizontal {
    <addaction name="actionVerticalLine"/>
    <addaction name="openLine"/>
    <addaction name="actionToolPenArea"/>
+   <addaction name="actionarcLine"/>
    <addaction name="actionRotateImg"/>
    <addaction name="actionApplyThreshold"/>
    <addaction name="actionLoadRegOfInteres"/>
@@ -2185,7 +2195,7 @@ QSlider::handle:horizontal {
   </action>
   <action name="actionLinear_Regression">
    <property name="text">
-    <string>Linear Regression</string>
+    <string>Spectrometer Linear Regression</string>
    </property>
   </action>
   <action name="actionDiffraction_Origin">
@@ -2208,6 +2218,38 @@ QSlider::handle:horizontal {
   <action name="actionSlide_Linear_Regression">
    <property name="text">
     <string>Slide Linear Regression</string>
+   </property>
+  </action>
+  <action name="actionarcLine">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/bezierLine.png</normaloff>:/new/icons/imagenInte/bezierLine.png</iconset>
+   </property>
+   <property name="text">
+    <string>arcLine</string>
+   </property>
+   <property name="toolTip">
+    <string>arcLine</string>
+   </property>
+  </action>
+  <action name="actionPlot_Calculated_Line">
+   <property name="text">
+    <string>Horizontal</string>
+   </property>
+  </action>
+  <action name="actionPlot_Upper_Line_Rotation">
+   <property name="text">
+    <string>Vertical</string>
+   </property>
+  </action>
+  <action name="actionalgo">
+   <property name="text">
+    <string>algo</string>
+   </property>
+  </action>
+  <action name="actionOrigin">
+   <property name="text">
+    <string>Origin</string>
    </property>
   </action>
  </widget>

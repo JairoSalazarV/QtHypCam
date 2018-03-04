@@ -30,7 +30,6 @@
 
 #include <QInputDialog>
 
-#include <QFileDialog>
 #include <QImage>
 
 #include <QTimer>
@@ -2247,6 +2246,18 @@ QString funcGetParam(QString field)
                                                         "", &ok);
 }
 
+QString funcGetParam(QString field, QString defaultValue)
+{
+    bool ok;
+    return QInputDialog::getText(
+                                    NULL,
+                                    "Input required...",
+                                    field+":", QLineEdit::Normal,
+                                    defaultValue,
+                                    &ok
+                                );
+}
+
 int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* lstValues)
 {
     //Receives filename only, without path
@@ -2306,24 +2317,15 @@ void funcGuaranteeExtension(QString* filename, QString extension)
     *filename = filename->replace("."+fi.suffix(),"") + "." + extension.replace(".","");
 }
 
-bool funcReadLineFromXML(structLine* tmpLine)
+int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
 {
-    //---------------------------------------
-    //Let the user select the file
-    //---------------------------------------
-    QString fileOrigin;
-    if( funcLetUserSelectFile(&fileOrigin) != _OK )
-    {
-        return _ERROR;
-    }
-
     //---------------------------------------
     //Extract XML
     //---------------------------------------
-    QFile *xmlFile = new QFile(fileOrigin);
+    QFile *xmlFile = new QFile(*filePath);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        funcShowMsg("ERROR","Opening: "+fileOrigin);
+        funcShowMsg("ERROR","Opening: "+*filePath);
         return _ERROR;
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
@@ -2354,6 +2356,8 @@ bool funcReadLineFromXML(structLine* tmpLine)
                 tmpLine->x2 = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="y2" )
                 tmpLine->y2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="m" )
+                tmpLine->m = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="colorR" )
                 tmpLine->colorR = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="colorG" )
@@ -2376,7 +2380,7 @@ bool funcReadLineFromXML(structLine* tmpLine)
     return _OK;
 }
 
-bool funcLetUserSelectFile(QString* filePath)
+int funcLetUserSelectFile(QString* filePath)
 {
     QString lastPath = readFileParam(_PATH_LAST_LINE_OPENED);
     if( lastPath.isEmpty() )//First time using this parameter
@@ -2401,9 +2405,110 @@ bool funcLetUserSelectFile(QString* filePath)
     {
         //Save Folder in order to Speed up File Selection
         lastPath = funcRemoveFileNameFromPath(*filePath);
-        saveFile(_PATH_LAST_LINE_OPENED,lastPath);
+        saveFile(_PATH_LAST_PATH_OPENED,lastPath);
     }
     return _OK;
+}
+
+int funcLetUserSelectFile(
+                            QString* filePath,
+                            QString title,
+                            QString *pathLocation,
+                            QString pathOfInterest,
+                            QWidget* parent
+){
+    //filePath:         File output, filename selected by the user
+    //title:            Showed to User, what kind of file is the user selecting
+    //pathLocation:     Where is saved the last path location saved
+    //pathOfInterest:   If it is the first time, what path will be saved as default
+    //parent:           In order to use this Dialog
+    QString lastPath = readFileParam(*pathLocation);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = pathOfInterest;
+    }
+
+    //Select image
+    //..
+
+    *filePath = QFileDialog::getOpenFileName(
+                                                parent,
+                                                title,
+                                                lastPath,
+                                                "(*.*);;"
+                                             );
+    if( filePath->isEmpty() )
+    {
+        return _ERROR;
+    }
+    else
+    {
+        //Save Folder in order to Speed up File Selection
+        lastPath = funcRemoveFileNameFromPath(*filePath);
+        //funcShowMsg("pathLocation",*pathLocation);
+        //funcShowMsg("lastPath",lastPath);
+        saveFile(*pathLocation,lastPath);
+    }
+    return _OK;
+}
+
+int funcLetUserDefineFile(
+                            QString* filePath,
+                            QString title,
+                            QString extension,
+                            QString* pathLocation,
+                            QString pathOfInterest,
+                            QWidget* parent
+){
+    //filePath:         File output, filename selected by the user
+    //title:            Showed to User, what kind of file is the user selecting
+    //pathLocation:     Where is saved the last path location saved
+    //pathOfInterest:   If it is the first time, what path will be saved as default
+    //parent:           In order to use this Dialog
+
+    QString lastPath = readFileParam(*pathLocation);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = pathOfInterest;
+    }
+
+    //Select image
+    //..
+    *filePath = QFileDialog::getSaveFileName(
+                                                    parent,
+                                                    title,
+                                                    lastPath,
+                                                    QWidget::tr("Documents (*.*)")
+                                            );
+    if( filePath->isEmpty() )
+    {
+        return _ERROR;
+    }
+    else
+    {
+        //Guarantee Extension
+        funcGuaranteeExtension(filePath,extension);
+
+        //Save last file open
+        saveFile(*pathLocation,*filePath);
+
+        //Save Folder in order to Speed up File Selection
+        lastPath = funcRemoveFileNameFromPath(*filePath);
+        saveFile(*pathLocation,lastPath);
+    }
+
+    return _OK;
+}
+
+void funcShowMsg_Timeout(QString title, QString msg, QMessageBox::Icon iconSelected, QWidget *parent, int ms)
+{
+    QMessageBox *msgBox         = new QMessageBox(iconSelected,title,msg,NULL);
+    QTimer *msgBoxCloseTimer    = new QTimer(parent);
+    msgBoxCloseTimer->setInterval(ms);
+    msgBoxCloseTimer->setSingleShot(true);
+    parent->connect(msgBoxCloseTimer, SIGNAL(timeout()), msgBox, SLOT(reject()));
+    msgBoxCloseTimer->start();
+    msgBox->exec();
 }
 
 void funcShowMsgERROR_Timeout(QString msg, QWidget* parent, int ms)
@@ -2435,4 +2540,58 @@ void mouseCursorWait(){
 
 void mouseCursorReset(){
     QApplication::restoreOverrideCursor();
+}
+
+void funcExportLineToXML(structLine* tmpLine, const QString filePath)
+{
+    //----------------------------------------
+    //Save line parameters
+    //----------------------------------------
+    QList<QString> lstFixtures;
+    QList<QString> lstValues;
+    lstFixtures.clear();
+    lstValues.clear();
+    lstFixtures << "canvasW" << "canvasH" << "x1" << "y1" << "x2" << "y2" << "m" << "colorR" << "colorG" << "colorB" << "wavelength" << "orientation";
+    lstValues.append(QString::number(tmpLine->canvasW));
+    lstValues.append(QString::number(tmpLine->canvasH));
+    lstValues.append(QString::number(tmpLine->x1));
+    lstValues.append(QString::number(tmpLine->y1));
+    lstValues.append(QString::number(tmpLine->x2));
+    lstValues.append(QString::number(tmpLine->y2));
+    lstValues.append(QString::number(tmpLine->m));
+    lstValues.append(QString::number(tmpLine->colorR));
+    lstValues.append(QString::number(tmpLine->colorG));
+    lstValues.append(QString::number(tmpLine->colorB));
+    lstValues.append(QString::number(tmpLine->wavelength));
+    lstValues.append(QString::number(tmpLine->oritation));
+
+    //Save line
+    if( funcSaveXML((QString*)&filePath,&lstFixtures,&lstValues) != _OK )
+    {
+        funcShowMsgERROR("Saving Line Parameters");
+    }
+}
+
+int funcCalc_X_SlopToPoint(int newY, structLine* internLine)
+{
+    int newX;
+    float origX, origY, m;
+    origX   = (float)internLine->x1;
+    origY   = (float)internLine->y1;
+    m       = (float)internLine->m;
+    newX    = round( ((newY-origY) / m) + origX );
+    //std::cout << "((" << newY << " - " << origY << ") / " << m << ") + " << origX << " = " << newX << std::endl;
+    return newX;
+}
+
+int funcCalc_Y_SlopToPoint(int newX, structLine* internLine)
+{
+    int newY;
+    float origX, origY, m;
+    origX   = (float)internLine->x1;
+    origY   = (float)internLine->y1;
+    m       = (float)internLine->m;
+    newY    = round( (m*(newX - origX))+origY );
+    //std::cout << m << "( " << newX << " - " << origX << ") + " << origY << std::endl;
+    return newY;
 }

@@ -216,6 +216,17 @@
         float b;
     }linearRegresion;
 
+    typedef struct structVerticalCalibration{
+        int canvasW;
+        int canvasH;
+        int x1;
+        int y1;
+        int x2;
+        int y2;
+        linearRegresion wavelengthLR;
+        linearRegresion vertLR;
+    }structVerticalCalibration;
+
     typedef struct colorAnalyseResult{
         int maxRx;
         int maxR;
@@ -428,17 +439,18 @@
 
     typedef struct structLine
     {
-        int  canvasW;
-        int  canvasH;
-        int  x1;
-        int  y1;
-        int  x2;
-        int  y2;
-        int  colorR;
-        int  colorG;
-        int  colorB;
-        int  oritation;
-        int  wavelength;
+        int     canvasW;
+        int     canvasH;
+        int     x1;
+        int     y1;
+        int     x2;
+        int     y2;
+        int     colorR;
+        int     colorG;
+        int     colorB;
+        int     oritation;
+        int     wavelength;
+        float   m;//Slope
     }structLine;
 
 

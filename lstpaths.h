@@ -55,6 +55,7 @@
     #define _PATH_LAST_IMG_SAVED                    "./settings/lastPaths/savedImage.hypcam"
     #define _PATH_LAST_LINE_SAVED                   "./settings/lastPaths/lastLineSaved.hypcam"
     #define _PATH_LAST_LINE_OPENED                  "./settings/lastPaths/lastLineOpened.hypcam"
+    #define _PATH_LAST_PATH_OPENED                  "./settings/lastPaths/lastPathOpened.hypcam"
     #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"
 
     #define _PATH_NDVI_THRESHOLD                    "./settings/NDVI/threshold.hypcam"

@@ -44,7 +44,8 @@ SOURCES += main.cpp\
     formtimertxt.cpp \
     showancalchrres.cpp \
     formgenlinearregression.cpp \
-    formslidelinearregression.cpp
+    formslidelinearregression.cpp \
+    custombrezierline.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -79,7 +80,8 @@ HEADERS  += mainwindow.h \
     showancalchrres.h \
     ui_showancalchrres.h \
     formgenlinearregression.h \
-    formslidelinearregression.h
+    formslidelinearregression.h \
+    custombrezierline.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -102,8 +104,6 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     lstImgs.qrc
 
-
-
 INCLUDEPATH += /usr/local/include/opencv
 INCLUDEPATH += /usr/local/include/opencv2
 #INCLUDEPATH += /usr/local/include/opencv2/videoio/
@@ -111,6 +111,8 @@ INCLUDEPATH += /usr/local/include/opencv2
 #LIBS += -L/usr/local/lib
 LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
 LIBS += -lpthread
+
+#CONFIG += console
 
 #LIBS += -lopencv_video
 #LIBS += -lopencv_core -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d

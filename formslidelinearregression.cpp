@@ -2,6 +2,7 @@
 #include "ui_formslidelinearregression.h"
 #include <QFileDialog>
 #include <__common.h>
+#include <customline.h>
 
 formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
     QDialog(parent),
@@ -13,6 +14,36 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
     ui->tableLstPoints->setColumnWidth(1,105);
     ui->tableLstPoints->setColumnWidth(2,105);
     ui->tableLstPoints->setColumnWidth(3,115);
+
+    QString fileToOpen;
+
+    if(1)
+    {
+        fileToOpen = "./XML/lines/slideV1_002/408nm.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/438nm.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/492nm.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/550nm.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/586nm.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/620nm.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/712nm.xml";
+        funcAddRowToTable(&fileToOpen);
+    }
+    if(0)
+    {
+        //fileToOpen = "./XML/lines/slideV1_002/verticalLowerBound.xml";
+        //funcAddRowToTable(&fileToOpen);        
+        fileToOpen = "./XML/lines/slideV1_002/horizontalUpper.xml";
+        funcAddRowToTable(&fileToOpen);
+        fileToOpen = "./XML/lines/slideV1_002/horizontalLower.xml";
+        funcAddRowToTable(&fileToOpen);
+    }
+
 }
 
 formSlideLinearRegression::~formSlideLinearRegression()
@@ -22,9 +53,29 @@ formSlideLinearRegression::~formSlideLinearRegression()
 
 void formSlideLinearRegression::on_pbSelectFile_clicked()
 {
+    //---------------------------------------
+    //Let the user select the file
+    //---------------------------------------
+    QString fileOrigin;
+    if( funcLetUserSelectFile(&fileOrigin) != _OK )
+    {
+        return (void)false;
+    }
+
+    //---------------------------------------
+    //Add new line to the table of lines
+    //---------------------------------------
+    if( funcAddRowToTable(&fileOrigin) == true )
+    {
+        return (void)false;
+    }
+}
+
+bool formSlideLinearRegression::funcAddRowToTable(QString* filePath)
+{
     //Get Line
     structLine tmpNewLine;
-    if( funcReadLineFromXML(&tmpNewLine) == _OK )
+    if( funcReadLineFromXML(filePath,&tmpNewLine) == _OK )
     {
         //Add Row to Table
         ui->tableLstPoints->insertRow( ui->tableLstPoints->rowCount() );
@@ -52,47 +103,322 @@ void formSlideLinearRegression::on_pbSelectFile_clicked()
         ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,1)->setTextAlignment(Qt::AlignCenter);
         ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,2)->setTextAlignment(Qt::AlignCenter);
         ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,3)->setTextAlignment(Qt::AlignCenter);
-        //ui->tableLstPoints->rowAt(ui->tableLstPoints->rowCount()-1)->setTextAlignment(Qt::AlignCenter);
+        return _OK;
     }
+    return _ERROR;
 }
 
 void formSlideLinearRegression::on_pbGenRegression_clicked()
 {
-    mouseCursorWait();
-    //Obtain Points and Distances
-    int i, numPoints;
-    numPoints = ui->tableLstPoints->rowCount();
-    double distances[numPoints-1];
-    double wavelengths[numPoints-1];
-    double origin[2];
-    double tmpPoint[2];
-    origin[0] = ui->tableLstPoints->item(0,1)->text().trimmed().toDouble(0);
-    origin[1] = ui->tableLstPoints->item(0,2)->text().trimmed().toDouble(0);
-    for( i=1; i<numPoints; i++ )
+    //--------------------------------------
+    //This function Assumes that the lower
+    //wavelength is located at the left
+    //and is vertical
+    //--------------------------------------
+
+    int i, numLines;
+    //--------------------------------------
+    //Save Lines Into Memory
+    //--------------------------------------
+    numLines = ui->tableLstPoints->rowCount();
+    QList<structLine> lstLines;
+    funcTableToList(&lstLines);
+
+    //--------------------------------------
+    //Obtain Wavelength LR
+    //--------------------------------------
+    double lstX[numLines-1];//Distance in pixels between lines
+    double lstY[numLines-1];//Wavelength
+    float wavePixLen = 0.0;
+    for( i=0; i<numLines-1; i++ )
     {
-        tmpPoint[0]         = ui->tableLstPoints->item(i,1)->text().trimmed().toDouble(0);
-        tmpPoint[1]         = ui->tableLstPoints->item(i,2)->text().trimmed().toDouble(0);
-        wavelengths[i-1]    = ui->tableLstPoints->item(i,0)->text().trimmed().toDouble(0);
-        distances[i-1]      = sqrt( pow( (origin[0]-tmpPoint[0])+(origin[1]-tmpPoint[1]), 2.0 ) );
-        //funcShowMsgERROR( "Wave: " + QString::number(wavelengths[i-1]) + " Dist: " + QString::number(distances[i-1]) );
+        wavePixLen  = (
+                        (lstLines.at(i+1).x2 - lstLines.at(i).x2) +
+                        (lstLines.at(i+1).x1 - lstLines.at(i).x1)
+                      )/2.0;
+        lstX[i]   = wavePixLen;
+        lstY[i]   = (float)(lstLines.at(i+1).wavelength - lstLines.at(i).wavelength);
+    }
+    linearRegresion wavelengthLR;
+    wavelengthLR = funcLinearRegression(lstX,lstY,numLines-1);
+
+    //--------------------------------------
+    //Obtain Lower(Wavelength) Vertical Line
+    //--------------------------------------
+    structLine lowerVerLine;
+    QString lowerBoundLinePath;
+    //get filepath
+    //if( funcLetUserSelectFile(&lowerBoundLinePath) != _OK )
+    if(
+            funcLetUserSelectFile(
+                                    &lowerBoundLinePath,
+                                    QString("Select the Lower Bound Line"),
+                                    new QString(_PATH_LAST_PATH_OPENED),
+                                    QString("./XML/lines/")
+                                 ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Reading File-path");
+        return (void)false;
+    }
+    //get lower bound line
+    if( funcReadLineFromXML(&lowerBoundLinePath,&lowerVerLine) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Line from XML");
+        return (void)false;
     }
 
-    //Get Linear Regression
-    linearRegresion LR_Dist2Wavelebgth, LR_Wavelebgth2Dist;
-    LR_Dist2Wavelebgth = funcLinearRegression( distances,   wavelengths, numPoints-1 );
-    LR_Wavelebgth2Dist = funcLinearRegression( wavelengths, distances,   numPoints-1 );
+    //std::cout << "Orig P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
+    //std::cout << "Orig P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
 
-    //Save LR
-    QString LR;
-    LR = QString::number(LR_Dist2Wavelebgth.a)+","+QString::number(LR_Dist2Wavelebgth.b)+","+QString::number(LR_Wavelebgth2Dist.a)+","+QString::number(LR_Wavelebgth2Dist.b);
-    mouseCursorReset();
-    if( saveFile(_PATH_SLIDE_CALIB_LR,LR) == false )
-        funcShowMsgERROR("Saving "+QString(_PATH_SLIDE_CALIB_LR));
-    else
-        funcShowMsg("Success","File Saved Sucessfully");
+    //--------------------------------------
+    //Get Average Slope and,
+    //Generate global Slope
+    //--------------------------------------
+    //Get Average Slope
+    int tmpXDifference = 0;
+    for( i=0; i<numLines; i++ )
+    {
+        tmpXDifference += lstLines.at(i).x2 - lstLines.at(i).x1;
+    }
+    tmpXDifference  = round( (float)tmpXDifference / (float)numLines );
+    lowerVerLine.x1 = lowerVerLine.x2 - tmpXDifference;
+
+    //std::cout << "Mod P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
+    //std::cout << "Mod P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
+
+    //--------------------------------------
+    //Calculate Vertical LR
+    //--------------------------------------
+    double X[2];
+    double Y[2];
+    X[0]    = (double)lowerVerLine.y1;
+    Y[0]    = (double)lowerVerLine.x1;
+    X[1]    = (double)lowerVerLine.y2;
+    Y[1]    = (double)lowerVerLine.x2;
+    std::cout << "Mod P1: " << X[0] << ", " << Y[0] << std::endl;
+    std::cout << "Mod P2: " << X[1] << ", " << Y[1] << std::endl;
+    linearRegresion vertLR = funcLinearRegression(X,Y,2);
+
+
+    //--------------------------------------
+    //Save Vertical Calibration File
+    //--------------------------------------
+    if( funcSaveVerticalCalibrationFile(
+                                            &lowerVerLine,
+                                            &wavelengthLR,
+                                            &vertLR
+                                        ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Saving Half Calibration File");
+        return (void)false;
+    }
+}
+
+void formSlideLinearRegression::funcTableToList(QList<structLine>* lstLines)
+{
+    //--------------------------------------
+    //Save Lines Into Memory
+    //--------------------------------------
+    int i, numLines;
+    numLines = ui->tableLstPoints->rowCount();
+    QString tmpItem;
+    QList<QString> coordinates;
+    for( i=0; i<numLines; i++ )
+    {
+        //Prepare new line
+        structLine tmpNewLine;
+        //Get P1
+        tmpItem                 = ui->tableLstPoints->item(i,1)->text().trimmed();
+        coordinates             = tmpItem.split(",");
+        tmpNewLine.x1           = coordinates.at(0).trimmed().toInt(0);
+        tmpNewLine.y1           = coordinates.at(1).trimmed().toInt(0);
+        //Get P2
+        tmpItem                 = ui->tableLstPoints->item(i,2)->text().trimmed();
+        coordinates             = tmpItem.split(",");
+        tmpNewLine.x2           = coordinates.at(0).trimmed().toInt(0);
+        tmpNewLine.y2           = coordinates.at(1).trimmed().toInt(0);
+        //Get Canvas
+        tmpItem                 = ui->tableLstPoints->item(i,3)->text().trimmed();
+        coordinates             = tmpItem.split(",");
+        tmpNewLine.canvasW      = coordinates.at(0).trimmed().toInt(0);
+        tmpNewLine.canvasH      = coordinates.at(1).trimmed().toInt(0);
+        //Get wavelength
+        tmpNewLine.wavelength   = ui->tableLstPoints->item(i,0)->text().trimmed().toInt(0);
+        //Add Line
+        lstLines->append(tmpNewLine);
+    }
+}
+
+int formSlideLinearRegression
+    ::funcSaveVerticalCalibrationFile(
+                                        structLine* lowerVerLine,
+                                        linearRegresion* wavelengthLR,
+                                        linearRegresion* vertLR
+){
+    //------------------------------------
+    //Get Output Filename from User
+    //------------------------------------
+    QString filenamePath;
+    if(
+            funcLetUserDefineFile(
+                                    &filenamePath,
+                                    "Select Half-Calibration File",
+                                    ".xml",
+                                    new QString(_PATH_LAST_PATH_OPENED),
+                                    "./XML/lines/"
+                                 ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Defining Filename from User");
+        return _ERROR;
+    }
+
+    //------------------------------------
+    //Prepare .XML contain
+    //------------------------------------
+    QList<QString> lstFixtures;
+    QList<QString> lstValues;
+    lstFixtures << "canvasW"        << "canvasH"
+                << "x1"             << "y1"
+                << "x2"             << "y2"
+                << "wavelengthA"    << "wavelengthB"
+                << "vertA"          << "vertB";
+    lstValues   << QString::number(lowerVerLine->canvasW);
+    lstValues   << QString::number(lowerVerLine->canvasH);
+    lstValues   << QString::number(lowerVerLine->x1);
+    lstValues   << QString::number(lowerVerLine->y1);
+    lstValues   << QString::number(lowerVerLine->x2);
+    lstValues   << QString::number(lowerVerLine->y2);
+    lstValues   << QString::number(wavelengthLR->a);
+    lstValues   << QString::number(wavelengthLR->b);
+    lstValues   << QString::number(vertLR->a);
+    lstValues   << QString::number(vertLR->b);
+
+    //------------------------------------
+    //Save .XML file
+    //------------------------------------
+    if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
+    {
+        return _ERROR;
+    }
+    return _OK;
 }
 
 void formSlideLinearRegression::on_pbRemoveItem_clicked()
 {
     ui->tableLstPoints->removeRow( ui->tableLstPoints->currentRow() );
+}
+
+void formSlideLinearRegression::on_pbGenHorRegression_clicked()
+{
+    int numLines;
+    //--------------------------------------
+    //Save Lines Into Memory
+    //--------------------------------------
+    numLines = ui->tableLstPoints->rowCount();
+    QList<structLine> lstLines;
+    funcTableToList(&lstLines);
+    if( numLines < 2 )
+    {
+        funcShowMsgERROR_Timeout("It requires 2 Lines");
+        return (void)false;
+    }
+
+
+    //--------------------------------------
+    //Calculate Average Slope
+    //--------------------------------------
+    double X[2];
+    double Y[2];
+    X[0]    = (double)lstLines.at(0).x1;
+    Y[0]    = (double)lstLines.at(0).y1;
+    X[1]    = (double)lstLines.at(0).x2;
+    Y[1]    = (double)lstLines.at(0).y2;
+    linearRegresion horizLR = funcLinearRegression(X,Y,2);
+
+    //--------------------------------------
+    //Save Horizontal Calibration
+    //--------------------------------------
+    //Get Filename
+    QString filenamePath;
+    if(
+            funcLetUserDefineFile(
+                                    &filenamePath,
+                                    "Select Half-Calibration File",
+                                    ".xml",
+                                    new QString(_PATH_LAST_PATH_OPENED),
+                                    "./XML/lines/"
+                                 ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Defining Filename from User");
+        return (void)false;
+    }
+    //Save Line
+    QList<QString> lstFixtures;
+    QList<QString> lstValues;
+    lstFixtures << "a" << "b";
+    lstValues   << QString::number(horizLR.a) << QString::number(horizLR.b);
+    if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Saving Calibration");
+        return (void)false;
+    }
+
+
+    //funcExportLineToXML(&tmpLine,filenamePath);
+
+
+
+
+
+    /*
+    //--------------------------------------
+    //Calculate Average Slope
+    //--------------------------------------
+    int difference;
+    difference = round(
+                        (float)(
+                                    (lstLines.at(0).y2 - lstLines.at(0).y1) +
+                                    (lstLines.at(1).y2 - lstLines.at(1).y1)
+                                ) / 2.0
+                      );
+    float m;
+    m = (float)(lstLines.at(0).y2-lstLines.at(0).y1) /
+        (float)(lstLines.at(0).x2-lstLines.at(0).x1);
+    structLine tmpLine;
+    //Backup Line
+    tmpLine.canvasW     = lstLines.at(0).canvasW;
+    tmpLine.canvasH     = lstLines.at(0).canvasH;
+    tmpLine.x1          = lstLines.at(0).x1;
+    tmpLine.y1          = lstLines.at(0).y1;
+    tmpLine.x2          = lstLines.at(0).x2;
+    tmpLine.y2          = lstLines.at(0).y1 + difference;
+    tmpLine.m           = m;
+    tmpLine.wavelength  = 0;
+    tmpLine.oritation   = _HORIZONTAL;
+    tmpLine.colorR      = 255;
+    tmpLine.colorG      = 255;
+    tmpLine.colorB      = 255;
+
+    //--------------------------------------
+    //Save Horizontal Calibration
+    //--------------------------------------
+    //Get Filename
+    QString filenamePath;
+    if(
+            funcLetUserDefineFile(
+                                    &filenamePath,
+                                    "Select Half-Calibration File",
+                                    ".xml",
+                                    new QString(_PATH_LAST_PATH_OPENED),
+                                    "./XML/lines/"
+                                 ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Defining Filename from User");
+        return (void)false;
+    }
+    //Save Line
+    funcExportLineToXML(&tmpLine,filenamePath);
+    */
+
+
 }

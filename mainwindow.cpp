@@ -369,7 +369,18 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     //funcAllocInteger3DMatrixMemo( 3, 3, 3, tmpbe, true );
 
+    //on_actionSlide_Linear_Regression_triggered();
 
+    /*
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/408nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/438nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/492nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/550nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/586nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/620nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/712nm.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/horizontalLower.xml");
+    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/horizontalUpper.xml");*/
 
 }
 
@@ -7563,7 +7574,8 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
     QString tmpCommand;
     tmpCommand.append("raspivid -n -t ");
     tmpCommand.append( QString::number( ui->spinBoxVideoDuration->value() * 1000 ) );
-    tmpCommand.append( " -vf -b 50000000 -fps " );
+    //tmpCommand.append( " -vf -b 50000000 -fps " );
+    tmpCommand.append( " -b 50000000 -fps " );
     tmpCommand.append( QString::number(_VIDEO_FRAME_RATE) );
     tmpCommand.append( " -o " );
     tmpCommand.append( remoteVideo );
@@ -9573,11 +9585,48 @@ void MainWindow::on_actionDiffraction_Origin_triggered()
 
 void MainWindow::on_openLine_triggered()
 {
-    //Get line from user
-    structLine tmpLineData;
-    funcReadLineFromXML(&tmpLineData);
+    //---------------------------------------
+    //Let the user select the file
+    //---------------------------------------
+    QString fileOrigin;
+    if( funcLetUserSelectFile(&fileOrigin) != _OK )
+    {
+        return (void)false;
+    }
 
-    //Draw line in canvasEdit
+    //---------------------------------------
+    //Draw Line
+    //---------------------------------------
+    funcDrawLineIntoCanvasEdit(fileOrigin);
+}
+
+void MainWindow::on_actionSlide_Linear_Regression_triggered()
+{
+    formSlideLinearRegression* tmpForm = new formSlideLinearRegression(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
+}
+
+void MainWindow::on_actionarcLine_triggered()
+{
+    funcShowMsg_Timeout("Ups!!","Command not implemented yet.");
+}
+
+bool MainWindow::funcDrawLineIntoCanvasEdit(const QString &filePath)
+{
+    //---------------------------------------
+    //Read the line from XML
+    //---------------------------------------
+    structLine tmpLineData;
+    if( funcReadLineFromXML((QString*)&filePath, &tmpLineData) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Opening: " + filePath, this);
+        return _ERROR;
+    }
+
+    //---------------------------------------
+    //Draw Line into canvasEdit
+    //---------------------------------------
     QPoint p1(tmpLineData.x1,tmpLineData.y1);
     QPoint p2(tmpLineData.x2,tmpLineData.y2);
     customLine* tmpLine = new customLine(p1,p2,QPen(QColor(qRgb(tmpLineData.colorR,tmpLineData.colorG,tmpLineData.colorB))));
@@ -9587,11 +9636,232 @@ void MainWindow::on_openLine_triggered()
     tmpLine->parentSize.setHeight(tmpLineData.canvasH);
     canvasCalib->scene()->addItem( tmpLine );
     canvasCalib->update();
+    return _OK;
+
 }
 
-void MainWindow::on_actionSlide_Linear_Regression_triggered()
+void MainWindow::on_actionPlot_Calculated_Line_triggered()
 {
-    formSlideLinearRegression* tmpForm = new formSlideLinearRegression(this);
-    tmpForm->setModal(true);
-    tmpForm->show();
+    //---------------------------------------
+    //Get Line from User
+    //---------------------------------------
+    //Get filename
+    QString fileName;
+    if( funcLetUserSelectFile(&fileName) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting File from User");
+        return (void)false;
+    }
+    //Get Line parameters from .XML
+    linearRegresion horizLR;
+    funcReadHorizCalibration(&fileName,&horizLR);
+
+    //---------------------------------------
+    //Plot Calculated Line
+    //---------------------------------------
+    int newX, newY;
+    for(newX=1; newX<canvasCalib->width(); newX++)
+    {
+        newY = round( (horizLR.b*newX) + horizLR.a );
+        //std::cout << "(" << horizLR.b << "*" << newX << ") + " << horizLR.a << " = " << newY << std::endl;
+        double rad = 1.0;
+        QGraphicsEllipseItem* item = new QGraphicsEllipseItem(newX, newY, rad, rad );
+        item->setPen( QPen(Qt::white) );
+        item->setBrush( QBrush(Qt::white) );
+        canvasCalib->scene()->addItem(item);
+    }
+
+}
+
+void MainWindow::on_actionPlot_Upper_Line_Rotation_triggered()
+{
+    //---------------------------------------
+    //Get Line from User
+    //---------------------------------------
+    //Get filename
+    QString fileName;
+    if( funcLetUserSelectFile(&fileName) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting File from User");
+        return (void)false;
+    }
+    //Get Calibration Parameters from .XML
+    structVerticalCalibration tmpVertCal;
+    funcReadVerticalCalibration(&fileName,&tmpVertCal);
+
+    //---------------------------------------
+    //Plot Calculated Line
+    //---------------------------------------
+    int newX, newY;
+    for(newY=1; newY<canvasCalib->height(); newY++)
+    {
+        newX = (tmpVertCal.vertLR.b*newY) + tmpVertCal.vertLR.a;
+        double rad = 1.0;
+        QGraphicsEllipseItem* item = new QGraphicsEllipseItem(newX, newY, rad, rad );
+        item->setPen( QPen(Qt::white) );
+        item->setBrush( QBrush(Qt::white) );
+        canvasCalib->scene()->addItem(item);
+    }
+
+}
+
+int MainWindow::funcReadVerticalCalibration(
+                                                QString* filePath,
+                                                structVerticalCalibration* vertCal
+){
+    //---------------------------------------
+    //Extract XML
+    //---------------------------------------
+    QFile *xmlFile = new QFile(*filePath);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening: "+*filePath);
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="canvasW" )
+                vertCal->canvasW = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="canvasH" )
+                vertCal->canvasH = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="x1" )
+                vertCal->x1 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="y1" )
+                vertCal->y1 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="x2" )
+                vertCal->x2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="y2" )
+                vertCal->y2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="wavelengthA" )
+                vertCal->wavelengthLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wavelengthB" )
+                vertCal->wavelengthLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="vertA" )
+                vertCal->vertLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="vertB" )
+                vertCal->vertLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    return _OK;
+}
+
+int MainWindow::funcReadHorizCalibration(QString* filePath, linearRegresion* horizLR)
+{
+    //---------------------------------------
+    //Extract XML
+    //---------------------------------------
+    QFile *xmlFile = new QFile(*filePath);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening: "+*filePath);
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="a" )
+                horizLR->a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="b" )
+                horizLR->b = xmlReader->readElementText().trimmed().toFloat(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    return _OK;
+}
+
+void MainWindow::on_actionOrigin_triggered()
+{
+    //---------------------------------------
+    //Get Horizontal Calibration
+    //---------------------------------------
+    //Get filename
+    QString fileName;
+    if( funcLetUserSelectFile(&fileName) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting Horizontal Calibration");
+        return (void)false;
+    }
+    //Get Line parameters from .XML
+    linearRegresion tmpHorizontalCal;
+    funcReadHorizCalibration(&fileName,&tmpHorizontalCal);
+
+    //---------------------------------------
+    //Get Vertical Calibration
+    //---------------------------------------
+    //Get filename
+    if( funcLetUserSelectFile(&fileName) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting Vertical Calibration");
+        return (void)false;
+    }
+    //Get Calibration Parameters from .XML
+    structVerticalCalibration tmpVertCal;
+    funcReadVerticalCalibration(&fileName,&tmpVertCal);
+
+    //---------------------------------------
+    //Calc Origin
+    //---------------------------------------
+    float horA, horB, horY;
+    float verA, verB, verX;
+    //Prefill Coordinates
+    horA  = tmpHorizontalCal.a;
+    horB  = tmpHorizontalCal.b;
+    verA  = tmpVertCal.vertLR.a;
+    verB  = tmpVertCal.vertLR.b;
+    horY  = (horB*tmpVertCal.x2)+horA;
+    verX  = (verB*horY)+verA;
+
+    //---------------------------------------
+    //Add Big Point
+    //---------------------------------------
+    float x, y;
+    x = verX;
+    y = horY;
+    //std::cout << x << "," << y << std::endl;
+    double rad = 20.0;
+    QGraphicsEllipseItem* item = new QGraphicsEllipseItem(x-(rad/2.0), y-(rad/2.0), rad, rad );
+    item->setPen( QPen(Qt::magenta) );
+    item->setBrush( QBrush(Qt::white) );
+    canvasCalib->scene()->addItem(item);
+
 }
