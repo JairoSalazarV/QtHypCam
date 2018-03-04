@@ -17,7 +17,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     QString fileToOpen;
 
-    if(1)
+    if(0)
     {
         fileToOpen = "./XML/lines/slideV1_002/408nm.xml";
         funcAddRowToTable(&fileToOpen);
@@ -352,21 +352,24 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
         funcShowMsgERROR_Timeout("Defining Filename from User");
         return (void)false;
     }
+    //main Weight
+    int bigH    = (lstLines.at(1).y2-lstLines.at(0).y2);
+    int canvasW = lstLines.at(0).canvasW;
+    int canvasH = lstLines.at(0).canvasH;
     //Save Line
     QList<QString> lstFixtures;
     QList<QString> lstValues;
-    lstFixtures << "a" << "b";
-    lstValues   << QString::number(horizLR.a) << QString::number(horizLR.b);
+    lstFixtures << "canvasW" << "canvasH" << "H" << "a" << "b";
+    lstValues   << QString::number(canvasW)
+                << QString::number(canvasH)
+                << QString::number(bigH)
+                << QString::number(horizLR.a)
+                << QString::number(horizLR.b);
     if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
     {
         funcShowMsgERROR_Timeout("Saving Calibration");
         return (void)false;
     }
-
-
-    //funcExportLineToXML(&tmpLine,filenamePath);
-
-
 
 
 

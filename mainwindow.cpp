@@ -145,6 +145,8 @@
 
 #include <formslidelinearregression.h>
 
+#include <formmergeslidecalibrations.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -9864,4 +9866,36 @@ void MainWindow::on_actionOrigin_triggered()
     item->setBrush( QBrush(Qt::white) );
     canvasCalib->scene()->addItem(item);
 
+}
+
+void MainWindow::on_actionBuld_HypImg_triggered()
+{
+    //--------------------------------
+    //Define Video Origin
+    //--------------------------------
+    QString defaVideoPath;
+    defaVideoPath.append(_PATH_LOCAL_SYNC_FOLDERS);
+    defaVideoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
+    if( funcLetUserSelectFile( &defaVideoPath ) != _OK )
+    {
+        return (void)false;
+    }
+
+    //--------------------------------
+    //Read Calibrations
+    //--------------------------------
+    /*
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib(&slideCalibration) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration");
+        return (void)false;
+    }*/
+}
+
+void MainWindow::on_actionMerge_Calibration_triggered()
+{
+    formMergeSlideCalibrations* tmpForm = new formMergeSlideCalibrations(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
 }

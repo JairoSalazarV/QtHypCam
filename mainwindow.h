@@ -625,6 +625,10 @@ private slots:
 
     void on_actionOrigin_triggered();
 
+    void on_actionBuld_HypImg_triggered();
+
+    void on_actionMerge_Calibration_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

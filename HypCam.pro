@@ -45,7 +45,8 @@ SOURCES += main.cpp\
     showancalchrres.cpp \
     formgenlinearregression.cpp \
     formslidelinearregression.cpp \
-    custombrezierline.cpp
+    custombrezierline.cpp \
+    formmergeslidecalibrations.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -81,7 +82,8 @@ HEADERS  += mainwindow.h \
     ui_showancalchrres.h \
     formgenlinearregression.h \
     formslidelinearregression.h \
-    custombrezierline.h
+    custombrezierline.h \
+    formmergeslidecalibrations.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -99,7 +101,8 @@ FORMS    += mainwindow.ui \
     formbuildslidehypecubepreview.ui \
     formtimertxt.ui \
     formgenlinearregression.ui \
-    formslidelinearregression.ui
+    formslidelinearregression.ui \
+    formmergeslidecalibrations.ui
 
 RESOURCES += \
     lstImgs.qrc

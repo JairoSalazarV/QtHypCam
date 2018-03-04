@@ -34,6 +34,8 @@
 
 #include <QTimer>
 
+#include <QIODevice>
+
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -2594,4 +2596,112 @@ int funcCalc_Y_SlopToPoint(int newX, structLine* internLine)
     newY    = round( (m*(newX - origX))+origY );
     //std::cout << m << "( " << newX << " - " << origX << ") + " << origY << std::endl;
     return newY;
+}
+
+int funcMergeSlideCalib(
+                            const QString &vertPath,
+                            const QString &horizPath,
+                            structSlideCalibration* slideCalibration
+){
+    //------------------------------------------------
+    //Read Calibration Parts
+    //------------------------------------------------
+    funcReadHorHalfCalib(horizPath,slideCalibration);
+    funcReadVertHalfCalib(vertPath,slideCalibration);
+
+    //------------------------------------------------
+    //Merge Calibration Parts
+    //------------------------------------------------
+}
+
+int funcReadVertHalfCalib(
+                            const QString &filePath,
+                            structSlideCalibration* slideCalibration
+){
+    QFile *xmlFile = new QFile( filePath );
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
+            if( xmlReader->name()=="canvasW" )
+                slideCalibration->vertical.canvasW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="canvasH" )
+                slideCalibration->vertical.canvasH = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x1" )
+                slideCalibration->vertical.x1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y1" )
+                slideCalibration->vertical.y1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x2" )
+                slideCalibration->vertical.x2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y2" )
+                slideCalibration->vertical.y2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="wavelengthA" )
+                slideCalibration->vertical.wavelengthLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="wavelengthB" )
+                slideCalibration->vertical.wavelengthLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="vertA" )
+                slideCalibration->vertical.vertLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="vertB" )
+                slideCalibration->vertical.vertLR.b = xmlReader->readElementText().toFloat(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+    return _OK;
+}
+
+int funcReadHorHalfCalib(
+                            const QString &filePath,
+                            structSlideCalibration* slideCalibration
+){
+    QFile *xmlFile = new QFile( filePath );
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
+            if( xmlReader->name()=="canvasW" )
+                slideCalibration->horizontal.canvasW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="canvasH" )
+                slideCalibration->horizontal.canvasH = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="H" )
+                slideCalibration->horizontal.H = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="a" )
+                slideCalibration->horizontal.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="b" )
+                slideCalibration->horizontal.b = xmlReader->readElementText().toFloat(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+    return _OK;
 }

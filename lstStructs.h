@@ -227,6 +227,19 @@
         linearRegresion vertLR;
     }structVerticalCalibration;
 
+    typedef struct structHorizontalCalibration{
+        int   canvasW;
+        int   canvasH;
+        int   H;
+        float a;
+        float b;
+    }structHorizontalCalibration;
+
+    typedef struct structSlideCalibration{
+        structVerticalCalibration   vertical;
+        structHorizontalCalibration horizontal;
+    }structSlideCalibration;
+
     typedef struct colorAnalyseResult{
         int maxRx;
         int maxR;

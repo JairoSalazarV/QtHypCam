@@ -1459,10 +1459,19 @@ QSlider::handle:horizontal {
      <property name="title">
       <string>Slide</string>
      </property>
+     <widget class="QMenu" name="menuCompute">
+      <property name="title">
+       <string>Compute</string>
+      </property>
+      <addaction name="actionBuld_HypImg"/>
+     </widget>
      <addaction name="actionSlideDiffraction"/>
      <addaction name="actionTimelapse"/>
      <addaction name="actionSlide_Build_Hypercube"/>
      <addaction name="actionFull_Video"/>
+     <addaction name="separator"/>
+     <addaction name="menuCompute"/>
+     <addaction name="separator"/>
     </widget>
     <widget class="QMenu" name="menuObtain">
      <property name="title">
@@ -1522,6 +1531,7 @@ QSlider::handle:horizontal {
     <addaction name="actionLinear_Regression"/>
     <addaction name="actionSlide_Linear_Regression"/>
     <addaction name="menuPlot"/>
+    <addaction name="actionMerge_Calibration"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -2250,6 +2260,16 @@ QSlider::handle:horizontal {
   <action name="actionOrigin">
    <property name="text">
     <string>Origin</string>
+   </property>
+  </action>
+  <action name="actionBuld_HypImg">
+   <property name="text">
+    <string>Extract HypImg</string>
+   </property>
+  </action>
+  <action name="actionMerge_Calibration">
+   <property name="text">
+    <string>Merge Slide Calibration</string>
    </property>
   </action>
  </widget>

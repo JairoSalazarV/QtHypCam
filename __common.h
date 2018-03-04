@@ -228,5 +228,15 @@
 
     int funcCalc_Y_SlopToPoint(int newX, structLine* internLine);
 
+    int funcReadSlideCalib(
+                                const QString &vertPath,
+                                const QString &horizPath,
+                                structSlideCalibration* slideCalibration
+                          );
+
+    int funcReadHorHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
+
+    int funcReadVertHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
+
 
 #endif // __COMMON_H
