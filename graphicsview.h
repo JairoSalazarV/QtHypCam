@@ -15,6 +15,10 @@ class GraphicsView : public QGraphicsView
 
         QAction *showContextMenuLine(QPoint pos);
 
+        int originalW;
+
+        int originalH;
+
         //void funcShowWavelenLines(int type);
 
     private:

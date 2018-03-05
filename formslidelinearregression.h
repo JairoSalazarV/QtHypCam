@@ -33,6 +33,8 @@ private slots:
 
     void on_pbGenHorRegression_clicked();
 
+    //int scaleLen( int len, int canvasLen, int originalLen );
+
     void funcTableToList(QList<structLine>* lstLines);
 
 private:

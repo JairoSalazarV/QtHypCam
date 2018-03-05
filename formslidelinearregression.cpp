@@ -10,10 +10,11 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->tableLstPoints->setColumnWidth(0,133);
+    ui->tableLstPoints->setColumnWidth(0,150);
     ui->tableLstPoints->setColumnWidth(1,105);
     ui->tableLstPoints->setColumnWidth(2,105);
     ui->tableLstPoints->setColumnWidth(3,115);
+    ui->tableLstPoints->setColumnWidth(4,115);
 
     QString fileToOpen;
 
@@ -34,7 +35,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
         fileToOpen = "./XML/lines/slideV1_002/712nm.xml";
         funcAddRowToTable(&fileToOpen);
     }
-    if(0)
+    if(1)
     {
         //fileToOpen = "./XML/lines/slideV1_002/verticalLowerBound.xml";
         //funcAddRowToTable(&fileToOpen);        
@@ -97,7 +98,7 @@ bool formSlideLinearRegression::funcAddRowToTable(QString* filePath)
         ui->tableLstPoints->setItem(
                                         ui->tableLstPoints->rowCount()-1,
                                         3,
-                                        new QTableWidgetItem(QString::number(tmpNewLine.canvasW)+", "+QString::number(tmpNewLine.canvasH))
+                                        new QTableWidgetItem(QString::number(tmpNewLine.originalW)+", "+QString::number(tmpNewLine.originalH))
                                   );
         ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,0)->setTextAlignment(Qt::AlignCenter);
         ui->tableLstPoints->item(ui->tableLstPoints->rowCount()-1,1)->setTextAlignment(Qt::AlignCenter);
@@ -115,14 +116,13 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //wavelength is located at the left
     //and is vertical
     //--------------------------------------
-
     int i, numLines;
     //--------------------------------------
     //Save Lines Into Memory
     //--------------------------------------
     numLines = ui->tableLstPoints->rowCount();
     QList<structLine> lstLines;
-    funcTableToList(&lstLines);
+    funcTableToList(&lstLines);    
 
     //--------------------------------------
     //Obtain Wavelength LR
@@ -136,8 +136,9 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
                         (lstLines.at(i+1).x2 - lstLines.at(i).x2) +
                         (lstLines.at(i+1).x1 - lstLines.at(i).x1)
                       )/2.0;
-        lstX[i]   = wavePixLen;
-        lstY[i]   = (float)(lstLines.at(i+1).wavelength - lstLines.at(i).wavelength);
+        lstX[i]     = wavePixLen;
+        lstY[i]     = (float)(lstLines.at(i+1).wavelength -
+                              lstLines.at(i).wavelength);
     }
     linearRegresion wavelengthLR;
     wavelengthLR = funcLinearRegression(lstX,lstY,numLines-1);
@@ -195,8 +196,8 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     Y[0]    = (double)lowerVerLine.x1;
     X[1]    = (double)lowerVerLine.y2;
     Y[1]    = (double)lowerVerLine.x2;
-    std::cout << "Mod P1: " << X[0] << ", " << Y[0] << std::endl;
-    std::cout << "Mod P2: " << X[1] << ", " << Y[1] << std::endl;
+    //std::cout << "Mod P1: " << X[0] << ", " << Y[0] << std::endl;
+    //std::cout << "Mod P2: " << X[1] << ", " << Y[1] << std::endl;
     linearRegresion vertLR = funcLinearRegression(X,Y,2);
 
 
@@ -237,11 +238,11 @@ void formSlideLinearRegression::funcTableToList(QList<structLine>* lstLines)
         coordinates             = tmpItem.split(",");
         tmpNewLine.x2           = coordinates.at(0).trimmed().toInt(0);
         tmpNewLine.y2           = coordinates.at(1).trimmed().toInt(0);
-        //Get Canvas
+        //Get Image Size
         tmpItem                 = ui->tableLstPoints->item(i,3)->text().trimmed();
         coordinates             = tmpItem.split(",");
-        tmpNewLine.canvasW      = coordinates.at(0).trimmed().toInt(0);
-        tmpNewLine.canvasH      = coordinates.at(1).trimmed().toInt(0);
+        tmpNewLine.originalW    = coordinates.at(0).trimmed().toInt(0);
+        tmpNewLine.originalH    = coordinates.at(1).trimmed().toInt(0);
         //Get wavelength
         tmpNewLine.wavelength   = ui->tableLstPoints->item(i,0)->text().trimmed().toInt(0);
         //Add Line
@@ -277,13 +278,13 @@ int formSlideLinearRegression
     //------------------------------------
     QList<QString> lstFixtures;
     QList<QString> lstValues;
-    lstFixtures << "canvasW"        << "canvasH"
+    lstFixtures << "imgW"           << "imgH"
                 << "x1"             << "y1"
                 << "x2"             << "y2"
                 << "wavelengthA"    << "wavelengthB"
                 << "vertA"          << "vertB";
-    lstValues   << QString::number(lowerVerLine->canvasW);
-    lstValues   << QString::number(lowerVerLine->canvasH);
+    lstValues   << QString::number(lowerVerLine->originalW);
+    lstValues   << QString::number(lowerVerLine->originalH);
     lstValues   << QString::number(lowerVerLine->x1);
     lstValues   << QString::number(lowerVerLine->y1);
     lstValues   << QString::number(lowerVerLine->x2);
@@ -354,14 +355,14 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
     }
     //main Weight
     int bigH    = (lstLines.at(1).y2-lstLines.at(0).y2);
-    int canvasW = lstLines.at(0).canvasW;
-    int canvasH = lstLines.at(0).canvasH;
+    int imgW = lstLines.at(0).originalW;
+    int imgH = lstLines.at(0).originalH;
     //Save Line
     QList<QString> lstFixtures;
     QList<QString> lstValues;
-    lstFixtures << "canvasW" << "canvasH" << "H" << "a" << "b";
-    lstValues   << QString::number(canvasW)
-                << QString::number(canvasH)
+    lstFixtures << "imgW" << "imgH" << "H" << "a" << "b";
+    lstValues   << QString::number(imgW)
+                << QString::number(imgH)
                 << QString::number(bigH)
                 << QString::number(horizLR.a)
                 << QString::number(horizLR.b);

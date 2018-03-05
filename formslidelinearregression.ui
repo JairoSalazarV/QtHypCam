@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>512</width>
+    <width>537</width>
     <height>419</height>
    </rect>
   </property>
@@ -16,7 +16,7 @@
   <widget class="QPushButton" name="pbGenRegression">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>260</x>
      <y>380</y>
      <width>221</width>
      <height>28</height>
@@ -48,7 +48,7 @@
   <widget class="QPushButton" name="pbRemoveItem">
    <property name="geometry">
     <rect>
-     <x>470</x>
+     <x>490</x>
      <y>380</y>
      <width>31</width>
      <height>28</height>
@@ -83,7 +83,7 @@
     <rect>
      <x>10</x>
      <y>68</y>
-     <width>491</width>
+     <width>511</width>
      <height>301</height>
     </rect>
    </property>
@@ -131,7 +131,7 @@
    </column>
    <column>
     <property name="text">
-     <string>Canvas</string>
+     <string>Image Size</string>
     </property>
     <property name="font">
      <font>
@@ -147,7 +147,7 @@
   <widget class="QPushButton" name="pbGenHorRegression">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>30</x>
      <y>380</y>
      <width>221</width>
      <height>28</height>

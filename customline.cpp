@@ -82,26 +82,52 @@ void customLine::funcSaveLineParameters()
         //funcShowMsg("Obt",tmpName);
     }
 
-    //----------------------------------------
+    //****************************************
     //Save line parameters
+    //****************************************
+
+    //----------------------------------------
+    //Translate Canvas-Coordinates
+    //to Img-Coordinates
+    //----------------------------------------
+    int x1, y1, x2, y2, imgW, imgH;
+    imgW    = this->parameters.originalW;
+    imgH    = this->parameters.originalH;
+    x1      = this->line().p1().x();
+    y1      = this->line().p1().y();
+    x2      = this->line().p2().x();
+    y2      = this->line().p2().y();
+    x1      = (x1==0)?0:round( ( (float)x1/(float)this->parentSize.width() )  * (float)imgW);
+    y1      = (y1==0)?0:round( ( (float)y1/(float)this->parentSize.height() ) * (float)imgH);
+    x2      = (x2==0)?0:round( ( (float)x2/(float)this->parentSize.width() )  * (float)imgW);
+    y2      = (y2==0)?0:round( ( (float)y2/(float)this->parentSize.height() ) * (float)imgH);
+
+    //----------------------------------------
+    //Fill List of Fixtures and Values
     //----------------------------------------
     QList<QString> lstFixtures;
     QList<QString> lstValues;
     lstFixtures.clear();
     lstValues.clear();
-    lstFixtures << "canvasW" << "canvasH" << "x1" << "y1" << "x2" << "y2" << "colorR" << "colorG" << "colorB" << "wavelength" << "orientation";
-    lstValues.append(QString::number(this->parentSize.width()));
-    lstValues.append(QString::number(this->parentSize.height()));
-    lstValues.append(QString::number(this->line().p1().x() ));
-    lstValues.append(QString::number(this->line().p1().y()));
-    lstValues.append(QString::number(this->line().p2().x()));
-    lstValues.append(QString::number(this->line().p2().y()));
+    lstFixtures << "imgW" << "imgH"
+                << "x1" << "y1" << "x2" << "y2"
+                << "colorR" << "colorG" << "colorB"
+                << "wavelength" << "orientation";
+    lstValues.append(QString::number(imgW));
+    lstValues.append(QString::number(imgH));
+    lstValues.append(QString::number(x1));
+    lstValues.append(QString::number(y1));
+    lstValues.append(QString::number(x2));
+    lstValues.append(QString::number(y2));
     lstValues.append(QString::number(this->pen().color().red()));
     lstValues.append(QString::number(this->pen().color().green()));
     lstValues.append(QString::number(this->pen().color().blue()));
     lstValues.append(QString::number(this->parameters.wavelength));
     lstValues.append(QString::number(this->parameters.orientation));
+
+    //----------------------------------------
     //Save line
+    //----------------------------------------
     if( funcSaveXML(&tmpName,&lstFixtures,&lstValues) != _OK )
     {
         funcShowMsgERROR("Saving Line Parameters");

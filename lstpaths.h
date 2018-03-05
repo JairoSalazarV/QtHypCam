@@ -112,7 +112,7 @@
     #define _PATH_SLIDE_SETTINGS            "./XML/slideSettings.xml"
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
-    #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration"
+    #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
 

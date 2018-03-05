@@ -69,6 +69,20 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     //Read Vertical
     funcReadVertHalfCalib(ui->txtVertPath->text().trimmed(), &slideCalibration);
 
+    //---------------------------------------
+    //Get Origin Point
+    //---------------------------------------
+    float horA, horB;
+    float verA, verB;
+    //Prefill Coordinates
+    horA  = slideCalibration.horizLR.a;
+    horB  = slideCalibration.horizLR.b;
+    verA  = slideCalibration.vertLR.a;
+    verB  = slideCalibration.vertLR.b;
+    slideCalibration.originY = round( ((float)horB*(float)slideCalibration.x2)+(float)horA);
+    slideCalibration.originX = round( ((float)verB*(float)slideCalibration.originY)+(float)verA );
+
+
     //----------------------------------------------
     //Save Merged Calibration File
     //----------------------------------------------
@@ -87,6 +101,8 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
         return (void)false;
     }
 
+    this->close();
+
 }
 
 int formMergeSlideCalibrations
@@ -100,35 +116,31 @@ int formMergeSlideCalibrations
     //-----------------------------------
     //Fill Fixtures
     //-----------------------------------
-    lstFixtures << "vertCanvasW" << "vertCanvasH"
-                << "vertX1"      << "vertY1"
-                << "vertX2"      << "vertY2"
-                << "vertWaveA"   << "vertWaveB"
-                << "vertVertA"   << "vertVertB";
-
-    lstFixtures << "horCanvasW" << "horCanvasH"
-                << "H"
-                << "a" << "b";
+    lstFixtures << "imgW"       << "imgH"
+                << "x1"         << "y1"         << "x2"         << "y2"
+                << "originX"    << "originY"    <<  "originH"
+                << "waveA"      << "waveB"
+                << "vertA"      << "vertB"
+                << "horizA"     << "horizB";
 
     //-----------------------------------
     //Fill Values
     //-----------------------------------
-    lstValues   << QString::number(slideCalibration->vertical.canvasW)
-                << QString::number(slideCalibration->vertical.canvasH)
-                << QString::number(slideCalibration->vertical.x1)
-                << QString::number(slideCalibration->vertical.y1)
-                << QString::number(slideCalibration->vertical.x2)
-                << QString::number(slideCalibration->vertical.y2)
-                << QString::number(slideCalibration->vertical.wavelengthLR.a)
-                << QString::number(slideCalibration->vertical.wavelengthLR.b)
-                << QString::number(slideCalibration->vertical.vertLR.a)
-                << QString::number(slideCalibration->vertical.vertLR.b);
-
-    lstValues   << QString::number(slideCalibration->horizontal.canvasW)
-                << QString::number(slideCalibration->horizontal.canvasH)
-                << QString::number(slideCalibration->horizontal.H)
-                << QString::number(slideCalibration->horizontal.a)
-                << QString::number(slideCalibration->horizontal.b);
+    lstValues   << QString::number(slideCalibration->imgW)
+                << QString::number(slideCalibration->imgH)
+                << QString::number(slideCalibration->x1)
+                << QString::number(slideCalibration->y1)
+                << QString::number(slideCalibration->x2)
+                << QString::number(slideCalibration->y2)
+                << QString::number(slideCalibration->originX)
+                << QString::number(slideCalibration->originY)
+                << QString::number(slideCalibration->originH)
+                << QString::number(slideCalibration->wavelengthLR.a)
+                << QString::number(slideCalibration->wavelengthLR.b)
+                << QString::number(slideCalibration->vertLR.a)
+                << QString::number(slideCalibration->vertLR.b)
+                << QString::number(slideCalibration->horizLR.a)
+                << QString::number(slideCalibration->horizLR.b);
 
     //-----------------------------------
     //Save Slide Calibration File

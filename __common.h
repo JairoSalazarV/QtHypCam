@@ -224,19 +224,20 @@
 
     void funcExportLineToXML(structLine* tmpLine, const QString filePath);
 
-    int funcCalc_X_SlopToPoint(int newY, structLine* internLine);
+    //int funcCalc_X_SlopToPoint(int newY, structLine* internLine);
 
-    int funcCalc_Y_SlopToPoint(int newX, structLine* internLine);
+    //int funcCalc_Y_SlopToPoint(int newX, structLine* internLine);
 
-    int funcReadSlideCalib(
-                                const QString &vertPath,
-                                const QString &horizPath,
-                                structSlideCalibration* slideCalibration
-                          );
+    int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCalibration );
 
     int funcReadHorHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
 
     int funcReadVertHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
 
+    cameraResolution* getCamRes( int megapixels );
+
+    int scaleLen( int len, int canvasLen, int originalLen );
+
+    int funcCalcCoordinate( const int &coordinate, linearRegresion* LR );
 
 #endif // __COMMON_H

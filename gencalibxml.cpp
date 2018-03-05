@@ -39,8 +39,6 @@ genCalibXML::~genCalibXML()
     delete ui;
 }
 
-
-
 void genCalibXML::disableButtons(){
     ui->pbRedLeftUp->setVisible(false);
     ui->pbGreenLeftUp->setVisible(false);
@@ -575,7 +573,8 @@ void genCalibXML::on_pbGenCal_clicked()
 {
     if( isExportable )
     {
-        camRes = genCalibXMLMainWindow->getCamRes();
+        camRes          = getCamRes( genCalibXMLMainWindow->getCamMP() );
+
 
         QApplication::setOverrideCursor(Qt::WaitCursor);
 

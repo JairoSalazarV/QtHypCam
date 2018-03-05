@@ -871,6 +871,7 @@ void funcObtSettings( structSettings *lstSettings ){
     QFile *xmlFile = new QFile(_PATH_STARTING_SETTINGS);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
         funcShowMsg("ERROR","Couldn't open _PATH_STARTING_SETTINGS to load settings for download");
+        return (void)false;
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
 
@@ -2346,10 +2347,14 @@ int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement)
         {
-            if( xmlReader->name()=="canvasW" )
-                tmpLine->canvasW = xmlReader->readElementText().trimmed().toInt(0);
-            if( xmlReader->name()=="canvasH" )
-                tmpLine->canvasH = xmlReader->readElementText().trimmed().toInt(0);
+            //if( xmlReader->name()=="canvasW" )
+            //    tmpLine->canvasW = xmlReader->readElementText().trimmed().toInt(0);
+            //if( xmlReader->name()=="canvasH" )
+            //    tmpLine->canvasH = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="imgW" )
+                tmpLine->originalW = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="imgH" )
+                tmpLine->originalH = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="x1" )
                 tmpLine->x1 = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="y1" )
@@ -2358,8 +2363,8 @@ int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
                 tmpLine->x2 = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="y2" )
                 tmpLine->y2 = xmlReader->readElementText().trimmed().toInt(0);
-            if( xmlReader->name()=="m" )
-                tmpLine->m = xmlReader->readElementText().trimmed().toFloat(0);
+            //if( xmlReader->name()=="m" )
+            //    tmpLine->m = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="colorR" )
                 tmpLine->colorR = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="colorG" )
@@ -2560,7 +2565,7 @@ void funcExportLineToXML(structLine* tmpLine, const QString filePath)
     lstValues.append(QString::number(tmpLine->y1));
     lstValues.append(QString::number(tmpLine->x2));
     lstValues.append(QString::number(tmpLine->y2));
-    lstValues.append(QString::number(tmpLine->m));
+    //lstValues.append(QString::number(tmpLine->m));
     lstValues.append(QString::number(tmpLine->colorR));
     lstValues.append(QString::number(tmpLine->colorG));
     lstValues.append(QString::number(tmpLine->colorB));
@@ -2574,6 +2579,7 @@ void funcExportLineToXML(structLine* tmpLine, const QString filePath)
     }
 }
 
+/*
 int funcCalc_X_SlopToPoint(int newY, structLine* internLine)
 {
     int newX;
@@ -2596,7 +2602,7 @@ int funcCalc_Y_SlopToPoint(int newX, structLine* internLine)
     newY    = round( (m*(newX - origX))+origY );
     //std::cout << m << "( " << newX << " - " << origX << ") + " << origY << std::endl;
     return newY;
-}
+}*/
 
 int funcMergeSlideCalib(
                             const QString &vertPath,
@@ -2620,7 +2626,7 @@ int funcReadVertHalfCalib(
 ){
     QFile *xmlFile = new QFile( filePath );
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
+        return _ERROR;
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
 
@@ -2634,26 +2640,26 @@ int funcReadVertHalfCalib(
         }
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement) {
-            if( xmlReader->name()=="canvasW" )
-                slideCalibration->vertical.canvasW = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="canvasH" )
-                slideCalibration->vertical.canvasH = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="x1" )
-                slideCalibration->vertical.x1 = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="y1" )
-                slideCalibration->vertical.y1 = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="x2" )
-                slideCalibration->vertical.x2 = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="y2" )
-                slideCalibration->vertical.y2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="imgW" )
+                slideCalibration->imgW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="imgH" )
+                slideCalibration->imgH = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="wavelengthA" )
-                slideCalibration->vertical.wavelengthLR.a = xmlReader->readElementText().toFloat(0);
+                slideCalibration->wavelengthLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="wavelengthB" )
-                slideCalibration->vertical.wavelengthLR.b = xmlReader->readElementText().toFloat(0);
+                slideCalibration->wavelengthLR.b = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="vertA" )
-                slideCalibration->vertical.vertLR.a = xmlReader->readElementText().toFloat(0);
+                slideCalibration->vertLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="vertB" )
-                slideCalibration->vertical.vertLR.b = xmlReader->readElementText().toFloat(0);
+                slideCalibration->vertLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="x1" )
+                slideCalibration->x1 = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="y1" )
+                slideCalibration->y1 = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="x2" )
+                slideCalibration->x2 = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="y2" )
+                slideCalibration->y2 = xmlReader->readElementText().toFloat(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -2671,7 +2677,7 @@ int funcReadHorHalfCalib(
 ){
     QFile *xmlFile = new QFile( filePath );
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
-        return false;
+        return _ERROR;
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
 
@@ -2685,16 +2691,12 @@ int funcReadHorHalfCalib(
         }
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement) {
-            if( xmlReader->name()=="canvasW" )
-                slideCalibration->horizontal.canvasW = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="canvasH" )
-                slideCalibration->horizontal.canvasH = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="H" )
-                slideCalibration->horizontal.H = xmlReader->readElementText().toInt(0);
+                slideCalibration->originH = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="a" )
-                slideCalibration->horizontal.a = xmlReader->readElementText().toFloat(0);
+                slideCalibration->horizLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="b" )
-                slideCalibration->horizontal.b = xmlReader->readElementText().toFloat(0);
+                slideCalibration->horizLR.b = xmlReader->readElementText().toFloat(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -2705,3 +2707,112 @@ int funcReadHorHalfCalib(
     xmlFile->close();
     return _OK;
 }
+
+cameraResolution* getCamRes( int megapixels )
+{
+    //cameraResolution* camRes;
+    //camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
+
+    if( megapixels == 5 )
+    {
+        //#define _BIG_WIDTH 2592 //2592 | 640 | 320
+        //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
+        camRes->width   = _RASP_CAM_5MP_IMAGE_W;
+        camRes->height  = _RASP_CAM_5MP_IMAGE_H;
+        camRes->videoW  = _RASP_CAM_5MP_VIDEO_W; //1920 | 1640
+        camRes->videoH  = _RASP_CAM_5MP_VIDEO_H; //1080 | 1232
+    }
+    else
+    {
+        if( megapixels == 8 )
+        {
+            //https://www.raspberrypi.org/forums/viewtopic.php?t=145815
+            camRes->width   = _RASP_CAM_8MP_IMAGE_W;
+            camRes->height  = _RASP_CAM_8MP_IMAGE_H;
+            camRes->videoW  = _RASP_CAM_8MP_VIDEO_W; //1920 | 1640
+            camRes->videoH  = _RASP_CAM_8MP_VIDEO_H; //1080 | 1232
+        }
+    }
+
+    return camRes;
+
+}
+
+int scaleLen( int len, int canvasLen, int originalLen )
+{
+    return round(((float)(len) / (float)canvasLen)*(float)originalLen);
+}
+
+int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCalibration )
+{
+    //------------------------------------------
+    //Read File from XML
+    //------------------------------------------
+    QFile *xmlFile = new QFile( filePath );
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
+            if( xmlReader->name()=="imgW" )
+                slideCalibration->imgW = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="imgH" )
+                slideCalibration->imgH = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x1" )
+                slideCalibration->x1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y1" )
+                slideCalibration->y1 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="x2" )
+                slideCalibration->x2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="y2" )
+                slideCalibration->y2 = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="originX" )
+                slideCalibration->originX = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="originY" )
+                slideCalibration->originY = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="originH" )
+                slideCalibration->originH = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="wavelengthA" )
+                slideCalibration->wavelengthLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="wavelengthB" )
+                slideCalibration->wavelengthLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="vertA" )
+                slideCalibration->vertLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="vertB" )
+                slideCalibration->vertLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="horizA" )
+                slideCalibration->horizLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="horizB" )
+                slideCalibration->horizLR.b = xmlReader->readElementText().toFloat(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+    return _OK;
+
+}
+
+int funcCalcCoordinate( const int &coordinate, linearRegresion* LR )
+{
+    //std::cout << "(" << coordinate << "*" << LR->b << ") + " << LR->a << std::endl;
+    return round( ((float)coordinate * LR->b) + LR->a );
+}
+
+
+
+
+

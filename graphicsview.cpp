@@ -12,7 +12,9 @@ GraphicsView::GraphicsView(QObject *parent) : QGraphicsView(){
     //mousePos.reserve(exMaxPolygonSize);
     //canvasView->setMouseTracking(true);
     //canvasView->setRenderHints( QPainter::Antialiasing );
-    parent = parent;
+    parent      = parent;
+    originalW   = 0;
+    originalH   = 0;
     //qDebug() << "constructor is ok";
 }
 

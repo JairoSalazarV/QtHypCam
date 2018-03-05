@@ -45,7 +45,7 @@ public slots:
 
     void addVertLine2Calib(QString colSeld);
 
-    cameraResolution* getCamRes();
+    int getCamMP();
 
     structCamSelected* getCameraSelected();
 
@@ -621,13 +621,15 @@ private slots:
                                         structVerticalCalibration* vertCal
                                    );
 
-    int funcReadHorizCalibration(QString *filePath, linearRegresion* horizLR);
+    int funcReadHorizCalibration(QString *filePath, structHorizontalCalibration *horizCalib);
 
     void on_actionOrigin_triggered();
 
     void on_actionBuld_HypImg_triggered();
 
     void on_actionMerge_Calibration_triggered();
+
+    void on_actionPlot_over_Real_triggered();
 
 private:
     Ui::MainWindow *ui;

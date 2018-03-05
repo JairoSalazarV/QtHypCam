@@ -194,6 +194,8 @@
         int lenght;
         int wavelength=0; //Nanometers
         QString name;
+        int originalW;
+        int originalH;
     }customLineParameters;
 
     typedef struct customRectParameters{
@@ -217,8 +219,8 @@
     }linearRegresion;
 
     typedef struct structVerticalCalibration{
-        int canvasW;
-        int canvasH;
+        int imgW;
+        int imgH;
         int x1;
         int y1;
         int x2;
@@ -228,16 +230,26 @@
     }structVerticalCalibration;
 
     typedef struct structHorizontalCalibration{
-        int   canvasW;
-        int   canvasH;
+        int   imgW;
+        int   imgH;
         int   H;
         float a;
         float b;
     }structHorizontalCalibration;
 
     typedef struct structSlideCalibration{
-        structVerticalCalibration   vertical;
-        structHorizontalCalibration horizontal;
+        int imgW;
+        int imgH;
+        int originX;
+        int originY;
+        int originH;
+        int x1;//It is a line to support computes
+        int y1;//It is a line to support computes
+        int x2;//It is a line to support computes
+        int y2;//It is a line to support computes
+        linearRegresion wavelengthLR;
+        linearRegresion vertLR;
+        linearRegresion horizLR;
     }structSlideCalibration;
 
     typedef struct colorAnalyseResult{
@@ -452,6 +464,8 @@
 
     typedef struct structLine
     {
+        int     originalW;
+        int     originalH;
         int     canvasW;
         int     canvasH;
         int     x1;
@@ -463,7 +477,7 @@
         int     colorB;
         int     oritation;
         int     wavelength;
-        float   m;//Slope
+        //float   m;//Slope
     }structLine;
 
 

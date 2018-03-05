@@ -190,8 +190,8 @@ const int rangeInit = 300;      //Wavelength(nm) at the origin
 const int rangeEnd  = 1100;     //Wavelength(nm) max limit
 const int rangeStep = 50;       //Wavelength(nm) between slides
 
-QImage* editImg;
-QImage* backEditImg;
+QImage* globalEditImg;
+QImage* globalBackEditImg;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -361,8 +361,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // Show Last Preview
     //
     QString lastFileOpen = readFileParam(_PATH_LAST_USED_IMG_FILENAME);
-    editImg = new QImage(lastFileOpen);
-    updateDisplayImage(editImg);
+    globalEditImg = new QImage(lastFileOpen);
+    updateDisplayImage(globalEditImg);
 
 
 
@@ -2148,9 +2148,9 @@ void MainWindow::on_pbSnapshot_clicked()
     }
 
     //QImage snapShot = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
-    *editImg = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
+    *globalEditImg = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
     saveFile(_PATH_LAST_USED_IMG_FILENAME,_PATH_IMAGE_RECEIVED);
-    updateDisplayImage(editImg);
+    updateDisplayImage(globalEditImg);
     //snapShot.save(_PATH_DISPLAY_IMAGE);
 
     funcResetStatusBar();
@@ -2524,7 +2524,7 @@ void MainWindow::funcEndRect(QMouseEvent* e, GraphicsView *tmpCanvas){
     QPoint p1, p2;
     p1.setX(x1);   p1.setY(y1);
     p2.setX(w);    p2.setY(h);
-    customRect* tmpRect = new customRect(p1,p2,editImg);
+    customRect* tmpRect = new customRect(p1,p2,globalEditImg);
     tmpRect->mapToScene(p1.x(),p1.y(),p2.x(),p2.y());
     //customRect* tmpRect = new customRect(this);
     tmpRect->parameters.W = canvasCalib->scene()->width();
@@ -2931,6 +2931,8 @@ void MainWindow::refreshGvCalib( QString fileName )
     QImage imgOrig(fileName);
     QImage tmpImg = imgOrig.scaled(QSize(640,480),Qt::KeepAspectRatio);
     QGraphicsScene *scene = new QGraphicsScene(0,0,tmpImg.width(),tmpImg.height());
+    canvasCalib->originalW  = tmpImg.width();
+    canvasCalib->originalH  = tmpImg.height();
     canvasCalib->scene()->setBackgroundBrush( QPixmap::fromImage(tmpImg) );
     canvasCalib->resize(tmpImg.width(),tmpImg.height());
     scene->setBackgroundBrush( QPixmap::fromImage(tmpImg) );
@@ -3241,7 +3243,9 @@ void MainWindow::addVertLine2Calib(QString colSeld){
     QPoint p1(x,0);
     QPoint p2(x, canvasCalib->height());
     customLine *tmpVLine = new customLine(p1, p2, QPen(QColor(colSeld)));
-    tmpVLine->parameters.orientation = _VERTICAL;
+    tmpVLine->parameters.originalW      = canvasCalib->originalW;
+    tmpVLine->parameters.originalH      = canvasCalib->originalH;
+    tmpVLine->parameters.orientation    = _VERTICAL;
     tmpVLine->parentSize.setWidth(canvasCalib->width());
     tmpVLine->parentSize.setHeight(canvasCalib->height());
     globalCanvVLine = tmpVLine;
@@ -3255,6 +3259,8 @@ void MainWindow::addHorLine2Calib(QString colSeld){
     QPoint p2( canvasCalib->width(), y);
     customLine *tmpHLine = new customLine(p1, p2, QPen(QColor(colSeld)));
     tmpHLine->parameters.orientation = _HORIZONTAL;
+    tmpHLine->parameters.originalW  = canvasCalib->originalW;
+    tmpHLine->parameters.originalH  = canvasCalib->originalH;
     tmpHLine->parentSize.setWidth(canvasCalib->width());
     tmpHLine->parentSize.setHeight(canvasCalib->height());
     globalCanvHLine = tmpHLine;
@@ -3493,14 +3499,14 @@ void MainWindow::on_actionLoadCanvas_triggered()
     }
 
     //Load Image Selected
-    editImg = new QImage(auxQstring);
+    globalEditImg = new QImage(auxQstring);
 
     //Update Thumb and Edit Canvas
-    updateDisplayImage(editImg);
+    updateDisplayImage(globalEditImg);
 
     //Save Image to Display Path
     //mouseCursorWait();
-    //editImg->save(_PATH_DISPLAY_IMAGE);
+    //globalEditImg->save(_PATH_DISPLAY_IMAGE);
     //mouseCursorReset();
 
 }
@@ -3525,6 +3531,8 @@ void MainWindow::updateImageCanvasEdit(QString fileName){
     //Load image to display
     //
     QPixmap pix( fileName );
+    canvasCalib->originalW  = pix.width();
+    canvasCalib->originalH  = pix.height();
     QRect calibArea = ui->pbExpPixs->geometry();
     int maxW, maxH;
     maxW = calibArea.width() - 3;
@@ -3533,7 +3541,7 @@ void MainWindow::updateImageCanvasEdit(QString fileName){
     if( pix.width() > maxW )
         pix = pix.scaledToWidth(maxW);
     //It creates the scene to be loaded into Layout
-    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());    
     canvasCalib->setBackgroundBrush(QBrush(Qt::black));
     canvasCalib->setBackgroundBrush(pix);
     canvasCalib->setScene( sceneCalib );
@@ -3574,6 +3582,8 @@ void MainWindow::updateImageCanvasEdit(QImage* origImg)
         pix = pix.scaledToWidth(maxW);
     //It creates the scene to be loaded into Layout
     QGraphicsScene *sceneCalib = new QGraphicsScene(0,0,pix.width(),pix.height());
+    canvasCalib->originalW = origImg->width();
+    canvasCalib->originalH = origImg->height();
     canvasCalib->setBackgroundBrush(QBrush(Qt::black));
     canvasCalib->setBackgroundBrush(pix);
     canvasCalib->setScene( sceneCalib );
@@ -3660,7 +3670,7 @@ void MainWindow::on_actionLoadSquareRectangle_triggered()
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
     QPoint p2(w,h);
-    customRect *tmpRect = new customRect(p1,p2,editImg);
+    customRect *tmpRect = new customRect(p1,p2,globalEditImg);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -3689,7 +3699,7 @@ void MainWindow::on_actionLoadRegOfInteres_triggered()
     //Draw a rectangle of the square aperture
     QPoint p1(x,y);
     QPoint p2(w,h);
-    customRect *tmpRect = new customRect(p1,p2,editImg);
+    customRect *tmpRect = new customRect(p1,p2,globalEditImg);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -3710,7 +3720,7 @@ int MainWindow::funcDrawRectangleFromXML(QString fileName)
     //Draw a rectangle of the square aperture
     QPoint p1(tmpSqAperture->rectX,tmpSqAperture->rectY);
     QPoint p2(tmpSqAperture->rectW,tmpSqAperture->rectH);
-    customRect *tmpRect = new customRect(p1,p2,editImg);
+    customRect *tmpRect = new customRect(p1,p2,globalEditImg);
     tmpRect->setPen(QPen(Qt::red));
     tmpRect->parameters.W = canvasCalib->width();
     tmpRect->parameters.H = canvasCalib->height();
@@ -4700,7 +4710,7 @@ void MainWindow::on_actionValidCal_triggered()
 
 void MainWindow::on_actionValCal_triggered()
 {
-    selWathToCheck *tmpFrm = new selWathToCheck(editImg,this);
+    selWathToCheck *tmpFrm = new selWathToCheck(globalEditImg,this);
     tmpFrm->setModal(false);
     tmpFrm->show();
 }
@@ -4717,7 +4727,7 @@ void MainWindow::on_actionSquareUsable_triggered()
         return (void)false;
     }
 
-    selWathToCheck *checkCalib = new selWathToCheck(editImg,this);
+    selWathToCheck *checkCalib = new selWathToCheck(globalEditImg,this);
     checkCalib->showSqUsable(
                                 rectSquare->rectX,
                                 rectSquare->rectY,
@@ -4987,37 +4997,6 @@ void MainWindow::on_pbCopyShutter_clicked()
     tmpFileName.append(_PATH_LAST_SNAPPATH);
     funcGetRaspParamFromXML( raspcamSettings, tmpFileName );
     funcIniCamParam( raspcamSettings );
-}
-
-
-cameraResolution* MainWindow::getCamRes()
-{
-    //cameraResolution* camRes;
-    //camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
-
-    if( ui->radioRes5Mp->isChecked() )
-    {
-        //#define _BIG_WIDTH 2592 //2592 | 640 | 320
-        //#define _BIG_HEIGHT 1944 //1944 | 480 | 240
-        camRes->width   = _RASP_CAM_5MP_IMAGE_W;
-        camRes->height  = _RASP_CAM_5MP_IMAGE_H;
-        camRes->videoW  = _RASP_CAM_5MP_VIDEO_W; //1920 | 1640
-        camRes->videoH  = _RASP_CAM_5MP_VIDEO_H; //1080 | 1232
-    }
-    else
-    {
-        if( ui->radioRes8Mp->isChecked() )
-        {
-            //https://www.raspberrypi.org/forums/viewtopic.php?t=145815
-            camRes->width   = _RASP_CAM_8MP_IMAGE_W;
-            camRes->height  = _RASP_CAM_8MP_IMAGE_H;
-            camRes->videoW  = _RASP_CAM_8MP_VIDEO_W; //1920 | 1640
-            camRes->videoH  = _RASP_CAM_8MP_VIDEO_H; //1080 | 1232
-        }
-    }
-
-    return camRes;
-
 }
 
 structCamSelected* MainWindow::getCameraSelected()
@@ -6294,9 +6273,9 @@ int MainWindow::funcUpdateImageFromFolder( QString folder, QString fileExtension
         tmpImgRec.append( fileExtension );
 
         //Update Received Image
-        free(editImg);
-        editImg = new QImage(tmpImgRec);
-        updateDisplayImage(editImg);
+        free(globalEditImg);
+        globalEditImg = new QImage(tmpImgRec);
+        updateDisplayImage(globalEditImg);
         qDebug() << tmpImgRec;
 
     }
@@ -6492,7 +6471,8 @@ int MainWindow::createSubimageRemotelly(bool squareArea )
     //
     // Get cam resolution
     //
-    camRes = getCamRes();
+    int camMP = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes = getCamRes(camMP);
 
     //
     //Getting calibration
@@ -6568,7 +6548,8 @@ int MainWindow::takeRemoteSnapshot( QString fileDestiny, bool squareArea )
     //
     // Get cam resolution
     //
-    camRes = getCamRes();
+    int camMP = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes = getCamRes(camMP);
 
     //
     //Getting calibration
@@ -6819,7 +6800,7 @@ void MainWindow::on_pbSaveImage_clicked()
     //Save image
     //
     mouseCursorWait();
-    editImg->save(fileName);
+    globalEditImg->save(fileName);
     mouseCursorReset();
 
 }
@@ -7609,7 +7590,8 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
         //.................................
         //Image Size
         //.................................
-        camRes          = getCamRes();
+        int camMP = (ui->radioRes5Mp->isChecked())?5:8;
+        camRes          = getCamRes(camMP);
         //Width
         tmpCommand.append(" -w ");
         tmpCommand.append(QString::number( round((double)camRes->videoW*W) ));
@@ -7622,7 +7604,8 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
         //.................................
         //Image Size: Full Resolution
         //.................................
-        camRes          = getCamRes();
+        int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+        camRes          = getCamRes(camMP);
         //Width
         tmpCommand.append(" -w ");
         tmpCommand.append(QString::number( camRes->videoW ));
@@ -7731,7 +7714,8 @@ QString MainWindow::genTimelapseCommand(QString folder,bool setROI)
         //.................................
         //Image Size ROI
         //.................................
-        camRes = getCamRes();
+        int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+        camRes          = getCamRes(camMP);
         //Width
         tmpCommand.append(" -w ");
         tmpCommand.append(QString::number( round( W * (double)camRes->width ) ));
@@ -7744,7 +7728,8 @@ QString MainWindow::genTimelapseCommand(QString folder,bool setROI)
         //.................................
         //Image Size WITHOUT ROI
         //.................................
-        camRes = getCamRes();
+        int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+        camRes          = getCamRes(camMP);
         //Width
         tmpCommand.append(" -w ");
         tmpCommand.append(QString::number( camRes->width ));
@@ -7857,7 +7842,8 @@ QString MainWindow::genSubareaRaspistillCommand( QString remoteFilename, QString
     //.................................
     //Image Size ROI
     //.................................
-    camRes = getCamRes();
+    int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes          = getCamRes(camMP);
     //Width
     tmpCommand.append(" -w ");
     tmpCommand.append(QString::number( round( W * (double)camRes->width ) ));
@@ -8066,8 +8052,8 @@ void MainWindow::on_actionNDVI_triggered()
     redChanel       = readFileParam(_PATH_NDVI_RED_CHANEL);
 
     int makeBrilliant = (stringBrilliant.toInt(0)==1)?1:0;
-    funcNDVI( editImg, stringThreshold.toDouble(0), makeBrilliant, infraredChanel, redChanel );
-    updateDisplayImage(editImg);
+    funcNDVI( globalEditImg, stringThreshold.toDouble(0), makeBrilliant, infraredChanel, redChanel );
+    updateDisplayImage(globalEditImg);
 
     mouseCursorReset();
 }
@@ -8243,7 +8229,8 @@ void MainWindow::on_actionVideo_triggered()
 {
     //Update camera resolution
     //..
-    camRes = getCamRes();
+    int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes          = getCamRes(camMP);
 
     //Set required image's settings
     //..
@@ -9234,7 +9221,8 @@ void MainWindow::funcMainCall_RecordVideo(QString* videoID, bool defaultPath, bo
     // Save snapshots settings
     //-----------------------------------------------------
     // Get camera resolution
-    camRes = getCamRes();
+    int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes          = getCamRes(camMP);
 
     //Getting calibration
     lstDoubleAxisCalibration daCalib;
@@ -9333,7 +9321,8 @@ void MainWindow::funcMainCall_GetSnapshot()
     //-----------------------------------------------------
 
     // Get camera resolution
-    camRes = getCamRes();
+    int camMP       = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes          = getCamRes(camMP);
 
     //Getting calibration
     lstDoubleAxisCalibration daCalib;
@@ -9628,14 +9617,48 @@ bool MainWindow::funcDrawLineIntoCanvasEdit(const QString &filePath)
 
     //---------------------------------------
     //Draw Line into canvasEdit
-    //---------------------------------------
+    //---------------------------------------    
+    tmpLineData.x1 = round(
+                            (
+                                (float)tmpLineData.x1 /
+                                (float)tmpLineData.originalW
+                            ) * (float)canvasCalib->width()
+                          );
+    tmpLineData.y1 = round(
+                            (
+                                (float)tmpLineData.y1 /
+                                (float)tmpLineData.originalH
+                            ) * (float)canvasCalib->height()
+                          );
+    tmpLineData.x2 = round(
+                            (
+                                (float)tmpLineData.x2 /
+                                (float)tmpLineData.originalW
+                            ) * (float)canvasCalib->width()
+                          );
+    tmpLineData.y2 = round(
+                            (
+                                (float)tmpLineData.y2 /
+                                (float)tmpLineData.originalH
+                            ) * (float)canvasCalib->height()
+                          );
     QPoint p1(tmpLineData.x1,tmpLineData.y1);
     QPoint p2(tmpLineData.x2,tmpLineData.y2);
-    customLine* tmpLine = new customLine(p1,p2,QPen(QColor(qRgb(tmpLineData.colorR,tmpLineData.colorG,tmpLineData.colorB))));
+    customLine* tmpLine = new customLine(
+                                            p1,
+                                            p2,
+                                            QPen(QColor(qRgb(
+                                                                tmpLineData.colorR,
+                                                                tmpLineData.colorG,
+                                                                tmpLineData.colorB
+                                            )))
+                                        );
     tmpLine->parameters.orientation = tmpLineData.oritation;
+    tmpLine->parameters.originalW   = tmpLineData.originalW;
+    tmpLine->parameters.originalH   = tmpLineData.originalH;
     tmpLine->parameters.wavelength  = tmpLineData.wavelength;
-    tmpLine->parentSize.setWidth(tmpLineData.canvasW);
-    tmpLine->parentSize.setHeight(tmpLineData.canvasH);
+    tmpLine->parentSize.setWidth(canvasCalib->scene()->width());
+    tmpLine->parentSize.setHeight(canvasCalib->scene()->height());
     canvasCalib->scene()->addItem( tmpLine );
     canvasCalib->update();
     return _OK;
@@ -9655,8 +9678,8 @@ void MainWindow::on_actionPlot_Calculated_Line_triggered()
         return (void)false;
     }
     //Get Line parameters from .XML
-    linearRegresion horizLR;
-    funcReadHorizCalibration(&fileName,&horizLR);
+    structHorizontalCalibration horizCalib;
+    funcReadHorizCalibration(&fileName,&horizCalib);
 
     //---------------------------------------
     //Plot Calculated Line
@@ -9664,8 +9687,9 @@ void MainWindow::on_actionPlot_Calculated_Line_triggered()
     int newX, newY;
     for(newX=1; newX<canvasCalib->width(); newX++)
     {
-        newY = round( (horizLR.b*newX) + horizLR.a );
+        newY    = round( (horizCalib.b*newX) + horizCalib.a );
         //std::cout << "(" << horizLR.b << "*" << newX << ") + " << horizLR.a << " = " << newY << std::endl;
+        newY    = round( ((float)newY/(float)horizCalib.imgH) * (float)canvasCalib->height());
         double rad = 1.0;
         QGraphicsEllipseItem* item = new QGraphicsEllipseItem(newX, newY, rad, rad );
         item->setPen( QPen(Qt::white) );
@@ -9697,7 +9721,8 @@ void MainWindow::on_actionPlot_Upper_Line_Rotation_triggered()
     int newX, newY;
     for(newY=1; newY<canvasCalib->height(); newY++)
     {
-        newX = (tmpVertCal.vertLR.b*newY) + tmpVertCal.vertLR.a;
+        newX    = (tmpVertCal.vertLR.b*newY) + tmpVertCal.vertLR.a;
+        newX    = ((float)newX/(float)tmpVertCal.imgW) * canvasCalib->width();//Fit to Canvas size
         double rad = 1.0;
         QGraphicsEllipseItem* item = new QGraphicsEllipseItem(newX, newY, rad, rad );
         item->setPen( QPen(Qt::white) );
@@ -9736,10 +9761,10 @@ int MainWindow::funcReadVerticalCalibration(
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement)
         {
-            if( xmlReader->name()=="canvasW" )
-                vertCal->canvasW = xmlReader->readElementText().trimmed().toInt(0);
-            if( xmlReader->name()=="canvasH" )
-                vertCal->canvasH = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="imgW" )
+                vertCal->imgW = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="imgH" )
+                vertCal->imgH = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="x1" )
                 vertCal->x1 = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="y1" )
@@ -9768,7 +9793,7 @@ int MainWindow::funcReadVerticalCalibration(
     return _OK;
 }
 
-int MainWindow::funcReadHorizCalibration(QString* filePath, linearRegresion* horizLR)
+int MainWindow::funcReadHorizCalibration(QString* filePath, structHorizontalCalibration* horizCalib)
 {
     //---------------------------------------
     //Extract XML
@@ -9795,10 +9820,16 @@ int MainWindow::funcReadHorizCalibration(QString* filePath, linearRegresion* hor
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement)
         {
+            if( xmlReader->name()=="imgW" )
+                horizCalib->imgW = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="imgH" )
+                horizCalib->imgH = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="H" )
+                horizCalib->H = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="a" )
-                horizLR->a = xmlReader->readElementText().trimmed().toFloat(0);
+                horizCalib->a = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="b" )
-                horizLR->b = xmlReader->readElementText().trimmed().toFloat(0);
+                horizCalib->b = xmlReader->readElementText().trimmed().toFloat(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -9824,7 +9855,7 @@ void MainWindow::on_actionOrigin_triggered()
         return (void)false;
     }
     //Get Line parameters from .XML
-    linearRegresion tmpHorizontalCal;
+    structHorizontalCalibration tmpHorizontalCal;
     funcReadHorizCalibration(&fileName,&tmpHorizontalCal);
 
     //---------------------------------------
@@ -9857,8 +9888,10 @@ void MainWindow::on_actionOrigin_triggered()
     //Add Big Point
     //---------------------------------------
     float x, y;
-    x = verX;
-    y = horY;
+    x   = verX;
+    y   = horY;
+    x   = round( ((float)x/(float)tmpHorizontalCal.imgW) * (float)canvasCalib->width() );
+    y   = round( ((float)y/(float)tmpHorizontalCal.imgH) * (float)canvasCalib->height() );
     //std::cout << x << "," << y << std::endl;
     double rad = 20.0;
     QGraphicsEllipseItem* item = new QGraphicsEllipseItem(x-(rad/2.0), y-(rad/2.0), rad, rad );
@@ -9898,4 +9931,124 @@ void MainWindow::on_actionMerge_Calibration_triggered()
     formMergeSlideCalibrations* tmpForm = new formMergeSlideCalibrations(this);
     tmpForm->setModal(true);
     tmpForm->show();
+}
+
+
+int MainWindow::getCamMP()
+{
+    if( ui->radioRes5Mp->isChecked() )
+        return 5;
+    if( ui->radioRes8Mp->isChecked() )
+        return 8;
+    return 8;
+}
+
+void MainWindow::on_actionPlot_over_Real_triggered()
+{
+    //----------------------------------------------
+    //Let the user select Slide Calibration File
+    //----------------------------------------------
+    QString calibPath;
+    if( funcLetUserSelectFile(&calibPath) != _OK )
+    {
+        return (void)false;
+    }
+
+    //----------------------------------------------
+    //Read Slide Calibration File
+    //----------------------------------------------
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( calibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File");
+        return (void)false;
+    }
+
+    //**********************************************
+    //Draw Over Real Image
+    //**********************************************
+
+    //----------------------------------------------
+    //Validate Calibration-Size and Image-Size
+    //----------------------------------------------
+    if(
+            slideCalibration.imgW != globalEditImg->width()     ||
+            slideCalibration.imgH != globalEditImg->height()
+    ){
+        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different");
+        return (void)false;
+    }
+
+    //----------------------------------------------
+    //Draw Horizontal Line
+    //----------------------------------------------
+    int tmpX, tmpY;
+    for( tmpX=1; tmpX<globalEditImg->width(); tmpX++ )
+    {
+        tmpY = funcCalcCoordinate(tmpX,&slideCalibration.horizLR);
+        globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
+        //std::cout << tmpX << "," << tmpY << std::endl;
+    }
+
+    //----------------------------------------------
+    //Draw Vertical Line
+    //----------------------------------------------
+    for( tmpY=1; tmpY<globalEditImg->height(); tmpY++ )
+    {
+        tmpX = funcCalcCoordinate(tmpY,&slideCalibration.vertLR);
+        globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
+        //std::cout << tmpX << "," << tmpY << std::endl;
+    }
+
+    //----------------------------------------------
+    //Draw Origen
+    //----------------------------------------------
+    int x, y, x1, y1, x2, y2, len;
+    len = 2;
+    x1   = slideCalibration.originX - len;
+    y1   = slideCalibration.originY - len;
+    x2   = slideCalibration.originX + len;
+    y2   = slideCalibration.originY + len;
+
+    for( x=x1; x<=x2; x++ )
+    {
+        for( y=y1; y<=y2; y++ )
+        {
+            globalEditImg->setPixelColor(x,y,QColor(255,255,255));
+        }
+    }
+
+    //----------------------------------------------
+    //Update Image Displayed in Canvas
+    //----------------------------------------------
+    updateDisplayImage(globalEditImg);
+
+    //----------------------------------------------
+    //Save Image
+    //----------------------------------------------
+    if( funcShowMsgYesNo("Saving Image","Save image?") )
+    {
+        //filePath:         File output, filename selected by the user
+        //title:            Showed to User, what kind of file is the user selecting
+        //pathLocation:     Where is saved the last path location saved
+        //pathOfInterest:   If it is the first time, what path will be saved as default
+        //parent:           In order to use this Dialog
+        QString fileName;
+        if(
+                funcLetUserDefineFile(
+                                        &fileName,
+                                        "Define Image Filename",
+                                        ".png",
+                                        new QString(_PATH_LAST_IMG_OPEN),
+                                        QString(_PATH_LAST_IMG_OPEN),
+                                        this
+                                     ) != _OK
+        ){
+            return (void)false;
+        }
+        //Save Image
+        globalEditImg->save(fileName);
+        //Notify Success
+        funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
+    }
 }

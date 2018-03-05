@@ -229,7 +229,7 @@ void slideHypCam::on_actionpbGetSlideCube_triggered()
 
     QApplication::setOverrideCursor(Qt::WaitCursor);
 
-    camRes = internMainWin->getCamRes();
+    camRes = getCamRes( internMainWin->getCamMP() );
 
     int numImages = 0;
     u_int8_t** lstImgs = internMainWin->funcGetSLIDESnapshot( &numImages, true );
@@ -240,9 +240,6 @@ void slideHypCam::on_actionpbGetSlideCube_triggered()
     }
     else
     {
-
-
-
         delete[] lstImgs;
     }
 
