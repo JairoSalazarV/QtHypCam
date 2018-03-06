@@ -1978,7 +1978,7 @@ void MainWindow::calcRectangles(
 */
 
 void MainWindow::calcDiffPoints(
-                                    double wave,
+                                    float wave,
                                     strDiffProj *p11,
                                     strDiffProj *p12,
                                     strDiffProj *p21,
@@ -1986,19 +1986,19 @@ void MainWindow::calcDiffPoints(
                                     lstDoubleAxisCalibration *daCalib
                                 ){
 
-    p11->wavelength = wave;
-    p12->wavelength = wave;
-    p21->wavelength = wave;
-    p22->wavelength = wave;
+    p11->wavelength     = wave;
+    p12->wavelength     = wave;
+    p21->wavelength     = wave;
+    p22->wavelength     = wave;
 
-    p11->x          = 1;                  //1-index
-    p11->y          = 1;                  //1-index
-    p12->x          = daCalib->squarePixW; //1-index
-    p12->y          = 1;                  //1-index
-    p21->x          = 1;                  //1-index
-    p21->y          = daCalib->squarePixH; //1-index
-    p22->x          = daCalib->squarePixW; //1-index
-    p22->y          = daCalib->squarePixH; //1-index
+    p11->x              = 1;                    //1-index
+    p11->y              = 1;                    //1-index
+    p12->x              = daCalib->squarePixW;  //1-index
+    p12->y              = 1;                    //1-index
+    p21->x              = 1;                    //1-index
+    p21->y              = daCalib->squarePixH;  //1-index
+    p22->x              = daCalib->squarePixW;  //1-index
+    p22->y              = daCalib->squarePixH;  //1-index
 
     calcDiffProj( p11, daCalib );
     calcDiffProj( p12, daCalib );
@@ -9672,7 +9672,7 @@ void MainWindow::on_actionPlot_Calculated_Line_triggered()
     //---------------------------------------
     //Get filename
     QString fileName;
-    if( funcLetUserSelectFile(&fileName) != _OK )
+    if( funcLetUserSelectFile(&fileName,"Select Horizontal Calibration...") != _OK )
     {
         funcShowMsgERROR_Timeout("Getting File from User");
         return (void)false;
@@ -9685,10 +9685,10 @@ void MainWindow::on_actionPlot_Calculated_Line_triggered()
     //Plot Calculated Line
     //---------------------------------------
     int newX, newY;
-    for(newX=1; newX<canvasCalib->width(); newX++)
+    for(newX=1; newX<canvasCalib->width(); newX+=5)
     {
         newY    = round( (horizCalib.b*newX) + horizCalib.a );
-        //std::cout << "(" << horizLR.b << "*" << newX << ") + " << horizLR.a << " = " << newY << std::endl;
+        //std::cout << "(" << horizCalib.b << "*" << newX << ") + " << horizCalib.a << " = " << newY << std::endl;
         newY    = round( ((float)newY/(float)horizCalib.imgH) * (float)canvasCalib->height());
         double rad = 1.0;
         QGraphicsEllipseItem* item = new QGraphicsEllipseItem(newX, newY, rad, rad );
@@ -9719,7 +9719,7 @@ void MainWindow::on_actionPlot_Upper_Line_Rotation_triggered()
     //Plot Calculated Line
     //---------------------------------------
     int newX, newY;
-    for(newY=1; newY<canvasCalib->height(); newY++)
+    for(newY=1; newY<canvasCalib->height(); newY+=5)
     {
         newX    = (tmpVertCal.vertLR.b*newY) + tmpVertCal.vertLR.a;
         newX    = ((float)newX/(float)tmpVertCal.imgW) * canvasCalib->width();//Fit to Canvas size
@@ -9849,7 +9849,7 @@ void MainWindow::on_actionOrigin_triggered()
     //---------------------------------------
     //Get filename
     QString fileName;
-    if( funcLetUserSelectFile(&fileName) != _OK )
+    if( funcLetUserSelectFile(&fileName, "Select Horizontal Calibration") != _OK )
     {
         funcShowMsgERROR_Timeout("Getting Horizontal Calibration");
         return (void)false;
@@ -9862,7 +9862,7 @@ void MainWindow::on_actionOrigin_triggered()
     //Get Vertical Calibration
     //---------------------------------------
     //Get filename
-    if( funcLetUserSelectFile(&fileName) != _OK )
+    if( funcLetUserSelectFile(&fileName,"Select Vertical Calibration") != _OK )
     {
         funcShowMsgERROR_Timeout("Getting Vertical Calibration");
         return (void)false;
@@ -9949,7 +9949,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     //Let the user select Slide Calibration File
     //----------------------------------------------
     QString calibPath;
-    if( funcLetUserSelectFile(&calibPath) != _OK )
+    if( funcLetUserSelectFile(&calibPath,"Select Slide Calibration File...") != _OK )
     {
         return (void)false;
     }
@@ -9985,7 +9985,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     int tmpX, tmpY;
     for( tmpX=1; tmpX<globalEditImg->width(); tmpX++ )
     {
-        tmpY = funcCalcCoordinate(tmpX,&slideCalibration.horizLR);
+        tmpY = round( funcCalcCoordinate((float)tmpX,&slideCalibration.horizLR) );
         globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
         //std::cout << tmpX << "," << tmpY << std::endl;
     }
@@ -9995,7 +9995,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     //----------------------------------------------
     for( tmpY=1; tmpY<globalEditImg->height(); tmpY++ )
     {
-        tmpX = funcCalcCoordinate(tmpY,&slideCalibration.vertLR);
+        tmpX = round( funcCalcCoordinate((float)tmpY,&slideCalibration.vertLR) );
         globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
         //std::cout << tmpX << "," << tmpY << std::endl;
     }
@@ -10051,4 +10051,200 @@ void MainWindow::on_actionPlot_over_Real_triggered()
         //Notify Success
         funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
     }
+}
+
+void MainWindow::on_actionPlot_First_Line_triggered()
+{
+    //----------------------------------------------
+    //Let the user select Slide Calibration File
+    //----------------------------------------------
+    QString calibPath;
+    if( funcLetUserSelectFile(&calibPath) != _OK )
+    {
+        return (void)false;
+    }
+
+    //----------------------------------------------
+    //Read Slide Calibration File
+    //----------------------------------------------
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( calibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File");
+        return (void)false;
+    }
+
+    //**********************************************
+    //Draw Over Real Image
+    //**********************************************
+
+    //----------------------------------------------
+    //Validate Calibration-Size and Image-Size
+    //----------------------------------------------
+    if(
+            slideCalibration.imgW != globalEditImg->width()     ||
+            slideCalibration.imgH != globalEditImg->height()
+    ){
+        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different");
+        return (void)false;
+    }
+
+    //----------------------------------------------
+    //Draw Vertical Line
+    //----------------------------------------------
+    int tmpX, tmpY;
+    for( tmpY=slideCalibration.originY; tmpY<(slideCalibration.originY+slideCalibration.originH); tmpY++ )
+    {
+        tmpX = round( funcCalcCoordinate((float)tmpY,&slideCalibration.vertLR) );
+        //std::cout << tmpX << "," << tmpY << std::endl;
+        globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
+    }
+
+    //----------------------------------------------
+    //Update Image Displayed in Canvas
+    //----------------------------------------------
+    updateDisplayImage(globalEditImg);
+
+    //----------------------------------------------
+    //Save Image
+    //----------------------------------------------
+    if( funcShowMsgYesNo("Saving Image","Save image?") )
+    {
+        //filePath:         File output, filename selected by the user
+        //title:            Showed to User, what kind of file is the user selecting
+        //pathLocation:     Where is saved the last path location saved
+        //pathOfInterest:   If it is the first time, what path will be saved as default
+        //parent:           In order to use this Dialog
+        QString fileName;
+        if(
+                funcLetUserDefineFile(
+                                        &fileName,
+                                        "Define Image Filename",
+                                        ".png",
+                                        new QString(_PATH_LAST_IMG_OPEN),
+                                        QString(_PATH_LAST_IMG_OPEN),
+                                        this
+                                     ) != _OK
+        ){
+            return (void)false;
+        }
+        //Save Image
+        globalEditImg->save(fileName);
+        //Notify Success
+        funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
+    }
+
+}
+
+void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
+{
+    //----------------------------------------------
+    //Let the user define Wavelength to Show
+    //----------------------------------------------
+    float wavelength;
+    wavelength = funcGetParam("Wavelength","450").trimmed().toFloat(0);
+    if( wavelength < 350 || wavelength > 1200 )
+    {
+        funcShowMsgERROR_Timeout("Wavelength incorrect");
+        return (void)false;
+    }
+
+    //**********************************************
+    //Display the Wavalength Selected by User
+    //**********************************************
+
+    //----------------------------------------------
+    //Let the user select Slide Calibration File
+    //----------------------------------------------
+    //QString calibPath("./XML/slideCalibration/slideCam_002.xml");
+    QString calibPath;
+    if( funcLetUserSelectFile(&calibPath,"Select Slide Calibration File...") != _OK )
+    {
+        return (void)false;
+    }
+
+    //----------------------------------------------
+    //Read Slide Calibration File
+    //----------------------------------------------
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( calibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File");
+        return (void)false;
+    }
+    //std::cout << "calibPath: " << calibPath.toStdString() << std::endl;
+    //std::cout << "1) slideCalibration.originWave: " << slideCalibration.originWave << std::endl;
+
+    //**********************************************
+    //Draw Over Real Image
+    //**********************************************
+
+    //----------------------------------------------
+    //Validate Calibration-Size and Image-Size
+    //----------------------------------------------
+    if(
+            slideCalibration.imgW != globalEditImg->width()     ||
+            slideCalibration.imgH != globalEditImg->height()
+    ){
+        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different");
+        return (void)false;
+    }
+
+    //----------------------------------------------
+    //Calculate Distance from Lower Bound
+    //----------------------------------------------
+    int distPixFromLower;
+    wavelength = wavelength - slideCalibration.originWave;
+    distPixFromLower = round( funcCalcCoordinate(wavelength,&slideCalibration.wave2DistLR,true) );
+    //std::cout << "wavelength: " << wavelength << std::endl;
+    //std::cout << "2) slideCalibration.originWave: " << slideCalibration.originWave << std::endl;
+    std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
+
+    //----------------------------------------------
+    //Draw Vertical Line
+    //----------------------------------------------
+    int tmpY, x, y;
+    for( tmpY=1; tmpY<=slideCalibration.originH; tmpY++ )
+    {
+        x   = slideCalibration.originX + distPixFromLower;
+        y   = round(funcCalcCoordinate(x,&slideCalibration.horizLR)) + tmpY;
+        x   = round(funcCalcCoordinate(y,&slideCalibration.vertLR)) + distPixFromLower;
+        //std::cout << tmpX << "," << tmpY << std::endl;
+        globalEditImg->setPixelColor(x,y,QColor(255,255,255));
+    }
+
+    //----------------------------------------------
+    //Update Image Displayed in Canvas
+    //----------------------------------------------
+    updateDisplayImage(globalEditImg);
+
+    //----------------------------------------------
+    //Save Image
+    //----------------------------------------------
+    if( funcShowMsgYesNo("Saving Image","Save image?") )
+    {
+        //filePath:         File output, filename selected by the user
+        //title:            Showed to User, what kind of file is the user selecting
+        //pathLocation:     Where is saved the last path location saved
+        //pathOfInterest:   If it is the first time, what path will be saved as default
+        //parent:           In order to use this Dialog
+        QString fileName;
+        if(
+                funcLetUserDefineFile(
+                                        &fileName,
+                                        "Define Image Filename",
+                                        ".png",
+                                        new QString(_PATH_LAST_IMG_OPEN),
+                                        QString(_PATH_LAST_IMG_OPEN),
+                                        this
+                                     ) != _OK
+        ){
+            return (void)false;
+        }
+        //Save Image
+        globalEditImg->save(fileName);
+        //Notify Success
+        funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
+    }
+
 }

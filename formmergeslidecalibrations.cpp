@@ -67,7 +67,12 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     structSlideCalibration slideCalibration;
     funcReadHorHalfCalib(ui->txtHorPath->text().trimmed(), &slideCalibration);
     //Read Vertical
-    funcReadVertHalfCalib(ui->txtVertPath->text().trimmed(), &slideCalibration);
+    float referenceX2 = 0;
+    funcReadVertHalfCalib(
+                            ui->txtVertPath->text().trimmed(),
+                            &referenceX2,
+                            &slideCalibration
+                         );
 
     //---------------------------------------
     //Get Origin Point
@@ -79,15 +84,15 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     horB  = slideCalibration.horizLR.b;
     verA  = slideCalibration.vertLR.a;
     verB  = slideCalibration.vertLR.b;
-    slideCalibration.originY = round( ((float)horB*(float)slideCalibration.x2)+(float)horA);
-    slideCalibration.originX = round( ((float)verB*(float)slideCalibration.originY)+(float)verA );
-
+    slideCalibration.originY = round( (horB*referenceX2)+horA);
+    slideCalibration.originX = round( (verB*slideCalibration.originY)+verA );
 
     //----------------------------------------------
     //Save Merged Calibration File
     //----------------------------------------------
     //Define Filename
     QString fullPathName(_PATH_SLIDE_CALIB_PATH);
+    fullPathName.append("slideCam_");
     fullPathName.append(CameraID);
     fullPathName.append(".xml");
     //Save File
@@ -116,10 +121,10 @@ int formMergeSlideCalibrations
     //-----------------------------------
     //Fill Fixtures
     //-----------------------------------
-    lstFixtures << "imgW"       << "imgH"
-                << "x1"         << "y1"         << "x2"         << "y2"
-                << "originX"    << "originY"    <<  "originH"
-                << "waveA"      << "waveB"
+    lstFixtures << "imgW"       << "imgH"                
+                << "originX"    << "originY"    << "originH"    << "originWave"
+                << "dist2WaveA" << "dist2WaveB"
+                << "wave2DistA" << "wave2DistB"
                 << "vertA"      << "vertB"
                 << "horizA"     << "horizB";
 
@@ -127,16 +132,15 @@ int formMergeSlideCalibrations
     //Fill Values
     //-----------------------------------
     lstValues   << QString::number(slideCalibration->imgW)
-                << QString::number(slideCalibration->imgH)
-                << QString::number(slideCalibration->x1)
-                << QString::number(slideCalibration->y1)
-                << QString::number(slideCalibration->x2)
-                << QString::number(slideCalibration->y2)
+                << QString::number(slideCalibration->imgH)                
                 << QString::number(slideCalibration->originX)
                 << QString::number(slideCalibration->originY)
-                << QString::number(slideCalibration->originH)
-                << QString::number(slideCalibration->wavelengthLR.a)
-                << QString::number(slideCalibration->wavelengthLR.b)
+                << QString::number(slideCalibration->originH)                   
+                << QString::number(slideCalibration->originWave)
+                << QString::number(slideCalibration->dist2WaveLR.a)
+                << QString::number(slideCalibration->dist2WaveLR.b)
+                << QString::number(slideCalibration->wave2DistLR.a)
+                << QString::number(slideCalibration->wave2DistLR.b)
                 << QString::number(slideCalibration->vertLR.a)
                 << QString::number(slideCalibration->vertLR.b)
                 << QString::number(slideCalibration->horizLR.a)

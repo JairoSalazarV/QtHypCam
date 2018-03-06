@@ -564,9 +564,9 @@ void selWathToCheck::drawAllCalculatedCentoides()
     drawCentroid(diffProj.dx,diffProj.dy,Qt::green,&img);
 
     //Red
-    diffProj.x          = sourceX;
-    diffProj.y          = sourceY;
-    diffProj.wavelength = wavelengthBlue;
+    diffProj.x              = sourceX;
+    diffProj.y              = sourceY;
+    diffProj.wavelength    = wavelengthBlue;
     calcDiffProj( &diffProj, daCalib );
     drawCentroid(diffProj.rx,diffProj.ry,Qt::red,&img);
     drawCentroid(diffProj.ux,diffProj.uy,Qt::red,&img);

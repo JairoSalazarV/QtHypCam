@@ -18,7 +18,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     QString fileToOpen;
 
-    if(0)
+    if(1)
     {
         fileToOpen = "./XML/lines/slideV1_002/408nm.xml";
         funcAddRowToTable(&fileToOpen);
@@ -35,7 +35,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
         fileToOpen = "./XML/lines/slideV1_002/712nm.xml";
         funcAddRowToTable(&fileToOpen);
     }
-    if(1)
+    if(0)
     {
         //fileToOpen = "./XML/lines/slideV1_002/verticalLowerBound.xml";
         //funcAddRowToTable(&fileToOpen);        
@@ -140,8 +140,9 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
         lstY[i]     = (float)(lstLines.at(i+1).wavelength -
                               lstLines.at(i).wavelength);
     }
-    linearRegresion wavelengthLR;
-    wavelengthLR = funcLinearRegression(lstX,lstY,numLines-1);
+    linearRegresion wave2DistLR, dist2WaveLR;
+    dist2WaveLR = funcLinearRegression(lstX,lstY,numLines-1);
+    wave2DistLR = funcLinearRegression(lstY,lstX,numLines-1);
 
     //--------------------------------------
     //Obtain Lower(Wavelength) Vertical Line
@@ -167,6 +168,14 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
         funcShowMsgERROR_Timeout("Reading Line from XML");
         return (void)false;
     }
+    //Obtain the Smallest Wavelength
+    float dist2FirstLine, smallestWaveLen;
+    dist2FirstLine  = (float)(lstLines.at(0).x1 - lowerVerLine.x1);
+    smallestWaveLen = funcCalcCoordinate( dist2FirstLine, &dist2WaveLR, true );
+    lowerVerLine.wavelength = lstLines.at(0).wavelength - smallestWaveLen;
+    //std::cout << " smallestWaveLen: "           << smallestWaveLen       << std::endl;
+    //std::cout << "dist2FirstLine: "             << dist2FirstLine           << std::endl;
+    //std::cout << "lowerVerLine.wavelength: "    << lowerVerLine.wavelength  << std::endl;
 
     //std::cout << "Orig P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
     //std::cout << "Orig P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
@@ -206,7 +215,8 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //--------------------------------------
     if( funcSaveVerticalCalibrationFile(
                                             &lowerVerLine,
-                                            &wavelengthLR,
+                                            &dist2WaveLR,
+                                            &wave2DistLR,
                                             &vertLR
                                         ) != _OK
     ){
@@ -244,7 +254,7 @@ void formSlideLinearRegression::funcTableToList(QList<structLine>* lstLines)
         tmpNewLine.originalW    = coordinates.at(0).trimmed().toInt(0);
         tmpNewLine.originalH    = coordinates.at(1).trimmed().toInt(0);
         //Get wavelength
-        tmpNewLine.wavelength   = ui->tableLstPoints->item(i,0)->text().trimmed().toInt(0);
+        tmpNewLine.wavelength  = ui->tableLstPoints->item(i,0)->text().trimmed().toFloat(0);
         //Add Line
         lstLines->append(tmpNewLine);
     }
@@ -253,7 +263,8 @@ void formSlideLinearRegression::funcTableToList(QList<structLine>* lstLines)
 int formSlideLinearRegression
     ::funcSaveVerticalCalibrationFile(
                                         structLine* lowerVerLine,
-                                        linearRegresion* wavelengthLR,
+                                        linearRegresion* dist2WaveLR,
+                                        linearRegresion* wave2DistLR,
                                         linearRegresion* vertLR
 ){
     //------------------------------------
@@ -278,19 +289,24 @@ int formSlideLinearRegression
     //------------------------------------
     QList<QString> lstFixtures;
     QList<QString> lstValues;
-    lstFixtures << "imgW"           << "imgH"
-                << "x1"             << "y1"
-                << "x2"             << "y2"
-                << "wavelengthA"    << "wavelengthB"
-                << "vertA"          << "vertB";
+    lstFixtures << "imgW"           << "imgH"                
+                << "lowerBoundX1"   << "lowerBoundY1"
+                << "lowerBoundX2"   << "lowerBoundY2"
+                << "lowerBoundWave"
+                << "dist2WaveA"     << "dist2WaveB"
+                << "wave2DistA"     << "wave2DistB"
+                << "vertA"          << "vertB";    
     lstValues   << QString::number(lowerVerLine->originalW);
-    lstValues   << QString::number(lowerVerLine->originalH);
+    lstValues   << QString::number(lowerVerLine->originalH);    
     lstValues   << QString::number(lowerVerLine->x1);
     lstValues   << QString::number(lowerVerLine->y1);
     lstValues   << QString::number(lowerVerLine->x2);
     lstValues   << QString::number(lowerVerLine->y2);
-    lstValues   << QString::number(wavelengthLR->a);
-    lstValues   << QString::number(wavelengthLR->b);
+    lstValues   << QString::number(lowerVerLine->wavelength);
+    lstValues   << QString::number(dist2WaveLR->a);
+    lstValues   << QString::number(dist2WaveLR->b);
+    lstValues   << QString::number(wave2DistLR->a);
+    lstValues   << QString::number(wave2DistLR->b);
     lstValues   << QString::number(vertLR->a);
     lstValues   << QString::number(vertLR->b);
 

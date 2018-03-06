@@ -27,7 +27,8 @@ private slots:
 
     int funcSaveVerticalCalibrationFile(
                                             structLine* lowerVerLine,
-                                            linearRegresion* wavelengthLR,
+                                            linearRegresion* dist2WaveLR,
+                                            linearRegresion* wave2DistLR,
                                             linearRegresion* vertLR
                                        );
 

@@ -862,9 +862,9 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
 
                 //Calculates the projection
                 //..
-                diffProj.x          = c;
-                diffProj.y          = r;
-                diffProj.wavelength = actWave;
+                diffProj.x              = c;
+                diffProj.y              = r;
+                diffProj.wavelength     = actWave;
                 calcDiffProj(&diffProj, daCalibGenCal);
 
                 //Accumulates diffraction values sensed

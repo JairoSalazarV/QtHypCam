@@ -194,8 +194,8 @@
     //
     static cameraResolution* camRes = (cameraResolution*)malloc(sizeof(cameraResolution));
 
-    QString funcGetParam(QString field);
-    QString funcGetParam(QString field, QString defaultValue);
+    QString funcGetParam(QString label);
+    QString funcGetParam(QString label, QString defaultValue);
 
 
 
@@ -207,7 +207,7 @@
 
     int funcReadLineFromXML(QString* filePath, structLine *tmpLine);
 
-    int funcLetUserSelectFile(QString* filePath);
+    int funcLetUserSelectFile(QString* filePath, const QString &title="Select file...");
     int funcLetUserSelectFile(QString* filePath, QString title, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
 
     int funcLetUserDefineFile(QString* filePath, QString title, QString extension, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
@@ -232,12 +232,16 @@
 
     int funcReadHorHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
 
-    int funcReadVertHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
+    int funcReadVertHalfCalib(
+                                const QString &filePath,
+                                float *referenceX2,
+                                structSlideCalibration* slideCalibration
+                             );
 
     cameraResolution* getCamRes( int megapixels );
 
     int scaleLen( int len, int canvasLen, int originalLen );
 
-    int funcCalcCoordinate( const int &coordinate, linearRegresion* LR );
+    float funcCalcCoordinate( const float &coordinate, linearRegresion* LR, bool print=false );
 
 #endif // __COMMON_H

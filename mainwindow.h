@@ -170,7 +170,7 @@ private slots:
     void mergeSnapshot(QImage *diff, QImage *aper, lstDoubleAxisCalibration *daCalib );
 
     void calcDiffPoints(
-                            double wave,
+                            float wave,
                             strDiffProj *p11,
                             strDiffProj *p12,
                             strDiffProj *p21,
@@ -630,6 +630,10 @@ private slots:
     void on_actionMerge_Calibration_triggered();
 
     void on_actionPlot_over_Real_triggered();
+
+    void on_actionPlot_First_Line_triggered();
+
+    void on_actionPlot_Line_at_Wavelength_triggered();
 
 private:
     Ui::MainWindow *ui;

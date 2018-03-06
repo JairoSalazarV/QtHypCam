@@ -63,7 +63,7 @@
         int ly;
         int dx;
         int dy;
-        double wavelength;
+        float wavelength;
     }strDiffProj;
 
     typedef struct strAllLinReg{
@@ -192,7 +192,7 @@
         bool rotate = false;
         int orientation; //1:Horizontal | 2:Vertical
         int lenght;
-        int wavelength=0; //Nanometers
+        float wavelength=0.0; //Nanometers
         QString name;
         int originalW;
         int originalH;
@@ -238,16 +238,14 @@
     }structHorizontalCalibration;
 
     typedef struct structSlideCalibration{
-        int imgW;
-        int imgH;
-        int originX;
-        int originY;
-        int originH;
-        int x1;//It is a line to support computes
-        int y1;//It is a line to support computes
-        int x2;//It is a line to support computes
-        int y2;//It is a line to support computes
-        linearRegresion wavelengthLR;
+        int     imgW;
+        int     imgH;
+        int     originX;
+        int     originY;
+        int     originH;        
+        float   originWave;
+        linearRegresion dist2WaveLR;
+        linearRegresion wave2DistLR;
         linearRegresion vertLR;
         linearRegresion horizLR;
     }structSlideCalibration;
@@ -476,7 +474,7 @@
         int     colorG;
         int     colorB;
         int     oritation;
-        int     wavelength;
+        float   wavelength;
         //float   m;//Slope
     }structLine;
 

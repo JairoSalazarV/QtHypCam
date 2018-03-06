@@ -1534,6 +1534,8 @@ QSlider::handle:horizontal {
     <addaction name="separator"/>
     <addaction name="actionMerge_Calibration"/>
     <addaction name="actionPlot_over_Real"/>
+    <addaction name="actionPlot_First_Line"/>
+    <addaction name="actionPlot_Line_at_Wavelength"/>
     <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
@@ -2255,11 +2257,6 @@ QSlider::handle:horizontal {
     <string>Vertical</string>
    </property>
   </action>
-  <action name="actionalgo">
-   <property name="text">
-    <string>algo</string>
-   </property>
-  </action>
   <action name="actionOrigin">
    <property name="text">
     <string>Origin</string>
@@ -2278,6 +2275,16 @@ QSlider::handle:horizontal {
   <action name="actionPlot_over_Real">
    <property name="text">
     <string>Plot over Real</string>
+   </property>
+  </action>
+  <action name="actionPlot_First_Line">
+   <property name="text">
+    <string>Plot First Line</string>
+   </property>
+  </action>
+  <action name="actionPlot_Line_at_Wavelength">
+   <property name="text">
+    <string>Plot Line at Wavelength</string>
    </property>
   </action>
  </widget>

@@ -49,7 +49,7 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
         if(tmpA->text()=="Right"){
         }
         if(tmpA->text()=="Set Wavelength"){
-            this->parameters.wavelength = funcGetParam("Wavelegth").trimmed().toInt(0);
+            this->parameters.wavelength = funcGetParam("Wavelegth").trimmed().toFloat(0);
             funcShowMsgSUCCESS_Timeout("Wavelength Updated",Q_NULLPTR);
         }
         if(tmpA->text()=="Set Color"){

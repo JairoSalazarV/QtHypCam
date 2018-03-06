@@ -2241,21 +2241,21 @@ int calcSlideExtraW(structSlideHypCube* slideSett)
     return floor((float)slideSett->width * slideSett->extraW);
 }
 
-QString funcGetParam(QString field)
+QString funcGetParam(QString label)
 {
     bool ok;
     return QInputDialog::getText(NULL, "Input required...",
-                                                        field+":", QLineEdit::Normal,
+                                                        label+":", QLineEdit::Normal,
                                                         "", &ok);
 }
 
-QString funcGetParam(QString field, QString defaultValue)
+QString funcGetParam(QString label, QString defaultValue)
 {
     bool ok;
     return QInputDialog::getText(
                                     NULL,
                                     "Input required...",
-                                    field+":", QLineEdit::Normal,
+                                    label+":", QLineEdit::Normal,
                                     defaultValue,
                                     &ok
                                 );
@@ -2372,7 +2372,7 @@ int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
             if( xmlReader->name()=="colorB" )
                 tmpLine->colorB = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="wavelength" )
-                tmpLine->wavelength = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->wavelength = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="orientation" )
                 tmpLine->oritation = xmlReader->readElementText().trimmed().toInt(0);
         }
@@ -2387,12 +2387,12 @@ int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
     return _OK;
 }
 
-int funcLetUserSelectFile(QString* filePath)
+int funcLetUserSelectFile(QString* filePath, const QString &title)
 {
-    QString lastPath = readFileParam(_PATH_LAST_LINE_OPENED);
+    QString lastPath = readFileParam(_PATH_LAST_PATH_OPENED);
     if( lastPath.isEmpty() )//First time using this parameter
     {
-        lastPath = "./XML/lines/";
+        lastPath = "./";
     }
 
     //Select image
@@ -2400,7 +2400,7 @@ int funcLetUserSelectFile(QString* filePath)
 
     *filePath = QFileDialog::getOpenFileName(
                                                 Q_NULLPTR,
-                                                "Select file...",
+                                                title,
                                                 lastPath,
                                                 "(*.*);;"
                                              );
@@ -2604,6 +2604,7 @@ int funcCalc_Y_SlopToPoint(int newX, structLine* internLine)
     return newY;
 }*/
 
+/*
 int funcMergeSlideCalib(
                             const QString &vertPath,
                             const QString &horizPath,
@@ -2612,16 +2613,18 @@ int funcMergeSlideCalib(
     //------------------------------------------------
     //Read Calibration Parts
     //------------------------------------------------
+    int referenceX2 = 0;
     funcReadHorHalfCalib(horizPath,slideCalibration);
-    funcReadVertHalfCalib(vertPath,slideCalibration);
+    funcReadVertHalfCalib(vertPath,&referenceX2,slideCalibration);
 
     //------------------------------------------------
     //Merge Calibration Parts
     //------------------------------------------------
-}
+}*/
 
 int funcReadVertHalfCalib(
                             const QString &filePath,
+                            float* referenceX2,
                             structSlideCalibration* slideCalibration
 ){
     QFile *xmlFile = new QFile( filePath );
@@ -2644,22 +2647,22 @@ int funcReadVertHalfCalib(
                 slideCalibration->imgW = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="imgH" )
                 slideCalibration->imgH = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="wavelengthA" )
-                slideCalibration->wavelengthLR.a = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="wavelengthB" )
-                slideCalibration->wavelengthLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="lowerBoundX2" )
+                *referenceX2 = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="lowerBoundWave" )
+                slideCalibration->originWave = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="dist2WaveA" )
+                slideCalibration->dist2WaveLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="dist2WaveB" )
+                slideCalibration->dist2WaveLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="wave2DistA" )
+                slideCalibration->wave2DistLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="wave2DistB" )
+                slideCalibration->wave2DistLR.b = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="vertA" )
                 slideCalibration->vertLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="vertB" )
                 slideCalibration->vertLR.b = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="x1" )
-                slideCalibration->x1 = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="y1" )
-                slideCalibration->y1 = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="x2" )
-                slideCalibration->x2 = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="y2" )
-                slideCalibration->y2 = xmlReader->readElementText().toFloat(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -2768,24 +2771,22 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
                 slideCalibration->imgW = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="imgH" )
                 slideCalibration->imgH = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="x1" )
-                slideCalibration->x1 = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="y1" )
-                slideCalibration->y1 = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="x2" )
-                slideCalibration->x2 = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="y2" )
-                slideCalibration->y2 = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="originX" )
                 slideCalibration->originX = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="originY" )
                 slideCalibration->originY = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="originH" )
                 slideCalibration->originH = xmlReader->readElementText().toInt(0);
-            if( xmlReader->name()=="wavelengthA" )
-                slideCalibration->wavelengthLR.a = xmlReader->readElementText().toFloat(0);
-            if( xmlReader->name()=="wavelengthB" )
-                slideCalibration->wavelengthLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="originWave" )
+                slideCalibration->originWave = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="dist2WaveA" )
+                slideCalibration->dist2WaveLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="dist2WaveB" )
+                slideCalibration->dist2WaveLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="wave2DistA" )
+                slideCalibration->wave2DistLR.a = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="wave2DistB" )
+                slideCalibration->wave2DistLR.b = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="vertA" )
                 slideCalibration->vertLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="vertB" )
@@ -2806,10 +2807,13 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
 
 }
 
-int funcCalcCoordinate( const int &coordinate, linearRegresion* LR )
+float funcCalcCoordinate(const float &coordinate, linearRegresion* LR , bool print)
 {
-    //std::cout << "(" << coordinate << "*" << LR->b << ") + " << LR->a << std::endl;
-    return round( ((float)coordinate * LR->b) + LR->a );
+    if( print == true )
+    {
+        std::cout << "(" << coordinate << "*" << LR->b << ") + " << LR->a << std::endl;
+    }
+    return (coordinate * LR->b) + LR->a;
 }
 
 
