@@ -1529,12 +1529,13 @@ QSlider::handle:horizontal {
      <addaction name="actionOrigin"/>
     </widget>
     <addaction name="actionLinear_Regression"/>
+    <addaction name="separator"/>
     <addaction name="actionSlide_Linear_Regression"/>
+    <addaction name="separator"/>
     <addaction name="menuPlot"/>
     <addaction name="separator"/>
     <addaction name="actionMerge_Calibration"/>
     <addaction name="actionPlot_over_Real"/>
-    <addaction name="actionPlot_First_Line"/>
     <addaction name="actionPlot_Line_at_Wavelength"/>
     <addaction name="separator"/>
    </widget>
@@ -2275,11 +2276,6 @@ QSlider::handle:horizontal {
   <action name="actionPlot_over_Real">
    <property name="text">
     <string>Plot over Real</string>
-   </property>
-  </action>
-  <action name="actionPlot_First_Line">
-   <property name="text">
-    <string>Plot First Line</string>
    </property>
   </action>
   <action name="actionPlot_Line_at_Wavelength">

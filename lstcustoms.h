@@ -76,5 +76,7 @@
     #define _RASP_CAM_8MP_VIDEO_W           1640 //1920 | 1640
     #define _RASP_CAM_8MP_VIDEO_H           1232 //1080 | 1232
 
+    #define _RASP_CAM_MAX_WAVELENGTH        950  //Used During Slide Clibration
+
 
 #endif // LSTCUSTOMS_H

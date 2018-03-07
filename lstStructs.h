@@ -242,8 +242,10 @@
         int     imgH;
         int     originX;
         int     originY;
-        int     originH;        
+        int     originH;
+        int     maxNumCols;
         float   originWave;
+        QString xyMatrix;
         linearRegresion dist2WaveLR;
         linearRegresion wave2DistLR;
         linearRegresion vertLR;

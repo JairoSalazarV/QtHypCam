@@ -631,8 +631,6 @@ private slots:
 
     void on_actionPlot_over_Real_triggered();
 
-    void on_actionPlot_First_Line_triggered();
-
     void on_actionPlot_Line_at_Wavelength_triggered();
 
 private:

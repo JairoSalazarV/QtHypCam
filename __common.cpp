@@ -2795,6 +2795,8 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
                 slideCalibration->horizLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="horizB" )
                 slideCalibration->horizLR.b = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="maxNumCols" )
+                slideCalibration->maxNumCols = xmlReader->readElementText().toInt(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -2807,14 +2809,46 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
 
 }
 
-float funcCalcCoordinate(const float &coordinate, linearRegresion* LR , bool print)
+float funcApplyLR(const float &coordinate, linearRegresion* LR , bool print)
 {
     if( print == true )
     {
-        std::cout << "(" << coordinate << "*" << LR->b << ") + " << LR->a << std::endl;
+
+        std::cout << "(" << coordinate << "*" << LR->b << ") + " << LR->a << " = " << ((coordinate * LR->b) + LR->a) << std::endl;
     }
     return (coordinate * LR->b) + LR->a;
 }
+
+QPoint funcGetCoor(
+                        int tmpX,
+                        int tmpY,
+                        structSlideCalibration* slideCalibration,
+                        bool print
+){
+    //It Receives
+    //tmpX: [0-maxNumCols-1]
+    //tmpY: [0-originH-1]
+    int x, y, origH;
+    origH = slideCalibration->originH;
+    y     = round(
+                    funcApplyLR(
+                                    (float)(tmpX+slideCalibration->originX),
+                                    &slideCalibration->horizLR,
+                                    print
+                                )
+                 )+tmpY;
+
+    x     = round(
+                    funcApplyLR(
+                                    (float)(tmpY+slideCalibration->originY),
+                                    &slideCalibration->vertLR,
+                                    print
+                                )
+                 )+tmpX;
+    return QPoint(x,y);
+}
+
+
 
 
 

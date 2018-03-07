@@ -242,6 +242,19 @@
 
     int scaleLen( int len, int canvasLen, int originalLen );
 
-    float funcCalcCoordinate( const float &coordinate, linearRegresion* LR, bool print=false );
+    float funcApplyLR( const float &coordinate, linearRegresion* LR, bool print=false );
+
+    QPoint funcGetCoor(
+                            int tmpX,
+                            int tmpY,
+                            structSlideCalibration* slideCalibration,
+                            bool print=false
+                      );
+    /*
+    QPoint funcGetYCoor(
+                            const int &tmpX,
+                            structSlideCalibration* slideCalibration,
+                            bool print=false
+                       );*/
 
 #endif // __COMMON_H

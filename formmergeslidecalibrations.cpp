@@ -115,22 +115,38 @@ int formMergeSlideCalibrations
                                     QString* pathDestine,
                                     structSlideCalibration* slideCalibration
 ){
-    QList<QString> lstFixtures;
-    QList<QString> lstValues;
+
+    //-----------------------------------
+    //Define a Matrix with all coordinates
+    //Pre-computed
+    //-----------------------------------
+    //Get maximum distance from origin
+    float maxWavelength = _RASP_CAM_MAX_WAVELENGTH;
+    int distPixFromLower;
+    maxWavelength = maxWavelength - slideCalibration->originWave;
+    distPixFromLower = round( funcApplyLR(maxWavelength,&slideCalibration->wave2DistLR,true) );
+    std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
+    //Calculate Coordinates
+    //int originX, originY;
+    //originX = slideCalibration->originX;
+    //originY = slideCalibration->originY;
 
     //-----------------------------------
     //Fill Fixtures
     //-----------------------------------
+    QList<QString> lstFixtures;
     lstFixtures << "imgW"       << "imgH"                
                 << "originX"    << "originY"    << "originH"    << "originWave"
                 << "dist2WaveA" << "dist2WaveB"
                 << "wave2DistA" << "wave2DistB"
                 << "vertA"      << "vertB"
-                << "horizA"     << "horizB";
+                << "horizA"     << "horizB"
+                << "maxNumCols";
 
     //-----------------------------------
     //Fill Values
     //-----------------------------------
+    QList<QString> lstValues;
     lstValues   << QString::number(slideCalibration->imgW)
                 << QString::number(slideCalibration->imgH)                
                 << QString::number(slideCalibration->originX)
@@ -144,7 +160,8 @@ int formMergeSlideCalibrations
                 << QString::number(slideCalibration->vertLR.a)
                 << QString::number(slideCalibration->vertLR.b)
                 << QString::number(slideCalibration->horizLR.a)
-                << QString::number(slideCalibration->horizLR.b);
+                << QString::number(slideCalibration->horizLR.b)
+                << QString::number(distPixFromLower);
 
     //-----------------------------------
     //Save Slide Calibration File

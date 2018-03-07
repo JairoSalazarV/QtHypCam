@@ -3279,6 +3279,10 @@ void MainWindow::on_actionClear_triggered()
     //Clear scene
     canvasCalib->scene()->clear();
 
+    //Clear image
+    //globalEditImg = globalBackEditImg;
+    //updateDisplayImage(globalBackEditImg);
+
     clearFreeHandPoligon();
 
     clearRectangle();
@@ -3499,7 +3503,8 @@ void MainWindow::on_actionLoadCanvas_triggered()
     }
 
     //Load Image Selected
-    globalEditImg = new QImage(auxQstring);
+    globalEditImg       = new QImage(auxQstring);
+    globalBackEditImg   = new QImage(auxQstring);
 
     //Update Thumb and Edit Canvas
     updateDisplayImage(globalEditImg);
@@ -9881,8 +9886,8 @@ void MainWindow::on_actionOrigin_triggered()
     horB  = tmpHorizontalCal.b;
     verA  = tmpVertCal.vertLR.a;
     verB  = tmpVertCal.vertLR.b;
-    horY  = (horB*tmpVertCal.x2)+horA;
-    verX  = (verB*horY)+verA;
+    horY  = round( (tmpVertCal.x2 * horB) + horA );
+    verX  = round( (verB * horY) + verA );
 
     //---------------------------------------
     //Add Big Point
@@ -9893,7 +9898,7 @@ void MainWindow::on_actionOrigin_triggered()
     x   = round( ((float)x/(float)tmpHorizontalCal.imgW) * (float)canvasCalib->width() );
     y   = round( ((float)y/(float)tmpHorizontalCal.imgH) * (float)canvasCalib->height() );
     //std::cout << x << "," << y << std::endl;
-    double rad = 20.0;
+    double rad = 10.0;
     QGraphicsEllipseItem* item = new QGraphicsEllipseItem(x-(rad/2.0), y-(rad/2.0), rad, rad );
     item->setPen( QPen(Qt::magenta) );
     item->setBrush( QBrush(Qt::white) );
@@ -9980,36 +9985,56 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     }
 
     //----------------------------------------------
-    //Draw Horizontal Line
+    //Draw Vertical Lower Bound Line
     //----------------------------------------------
-    int tmpX, tmpY;
-    for( tmpX=1; tmpX<globalEditImg->width(); tmpX++ )
+    QPoint newPoint;
+    int x, y;
+    x=0;
+    for( y=0; y<=slideCalibration.originH; y++ )
     {
-        tmpY = round( funcCalcCoordinate((float)tmpX,&slideCalibration.horizLR) );
-        globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
-        //std::cout << tmpX << "," << tmpY << std::endl;
+        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
     //----------------------------------------------
-    //Draw Vertical Line
+    //Draw Vertical Upper Bound Line
     //----------------------------------------------
-    for( tmpY=1; tmpY<globalEditImg->height(); tmpY++ )
+    x=slideCalibration.maxNumCols;
+    for( y=0; y<=slideCalibration.originH; y++ )
     {
-        tmpX = round( funcCalcCoordinate((float)tmpY,&slideCalibration.vertLR) );
-        globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
-        //std::cout << tmpX << "," << tmpY << std::endl;
+        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
+    }
+
+    //----------------------------------------------
+    //Draw Horizontal Upper Line
+    //----------------------------------------------
+    int x1, y1, x2, y2, len;
+    y=0;
+    for( x=0; x<=slideCalibration.maxNumCols; x++ )
+    {
+        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
+    }
+
+    //----------------------------------------------
+    //Draw Horizontal Lower Line
+    //----------------------------------------------
+    y = slideCalibration.originH;
+    for( x=0; x<=slideCalibration.maxNumCols; x++ )
+    {
+        QPoint newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
     //----------------------------------------------
     //Draw Origen
     //----------------------------------------------
-    int x, y, x1, y1, x2, y2, len;
-    len = 2;
+    len  = 2;
     x1   = slideCalibration.originX - len;
     y1   = slideCalibration.originY - len;
     x2   = slideCalibration.originX + len;
     y2   = slideCalibration.originY + len;
-
     for( x=x1; x<=x2; x++ )
     {
         for( y=y1; y<=y2; y++ )
@@ -10019,85 +10044,16 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     }
 
     //----------------------------------------------
-    //Update Image Displayed in Canvas
+    //Draw Internal in order to check
     //----------------------------------------------
-    updateDisplayImage(globalEditImg);
-
-    //----------------------------------------------
-    //Save Image
-    //----------------------------------------------
-    if( funcShowMsgYesNo("Saving Image","Save image?") )
+    x=slideCalibration.maxNumCols;
+    for( x=0; x<=slideCalibration.maxNumCols; x+=10 )
     {
-        //filePath:         File output, filename selected by the user
-        //title:            Showed to User, what kind of file is the user selecting
-        //pathLocation:     Where is saved the last path location saved
-        //pathOfInterest:   If it is the first time, what path will be saved as default
-        //parent:           In order to use this Dialog
-        QString fileName;
-        if(
-                funcLetUserDefineFile(
-                                        &fileName,
-                                        "Define Image Filename",
-                                        ".png",
-                                        new QString(_PATH_LAST_IMG_OPEN),
-                                        QString(_PATH_LAST_IMG_OPEN),
-                                        this
-                                     ) != _OK
-        ){
-            return (void)false;
+        for( y=0; y<=slideCalibration.originH; y+=10 )
+        {
+            newPoint = funcGetCoor(x,y,&slideCalibration,false);
+            globalEditImg->setPixelColor(newPoint,QColor(255,0,0));
         }
-        //Save Image
-        globalEditImg->save(fileName);
-        //Notify Success
-        funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
-    }
-}
-
-void MainWindow::on_actionPlot_First_Line_triggered()
-{
-    //----------------------------------------------
-    //Let the user select Slide Calibration File
-    //----------------------------------------------
-    QString calibPath;
-    if( funcLetUserSelectFile(&calibPath) != _OK )
-    {
-        return (void)false;
-    }
-
-    //----------------------------------------------
-    //Read Slide Calibration File
-    //----------------------------------------------
-    structSlideCalibration slideCalibration;
-    if( funcReadSlideCalib( calibPath, &slideCalibration ) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration File");
-        return (void)false;
-    }
-
-    //**********************************************
-    //Draw Over Real Image
-    //**********************************************
-
-    //----------------------------------------------
-    //Validate Calibration-Size and Image-Size
-    //----------------------------------------------
-    if(
-            slideCalibration.imgW != globalEditImg->width()     ||
-            slideCalibration.imgH != globalEditImg->height()
-    ){
-        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different");
-        return (void)false;
-    }
-
-    //----------------------------------------------
-    //Draw Vertical Line
-    //----------------------------------------------
-    int tmpX, tmpY;
-    for( tmpY=slideCalibration.originY; tmpY<(slideCalibration.originY+slideCalibration.originH); tmpY++ )
-    {
-        tmpX = round( funcCalcCoordinate((float)tmpY,&slideCalibration.vertLR) );
-        //std::cout << tmpX << "," << tmpY << std::endl;
-        globalEditImg->setPixelColor(tmpX,tmpY,QColor(255,255,255));
     }
 
     //----------------------------------------------
@@ -10133,7 +10089,6 @@ void MainWindow::on_actionPlot_First_Line_triggered()
         //Notify Success
         funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
     }
-
 }
 
 void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
@@ -10143,7 +10098,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     //----------------------------------------------
     float wavelength;
     wavelength = funcGetParam("Wavelength","450").trimmed().toFloat(0);
-    if( wavelength < 350 || wavelength > 1200 )
+    if( wavelength < 300 || wavelength > 1200 )
     {
         funcShowMsgERROR_Timeout("Wavelength incorrect");
         return (void)false;
@@ -10195,22 +10150,19 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     //----------------------------------------------
     int distPixFromLower;
     wavelength = wavelength - slideCalibration.originWave;
-    distPixFromLower = round( funcCalcCoordinate(wavelength,&slideCalibration.wave2DistLR,true) );
-    //std::cout << "wavelength: " << wavelength << std::endl;
-    //std::cout << "2) slideCalibration.originWave: " << slideCalibration.originWave << std::endl;
+    distPixFromLower = round( funcApplyLR(wavelength,&slideCalibration.wave2DistLR,true) );
     std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
 
     //----------------------------------------------
     //Draw Vertical Line
     //----------------------------------------------
-    int tmpY, x, y;
-    for( tmpY=1; tmpY<=slideCalibration.originH; tmpY++ )
+    QPoint newPoint;
+    int x = distPixFromLower;
+    int y;
+    for( y=0; y<=slideCalibration.originH; y++ )
     {
-        x   = slideCalibration.originX + distPixFromLower;
-        y   = round(funcCalcCoordinate(x,&slideCalibration.horizLR)) + tmpY;
-        x   = round(funcCalcCoordinate(y,&slideCalibration.vertLR)) + distPixFromLower;
-        //std::cout << tmpX << "," << tmpY << std::endl;
-        globalEditImg->setPixelColor(x,y,QColor(255,255,255));
+        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
     //----------------------------------------------
