@@ -29,9 +29,9 @@ private slots:
 
     void refreshGVImage(QImage* imgPreview);
 
-    void on_pbAutoStepIncrement_clicked();
+    //void on_pbAutoStepIncrement_clicked();
 
-    void on_pbAutoStepDecrement_clicked();
+    //void on_pbAutoStepDecrement_clicked();
 
     void on_pbFolder_clicked();
 

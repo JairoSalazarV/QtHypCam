@@ -174,10 +174,10 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
             {
                 if( HypImg[x][y][z] < 0 || HypImg[x][y][z] > 255 )
                 {
-                    std::cout << "color: "  << HypImg[x][y][z] << std::endl;
-                    std::cout << "x: "  << x << std::endl;
-                    std::cout << "y: "  << y << std::endl;
-                    std::cout << "z: "  << z << std::endl;
+                    //std::cout << "color: "  << HypImg[x][y][z] << std::endl;
+                    //std::cout << "x: "  << x << std::endl;
+                    //std::cout << "y: "  << y << std::endl;
+                    //std::cout << "z: "  << z << std::endl;
                     return (void)false;
                 }
                 tmpLayer.setPixelColor(
@@ -515,7 +515,7 @@ QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(QList<QFileInfo> lst
 }
 */
 
-
+/*
 void formBuildSlideHypeCubePreview::on_pbAutoStepIncrement_clicked()
 {
     int aux;
@@ -523,8 +523,9 @@ void formBuildSlideHypeCubePreview::on_pbAutoStepIncrement_clicked()
     int slideW = (aux>ui->spinSlideW->maximum())?ui->spinSlideW->maximum():aux;
     ui->spinSlideW->setValue(slideW);
     ui->pbApply->click();
-}
+}*/
 
+/*
 void formBuildSlideHypeCubePreview::on_pbAutoStepDecrement_clicked()
 {
     int aux;
@@ -532,7 +533,7 @@ void formBuildSlideHypeCubePreview::on_pbAutoStepDecrement_clicked()
     int slideW = (aux>=1)?aux:1;
     ui->spinSlideW->setValue(slideW);
     ui->pbApply->click();
-}
+}*/
 
 void formBuildSlideHypeCubePreview::on_pbFolder_clicked()
 {
@@ -568,7 +569,7 @@ QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
     lstParameters.append(","+QString::number(ui->spinSlideLocation->value()));
     lstParameters.append(","+QString::number(ui->spinOverlap->value()));
     lstParameters.append(","+QString::number(ui->spinMaxShift->value()));
-    lstParameters.append(","+QString::number(ui->spinAutoStep->value()));
+    //lstParameters.append(","+QString::number(ui->spinAutoStep->value()));
     if(ui->cbFlip->isChecked())
         lstParameters.append(",1");
     else
