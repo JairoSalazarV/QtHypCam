@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <__common.h>
-
+#include <QProgressBar>
 
 namespace Ui {
 class formBuildSlideHypeCubePreview;
@@ -14,7 +14,10 @@ class formBuildSlideHypeCubePreview : public QDialog
     Q_OBJECT
 
 public:
-    explicit formBuildSlideHypeCubePreview(QWidget *parent = 0);
+    explicit formBuildSlideHypeCubePreview(
+                                            QWidget *parent = 0,
+                                            QProgressBar* parentProgressBar = Q_NULLPTR
+                                          );
     ~formBuildSlideHypeCubePreview();
 
 private slots:
