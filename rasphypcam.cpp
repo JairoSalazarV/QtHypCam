@@ -151,6 +151,8 @@ void debugMsg( std::string msg )
 
 int readParamFromFile( std::string fileName, std::string* stringContain )
 {
+    //fileName:         Path location
+    //stringContain:    fileName's Contain
     //Read a file an put contain into stringContain
     //Return: -1 if error reading file | 0 if file is empty | 1 file is not empty
 

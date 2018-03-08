@@ -1354,7 +1354,7 @@ int funcExecuteCommand( QString command )
     pclose(pipe);
 
 
-    return -1;
+    return _OK;
 }
 
 
@@ -1495,6 +1495,8 @@ int funcAccountFilesInDir(QString Dir)
 
 QList<QFileInfo> funcListFilesInDir(QString Dir)
 {
+    //Dir: Path of interes
+    //Return lstFiles
     QList<QFileInfo> lstFiles;
     QDir dir(Dir);
     if ( dir.exists() )
@@ -1935,6 +1937,13 @@ int pixelMaxValue( QRgb pixel )
     return maxVal;
 }
 
+int pixelMaxValue( const QColor &color )
+{
+    int maxVal;
+    maxVal = (color.red()>=color.green())?color.red():color.green();
+    maxVal = (maxVal>=color.blue())?maxVal:color.blue();
+    return maxVal;
+}
 
 QPoint imageSimilarity2D(QImage* img1, QImage* img2, float maxShift, bool horizontal)
 {
@@ -2848,7 +2857,35 @@ QPoint funcGetCoor(
     return QPoint(x,y);
 }
 
+int funcGetPixQE(
+                        int*    x,
+                        int*    y,
+                        float*  pixQE,
+                        const QImage &tmpImg,
+                        structSlideCalibration* slideCalibration
+){
+    //---------------------------------------------
+    // Get Pixel Location
+    //---------------------------------------------    
+    QPoint pixLocation = funcGetCoor( *x, *y, slideCalibration );
+    if(
+            pixLocation.x() > tmpImg.width()    ||
+            pixLocation.y() > tmpImg.height()
+    ){        
+        return _ERROR;
+    }
+    QColor pixel  = tmpImg.pixelColor( pixLocation.x(), pixLocation.y() );
+    //std::cout   << "original x: " << *x << " y: " << *y
+    //            << " scaled  x: " << pixLocation.x() << " y: " << pixLocation.y() << std::endl;
 
+    //---------------------------------------------
+    // Calculate pixel's QE
+    // Temporally, QE is the max value sensed
+    //---------------------------------------------
+    *pixQE = (float)pixelMaxValue(pixel);
+
+    return _OK;
+}
 
 
 

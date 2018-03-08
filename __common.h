@@ -164,7 +164,8 @@
 
     int* imageDecriptor(QImage *img, bool horizontal=true);
 
-    int pixelMaxValue(QRgb pixel );
+    int pixelMaxValue( QRgb pixel );
+    int pixelMaxValue(const QColor &color );
 
     QPoint imageSimilarity2D(QImage* img1, QImage* img2, float maxShiftPix, bool horizontal=true);
 
@@ -207,8 +208,8 @@
 
     int funcReadLineFromXML(QString* filePath, structLine *tmpLine);
 
-    int funcLetUserSelectFile(QString* filePath, const QString &title="Select file...");
     int funcLetUserSelectFile(QString* filePath, QString title, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
+    int funcLetUserSelectFile(QString* filePath, const QString &title="Select file...");
 
     int funcLetUserDefineFile(QString* filePath, QString title, QString extension, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
 
@@ -250,11 +251,11 @@
                             structSlideCalibration* slideCalibration,
                             bool print=false
                       );
-    /*
-    QPoint funcGetYCoor(
-                            const int &tmpX,
-                            structSlideCalibration* slideCalibration,
-                            bool print=false
-                       );*/
+    int funcGetPixQE(
+                        int* x,
+                        int* y, float *pixQE,
+                        const QImage &tmpImg,
+                        structSlideCalibration* slideCalibration
+                    );
 
 #endif // __COMMON_H

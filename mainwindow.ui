@@ -1438,6 +1438,7 @@ QSlider::handle:horizontal {
       <string>Set</string>
      </property>
      <addaction name="actionDiffraction_Origin"/>
+     <addaction name="actionSlide_Calibration_File"/>
     </widget>
     <addaction name="actionNDVI_Algorithm"/>
     <addaction name="actionSync_Folder"/>
@@ -2281,6 +2282,11 @@ QSlider::handle:horizontal {
   <action name="actionPlot_Line_at_Wavelength">
    <property name="text">
     <string>Plot Line at Wavelength</string>
+   </property>
+  </action>
+  <action name="actionSlide_Calibration_File">
+   <property name="text">
+    <string>Slide Calibration File</string>
    </property>
   </action>
  </widget>

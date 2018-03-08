@@ -6063,199 +6063,12 @@ void MainWindow::on_pbSnapVid_clicked()
     }
     progBarUpdateLabel("",0);
 
-
     //-----------------------------------------------------
     // Update mainImage from Frames
     //-----------------------------------------------------
     funcUpdateImageFromFolder(tmpFramesPath,_FRAME_EXTENSION);
 
-
-
     funcResetStatusBar();
-
-
-    //
-    //Generates Camera Command
-    //..
-    /*
-    structRaspistillCommand* structRaspiCommand = (structRaspistillCommand*)malloc(sizeof(structRaspistillCommand));
-    strReqImg *reqImg                           = (strReqImg*)malloc(sizeof(strReqImg));
-    memset(reqImg,'\0',sizeof(strReqImg));
-    memset(structRaspiCommand,'\0',sizeof(structRaspistillCommand));
-    structRaspiCommand->idMsg                   = (unsigned char)4;
-    reqImg->squApert                            = squareArea;
-    reqImg->raspSett                            = funcFillSnapshotSettings( reqImg->raspSett );
-    reqImg->imgCols                             = camRes->width;//2592 | 640
-    reqImg->imgRows                             = camRes->height;//1944 | 480
-    reqImg->raspSett.Flipped                    = (ui->cbFlipped->isChecked())?1:0;
-    */
-
-    /*
-    //--------------------------------------
-    //Create Command
-    //--------------------------------------
-    QString tmpCommand;
-    tmpCommand = genCommand(reqImg, _PATH_REMOTE_SNAPSHOT)->c_str();
-
-    //--------------------------------------
-    //Take Remote Photo
-    //--------------------------------------
-    funcRemoteTerminalCommand(tmpCommand.toStdString(),camSelected,false);
-    progBarUpdateLabel("Stabilizing Remote Camera...",0);
-    progBarTimer((ui->slideTriggerTime->value()+1)*1000);
-    progBarUpdateLabel("",0);
-    */
-
-    //
-    // Execute remote command
-    //
-
-
-
-
-
-
-
-
-    /*
-    //Update camera resolution
-    //..
-    camRes = getCamRes();
-
-    //Set required image's settings
-    //..
-    strReqImg *reqImg       = (strReqImg*)malloc(sizeof(strReqImg));
-    memset(reqImg,'\0',sizeof(strReqImg));
-
-    //Codec H264 or MJPEG
-    QString videoLocalFilename;
-    QString videoRemoteFilename;
-    //const u_int8_t videoCodec = _MJPEG;
-    const u_int8_t videoCodec = _H264;
-    if( videoCodec == _H264 )
-    {
-        videoRemoteFilename.append(_PATH_VIDEO_REMOTE_H264);
-        videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
-    }
-    else
-    {
-        memcpy( reqImg->video.cd, "MJPEG", 5 );
-        qDebug() << "MJPEG";
-
-        if( 1 )
-        {
-            videoRemoteFilename.append(_PATH_VIDEO_REMOTE_MJPEG);
-            videoLocalFilename.append(_PATH_VIDEO_RECEIVED_MJPEG);
-        }
-        else
-        {
-            videoRemoteFilename.append(_PATH_VIDEO_REMOTE_H264);
-            videoLocalFilename.append(_PATH_VIDEO_RECEIVED_H264);
-        }
-    }
-    qDebug() << "videoRemoteFilename: " << videoRemoteFilename;
-    memcpy( reqImg->video.o, videoRemoteFilename.toStdString().c_str(), videoRemoteFilename.size() );
-
-    //Others
-    reqImg->idMsg           = (unsigned char)12;    
-    reqImg->video.t         = ui->slideTriggerTime->value();
-    reqImg->video.ss        = (int16_t)round(ui->spinBoxShuterSpeed->value());
-    reqImg->video.awb       = (int16_t)ui->cbAWB->currentIndex();
-    reqImg->video.ex        = (int16_t)ui->cbExposure->currentIndex();
-    reqImg->video.md        = 2;//2    
-    reqImg->video.w         = 0;//1640
-    reqImg->video.h         = 0;//1232
-    reqImg->video.fps       = 5;//1-15
-
-    //
-    //Motor walk
-    //
-    // HELP
-    //
-    // (ERROR on binding: Address already in use) -> netstat -tulpn -> kill process
-    // Para saber el USB -> ls -l /dev/tty (tab)
-    reqImg->motorWalk.degreeIni     = 0;
-    reqImg->motorWalk.degreeEnd     = 180;
-    reqImg->motorWalk.durationMs    = 3000;
-    reqImg->motorWalk.stabilizingMs = 1000;
-
-    //Open socket
-    int n;
-    int sockfd = connectSocket( camSelected );
-    unsigned char bufferRead[frameBodyLen];
-    qDebug() << "Socket opened";
-    //Require photo size
-    //QtDelay(5);
-    n = ::write(sockfd,reqImg,sizeof(strReqImg));
-    qDebug() << "Video request sent";
-
-    //Receive ACK with the camera status
-    memset(bufferRead,'\0',3);
-    n = read(sockfd,bufferRead,2);
-    if( bufferRead[1] == 1 )
-    {//Begin the video adquisition routine
-
-        //
-        // STATUS BAR
-        //
-        progBarUpdateLabel("Recording video",0);
-        progBarTimer( (ui->slideTriggerTime->value() + 1) * 1000 );
-
-        //Delete if file exists
-        funcDeleteFile( _PATH_VIDEO_RECEIVED_H264 );
-        funcDeleteFile( _PATH_VIDEO_RECEIVED_MJPEG );
-        funcDeleteFile( _PATH_VIDEO_RECEIVED_MP4 );
-
-        //Download new
-        qDebug() << "Video recorded";
-        progBarUpdateLabel("Transferring video",0);
-        obtainFile( videoRemoteFilename.toStdString(), videoLocalFilename.toStdString() );
-
-        //Convert into MP4        
-        if( videoCodec == _H264 )
-        {
-            //Convert into .MP4
-            QString converToMP4;
-            converToMP4 = "";
-            converToMP4.append( "MP4Box -add ");
-            converToMP4.append(_PATH_VIDEO_RECEIVED_H264);
-            converToMP4.append(" ");
-            converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
-            funcExecuteCommand( converToMP4 );
-            //Update permissions
-            //converToMP4 = "chmod +777 ";
-            //converToMP4.append(_PATH_VIDEO_RECEIVED_MP4);
-            //funcExecuteCommand( converToMP4 );
-        }
-
-        //
-        //Send .mp4 to frames
-        //
-        //funcVideoToFrames(_PATH_VIDEO_FRAMES, _PATH_VIDEO_RECEIVED_MP4);
-
-
-
-
-    }
-    else
-    {//Video does not generated by raspicam
-        funcShowMsg("ERROR on Camera","Recording video");
-    }
-
-    n = n;
-    ::close(sockfd);
-    */
-
-
-
-
-
-
-
-
-
-
-
 
 }
 
@@ -9909,26 +9722,209 @@ void MainWindow::on_actionOrigin_triggered()
 void MainWindow::on_actionBuld_HypImg_triggered()
 {
     //--------------------------------
-    //Define Video Origin
+    //Read Calibrations
     //--------------------------------
-    QString defaVideoPath;
-    defaVideoPath.append(_PATH_LOCAL_SYNC_FOLDERS);
-    defaVideoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
-    if( funcLetUserSelectFile( &defaVideoPath ) != _OK )
+    QString calFilename;
+    calFilename = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    std::cout << "fileContain: " << calFilename.toStdString() << std::endl;
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib(calFilename,&slideCalibration) != _OK )
     {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration");
         return (void)false;
     }
 
     //--------------------------------
-    //Read Calibrations
+    //Define Video Origin
     //--------------------------------
-    /*
-    structSlideCalibration slideCalibration;
-    if( funcReadSlideCalib(&slideCalibration) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration");
+    QString videoPath;
+    videoPath.append(_PATH_LOCAL_SYNC_FOLDERS);
+    videoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
+    if(
+            funcLetUserSelectFile(
+                                    &videoPath,
+                                    "Select Hyperspectral Image Source..."
+                                 ) != _OK
+    ){
         return (void)false;
-    }*/
+    }
+
+    //-----------------------------------------------------
+    // Extract Frames from Video
+    //-----------------------------------------------------
+    //Clear local folder
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    if( 0 )
+    {
+        funcClearDirFolder( tmpFramesPath );
+        //Extract Frames from Local Video
+        QString locFrameExtrComm;
+        locFrameExtrComm.append("ffmpeg -framerate ");
+        locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+        locFrameExtrComm.append(" -r ");
+        locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+        locFrameExtrComm.append(" -i ");
+        locFrameExtrComm.append(videoPath);
+        locFrameExtrComm.append(" ");
+        locFrameExtrComm.append(tmpFramesPath);
+        locFrameExtrComm.append("%d");
+        locFrameExtrComm.append(_FRAME_EXTENSION);
+        qDebug() << locFrameExtrComm;
+        progBarUpdateLabel("Extracting Frames from Video",0);
+        if( funcExecuteCommand(locFrameExtrComm) != _OK )
+        {
+            funcShowMsg("ERROR","Extracting Frames from Video");
+            progBarUpdateLabel("",0);
+            return (void)false;
+        }
+        progBarUpdateLabel("",0);
+    }
+
+    //--------------------------------
+    //List Files in Folder
+    //--------------------------------
+    QList<QFileInfo> lstFrames = funcListFilesInDir(tmpFramesPath);
+    std::cout << "numFrames: " << lstFrames.size() << std::endl;
+
+    //--------------------------------
+    //Update Progress Bar
+    //--------------------------------
+    progBarUpdateLabel("Building Slide Hyperspectral Image",0);
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    QtDelay(10);
+
+    //********************************
+    //Build Slide Hyperspectral Image
+    //********************************
+    int x, y, z;
+    int hypX    = lstFrames.size();
+    int hypY    = slideCalibration.originH;
+    int hypZ    = slideCalibration.maxNumCols;
+
+    //--------------------------------
+    //Reserve HypImg Dynamic Memory
+    //--------------------------------
+    int*** HypImg;//[hypX][hypY][hypZ];
+    HypImg = (int***)malloc(hypX*sizeof(int**));
+    for(x=0; x<hypX; x++)
+    {
+        HypImg[x] = (int**)malloc( hypY*sizeof(int*) );
+        for(y=0; y<hypY; y++)
+        {
+            HypImg[x][y] = (int*)malloc( hypZ*sizeof(int) );
+        }
+    }
+
+    //--------------------------------
+    //Copy values int HypImg
+    //--------------------------------
+    QImage tmpActImg;    
+    float pixQE;
+    for(x=0; x<hypX; x++)
+    {
+        //Load Image (Column in the HypImg)
+        tmpActImg = QImage(lstFrames.at(x).absoluteFilePath().trimmed());
+
+        //Update Progress Bar
+        ui->progBar->setValue(round( ((float)x/(float)hypX)*100.0 ));
+        ui->progBar->update();
+
+        //Copy Diffraction Into Slide Hyperspectral Image
+        for(y=0; y<hypY; y++)
+        {
+            for(z=0; z<hypZ; z++)
+            {
+                pixQE = 0.0;
+                if(
+                        funcGetPixQE(
+                                        &z,
+                                        &y,
+                                        &pixQE,
+                                        tmpActImg,
+                                        &slideCalibration
+                                    ) != _OK
+                ){
+                    funcShowMsgERROR_Timeout("Pixel Coordinates Out of Range");
+                    //Free Dynamic Memory
+                    for(x=0; x<hypX; x++)
+                    {
+                        for(y=0; y<hypY; y++)
+                        {
+                            free( HypImg[x][y] );
+                        }
+                        free( HypImg[x] );
+                    }
+                    free(HypImg);
+                    //Reset Progress Bar
+                    funcResetStatusBar();
+                    //Finish
+                    return (void)false;
+                }
+                HypImg[x][y][z] = (int)pixQE;
+            }
+        }
+    }
+
+    //--------------------------------
+    //Save Slide HypImg Layers
+    //--------------------------------
+    //Update Progress Bar
+    progBarUpdateLabel("Exporting Hyperspectral Image",0);
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    QtDelay(10);
+    //Clear folder destine
+    funcClearDirFolder( _PATH_LOCAL_SLIDE_HYPIMG );
+    //Copy Layer into Image and Save Later
+    QString imgOutname;
+    QImage tmpLayer(QSize(hypX,hypY),QImage::Format_RGB32);
+    for(z=0; z<hypZ; z++)
+    {
+        //Update Progbar
+        ui->progBar->setValue(round( ((float)z/(float)hypZ)*100.0 ));
+        ui->progBar->update();
+        //Fill Image Pixels
+        for(x=0; x<hypX; x++)
+        {
+            for(y=0; y<hypY; y++)
+            {
+                tmpLayer.setPixelColor(x,y,QColor(HypImg[x][y][z],HypImg[x][y][z],HypImg[x][y][z]));
+            }
+        }
+        //Save image
+        imgOutname.clear();
+        imgOutname.append(_PATH_LOCAL_SLIDE_HYPIMG);
+        imgOutname.append(QString::number(z+1));
+        imgOutname.append(_FRAME_EXTENSION);
+        tmpLayer.save(imgOutname);
+    }
+
+    //--------------------------------
+    //Free Dynamic Memory
+    //--------------------------------
+    for(x=0; x<hypX; x++)
+    {
+        for(y=0; y<hypY; y++)
+        {
+            free( HypImg[x][y] );
+        }
+        free( HypImg[x] );
+    }
+    free(HypImg);
+
+
+
+    //Reset Progress Bar
+    funcResetStatusBar();
+
+
+
+
 }
 
 void MainWindow::on_actionMerge_Calibration_triggered()
@@ -10199,4 +10195,24 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
         funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
     }
 
+}
+
+void MainWindow::on_actionSlide_Calibration_File_triggered()
+{
+    //---------------------------------------
+    //Select Slide Calibration Origin
+    //---------------------------------------
+    QString slideFile;
+    if( funcLetUserSelectFile(&slideFile,"Select Slide Calibration File...") != _OK )
+    {
+        return (void)false;
+    }
+
+    //---------------------------------------
+    //Save Parameter
+    //---------------------------------------
+    if( saveFile(_PATH_SLIDE_ACTUAL_CALIB_PATH,slideFile) == true )
+    {
+        funcShowMsgSUCCESS_Timeout("File Set Successfully");
+    }
 }

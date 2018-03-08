@@ -113,6 +113,7 @@
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
+    #define _PATH_SLIDE_ACTUAL_CALIB_PATH   "./XML/actualSlideCalibrarion.xml"
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
 
@@ -131,6 +132,7 @@
     #define _PATH_LOCAL_FOLDER_TIMELAPSE    "tmpTimeLapse/"
     #define _PATH_LOCAL_FOLDER_SLIDELAPSE   "tmpSlideLapse/"
     #define _PATH_LOCAL_FOLDER_TEST_SLIDE   "tmp/"
+    #define _PATH_LOCAL_SLIDE_HYPIMG        "./tmpImages/frames/slideHypImg/"
 
 
 

@@ -633,6 +633,8 @@ private slots:
 
     void on_actionPlot_Line_at_Wavelength_triggered();
 
+    void on_actionSlide_Calibration_File_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
