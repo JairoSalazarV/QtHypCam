@@ -212,7 +212,7 @@
     <rect>
      <x>240</x>
      <y>10</y>
-     <width>73</width>
+     <width>81</width>
      <height>57</height>
     </rect>
    </property>
@@ -227,10 +227,13 @@
     <item row="1" column="0">
      <widget class="QDoubleSpinBox" name="spinOverlap">
       <property name="maximum">
-       <double>1.000000000000000</double>
+       <double>100.000000000000000</double>
       </property>
       <property name="singleStep">
        <double>0.100000000000000</double>
+      </property>
+      <property name="value">
+       <double>30.000000000000000</double>
       </property>
      </widget>
     </item>
@@ -241,7 +244,7 @@
     <rect>
      <x>340</x>
      <y>10</y>
-     <width>79</width>
+     <width>81</width>
      <height>57</height>
     </rect>
    </property>
@@ -256,10 +259,13 @@
     <item row="1" column="0">
      <widget class="QDoubleSpinBox" name="spinMaxShift">
       <property name="maximum">
-       <double>0.900000000000000</double>
+       <double>100.000000000000000</double>
       </property>
       <property name="singleStep">
        <double>0.100000000000000</double>
+      </property>
+      <property name="value">
+       <double>60.000000000000000</double>
       </property>
      </widget>
     </item>

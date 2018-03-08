@@ -2871,7 +2871,12 @@ int funcGetPixQE(
     if(
             pixLocation.x() > tmpImg.width()    ||
             pixLocation.y() > tmpImg.height()
-    ){        
+    ){
+        std::cout << "x: "  << *x << " y: " << *y
+                  << " xx: " << pixLocation.x() << " yy: " << pixLocation.y()
+                  << " w: "  << tmpImg.width()  << " h: " << tmpImg.height()
+                  << std::endl;
+
         return _ERROR;
     }
     QColor pixel  = tmpImg.pixelColor( pixLocation.x(), pixLocation.y() );

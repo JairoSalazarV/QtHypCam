@@ -4,7 +4,8 @@
 #include <lstpaths.h>
 #include <QGraphicsPixmapItem>
 
-formBuildSlideHypeCubePreview::formBuildSlideHypeCubePreview(QWidget *parent) :
+formBuildSlideHypeCubePreview
+::formBuildSlideHypeCubePreview(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::formBuildSlideHypeCubePreview)
 {
@@ -41,6 +42,9 @@ formBuildSlideHypeCubePreview::formBuildSlideHypeCubePreview(QWidget *parent) :
     maxH    = screenRes.height() - yMargin;
     ui->gvSlideHypCubePreview->setGeometry(QRect(0,yMargin,maxW,maxH));
 
+    QString framePath = readAllFile(_PATH_LAST_PATH_OPENED).trimmed();
+    ui->txtFolder->setText(framePath);
+
 }
 
 formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
@@ -50,75 +54,168 @@ formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
 
 void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 {
-
-    QApplication::setOverrideCursor(Qt::WaitCursor);
-
-    //------------------------------------------------------
-    //Define List With Imagery to Be Considered
-    //------------------------------------------------------
-
-    //......................................................
-    //Save Execution
-    //......................................................
-    QString lastSlideFrames;
-    lastSlideFrames = concatenateParameters();
-    saveFile(_PATH_LAST_SLIDE_FRAMES_4CUBE,lastSlideFrames);
-
-    //......................................................
-    //Gel List of Files in Directory Selected
-    //......................................................
-    QString workDir = ui->txtFolder->text();
-    qDebug() << "workDir: " << workDir;
-    QList<QFileInfo> lstFiles = funcListFilesInDir( workDir, _FRAME_EXTENSION );
-    //qDebug() << "lstFiles: " << lstFiles.length();
-    if(lstFiles.size()==0)
+    //--------------------------------
+    //Read Calibrations
+    //--------------------------------
+    QString calFilename;
+    calFilename = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    std::cout << "fileContain: " << calFilename.toStdString() << std::endl;
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib(calFilename,&slideCalibration) != _OK )
     {
-        funcShowMsgERROR("Empty Directory");
+        funcShowMsgERROR_Timeout("Reading Slide Calibration");
         return (void)false;
     }
 
-    //......................................................
-    //Read Hyperimage's Parameters
-    //......................................................
-    QString timelapseFile(workDir + _FILENAME_SLIDE_DIR_TIME);
-    QString tmpParam;
-    if( !readFileParam( timelapseFile, &tmpParam) )
+    //--------------------------------
+    //List Files in Folder
+    //--------------------------------
+    //Validate Frames Path
+    QString framePath = readAllFile(_PATH_LAST_PATH_OPENED).trimmed();
+    if( framePath.isEmpty() )
     {
-        funcShowMsgERROR("Timelapse Parameter not found at: " + workDir);
-        tmpParam = "800";
-        saveFile(timelapseFile,tmpParam);
+        funcShowMsgERROR_Timeout("Reading Frames Dir");
+        return (void)false;
     }
-    int timelapse           = tmpParam.toInt(0);
-    //qDebug() << "numFrames: " << lstFiles.size() << " time: " << timelapse;
-
-    //......................................................
-    //Discard Stabilization Frames
-    //......................................................
-    int numFrame2Discard    = ceil( (float)_RASPBERRY_STABILIZATION_TIME / (float)timelapse );
-    int i;
-    for( i=0; i<numFrame2Discard; i++ )
+    //Get files from Dir
+    QList<QFileInfo> lstFrames = funcListFilesInDir(framePath);
+    std::cout << "numFrames: " << lstFrames.size() << std::endl;
+    if( lstFrames.size() < 5 )
     {
-        //qDebug() << "file discarded: " << lstFiles.at(i).completeBaseName();
-        lstFiles.removeAt(0);
+        funcShowMsgERROR_Timeout("The number of files are not enought");
+        return (void)false;
     }
 
-    //------------------------------------------------------
-    //Create Slide Cube Preview
-    //------------------------------------------------------
-    structSlideHypCube slideCubeSett;
-    slideCubeSett.rotateLeft    = (ui->cbFlip->isChecked())?true:false;
-    slideCubeSett.width         = ui->spinSlideW->value();
-    slideCubeSett.extraW        = ui->spinOverlap->value();
-    slideCubeSett.shiftAllowed  = 0.5;
-    QImage imgPreview           = buildSlideCubePreview(lstFiles,&slideCubeSett);
+    //********************************
+    //Build Slide Hyperspectral Image
+    //********************************
+    int x, y, z;
+    int hypX    = lstFrames.size();
+    int hypY    = slideCalibration.originH;
+    int hypZ    = slideCalibration.maxNumCols;
+    int slideW  = ui->spinSlideW->value();
 
-    //------------------------------------------------------
-    //Display Result
-    //------------------------------------------------------
-    imgPreview.save(_PATH_DISPLAY_IMAGE);
-    refreshGVImage(&imgPreview);
+    //--------------------------------
+    //Recompute Dimensions
+    //--------------------------------
+    hypX        = hypX * slideW;
+    hypZ        = ceil( (float)hypZ / (float)slideW );
 
-    QApplication::restoreOverrideCursor();
+    //--------------------------------
+    //Reserve HypImg Dynamic Memory
+    //--------------------------------
+    //std::cout << "Llego2 " << std::endl;
+    int*** HypImg;//[hypX][hypY][hypZ];
+    HypImg = (int***)malloc(hypX*sizeof(int**));
+    for(x=0; x<hypX; x++)
+    {
+        HypImg[x] = (int**)malloc( hypY*sizeof(int*) );
+        for(y=0; y<hypY; y++)
+        {
+            HypImg[x][y] = (int*)malloc( hypZ*sizeof(int) );
+        }
+    }
+
+    //--------------------------------
+    //Copy values int HypImg
+    //--------------------------------    
+    QImage tmpActImg;
+    float pixQE;
+    int img_x, img_y, img_InitX;
+    int frame;
+    int hyp_x, hyp_y, hyp_z, hyp_InitX;
+    for(frame=0; frame<lstFrames.size(); frame++)
+    {
+        //Load Image (Column in the HypImg)
+        tmpActImg   = QImage(lstFrames.at(frame).absoluteFilePath().trimmed());
+        hyp_InitX   = frame * slideW;
+        //Copy Diffraction Into Slide Hyperspectral Image
+        for(hyp_z=0; hyp_z<hypZ; hyp_z++)
+        {
+            img_InitX   = hyp_z * slideW;
+            img_y       = 0;
+            for(hyp_y=0; hyp_y<hypY; hyp_y++, img_y++)
+            {
+                img_x = img_InitX;
+                for(hyp_x=hyp_InitX; hyp_x<hyp_InitX+slideW; hyp_x++,img_x++)
+                {
+                    pixQE   = 0.0;
+                    if(
+                            funcGetPixQE(
+                                            &img_x,
+                                            &img_y,
+                                            &pixQE,
+                                            tmpActImg,
+                                            &slideCalibration
+                                        ) != _OK
+                    ){
+                        funcShowMsgERROR_Timeout("Pixel Coordinates Out of Range");
+                    }
+                    HypImg[hyp_x][hyp_y][hyp_z] = pixQE;
+                }
+            }
+        }
+    }
+
+    //--------------------------------
+    //Save Slide HypImg Layers
+    //--------------------------------
+    //Clear folder destine
+    funcClearDirFolder( _PATH_LOCAL_SLIDE_HYPIMG );
+    //Copy Layer into Image and Save Later
+    QString imgOutname;
+    QImage tmpLayer(QSize(hypX,hypY),QImage::Format_RGB32);
+    for(z=0; z<hypZ; z++)
+    {
+        //Fill Image Pixels
+        for(x=0; x<hypX; x++)
+        {
+            for(y=0; y<hypY; y++)
+            {
+                if( HypImg[x][y][z] < 0 || HypImg[x][y][z] > 255 )
+                {
+                    std::cout << "color: "  << HypImg[x][y][z] << std::endl;
+                    std::cout << "x: "  << x << std::endl;
+                    std::cout << "y: "  << y << std::endl;
+                    std::cout << "z: "  << z << std::endl;
+                    return (void)false;
+                }
+                tmpLayer.setPixelColor(
+                                            x,
+                                            y,
+                                            QColor(
+                                                        HypImg[x][y][z],
+                                                        HypImg[x][y][z],
+                                                        HypImg[x][y][z]
+                                                   )
+                                        );
+            }
+        }
+        //Save image
+        imgOutname.clear();
+        imgOutname.append(_PATH_LOCAL_SLIDE_HYPIMG);
+        imgOutname.append(QString::number(z+1));
+        imgOutname.append(_FRAME_EXTENSION);
+        tmpLayer.save(imgOutname);
+    }
+
+    //--------------------------------
+    //Free Dynamic Memory
+    //--------------------------------
+    for(x=0; x<hypX; x++)
+    {
+        for(y=0; y<hypY; y++)
+        {
+            free( HypImg[x][y] );
+        }
+        free( HypImg[x] );
+    }
+    free(HypImg);
+
+
+
+    //Reset Progress Bar
+    //funcResetStatusBar();
 
 }
 
@@ -443,7 +540,7 @@ void formBuildSlideHypeCubePreview::on_pbFolder_clicked()
     //Select Directory
     //------------------------------------------------------
     QString workDir, lastSlideFrames;
-    if( !readFileParam(_PATH_LAST_SLIDE_FRAMES_4CUBE,&lastSlideFrames) )
+    if( !readFileParam(_PATH_LAST_PATH_OPENED,&lastSlideFrames) )
     {
         lastSlideFrames.clear();
         lastSlideFrames.append(_PATH_VIDEO_FRAMES);
@@ -452,13 +549,13 @@ void formBuildSlideHypeCubePreview::on_pbFolder_clicked()
     {
         return (void)false;
     }
-    saveFile(_PATH_LAST_SLIDE_FRAMES_4CUBE,workDir);
+    saveFile(_PATH_LAST_PATH_OPENED,workDir);
     ui->txtFolder->setText(workDir);
 
     //......................................................
     //Refresh Scene
     //......................................................
-    ui->pbApply->click();
+    //ui->pbApply->click();
 }
 
 QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
@@ -483,18 +580,19 @@ QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
 
 int formBuildSlideHypeCubePreview::setLastExecution(QString parameters)
 {
-    //qDebug() << "parameters: " << parameters;
-    if( parameters.isEmpty() )
-        return _ERROR;
+    //std::cout << "parameters: " << parameters.toStdString() << std::endl;
+    //if( parameters.isEmpty() )
+    //    return _ERROR;
 
-    int intI = 0;
-    ui->txtFolder->setText(parameters.split(",").at(intI++));
-    ui->spinSlideW->setValue(parameters.split(",").at(intI++).toInt(0));
-    ui->spinSlideLocation->setValue(parameters.split(",").at(intI++).toInt(0));
-    ui->spinOverlap->setValue(parameters.split(",").at(intI++).toFloat(0));
-    ui->spinMaxShift->setValue(parameters.split(",").at(intI++).toFloat(0));
-    ui->spinAutoStep->setValue(parameters.split(",").at(intI++).toInt(0));
-    if( parameters.split(",").at(intI++).toInt(0) )
-        ui->cbFlip->setChecked(true);
+    //int intI = 0;
+    //ui->txtFolder->setText(parameters.split(",").at(intI++));
+    //ui->spinSlideW->setValue(parameters.split(",").at(intI++).toInt(0));
+    //ui->spinSlideLocation->setValue(parameters.split(",").at(intI++).toInt(0));
+    //ui->spinOverlap->setValue(parameters.split(",").at(intI++).toFloat(0));
+    //ui->spinMaxShift->setValue(parameters.split(",").at(intI++).toFloat(0));
+    //ui->spinAutoStep->setValue(parameters.split(",").at(intI++).toInt(0));
+    //if( parameters.split(",").at(intI++).toInt(0) )
+    //   ui->cbFlip->setChecked(true);
+
     return _OK;
 }

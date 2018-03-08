@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <__common.h>
+#include <QProgressBar>
 
 
 namespace Ui {
