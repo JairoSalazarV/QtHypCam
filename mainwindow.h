@@ -34,10 +34,6 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void funcResetStatusBar();
-
-    void progBarUpdateLabel(QString txt , int color);
-
 public slots:
     void funcAddPoint(QMouseEvent *e);
 
@@ -242,6 +238,8 @@ private slots:
     //void on_pbLoadImg_clicked();
 
     void funcLabelProgBarHide();
+
+    void progBarUpdateLabel(QString txt , int color);
 
     structRaspcamSettings funcFillSnapshotSettings(structRaspcamSettings raspSett );
 
@@ -493,6 +491,8 @@ private slots:
     void on_pbSnapshotSquare_clicked();
 
     void on_pbSaveImage_clicked();
+
+    void funcResetStatusBar();
 
     void on_pbOneShotSnapshot_clicked();
 
