@@ -147,6 +147,8 @@
 
 #include <formmergeslidecalibrations.h>
 
+#include <formmerge3grayintoargb.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -10215,4 +10217,11 @@ void MainWindow::on_actionSlide_Calibration_File_triggered()
     {
         funcShowMsgSUCCESS_Timeout("File Set Successfully");
     }
+}
+
+void MainWindow::on_actionMerge_into_RGB_triggered()
+{
+    formMerge3GrayIntoARgb* tmpForm = new formMerge3GrayIntoARgb(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
 }

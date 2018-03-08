@@ -635,6 +635,8 @@ private slots:
 
     void on_actionSlide_Calibration_File_triggered();
 
+    void on_actionMerge_into_RGB_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

@@ -162,6 +162,12 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //--------------------------------
     //Clear folder destine
     funcClearDirFolder( _PATH_LOCAL_SLIDE_HYPIMG );
+    //Compute Size including Wide expansion
+    //int wide = hypX*ui->spinWide->value();
+    //if( wide > 1 )
+    //{
+    //    hypX = hypX*wide;
+    //}
     //Copy Layer into Image and Save Later
     QString imgOutname;
     QImage tmpLayer(QSize(hypX,hypY),QImage::Format_RGB32);
@@ -172,14 +178,6 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
         {
             for(y=0; y<hypY; y++)
             {
-                if( HypImg[x][y][z] < 0 || HypImg[x][y][z] > 255 )
-                {
-                    //std::cout << "color: "  << HypImg[x][y][z] << std::endl;
-                    //std::cout << "x: "  << x << std::endl;
-                    //std::cout << "y: "  << y << std::endl;
-                    //std::cout << "z: "  << z << std::endl;
-                    return (void)false;
-                }
                 tmpLayer.setPixelColor(
                                             x,
                                             y,

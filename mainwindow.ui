@@ -1419,6 +1419,7 @@ QSlider::handle:horizontal {
     </widget>
     <addaction name="menuFilter"/>
     <addaction name="menuMultiselected"/>
+    <addaction name="actionMerge_into_RGB"/>
    </widget>
    <widget class="QMenu" name="menuAnalysis">
     <property name="title">
@@ -2287,6 +2288,11 @@ QSlider::handle:horizontal {
   <action name="actionSlide_Calibration_File">
    <property name="text">
     <string>Slide Calibration File</string>
+   </property>
+  </action>
+  <action name="actionMerge_into_RGB">
+   <property name="text">
+    <string>Merge into RGB</string>
    </property>
   </action>
  </widget>
