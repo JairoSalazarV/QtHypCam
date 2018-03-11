@@ -917,6 +917,24 @@ void funcShowMsgERROR(QString msg){
     yesNoMsgBox.exec();
 }
 
+int funcShowSelDir(const QString &title, QString startedPath, QString* dirSelected)
+{
+    *dirSelected = QFileDialog::getExistingDirectory(
+                                                        NULL,
+                                                        title,
+                                                        startedPath,
+                                                        QFileDialog::ShowDirsOnly
+                                                        | QFileDialog::DontResolveSymlinks);
+    if( dirSelected->isEmpty() || dirSelected->isNull() )
+    {
+        dirSelected->clear();
+        return _FAILURE;
+    }
+    dirSelected->append("/");
+    //dirSelected = dirSelected;
+    return _OK;
+}
+
 int funcShowSelDir(QString startedPath, QString* dirSelected)
 {
     *dirSelected = QFileDialog::getExistingDirectory(
@@ -2892,7 +2910,14 @@ int funcGetPixQE(
     return _OK;
 }
 
+int funcLetUserSelectDirectory( )
+{
 
+
+
+
+    return _OK;
+}
 
 
 

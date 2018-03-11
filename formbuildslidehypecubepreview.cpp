@@ -54,6 +54,8 @@ formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
 
 void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 {
+    mouseCursorWait();
+
     //--------------------------------
     //Read Calibrations
     //--------------------------------
@@ -71,16 +73,18 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //List Files in Folder
     //--------------------------------
     //Validate Frames Path
-    QString framePath = readAllFile(_PATH_LAST_PATH_OPENED).trimmed();
-    if( framePath.isEmpty() )
+    QString framePath;
+    if( ui->txtFolder->text().trimmed().isEmpty() )
     {
-        funcShowMsgERROR_Timeout("Reading Frames Dir");
+        funcShowMsgERROR_Timeout("Invalid Folder");
         return (void)false;
     }
+    framePath = ui->txtFolder->text().trimmed();
+
     //Get files from Dir
     QList<QFileInfo> lstFrames = funcListFilesInDir(framePath);
     std::cout << "numFrames: " << lstFrames.size() << std::endl;
-    if( lstFrames.size() < 5 )
+    if( lstFrames.size() < 2 )
     {
         funcShowMsgERROR_Timeout("The number of files are not enought");
         return (void)false;
@@ -210,7 +214,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     }
     free(HypImg);
 
-
+    mouseCursorReset();
 
     //Reset Progress Bar
     //funcResetStatusBar();

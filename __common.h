@@ -44,6 +44,7 @@
     void funcShowMsg( QString title, QString msg );
     void funcShowMsgERROR(QString msg);
 
+    int funcShowSelDir(const QString &title, QString startedPath, QString* dirSelected);
     int funcShowSelDir(QString startedPath, QString* dirSelected);
     QString funcShowSelDir(QString path);
 
@@ -257,5 +258,7 @@
                         const QImage &tmpImg,
                         structSlideCalibration* slideCalibration
                     );
+
+    int funcLetUserSelectDirectory( );
 
 #endif // __COMMON_H

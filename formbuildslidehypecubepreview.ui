@@ -26,7 +26,7 @@
   <widget class="QPushButton" name="pbApply">
    <property name="geometry">
     <rect>
-     <x>860</x>
+     <x>750</x>
      <y>40</y>
      <width>84</width>
      <height>28</height>
@@ -103,7 +103,7 @@
   <widget class="QLineEdit" name="txtFolder">
    <property name="geometry">
     <rect>
-     <x>620</x>
+     <x>510</x>
      <y>40</y>
      <width>113</width>
      <height>28</height>
@@ -113,7 +113,7 @@
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
-     <x>660</x>
+     <x>550</x>
      <y>10</y>
      <width>75</width>
      <height>20</height>
@@ -126,7 +126,7 @@
   <widget class="QPushButton" name="pbFolder">
    <property name="geometry">
     <rect>
-     <x>735</x>
+     <x>625</x>
      <y>40</y>
      <width>31</width>
      <height>28</height>
@@ -143,7 +143,7 @@
   <widget class="QCheckBox" name="cbFlip">
    <property name="geometry">
     <rect>
-     <x>800</x>
+     <x>690</x>
      <y>40</y>
      <width>51</width>
      <height>26</height>

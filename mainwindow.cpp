@@ -9758,7 +9758,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
     QString tmpFramesPath;
     tmpFramesPath.append(_PATH_VIDEO_FRAMES);
     tmpFramesPath.append("tmp/");
-    if( 0 )
+    if( 1 )
     {
         funcClearDirFolder( tmpFramesPath );
         //Extract Frames from Local Video
@@ -9872,6 +9872,28 @@ void MainWindow::on_actionBuld_HypImg_triggered()
     }
 
     //--------------------------------
+    //Let User Select Folder
+    //--------------------------------
+    QString lastPath = readAllFile(_PATH_LAST_PATH_OPENED);
+    QString slideHypDestiny;
+    if(
+            funcShowSelDir(
+                                "Select Slide HypCube Destiny Directory...",
+                                lastPath,
+                                &slideHypDestiny
+                          ) != _OK
+    ){
+        slideHypDestiny.clear();
+        slideHypDestiny.append(_PATH_LOCAL_SLIDE_HYPIMG);
+        funcShowMsg(
+                        "Alert",
+                        "Slide HypCube Saved into: "+
+                        slideHypDestiny
+                   );
+    }
+    funcClearDirFolder(slideHypDestiny);
+
+    //--------------------------------
     //Save Slide HypImg Layers
     //--------------------------------
     //Update Progress Bar
@@ -9881,7 +9903,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
     ui->progBar->update();
     QtDelay(10);
     //Clear folder destine
-    funcClearDirFolder( _PATH_LOCAL_SLIDE_HYPIMG );
+    funcClearDirFolder( slideHypDestiny );
     //Copy Layer into Image and Save Later
     QString imgOutname;
     QImage tmpLayer(QSize(hypX,hypY),QImage::Format_RGB32);
@@ -9900,7 +9922,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
         }
         //Save image
         imgOutname.clear();
-        imgOutname.append(_PATH_LOCAL_SLIDE_HYPIMG);
+        imgOutname.append(slideHypDestiny);
         imgOutname.append(QString::number(z+1));
         imgOutname.append(_FRAME_EXTENSION);
         tmpLayer.save(imgOutname);
