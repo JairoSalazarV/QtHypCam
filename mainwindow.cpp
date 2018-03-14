@@ -10000,7 +10000,16 @@ void MainWindow::on_actionPlot_over_Real_triggered()
             slideCalibration.imgW != globalEditImg->width()     ||
             slideCalibration.imgH != globalEditImg->height()
     ){
-        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different");
+        funcShowMsgERROR("Image Size and Clibration Size are Different canvImage("+
+                         QString::number(slideCalibration.imgW)+
+                         ","+
+                         QString::number(slideCalibration.imgH)+
+                         ") imgCalib("+
+                         QString::number(globalEditImg->width())+
+                         ","+
+                         QString::number(globalEditImg->height())+
+                         ")"
+                         );
         return (void)false;
     }
 
@@ -10247,3 +10256,153 @@ void MainWindow::on_actionMerge_into_RGB_triggered()
     tmpForm->setModal(true);
     tmpForm->show();
 }
+
+
+/*
+void saveNewArea::on_btnSave_clicked()
+{
+    msgWorking* frmWorking = new msgWorking(this);
+    frmWorking->setModal(true);
+    frmWorking->show();
+
+    bool allOK = true;
+
+    //Folder name
+    if(!allOK || ui->txtFolderName->text().isEmpty()){
+        func_ShowMsg("[ERROR]","Folder name wrong");
+        allOK = false;
+    }
+    //Description
+    if(!allOK || ui->txtDescription->text().isEmpty()){
+        func_ShowMsg("[ERROR]","'Description' can not be empty.");
+        allOK = false;
+    }
+
+    //-----------------------------------
+    // SAVE PART AREA
+    //-----------------------------------
+    if(allOK){
+
+        unsigned int x2, y2, xlen, ylen;
+
+        //Calculate vertec frontier
+        x2   = savingAreaCoord.x + savingAreaCoord.xlen;
+        y2   = savingAreaCoord.y + savingAreaCoord.ylen;
+        x2   = (x2>savingAreaCoord.width)?savingAreaCoord.width:x2;
+        y2   = (y2>savingAreaCoord.heigth)?savingAreaCoord.heigth:y2;
+        xlen = x2-savingAreaCoord.x;
+        ylen = y2-savingAreaCoord.y;
+
+
+        //QString msg = QString( "(%1,%2) (%3,%4) xlen(%5) ylen(%6) width(%7) bandas(%8)")
+        //                .arg(savingAreaCoord.x)
+        //                .arg(savingAreaCoord.y)
+        //                .arg(x2)
+        //                .arg(y2)
+        //                .arg(xlen)
+        //                .arg(ylen)
+        //                .arg(savingAreaCoord.width)
+        //                .arg(savingScenAct.bandsNumber)
+        //                ;
+        //func_ShowMsg("Coordenadas", msg );
+
+        //Calculate pixels befor the square
+        unsigned int despBeforeSize, rows, cols;
+        rows                = (savingAreaCoord.y-1) * savingAreaCoord.width;
+        cols                = savingAreaCoord.x - 1;
+        despBeforeSize      = savingScenAct.bandsNumber * (rows+cols);
+
+        //Calculate buffer size and create it
+        unsigned int bufferSize;
+        bufferSize          = savingScenAct.bandsNumber * xlen;
+
+        //Calculate reading areas
+        unsigned int despBetweenSize, despBAfter, despBBefore;
+        despBBefore             = savingAreaCoord.x;
+        despBAfter              = savingAreaCoord.width - x2;
+        despBetweenSize         = savingScenAct.bandsNumber *
+                                  (despBBefore+despBAfter); //17952
+
+        //despBeforeSize, bufferSize, despBetweenSize
+
+        //count is a predefined int
+        QByteArray fileMem;
+        QFile file( savingScenAct.hypImg );
+        unsigned int i;
+        if ( file.open(QIODevice::ReadOnly) ){
+            file.read(despBeforeSize * sizeof(qint16));
+            for(i=1;i<=ylen;i++){
+                fileMem.append(file.read(bufferSize * sizeof(qint16)));
+                file.read(despBetweenSize * sizeof(qint16));
+            }
+            file.close();
+        }else{
+            func_ShowMsg("[ERROR]","Can not open hyperspectral file");
+            return;
+        }
+
+
+        //------------------
+        // Save file Hyp
+        //------------------
+
+        //Create folder
+        QString Path = savingScenAct.path + "/" + ui->txtFolderName->text();
+        if( QDir(Path).exists() ){
+            func_ShowMsg("[ALERTA]","Folder exists, please chose other directory");
+            ui->txtFolderName->setFocus();
+            return;
+        }else{
+            QDir().mkdir(Path);
+            Path = Path + "/__Originals";
+            QDir().mkdir(Path);
+        }
+
+        //Create hyperspectral file
+        QString subAreaName = Path + "/HypImgSub.hyp";
+        //func_ShowMsg("To write",QString::number(fileMem.size()) + " -> "+subAreaName);
+        QFile subArea(subAreaName);
+        if ( subArea.open(QIODevice::WriteOnly) ){
+            subArea.write(fileMem,fileMem.size());        // write to stderr
+            subArea.close();
+        }
+
+        //------------------
+        // Save file RGB
+        //------------------
+        QString subAreaRGBName = Path + "/RGBImgSub.png";
+        QImage image(savingScenAct.rgbImg);
+        QImage copy;
+        copy = image.copy( savingAreaCoord.x, savingAreaCoord.y, xlen, ylen );
+        copy.save(subAreaRGBName);
+
+        //------------------
+        // Save DB registry
+        //------------------
+        Path                = savingScenAct.path + "/" + ui->txtFolderName->text();
+        QSqlDatabase db = SQLiteConn();
+        QSqlQueryModel query;
+        QString ISubArea    = "Insert into subarea (description,path,rgbImg,hypImg,x,xlen,y,ylen,id_project) VALUES (";
+        ISubArea.append("'"+ ui->txtDescription->text() +"'");
+        ISubArea.append(",'"+ Path +"'");
+        ISubArea.append(",'"+ subAreaRGBName +"'");
+        ISubArea.append(",'"+ subAreaName +"'");
+        ISubArea.append(",'"+ QString::number(savingAreaCoord.x) +"'");
+        ISubArea.append(",'"+ QString::number(xlen) +"'");
+        ISubArea.append(",'"+ QString::number(savingAreaCoord.y) +"'");
+        ISubArea.append(",'"+ QString::number(ylen) +"'");
+        ISubArea.append(",'"+ QString::number(savingScenAct.id_project) +"'");
+        ISubArea.append(")");
+        query.setQuery( ISubArea );
+        db.close();
+
+        //------------------
+        // FINISH
+        //------------------
+        frmWorking->destroyThis();
+        ui->btnCancel->click();
+
+    }
+
+}
+*/

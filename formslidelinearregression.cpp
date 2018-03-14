@@ -18,7 +18,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     QString fileToOpen;
 
-    if(1)
+    if(0)
     {
         fileToOpen = "./XML/lines/slideV1_002/408nm.xml";
         funcAddRowToTable(&fileToOpen);
@@ -35,7 +35,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
         fileToOpen = "./XML/lines/slideV1_002/712nm.xml";
         funcAddRowToTable(&fileToOpen);
     }
-    if(0)
+    if(1)
     {
         //fileToOpen = "./XML/lines/slideV1_002/verticalLowerBound.xml";
         //funcAddRowToTable(&fileToOpen);        
@@ -370,7 +370,7 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
         return (void)false;
     }
     //main Weight
-    int bigH    = (lstLines.at(1).y2-lstLines.at(0).y2);
+    int bigH = (lstLines.at(1).y2-lstLines.at(0).y2);
     int imgW = lstLines.at(0).originalW;
     int imgH = lstLines.at(0).originalH;
     //Save Line

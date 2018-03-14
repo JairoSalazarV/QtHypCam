@@ -28,6 +28,14 @@ void formMergeSlideCalibrations::on_pbHorizontal_clicked()
         return (void)false;
     }
     ui->txtHorPath->setText(defaVideoPath);
+
+    //--------------------------------
+    //Load OriginH into options
+    //--------------------------------
+    //Read Horizontal
+    structSlideCalibration slideCalibration;
+    funcReadHorHalfCalib(ui->txtHorPath->text().trimmed(), &slideCalibration);
+    ui->spinBoxOriginH->setValue(slideCalibration.originH);
 }
 
 void formMergeSlideCalibrations::on_pbVertical_clicked()
@@ -66,6 +74,8 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     //Read Horizontal
     structSlideCalibration slideCalibration;
     funcReadHorHalfCalib(ui->txtHorPath->text().trimmed(), &slideCalibration);
+    //Update OriginH from User Settings
+    slideCalibration.originH = ui->spinBoxOriginH->value();
     //Read Vertical
     float referenceX2 = 0;
     funcReadVertHalfCalib(

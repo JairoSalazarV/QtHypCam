@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>841</width>
-    <height>202</height>
+    <height>252</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,7 +95,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>150</y>
+     <y>198</y>
      <width>161</width>
      <height>28</height>
     </rect>
@@ -108,7 +108,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>102</y>
+     <y>150</y>
      <width>161</width>
      <height>28</height>
     </rect>
@@ -118,13 +118,42 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>107</y>
+     <y>155</y>
      <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
     <string>Camera ID</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="labelHor_4">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>110</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Origin H</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinBoxOriginH">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>105</y>
+     <width>161</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <number>20</number>
+   </property>
+   <property name="maximum">
+    <number>3000</number>
    </property>
   </widget>
  </widget>
