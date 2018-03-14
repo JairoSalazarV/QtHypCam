@@ -90,6 +90,9 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
         return (void)false;
     }
 
+
+
+    /*
     //********************************
     //Build Slide Hyperspectral Image
     //********************************
@@ -213,6 +216,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
         free( HypImg[x] );
     }
     free(HypImg);
+    */
 
     mouseCursorReset();
 
