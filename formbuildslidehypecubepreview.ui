@@ -41,7 +41,7 @@
     <rect>
      <x>190</x>
      <y>10</y>
-     <width>95</width>
+     <width>111</width>
      <height>57</height>
     </rect>
    </property>
@@ -49,20 +49,20 @@
     <item row="0" column="0">
      <widget class="QLabel" name="label_3">
       <property name="text">
-       <string>Wavelength %</string>
+       <string>Wavelength nm</string>
       </property>
      </widget>
     </item>
     <item row="1" column="0">
-     <widget class="QSpinBox" name="spinSlideLocation">
+     <widget class="QDoubleSpinBox" name="spinBoxWavelen">
       <property name="minimum">
-       <number>5</number>
+       <double>100.000000000000000</double>
       </property>
       <property name="maximum">
-       <number>95</number>
+       <double>2400.000000000000000</double>
       </property>
       <property name="value">
-       <number>50</number>
+       <double>475.000000000000000</double>
       </property>
      </widget>
     </item>
@@ -94,7 +94,7 @@
        <number>10000</number>
       </property>
       <property name="value">
-       <number>1</number>
+       <number>16</number>
       </property>
      </widget>
     </item>
@@ -156,7 +156,7 @@
   <widget class="QWidget" name="layoutWidget_4">
    <property name="geometry">
     <rect>
-     <x>300</x>
+     <x>310</x>
      <y>10</y>
      <width>81</width>
      <height>57</height>
@@ -188,7 +188,7 @@
   <widget class="QWidget" name="layoutWidget_5">
    <property name="geometry">
     <rect>
-     <x>395</x>
+     <x>400</x>
      <y>10</y>
      <width>81</width>
      <height>57</height>

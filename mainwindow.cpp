@@ -9843,11 +9843,11 @@ void MainWindow::on_actionBuld_HypImg_triggered()
                 pixQE = 0.0;
                 if(
                         funcGetPixQE(
-                                        &z,
-                                        &y,
+                                        z,
+                                        y,
                                         &pixQE,
                                         tmpActImg,
-                                        &slideCalibration
+                                        slideCalibration
                                     ) != _OK
                 ){
                     funcShowMsgERROR_Timeout("Pixel Coordinates Out of Range");
@@ -10021,7 +10021,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     x=0;
     for( y=0; y<=slideCalibration.originH; y++ )
     {
-        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration,false);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10031,7 +10031,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     x=slideCalibration.maxNumCols;
     for( y=0; y<=slideCalibration.originH; y++ )
     {
-        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration,false);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10042,7 +10042,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     y=0;
     for( x=0; x<=slideCalibration.maxNumCols; x++ )
     {
-        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration,false);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10052,7 +10052,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     y = slideCalibration.originH;
     for( x=0; x<=slideCalibration.maxNumCols; x++ )
     {
-        QPoint newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        QPoint newPoint = funcGetCoor(x,y,slideCalibration,false);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10080,7 +10080,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     {
         for( y=0; y<=slideCalibration.originH; y+=10 )
         {
-            newPoint = funcGetCoor(x,y,&slideCalibration,false);
+            newPoint = funcGetCoor(x,y,slideCalibration,false);
             globalEditImg->setPixelColor(newPoint,QColor(255,0,0));
         }
     }
@@ -10179,7 +10179,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     //----------------------------------------------
     int distPixFromLower;
     wavelength = wavelength - slideCalibration.originWave;
-    distPixFromLower = round( funcApplyLR(wavelength,&slideCalibration.wave2DistLR,true) );
+    distPixFromLower = round( funcApplyLR(wavelength,slideCalibration.wave2DistLR,true) );
     std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
 
     //----------------------------------------------
@@ -10190,7 +10190,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     int y;
     for( y=0; y<=slideCalibration.originH; y++ )
     {
-        newPoint = funcGetCoor(x,y,&slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration,false);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 

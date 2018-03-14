@@ -244,20 +244,33 @@
 
     int scaleLen( int len, int canvasLen, int originalLen );
 
-    float funcApplyLR( const float &coordinate, linearRegresion* LR, bool print=false );
+    float funcApplyLR(
+                        const float &coordinate,
+                        const linearRegresion &LR,
+                        bool print=false
+                     );
 
     QPoint funcGetCoor(
                             int tmpX,
                             int tmpY,
-                            structSlideCalibration* slideCalibration,
+                            const structSlideCalibration &slideCalibration,
                             bool print=false
                       );
     int funcGetPixQE(
-                        int* x,
-                        int* y, float *pixQE,
+                        const int &x,
+                        const int &y,
+                        float *pixQE,
                         const QImage &tmpImg,
-                        structSlideCalibration* slideCalibration
+                        const structSlideCalibration &slideCalibration
                     );
+
+    int funcGetQEArea(
+                        const QPoint &p1,
+                        const QPoint &p2,
+                        int** tmpSubarea,
+                        const QImage &img,
+                        const structSlideCalibration &slideCalibration
+                     );
 
     int funcLetUserSelectDirectory( );
 

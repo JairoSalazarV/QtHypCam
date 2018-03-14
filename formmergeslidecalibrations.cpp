@@ -134,7 +134,7 @@ int formMergeSlideCalibrations
     float maxWavelength = _RASP_CAM_MAX_WAVELENGTH;
     int distPixFromLower;
     maxWavelength = maxWavelength - slideCalibration->originWave;
-    distPixFromLower = round( funcApplyLR(maxWavelength,&slideCalibration->wave2DistLR,true) );
+    distPixFromLower = round( funcApplyLR(maxWavelength,slideCalibration->wave2DistLR,true) );
     std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
     //Calculate Coordinates
     //int originX, originY;

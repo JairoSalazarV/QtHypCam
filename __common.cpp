@@ -2836,39 +2836,42 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
 
 }
 
-float funcApplyLR(const float &coordinate, linearRegresion* LR , bool print)
-{
+float funcApplyLR(
+                    const float &coordinate,
+                    const linearRegresion &LR,
+                    bool print
+){
     if( print == true )
     {
 
-        std::cout << "(" << coordinate << "*" << LR->b << ") + " << LR->a << " = " << ((coordinate * LR->b) + LR->a) << std::endl;
+        std::cout << "(" << coordinate << "*" << LR.b << ") + " << LR.a << " = " << ((coordinate * LR.b) + LR.a) << std::endl;
     }
-    return (coordinate * LR->b) + LR->a;
+    return (coordinate * LR.b) + LR.a;
 }
 
 QPoint funcGetCoor(
                         int tmpX,
                         int tmpY,
-                        structSlideCalibration* slideCalibration,
+                        const structSlideCalibration &slideCalibration,
                         bool print
 ){
     //It Receives
     //tmpX: [0-maxNumCols-1]
     //tmpY: [0-originH-1]
     int x, y, origH;
-    origH = slideCalibration->originH;
+    origH = slideCalibration.originH;
     y     = round(
                     funcApplyLR(
-                                    (float)(tmpX+slideCalibration->originX),
-                                    &slideCalibration->horizLR,
+                                    (float)(tmpX+slideCalibration.originX),
+                                    slideCalibration.horizLR,
                                     print
                                 )
                  )+tmpY;
 
     x     = round(
                     funcApplyLR(
-                                    (float)(tmpY+slideCalibration->originY),
-                                    &slideCalibration->vertLR,
+                                    (float)(tmpY+slideCalibration.originY),
+                                    slideCalibration.vertLR,
                                     print
                                 )
                  )+tmpX;
@@ -2876,21 +2879,21 @@ QPoint funcGetCoor(
 }
 
 int funcGetPixQE(
-                        int*    x,
-                        int*    y,
+                        const int &x,
+                        const int &y,
                         float*  pixQE,
                         const QImage &tmpImg,
-                        structSlideCalibration* slideCalibration
+                        const structSlideCalibration &slideCalibration
 ){
     //---------------------------------------------
     // Get Pixel Location
     //---------------------------------------------    
-    QPoint pixLocation = funcGetCoor( *x, *y, slideCalibration );
+    QPoint pixLocation = funcGetCoor( x, y, slideCalibration );
     if(
             pixLocation.x() > tmpImg.width()    ||
             pixLocation.y() > tmpImg.height()
     ){
-        std::cout << "x: "  << *x << " y: " << *y
+        std::cout << "x: "  << x << " y: " << y
                   << " xx: " << pixLocation.x() << " yy: " << pixLocation.y()
                   << " w: "  << tmpImg.width()  << " h: " << tmpImg.height()
                   << std::endl;
@@ -2906,6 +2909,67 @@ int funcGetPixQE(
     // Temporally, QE is the max value sensed
     //---------------------------------------------
     *pixQE = (float)pixelMaxValue(pixel);
+
+    return _OK;
+}
+
+int funcGetQEArea(
+                    const QPoint &p1,
+                    const QPoint &p2,
+                    int** tmpSubarea,
+                    const QImage &img,
+                    const structSlideCalibration &slideCalibration
+){
+    int row, col;
+    int W, H;
+    //get the hight
+    H = p2.y() - p1.y();
+    W = p2.x() - p1.x();
+    if( H<=0 || W<=0 )
+    {
+        std::cout << "Points H Wrong" << std::endl;
+        return _ERROR;
+    }
+
+    //---------------------------
+    //Copy QE
+    //---------------------------
+    float tmpQE;
+    int tmpPosX;
+    for(row=0; row<H; row++)
+    {
+        for(col=0; col<W; col++)
+        {
+            tmpPosX = col + p1.x();
+            if(
+                    funcGetPixQE(
+                                    tmpPosX,
+                                    row,
+                                    &tmpQE,
+                                    img,
+                                    slideCalibration
+                                ) != _OK
+            ){
+                funcShowMsgERROR(
+                                    "Reading QE: "+
+                                    QString::number(row) +
+                                    ", " +
+                                    QString::number( col + p1.x() )
+                                );
+                return _ERROR;
+            }
+
+            //Save QE
+            //std::cout << "tmpQE: " << tmpQE << " H: " << H << " W: " << W  << " col: " << col << " row: " << row << " tmpPosX: " << tmpPosX << std::endl;
+            if( tmpQE < 0 || tmpQE >255 )
+            {
+                std::cout << "tmpQE: " << tmpQE << " H: " << H << " W: " << W  << " col: " << col << " row: " << row << " tmpPosX: " << tmpPosX << std::endl;
+                funcShowMsgERROR("tmpQE: "+QString::number(tmpQE));
+                exit(0);
+            }
+            tmpSubarea[row][col] = round(tmpQE);
+        }
+    }
 
     return _OK;
 }

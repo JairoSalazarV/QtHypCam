@@ -3,6 +3,7 @@
 
 #include <lstpaths.h>
 #include <QGraphicsPixmapItem>
+#include <__common.h>
 
 formBuildSlideHypeCubePreview
 ::formBuildSlideHypeCubePreview(QWidget *parent) :
@@ -66,6 +67,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     if( funcReadSlideCalib(calFilename,&slideCalibration) != _OK )
     {
         funcShowMsgERROR_Timeout("Reading Slide Calibration");
+        mouseCursorReset();
         return (void)false;
     }
 
@@ -77,6 +79,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     if( ui->txtFolder->text().trimmed().isEmpty() )
     {
         funcShowMsgERROR_Timeout("Invalid Folder");
+        mouseCursorReset();
         return (void)false;
     }
     framePath = ui->txtFolder->text().trimmed();
@@ -87,15 +90,108 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     if( lstFrames.size() < 2 )
     {
         funcShowMsgERROR_Timeout("The number of files are not enought");
+        mouseCursorReset();
         return (void)false;
     }
 
-
-
-    /*
     //********************************
     //Build Slide Hyperspectral Image
     //********************************
+    int i;
+    int imgW, imgH, slideW;
+    slideW  = ui->spinSlideW->value();
+    imgW    = slideW * lstFrames.size();
+    imgH    = slideCalibration.originH;
+    //Reserve Subarea Memory
+    int** tmpSubarea = (int**)malloc(imgH * sizeof(int*));
+    for(i=0; i<imgH; i++)
+    {
+        tmpSubarea[i] = (int*)malloc(slideW * sizeof(int));
+    }
+
+    //----------------------------------------------
+    //Calculate Distance from Lower Bound
+    //----------------------------------------------
+    float wavelength;
+    int newX1, newX2;
+    int distPixFromLower;
+    wavelength = ui->spinBoxWavelen->value() - slideCalibration.originWave;
+    if( wavelength < 0.0 )
+    {
+        funcShowMsgERROR("Image must to be bigger than "+QString::number(slideCalibration.originWave));
+        mouseCursorReset();
+        return (void)false;
+    }
+    distPixFromLower = round( funcApplyLR(wavelength,slideCalibration.wave2DistLR,true) );
+    std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
+    //newX1 muns to be located in the middle
+    newX1   = distPixFromLower - round((float)ui->spinSlideW->value() / 2.0);
+    newX2   = newX1 + ui->spinSlideW->value();
+    //Get the subarea
+    QPoint p1, p2;
+    p1.setX(newX1); p1.setY(0);
+    p2.setX(newX2); p2.setY(slideCalibration.originH);
+    newX1 = (newX1>0)?newX1:0;
+    p1.setX(newX1);
+
+    //----------------------------------------------
+    //Get QE Area
+    //----------------------------------------------
+    int initPos = 0;
+    int row, col;
+    //Create Image
+    //Create virtual Image
+    QImage tmpImgWave(QSize(imgW,imgH),QImage::Format_RGB32);
+    //Copy subarea
+    QImage tmpImg;
+    for(i=0; i<lstFrames.size(); i++)
+    {
+        //Read Image
+        //std::cout << lstFrames.at(i).absoluteFilePath().trimmed().toStdString() << std::endl;
+        tmpImg = QImage( lstFrames.at(i).absoluteFilePath().trimmed() );
+        //Get subarea
+        initPos = i * slideW;
+        if(
+                funcGetQEArea(
+                                p1,
+                                p2,
+                                tmpSubarea,
+                                tmpImg,
+                                slideCalibration
+                             ) != _OK
+        ){
+            //funcShowMsgERROR_Timeout("Reading QE Area");
+            mouseCursorReset();
+            return (void)false;
+        }
+        //std::cout << "i: " << i << std::endl;
+        //Copy Subarea into image
+        for(col=0; col<slideW; col++)
+        {
+            for(row=0; row<imgH; row++)
+            {
+                //std::cout << "tmpSubarea[col][row]: " << tmpSubarea[row][col] << std::endl;
+                tmpImgWave.setPixelColor(
+                                            QPoint(initPos+col,row),
+                                            QColor(tmpSubarea[row][col],tmpSubarea[row][col],tmpSubarea[row][col])
+                                        );
+            }
+        }
+    }
+    //funcShowMsgSUCCESS_Timeout("Creado");
+
+    //----------------------------------------------
+    //Display Result
+    //----------------------------------------------
+    refreshGVImage(&tmpImgWave);
+
+
+    /*
+    //-------------------------------------
+    //-------------------------------------
+    //Build Slide Hyperspectral Image
+    //-------------------------------------
+    //-------------------------------------
     int x, y, z;
     int hypX    = lstFrames.size();
     int hypY    = slideCalibration.originH;
@@ -227,25 +323,40 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 
 void formBuildSlideHypeCubePreview::refreshGVImage(QImage* imgPreview)
 {
-    ui->gvSlideHypCubePreview->scene()->clear();
-    ui->gvSlideHypCubePreview->scene()->addPixmap(QPixmap::fromImage(*imgPreview));
-    ui->gvSlideHypCubePreview->scene()->setSceneRect(0,0,imgPreview->width(),imgPreview->height());
-    ui->gvSlideHypCubePreview->update();
+
+
+
+
 
     //.......................................................
     //Fix GraphicsView Resolution
     //.......................................................
+    //Calc Image Size
     QRect screenRes = screenResolution(this);
     int maxW, maxH, xMargin, yMargin;
     xMargin     = 20;
     yMargin     = 150;
     maxW        = screenRes.width() - xMargin;
     maxH        = screenRes.height() - yMargin;
+    //Resize Image
+    QPixmap pix = QPixmap::fromImage(*imgPreview);
+    pix = pix.scaledToWidth(maxW);
+    if(pix.height() > maxH )
+    {
+            pix = pix.scaledToHeight(maxH);
+    }
+    //Prepare Scene
     *imgPreview  = imgPreview->scaledToWidth(maxW);
     *imgPreview  = (imgPreview->height()<maxH)?*imgPreview:imgPreview->scaledToHeight(maxH);
     ui->gvSlideHypCubePreview->setGeometry(QRect(0,80,imgPreview->width(),imgPreview->height()));
     ui->gvSlideHypCubePreview->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     ui->gvSlideHypCubePreview->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    //Display Image
+    ui->gvSlideHypCubePreview->scene()->clear();
+    ui->gvSlideHypCubePreview->scene()->addPixmap(pix);
+    ui->gvSlideHypCubePreview->scene()->setSceneRect(0,0,pix.width(),pix.height());
+    ui->gvSlideHypCubePreview->update();
+
 
 
     /*
@@ -270,6 +381,7 @@ void formBuildSlideHypeCubePreview::refreshGVImage(QImage* imgPreview)
 
 }
 
+/*
 QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(
                                                            QList<QFileInfo> lstFrames,
                                                            structSlideHypCube* slideCubeSettings
@@ -340,6 +452,7 @@ QImage formBuildSlideHypeCubePreview::buildSlideCubePreview(
     }
     return resultImg;
 }
+*/
 
 void formBuildSlideHypeCubePreview::mergeSlidePreview(
                                                         QImage* canvas,
@@ -572,7 +685,7 @@ QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
 
     lstParameters = (firstTime)?_PATH_VIDEO_FRAMES:ui->txtFolder->text();
     lstParameters.append(","+QString::number(ui->spinSlideW->value()));
-    lstParameters.append(","+QString::number(ui->spinSlideLocation->value()));
+    //lstParameters.append(","+QString::number(ui->spinSlideLocation->value()));
     lstParameters.append(","+QString::number(ui->spinOverlap->value()));
     lstParameters.append(","+QString::number(ui->spinMaxShift->value()));
     //lstParameters.append(","+QString::number(ui->spinAutoStep->value()));

@@ -171,7 +171,7 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //Obtain the Smallest Wavelength
     float dist2FirstLine, smallestWaveLen;
     dist2FirstLine  = (float)(lstLines.at(0).x1 - lowerVerLine.x1);
-    smallestWaveLen = funcApplyLR( dist2FirstLine, &dist2WaveLR, true );
+    smallestWaveLen = funcApplyLR( dist2FirstLine, dist2WaveLR, true );
     lowerVerLine.wavelength = lstLines.at(0).wavelength - smallestWaveLen;
     //std::cout << " smallestWaveLen: "           << smallestWaveLen       << std::endl;
     //std::cout << "dist2FirstLine: "             << dist2FirstLine           << std::endl;

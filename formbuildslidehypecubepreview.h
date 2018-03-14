@@ -21,7 +21,7 @@ public:
 private slots:
     void on_pbApply_clicked();
 
-    QImage buildSlideCubePreview(QList<QFileInfo> lstFrames, structSlideHypCube *slideCubeSettings);
+    //QImage buildSlideCubePreview(QList<QFileInfo> lstFrames, structSlideHypCube *slideCubeSettings);
 
     structSlideShifting calculateShifting(QList<QFileInfo> lstFrames, structSlideHypCube *slideCubeSettings, int x=0, int i=0, int j=0);
 
