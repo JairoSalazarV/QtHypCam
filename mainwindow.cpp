@@ -7865,10 +7865,12 @@ void MainWindow::on_actionNDVI_triggered()
     QString stringThreshold;
     QString stringBrilliant;
     QString infraredChanel;
+    //QString infraredWeight;
     QString redChanel;
     stringThreshold = readFileParam(_PATH_NDVI_THRESHOLD);
     stringBrilliant = readFileParam(_PATH_NDVI_BRILLIANT);
     infraredChanel  = readFileParam(_PATH_NDVI_IR_CHANEL);
+    //infraredWeight  = readFileParam(_PATH_NDVI_INFRARED_WEIGHT);//_PATH_NDVI_MIN_VALUE
     redChanel       = readFileParam(_PATH_NDVI_RED_CHANEL);
 
     int makeBrilliant = (stringBrilliant.toInt(0)==1)?1:0;
@@ -9771,7 +9773,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
         locFrameExtrComm.append(videoPath);
         locFrameExtrComm.append(" ");
         locFrameExtrComm.append(tmpFramesPath);
-        locFrameExtrComm.append("%d");
+        locFrameExtrComm.append("%07d");
         locFrameExtrComm.append(_FRAME_EXTENSION);
         qDebug() << locFrameExtrComm;
         progBarUpdateLabel("Extracting Frames from Video",0);
@@ -9888,7 +9890,8 @@ void MainWindow::on_actionBuld_HypImg_triggered()
         funcShowMsg(
                         "Alert",
                         "Slide HypCube Saved into: "+
-                        slideHypDestiny
+                        slideHypDestiny,
+                        this
                    );
     }
     funcClearDirFolder(slideHypDestiny);

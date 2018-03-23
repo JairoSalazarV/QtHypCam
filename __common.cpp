@@ -901,8 +901,8 @@ void funcObtSettings( structSettings *lstSettings ){
     xmlFile->close();
 }
 
-void funcShowMsg(QString title, QString msg){
-    QMessageBox yesNoMsgBox;
+void funcShowMsg(QString title, QString msg, QWidget *parent){
+    QMessageBox yesNoMsgBox(parent);
     yesNoMsgBox.setWindowTitle(title);
     yesNoMsgBox.setText(msg);
     yesNoMsgBox.setDefaultButton(QMessageBox::Ok);
@@ -1517,6 +1517,8 @@ QList<QFileInfo> funcListFilesInDir(QString Dir)
     //Return lstFiles
     QList<QFileInfo> lstFiles;
     QDir dir(Dir);
+    //dir.setSorting(QDir::Time);
+    //dir.sorting();
     if ( dir.exists() )
     {
         Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::Files, QDir::DirsFirst))
@@ -1782,7 +1784,7 @@ void funcNDVI(
 
 
             //Uses threshold
-            NDVI    = (NDVI>lowerBound)?NDVI:0.0;
+            NDVI    = (NDVI>lowerBound)?NDVI:-1.0;
 
             /*
             //Draw pixel
@@ -1815,7 +1817,7 @@ void funcNDVI(
 
             //Draw pixel
             if( NDVI >= -1.0 && NDVI < -0.33 )
-                imgToNDVI->setPixel(x,y,qRgb(0,0,0));
+                imgToNDVI->setPixel(x,y,qRgb(255,0,0));
             if( NDVI >= -0.33 && NDVI < -0.1 )
                 imgToNDVI->setPixel(x,y,qRgb(180,0,0));
             if( NDVI >= -0.1 && NDVI < 0.0 )
@@ -1844,8 +1846,9 @@ void funcNDVI(
     qDebug() << "minNDVI: " << minNDVI;
 
     //......................................
-    // Remark identified plat pixels
+    // Remark identified plant pixels
     //......................................
+    /*
     if( brilliant )
     {
         int curve;
@@ -1865,6 +1868,7 @@ void funcNDVI(
             }
         }
     }
+    */
 }
 
 int funcGetPixelColor( QRgb* Pixel, QString* Infrared )

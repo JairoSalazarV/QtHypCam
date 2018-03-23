@@ -86,6 +86,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 
     //Get files from Dir
     QList<QFileInfo> lstFrames = funcListFilesInDir(framePath);
+
     std::cout << "numFrames: " << lstFrames.size() << std::endl;
     if( lstFrames.size() < 2 )
     {
@@ -98,6 +99,15 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //Build Slide Hyperspectral Image
     //********************************
     int i;
+
+    for(i=0; i<lstFrames.size(); i++)
+    {
+        std::cout << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
+    }
+
+
+
+
     int imgW, imgH, slideW;
     slideW  = ui->spinSlideW->value();
     imgW    = slideW * lstFrames.size();

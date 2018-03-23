@@ -41,7 +41,7 @@
 
     void funcObtSettings( structSettings * lstSettings);
 
-    void funcShowMsg( QString title, QString msg );
+    void funcShowMsg( QString title, QString msg, QWidget *parent=Q_NULLPTR );
     void funcShowMsgERROR(QString msg);
 
     int funcShowSelDir(const QString &title, QString startedPath, QString* dirSelected);
