@@ -10415,6 +10415,7 @@ void saveNewArea::on_btnSave_clicked()
 }
 */
 
+/*
 void MainWindow::on_actionTesting_triggered()
 {
 
@@ -10458,7 +10459,12 @@ void MainWindow::on_actionTesting_triggered()
         funcShowMsgERROR_Timeout("Transformation does not exists");
         return (void)false;
     }
-
+    //Rotate
+    float degree;
+    QString tmpRotation;
+    tmpRotation = readAllFile(_PATH_LAST_ONEAXIS_ROTATION).trimmed();
+    degree = (tmpRotation.isEmpty())?0.0:tmpRotation.toFloat(0);
+    tmpTrans.rotate(degree);
 
     //-------------------------------------
     //Display Image Transformation
@@ -10474,7 +10480,7 @@ void MainWindow::on_actionTesting_triggered()
     std::cout << "Finished successfully" << std::endl;
 
 
-}
+}*/
 
 void MainWindow::on_actionApply_Rotation_triggered()
 {
@@ -10514,4 +10520,93 @@ void MainWindow::on_actionApply_Rotation_triggered()
     //Update Edit View
     updateImageCanvasEdit(globalEditImg);
 
+}
+
+void MainWindow::on_actionApply_Transformation_triggered()
+{
+    //-------------------------------------
+    //Read lines
+    //-------------------------------------
+    QString lowerLinePath, upperLinePath;
+    //Read Lower Line
+    if(
+            funcLetUserSelectFile(
+                                    &lowerLinePath,
+                                    "Select Horizontal Lower Bound...",
+                                    _PATH_LAST_LINE_OPENED,
+                                    "./XML/lines/",
+                                    this
+                                 ) != _OK
+    ){
+        return (void)false;
+    }
+
+    //Read Upper Line
+    if(
+            funcLetUserSelectFile(
+                                    &upperLinePath,
+                                    "Select Horizontal Upper Bound...",
+                                    _PATH_LAST_LINE_OPENED,
+                                    "./XML/lines/",
+                                    this
+                                 ) != _OK
+    ){
+        return (void)false;
+    }
+
+    //-------------------------------------
+    //Read Lines FromHDD
+    //-------------------------------------
+    structLine lowerLine, upperLine;
+    funcReadLineFromXML(&lowerLinePath,&lowerLine);
+    funcReadLineFromXML(&upperLinePath,&upperLine);
+
+    //-------------------------------------
+    //Define the quad transformation
+    //-------------------------------------
+    //Original Points
+    QVector<QPointF> originPoints;
+    originPoints.append( QPointF(upperLine.x1,upperLine.y1) );
+    originPoints.append( QPointF(upperLine.x2,upperLine.y2) );
+    originPoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
+    originPoints.append( QPointF(lowerLine.x2,lowerLine.y2) );
+    //Destine Points
+    QVector<QPointF> destinePoints;
+    destinePoints.append( QPointF(upperLine.x1,upperLine.y1) );
+    destinePoints.append( QPointF(upperLine.x2,upperLine.y1) );
+    destinePoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
+    destinePoints.append( QPointF(lowerLine.x2,lowerLine.y1) );
+    //Transformation Quads
+    QPolygonF originQuad(originPoints);
+    QPolygonF destineQuad(destinePoints);
+
+    //-------------------------------------
+    //Build Transformation
+    //-------------------------------------
+    //Vanashing Point
+    QTransform tmpTrans;
+    if( tmpTrans.quadToQuad(originQuad,destineQuad,tmpTrans) == false )
+    {
+        funcShowMsgERROR_Timeout("Transformation does not exists");
+        return (void)false;
+    }
+    //Rotate
+    float degree;
+    QString tmpRotation;
+    tmpRotation = readAllFile(_PATH_LAST_ONEAXIS_ROTATION).trimmed();
+    degree = (tmpRotation.isEmpty())?0.0:tmpRotation.toFloat(0);
+    tmpTrans.rotate(degree);
+
+    //-------------------------------------
+    //Display Image Transformation
+    //-------------------------------------
+    *globalEditImg  = globalEditImg->transformed(tmpTrans);
+
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
+
+    std::cout << "Finished successfully" << std::endl;
 }

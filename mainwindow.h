@@ -637,9 +637,11 @@ private slots:
 
     void on_actionMerge_into_RGB_triggered();
 
-    void on_actionTesting_triggered();
+    //void on_actionTesting_triggered();
 
     void on_actionApply_Rotation_triggered();
+
+    void on_actionApply_Transformation_triggered();
 
 private:
     Ui::MainWindow *ui;

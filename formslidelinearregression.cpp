@@ -154,9 +154,9 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     if(
             funcLetUserSelectFile(
                                     &lowerBoundLinePath,
-                                    QString("Select the Lower Bound Line"),
-                                    new QString(_PATH_LAST_PATH_OPENED),
-                                    QString("./XML/lines/")
+                                    "Select the Lower Bound Line",
+                                    _PATH_LAST_PATH_OPENED,
+                                    "./XML/lines/"
                                  ) != _OK
     ){
         funcShowMsgERROR_Timeout("Reading File-path");

@@ -209,7 +209,13 @@
 
     int funcReadLineFromXML(QString* filePath, structLine *tmpLine);
 
-    int funcLetUserSelectFile(QString* filePath, QString title, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
+    int funcLetUserSelectFile(
+                                QString* filePath,
+                                const QString &title,
+                                const QString &pathLocation,
+                                const QString &defaultLastPath,
+                                QWidget* parent=Q_NULLPTR
+                             );
     int funcLetUserSelectFile(QString* filePath, const QString &title="Select file...");
 
     int funcLetUserDefineFile(

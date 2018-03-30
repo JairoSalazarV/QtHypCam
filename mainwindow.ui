@@ -1536,6 +1536,7 @@ QSlider::handle:horizontal {
       <string>Calib Edition</string>
      </property>
      <addaction name="actionApply_Rotation"/>
+     <addaction name="actionApply_Transformation"/>
     </widget>
     <addaction name="actionLinear_Regression"/>
     <addaction name="separator"/>
@@ -2312,6 +2313,11 @@ QSlider::handle:horizontal {
   <action name="actionApply_Rotation">
    <property name="text">
     <string>Apply Rotation</string>
+   </property>
+  </action>
+  <action name="actionApply_Transformation">
+   <property name="text">
+    <string>Apply Transformation</string>
    </property>
   </action>
  </widget>

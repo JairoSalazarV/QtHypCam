@@ -2418,6 +2418,48 @@ int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
     return _OK;
 }
 
+int funcLetUserSelectFile(
+                            QString* filePath,
+                            const QString &title,
+                            const QString &pathLocation,
+                            const QString &defaultLastPath,
+                            QWidget* parent
+){
+    //filePath:         File output, filename selected by the user
+    //title:            Showed to User, what kind of file is the user selecting
+    //pathLocation:     Where is saved the last path location saved
+    //pathOfInterest:   If it is the first time, what path will be saved as default
+    //parent:           In order to use this Dialog
+    QString lastPath = readFileParam(pathLocation);
+    if( lastPath.isEmpty() )//First time using this parameter
+    {
+        lastPath = defaultLastPath;
+    }
+
+    //Select image
+    //..
+
+    *filePath = QFileDialog::getOpenFileName(
+                                                parent,
+                                                title,
+                                                lastPath,
+                                                "(*.*);;"
+                                             );
+    if( filePath->isEmpty() )
+    {
+        return _ERROR;
+    }
+    else
+    {
+        //Save Folder in order to Speed up File Selection
+        lastPath = funcRemoveFileNameFromPath(*filePath);
+        //funcShowMsg("pathLocation",*pathLocation);
+        //funcShowMsg("lastPath",lastPath);
+        saveFile(pathLocation,lastPath);
+    }
+    return _OK;
+}
+
 int funcLetUserSelectFile(QString* filePath, const QString &title)
 {
     QString lastPath = readFileParam(_PATH_LAST_PATH_OPENED);
@@ -2444,48 +2486,6 @@ int funcLetUserSelectFile(QString* filePath, const QString &title)
         //Save Folder in order to Speed up File Selection
         lastPath = funcRemoveFileNameFromPath(*filePath);
         saveFile(_PATH_LAST_PATH_OPENED,lastPath);
-    }
-    return _OK;
-}
-
-int funcLetUserSelectFile(
-                            QString* filePath,
-                            QString title,
-                            QString *pathLocation,
-                            QString pathOfInterest,
-                            QWidget* parent
-){
-    //filePath:         File output, filename selected by the user
-    //title:            Showed to User, what kind of file is the user selecting
-    //pathLocation:     Where is saved the last path location saved
-    //pathOfInterest:   If it is the first time, what path will be saved as default
-    //parent:           In order to use this Dialog
-    QString lastPath = readFileParam(*pathLocation);
-    if( lastPath.isEmpty() )//First time using this parameter
-    {
-        lastPath = pathOfInterest;
-    }
-
-    //Select image
-    //..
-
-    *filePath = QFileDialog::getOpenFileName(
-                                                parent,
-                                                title,
-                                                lastPath,
-                                                "(*.*);;"
-                                             );
-    if( filePath->isEmpty() )
-    {
-        return _ERROR;
-    }
-    else
-    {
-        //Save Folder in order to Speed up File Selection
-        lastPath = funcRemoveFileNameFromPath(*filePath);
-        //funcShowMsg("pathLocation",*pathLocation);
-        //funcShowMsg("lastPath",lastPath);
-        saveFile(*pathLocation,lastPath);
     }
     return _OK;
 }
