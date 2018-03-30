@@ -268,8 +268,7 @@
     QPoint funcGetCoor(
                             int tmpX,
                             int tmpY,
-                            const structSlideCalibration &slideCalibration,
-                            bool print=false
+                            const structSlideCalibration &slideCalibration
                       );
     int funcGetPixQE(
                         const int &x,

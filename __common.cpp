@@ -2936,19 +2936,21 @@ float funcApplyLR(
 QPoint funcGetCoor(
                         int tmpX,
                         int tmpY,
-                        const structSlideCalibration &slideCalibration,
-                        bool print
+                        const structSlideCalibration &slideCalibration
 ){
     //It Receives
     //tmpX: [0-maxNumCols-1]
     //tmpY: [0-originH-1]
-    int x, y, origH;
-    origH = slideCalibration.originH;
+    int x, y;
+    //x = slideCalibration.originX + tmpX;
+    //y = slideCalibration.originY + tmpY;
+
+    //Before Affine Transformation
     y     = round(
                     funcApplyLR(
                                     (float)(tmpX+slideCalibration.originX),
                                     slideCalibration.horizLR,
-                                    print
+                                    false
                                 )
                  )+tmpY;
 
@@ -2956,9 +2958,12 @@ QPoint funcGetCoor(
                     funcApplyLR(
                                     (float)(tmpY+slideCalibration.originY),
                                     slideCalibration.vertLR,
-                                    print
+                                    false
                                 )
                  )+tmpX;
+
+    //std::cout << "x: " << x << " y: " << y << std::endl;
+
     return QPoint(x,y);
 }
 

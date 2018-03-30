@@ -10034,7 +10034,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     x=0;
     for( y=0; y<=slideCalibration.originH; y++ )
     {
-        newPoint = funcGetCoor(x,y,slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10044,7 +10044,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     x=slideCalibration.maxNumCols;
     for( y=0; y<=slideCalibration.originH; y++ )
     {
-        newPoint = funcGetCoor(x,y,slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10055,7 +10055,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     y=0;
     for( x=0; x<=slideCalibration.maxNumCols; x++ )
     {
-        newPoint = funcGetCoor(x,y,slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10065,7 +10065,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     y = slideCalibration.originH;
     for( x=0; x<=slideCalibration.maxNumCols; x++ )
     {
-        QPoint newPoint = funcGetCoor(x,y,slideCalibration,false);
+        QPoint newPoint = funcGetCoor(x,y,slideCalibration);
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
@@ -10093,7 +10093,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     {
         for( y=0; y<=slideCalibration.originH; y+=10 )
         {
-            newPoint = funcGetCoor(x,y,slideCalibration,false);
+            newPoint = funcGetCoor(x,y,slideCalibration);
             globalEditImg->setPixelColor(newPoint,QColor(255,0,0));
         }
     }
@@ -10142,7 +10142,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     wavelength = funcGetParam("Wavelength","450").trimmed().toFloat(0);
     if( wavelength < 300 || wavelength > 1200 )
     {
-        funcShowMsgERROR_Timeout("Wavelength incorrect");
+        funcShowMsgERROR_Timeout("Wavelength incorrect",this);
         return (void)false;
     }
 
@@ -10166,7 +10166,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     structSlideCalibration slideCalibration;
     if( funcReadSlideCalib( calibPath, &slideCalibration ) != _OK )
     {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration File");
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File",this);
         return (void)false;
     }
     //std::cout << "calibPath: " << calibPath.toStdString() << std::endl;
@@ -10188,7 +10188,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
             slideCalibration.imgW != globalEditImg->width()     ||
             slideCalibration.imgH != globalEditImg->height()
     ){
-        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different");
+        funcShowMsgERROR_Timeout("Image Size and Clibration Size are Different",this);
         return (void)false;
     }
 
@@ -10208,19 +10208,24 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     int y;
     for( y=0; y<=slideCalibration.originH; y++ )
     {
-        newPoint = funcGetCoor(x,y,slideCalibration,false);
+        newPoint = funcGetCoor(x,y,slideCalibration);
+        //std::cout << "A-> x: " << newPoint.x() << " y: " << newPoint.y() << std::endl;
         globalEditImg->setPixelColor(newPoint,QColor(255,255,255));
     }
 
     //----------------------------------------------
     //Update Image Displayed in Canvas
     //----------------------------------------------
-    updateDisplayImage(globalEditImg);
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
 
     //----------------------------------------------
     //Save Image
     //----------------------------------------------
-    if( funcShowMsgYesNo("Saving Image","Save image?") )
+    if( funcShowMsgYesNo("Saving Image","Save image?",this) )
     {
         //filePath:         File output, filename selected by the user
         //title:            Showed to User, what kind of file is the user selecting
@@ -10243,7 +10248,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
         //Save Image
         globalEditImg->save(fileName);
         //Notify Success
-        funcShowMsgSUCCESS_Timeout("Image Saved Successfully");
+        funcShowMsgSUCCESS_Timeout("Image Saved Successfully",this);
     }
 
 }
@@ -10494,8 +10499,8 @@ void MainWindow::on_actionTesting_triggered()
 
 void MainWindow::on_actionApply_Rotation_triggered()
 {
-    structLine rotationLine;
-    QString rotLinePath;
+    //structLine rotationLine;
+    //QString rotLinePath;
 
     //------------------------------------------
     //Get Rotation Line from User
