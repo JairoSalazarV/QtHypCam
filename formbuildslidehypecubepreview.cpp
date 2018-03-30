@@ -100,10 +100,11 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //********************************
     int i;
 
+    /*
     for(i=0; i<lstFrames.size(); i++)
     {
         std::cout << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
-    }
+    }*/
 
 
 
@@ -154,13 +155,14 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     QImage tmpImgWave(QSize(imgW,imgH),QImage::Format_RGB32);
     //Copy subarea
     QImage tmpImg;
-    for(i=0; i<lstFrames.size(); i++)
+    int j = 0;
+    for(i=lstFrames.size()-1; i>=0; i--,j++)
     {
         //Read Image
         //std::cout << lstFrames.at(i).absoluteFilePath().trimmed().toStdString() << std::endl;
         tmpImg = QImage( lstFrames.at(i).absoluteFilePath().trimmed() );
         //Get subarea
-        initPos = i * slideW;
+        initPos = j * slideW;
         if(
                 funcGetQEArea(
                                 p1,
@@ -194,135 +196,6 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //Display Result
     //----------------------------------------------
     refreshGVImage(&tmpImgWave);
-
-
-    /*
-    //-------------------------------------
-    //-------------------------------------
-    //Build Slide Hyperspectral Image
-    //-------------------------------------
-    //-------------------------------------
-    int x, y, z;
-    int hypX    = lstFrames.size();
-    int hypY    = slideCalibration.originH;
-    int hypZ    = slideCalibration.maxNumCols;
-    int slideW  = ui->spinSlideW->value();
-
-    //--------------------------------
-    //Recompute Dimensions
-    //--------------------------------
-    hypX        = hypX * slideW;
-    hypZ        = ceil( (float)hypZ / (float)slideW );
-
-    //--------------------------------
-    //Reserve HypImg Dynamic Memory
-    //--------------------------------
-    //std::cout << "Llego2 " << std::endl;
-    int*** HypImg;//[hypX][hypY][hypZ];
-    HypImg = (int***)malloc(hypX*sizeof(int**));
-    for(x=0; x<hypX; x++)
-    {
-        HypImg[x] = (int**)malloc( hypY*sizeof(int*) );
-        for(y=0; y<hypY; y++)
-        {
-            HypImg[x][y] = (int*)malloc( hypZ*sizeof(int) );
-        }
-    }
-
-    //--------------------------------
-    //Copy values int HypImg
-    //--------------------------------    
-    QImage tmpActImg;
-    float pixQE;
-    int img_x, img_y, img_InitX;
-    int frame;
-    int hyp_x, hyp_y, hyp_z, hyp_InitX;
-    for(frame=0; frame<lstFrames.size(); frame++)
-    {
-        //Load Image (Column in the HypImg)
-        tmpActImg   = QImage(lstFrames.at(frame).absoluteFilePath().trimmed());
-        hyp_InitX   = frame * slideW;
-        //Copy Diffraction Into Slide Hyperspectral Image
-        for(hyp_z=0; hyp_z<hypZ; hyp_z++)
-        {
-            img_InitX   = hyp_z * slideW;
-            img_y       = 0;
-            for(hyp_y=0; hyp_y<hypY; hyp_y++, img_y++)
-            {
-                img_x = img_InitX;
-                for(hyp_x=hyp_InitX; hyp_x<hyp_InitX+slideW; hyp_x++,img_x++)
-                {
-                    pixQE   = 0.0;
-                    if(
-                            funcGetPixQE(
-                                            &img_x,
-                                            &img_y,
-                                            &pixQE,
-                                            tmpActImg,
-                                            &slideCalibration
-                                        ) != _OK
-                    ){
-                        funcShowMsgERROR_Timeout("Pixel Coordinates Out of Range");
-                    }
-                    HypImg[hyp_x][hyp_y][hyp_z] = pixQE;
-                }
-            }
-        }
-    }
-
-    //--------------------------------
-    //Save Slide HypImg Layers
-    //--------------------------------
-    //Clear folder destine
-    funcClearDirFolder( _PATH_LOCAL_SLIDE_HYPIMG );
-    //Compute Size including Wide expansion
-    //int wide = hypX*ui->spinWide->value();
-    //if( wide > 1 )
-    //{
-    //    hypX = hypX*wide;
-    //}
-    //Copy Layer into Image and Save Later
-    QString imgOutname;
-    QImage tmpLayer(QSize(hypX,hypY),QImage::Format_RGB32);
-    for(z=0; z<hypZ; z++)
-    {
-        //Fill Image Pixels
-        for(x=0; x<hypX; x++)
-        {
-            for(y=0; y<hypY; y++)
-            {
-                tmpLayer.setPixelColor(
-                                            x,
-                                            y,
-                                            QColor(
-                                                        HypImg[x][y][z],
-                                                        HypImg[x][y][z],
-                                                        HypImg[x][y][z]
-                                                   )
-                                        );
-            }
-        }
-        //Save image
-        imgOutname.clear();
-        imgOutname.append(_PATH_LOCAL_SLIDE_HYPIMG);
-        imgOutname.append(QString::number(z+1));
-        imgOutname.append(_FRAME_EXTENSION);
-        tmpLayer.save(imgOutname);
-    }
-
-    //--------------------------------
-    //Free Dynamic Memory
-    //--------------------------------
-    for(x=0; x<hypX; x++)
-    {
-        for(y=0; y<hypY; y++)
-        {
-            free( HypImg[x][y] );
-        }
-        free( HypImg[x] );
-    }
-    free(HypImg);
-    */
 
     mouseCursorReset();
 

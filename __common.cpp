@@ -2495,19 +2495,19 @@ int funcLetUserDefineFile(
                             QString title,
                             QString extension,
                             QString* pathLocation,
-                            QString pathOfInterest,
+                            QString* defaultLastPath,
                             QWidget* parent
 ){
     //filePath:         File output, filename selected by the user
     //title:            Showed to User, what kind of file is the user selecting
     //pathLocation:     Where is saved the last path location saved
-    //pathOfInterest:   If it is the first time, what path will be saved as default
+    //defaultLastPath:  If it is the first time, what path will be saved as default
     //parent:           In order to use this Dialog
 
     QString lastPath = readFileParam(*pathLocation);
     if( lastPath.isEmpty() )//First time using this parameter
     {
-        lastPath = pathOfInterest;
+        lastPath = defaultLastPath->toStdString().c_str();
     }
 
     //Select image

@@ -29,7 +29,7 @@
     #define _H264                           0
     #define _MJPEG                          1
 
-    #define _VIDEO_FRAME_RATE               20
+    #define _VIDEO_FRAME_RATE               30
 
     #define _RIGHT                          1
     #define _ABOVE                          2

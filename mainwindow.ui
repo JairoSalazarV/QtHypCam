@@ -1510,6 +1510,7 @@ QSlider::handle:horizontal {
     <addaction name="actionSnapvideos"/>
     <addaction name="separator"/>
     <addaction name="actionSynchronize"/>
+    <addaction name="actionTesting"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1530,6 +1531,12 @@ QSlider::handle:horizontal {
      <addaction name="actionPlot_Calculated_Line"/>
      <addaction name="actionOrigin"/>
     </widget>
+    <widget class="QMenu" name="menuCalib_Edition">
+     <property name="title">
+      <string>Calib Edition</string>
+     </property>
+     <addaction name="actionApply_Rotation"/>
+    </widget>
     <addaction name="actionLinear_Regression"/>
     <addaction name="separator"/>
     <addaction name="actionSlide_Linear_Regression"/>
@@ -1539,6 +1546,8 @@ QSlider::handle:horizontal {
     <addaction name="actionMerge_Calibration"/>
     <addaction name="actionPlot_over_Real"/>
     <addaction name="actionPlot_Line_at_Wavelength"/>
+    <addaction name="separator"/>
+    <addaction name="menuCalib_Edition"/>
     <addaction name="separator"/>
    </widget>
    <addaction name="menuFile"/>
@@ -2293,6 +2302,16 @@ QSlider::handle:horizontal {
   <action name="actionMerge_into_RGB">
    <property name="text">
     <string>Merge into RGB</string>
+   </property>
+  </action>
+  <action name="actionTesting">
+   <property name="text">
+    <string>Testing</string>
+   </property>
+  </action>
+  <action name="actionApply_Rotation">
+   <property name="text">
+    <string>Apply Rotation</string>
    </property>
   </action>
  </widget>

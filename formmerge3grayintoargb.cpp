@@ -93,7 +93,7 @@ void formMerge3GrayIntoARgb::on_pbSave_clicked()
                                     "Define the Output fileName",
                                     ".png",
                                     new QString(_PATH_LAST_PATH_OPENED),
-                                    _PATH_LAST_PATH_OPENED,
+                                    new QString(_PATH_LAST_PATH_OPENED),
                                     this
                                  ) != _OK
     ){

@@ -212,7 +212,14 @@
     int funcLetUserSelectFile(QString* filePath, QString title, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
     int funcLetUserSelectFile(QString* filePath, const QString &title="Select file...");
 
-    int funcLetUserDefineFile(QString* filePath, QString title, QString extension, QString *pathLocation, QString pathOfInterest, QWidget* parent=Q_NULLPTR);
+    int funcLetUserDefineFile(
+                                QString* filePath,
+                                QString  title,
+                                QString  extension,
+                                QString* pathLocation,
+                                QString* defaultLastPath,
+                                QWidget* parent=Q_NULLPTR
+                            );
 
     void funcShowMsg_Timeout(QString title, QString msg, QMessageBox::Icon=QMessageBox::NoIcon, QWidget *parent=Q_NULLPTR, int ms=1800);
 

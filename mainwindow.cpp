@@ -149,6 +149,8 @@
 
 #include <formmerge3grayintoargb.h>
 
+#include <QTransform>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -362,9 +364,11 @@ MainWindow::MainWindow(QWidget *parent) :
     //
     // Show Last Preview
     //
-    QString lastFileOpen = readFileParam(_PATH_LAST_USED_IMG_FILENAME);
-    globalEditImg = new QImage(lastFileOpen);
-    updateDisplayImage(globalEditImg);
+    QString lastFileOpen    = readFileParam(_PATH_LAST_USED_IMG_FILENAME);
+    globalEditImg           = new QImage(lastFileOpen);
+    globalBackEditImg       = new QImage();
+    *globalBackEditImg      = *globalEditImg;
+    updateDisplayImage(globalBackEditImg);
 
 
 
@@ -7382,7 +7386,6 @@ QString MainWindow::genRemoteVideoCommand(QString remoteVideo,bool ROI)
     tmpCommand.append( QString::number(_VIDEO_FRAME_RATE) );
     tmpCommand.append( " -o " );
     tmpCommand.append( remoteVideo );
-
     //.................................
     //Diffraction Area ROI
     //.................................
@@ -9834,7 +9837,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
         tmpActImg = QImage(lstFrames.at(x).absoluteFilePath().trimmed());
 
         //Update Progress Bar
-        ui->progBar->setValue(round( ((float)x/(float)hypX)*100.0 ));
+        ui->progBar->setValue(100 - round( ((float)x/(float)hypX)*100.0 ));
         ui->progBar->update();
 
         //Copy Diffraction Into Slide Hyperspectral Image
@@ -9923,6 +9926,8 @@ void MainWindow::on_actionBuld_HypImg_triggered()
                 tmpLayer.setPixelColor(x,y,QColor(HypImg[x][y][z],HypImg[x][y][z],HypImg[x][y][z]));
             }
         }
+        //Image Horizontal Mirrored
+        tmpLayer = tmpLayer.mirrored(true,false);
         //Save image
         imgOutname.clear();
         imgOutname.append(slideHypDestiny);
@@ -10110,7 +10115,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
                                         "Define Image Filename",
                                         ".png",
                                         new QString(_PATH_LAST_IMG_OPEN),
-                                        QString(_PATH_LAST_IMG_OPEN),
+                                        new QString(_PATH_LAST_IMG_OPEN),
                                         this
                                      ) != _OK
         ){
@@ -10219,7 +10224,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
                                         "Define Image Filename",
                                         ".png",
                                         new QString(_PATH_LAST_IMG_OPEN),
-                                        QString(_PATH_LAST_IMG_OPEN),
+                                        new QString(_PATH_LAST_IMG_OPEN),
                                         this
                                      ) != _OK
         ){
@@ -10409,3 +10414,104 @@ void saveNewArea::on_btnSave_clicked()
 
 }
 */
+
+void MainWindow::on_actionTesting_triggered()
+{
+
+    //-------------------------------------
+    //Read lines
+    //-------------------------------------
+    structLine lowerLine, upperLine;
+    QString linePath;
+    linePath = "/home/jairo/Documentos/DESARROLLOS/build-HypCam-Desktop_Qt_5_8_0_GCC_64bit-Release/XML/lines/slideV1_002/2ndAttempt/LowerBound.xml";
+    funcReadLineFromXML(&linePath,&lowerLine);
+    linePath.clear();
+    linePath.append("/home/jairo/Documentos/DESARROLLOS/build-HypCam-Desktop_Qt_5_8_0_GCC_64bit-Release/XML/lines/slideV1_002/2ndAttempt/UpperBound.xml");
+    funcReadLineFromXML(&linePath,&upperLine);
+
+    //-------------------------------------
+    //Define the quad transformation
+    //-------------------------------------
+    //Original Points
+    QVector<QPointF> originPoints;
+    originPoints.append( QPointF(upperLine.x1,upperLine.y1) );
+    originPoints.append( QPointF(upperLine.x2,upperLine.y2) );
+    originPoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
+    originPoints.append( QPointF(lowerLine.x2,lowerLine.y2) );
+    //Destine Points
+    QVector<QPointF> destinePoints;
+    destinePoints.append( QPointF(upperLine.x1,upperLine.y1) );
+    destinePoints.append( QPointF(upperLine.x2,upperLine.y1) );
+    destinePoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
+    destinePoints.append( QPointF(lowerLine.x2,lowerLine.y1) );
+    //Transformation Quads
+    QPolygonF originQuad(originPoints);
+    QPolygonF destineQuad(destinePoints);
+
+    //-------------------------------------
+    //Build Transformation
+    //-------------------------------------
+    //Vanashing Point
+    QTransform tmpTrans;
+    if( tmpTrans.quadToQuad(originQuad,destineQuad,tmpTrans) == false )
+    {
+        funcShowMsgERROR_Timeout("Transformation does not exists");
+        return (void)false;
+    }
+
+
+    //-------------------------------------
+    //Display Image Transformation
+    //-------------------------------------
+    *globalEditImg  = globalEditImg->transformed(tmpTrans);
+
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
+
+    std::cout << "Finished successfully" << std::endl;
+
+
+}
+
+void MainWindow::on_actionApply_Rotation_triggered()
+{
+    structLine rotationLine;
+    QString rotLinePath;
+
+    //------------------------------------------
+    //Get Rotation Line from User
+    //------------------------------------------
+    QString tmpParam;
+    tmpParam = funcGetParam("Degree","0.0").trimmed();
+    if( tmpParam.isEmpty() )
+    {
+        return (void)false;
+    }
+    float degree;
+    degree = tmpParam.toFloat(0);
+
+    //-------------------------------------
+    //Save Calibration Degree
+    //-------------------------------------
+    saveFile(_PATH_LAST_ONEAXIS_ROTATION,tmpParam);
+
+    //-------------------------------------
+    //Display Transformated Image
+    //-------------------------------------
+    //Copy Original Image
+    *globalEditImg = *globalBackEditImg;
+    //Build Transformation
+    QTransform tmpTrans;
+    tmpTrans.rotate(degree);
+    *globalEditImg      = globalEditImg->transformed(tmpTrans);
+
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
+
+}

@@ -277,7 +277,7 @@ int formSlideLinearRegression
                                     "Select Half-Calibration File",
                                     ".xml",
                                     new QString(_PATH_LAST_PATH_OPENED),
-                                    "./XML/lines/"
+                                    new QString("./XML/lines/")
                                  ) != _OK
     ){
         funcShowMsgERROR_Timeout("Defining Filename from User");
@@ -363,7 +363,7 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
                                     "Select Half-Calibration File",
                                     ".xml",
                                     new QString(_PATH_LAST_PATH_OPENED),
-                                    "./XML/lines/"
+                                    new QString("./XML/lines/")
                                  ) != _OK
     ){
         funcShowMsgERROR_Timeout("Defining Filename from User");

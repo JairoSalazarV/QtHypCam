@@ -49,6 +49,7 @@
     #define _PATH_BLUE_SENS_NORM            "./settings/Calib/responses/blueSensivilityNorm.hypcam"
     #define _PATH_HALOGEN_IRRADIATION       "./settings/Calib/responses/halogenIrradiation.hypcam"
     #define _PATH_RGB_SENSIVILITIES         "./settings/Calib/responses/sensitivities.hypcam"
+    #define _PATH_LAST_ONEAXIS_ROTATION     "./settings/Calib/oneAxisRotation.hypcam"
 
     #define _PATH_LAST_IMG_OPEN                     "./settings/lastPaths/selectImage.hypcam"
     #define _PATH_LAST_USED_IMG_FILENAME            "./settings/lastPaths/lastImageOpen.hypcam"
@@ -56,7 +57,7 @@
     #define _PATH_LAST_LINE_SAVED                   "./settings/lastPaths/lastLineSaved.hypcam"
     #define _PATH_LAST_LINE_OPENED                  "./settings/lastPaths/lastLineOpened.hypcam"
     #define _PATH_LAST_PATH_OPENED                  "./settings/lastPaths/lastPathOpened.hypcam"
-    #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"
+    #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"    
 
     #define _PATH_NDVI_THRESHOLD                    "./settings/NDVI/threshold.hypcam"
     #define _PATH_NDVI_BRILLIANT                    "./settings/NDVI/brilliant.hypcam"
