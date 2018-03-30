@@ -1440,6 +1440,7 @@ QSlider::handle:horizontal {
      </property>
      <addaction name="actionDiffraction_Origin"/>
      <addaction name="actionSlide_Calibration_File"/>
+     <addaction name="actionSlide_Max_Wavelength"/>
     </widget>
     <addaction name="actionNDVI_Algorithm"/>
     <addaction name="actionSync_Folder"/>
@@ -1551,12 +1552,33 @@ QSlider::handle:horizontal {
     <addaction name="menuCalib_Edition"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menuLocal">
+    <property name="title">
+     <string>Local</string>
+    </property>
+    <widget class="QMenu" name="menuSlide_2">
+     <property name="title">
+      <string>Slide</string>
+     </property>
+     <widget class="QMenu" name="menuStep_by_Step">
+      <property name="title">
+       <string>Step by Step</string>
+      </property>
+      <addaction name="actionExtract_frames_2"/>
+      <addaction name="actionBuild_HypCube"/>
+      <addaction name="actionBuild_HypCube_2"/>
+     </widget>
+     <addaction name="menuStep_by_Step"/>
+    </widget>
+    <addaction name="menuSlide_2"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
    <addaction name="menuAnalysis"/>
    <addaction name="menuMake"/>
    <addaction name="menuSettings"/>
    <addaction name="menuCamera"/>
+   <addaction name="menuLocal"/>
    <addaction name="menuStart"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -2334,6 +2356,26 @@ QSlider::handle:horizontal {
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
+   </property>
+  </action>
+  <action name="actionExtract_frames_2">
+   <property name="text">
+    <string>Extract frames</string>
+   </property>
+  </action>
+  <action name="actionBuild_HypCube">
+   <property name="text">
+    <string>Optical Correction</string>
+   </property>
+  </action>
+  <action name="actionSlide_Max_Wavelength">
+   <property name="text">
+    <string>Slide Max Wavelength</string>
+   </property>
+  </action>
+  <action name="actionBuild_HypCube_2">
+   <property name="text">
+    <string>Build HypCube</string>
    </property>
   </action>
  </widget>

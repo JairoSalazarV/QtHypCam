@@ -34,6 +34,7 @@
     #define _PATH_CALIB_LR                  "./settings/Calib/LR.hypcam"
     #define _PATH_SLIDE_CALIB_LR            "./settings/Calib/slideLR.hypcam"
     #define _PATH_CALIB_LR_TMP_ORIGIN       "./settings/Calib/diffractionOrigin.hypcam"
+    #define _PATH_SLIDE_ACTUAL_CALIB_PATH   "./settings/Calib/actualSlideCalibrarion.hypcam"
 
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
@@ -58,6 +59,7 @@
     #define _PATH_LAST_LINE_OPENED                  "./settings/lastPaths/lastLineOpened.hypcam"
     #define _PATH_LAST_PATH_OPENED                  "./settings/lastPaths/lastPathOpened.hypcam"
     #define _PATH_LAST_SYNC_FOLDER                  "./settings/lastPaths/syncFolder.hypcam"    
+    #define _PATH_LAST_VIDEO_OPENED                 "./settings/lastPaths/lastVideoOpened.hypcam"
 
     #define _PATH_NDVI_THRESHOLD                    "./settings/NDVI/threshold.hypcam"
     #define _PATH_NDVI_BRILLIANT                    "./settings/NDVI/brilliant.hypcam"
@@ -74,6 +76,7 @@
     #define _PATH_LIMIT_S_FLUORESCENT               "./settings/Calib/source.hypcam"
     #define _PATH_SLIDE_FLUORESCENT                 "./settings/Calib/slideFluorescent.hypcam"
     #define _PATH_SLIDE_HALOGEN_SENSITIVITIES       "./settings/Calib/slideHalogenSensitivities.hypcam"
+    #define _PATH_SLIDE_MAX_WAVELENGTH              "./settings/Calib/slideMaxWavelength.hypcam"
 
 
 
@@ -114,7 +117,7 @@
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
-    #define _PATH_SLIDE_ACTUAL_CALIB_PATH   "./XML/actualSlideCalibrarion.xml"
+
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
 

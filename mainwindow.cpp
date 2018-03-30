@@ -6059,7 +6059,7 @@ void MainWindow::on_pbSnapVid_clicked()
     locFrameExtrComm.append(_PATH_VIDEO_RECEIVED_H264);
     locFrameExtrComm.append(" ");
     locFrameExtrComm.append(tmpFramesPath);
-    locFrameExtrComm.append("%d");
+    locFrameExtrComm.append("%07d");
     locFrameExtrComm.append(_FRAME_EXTENSION);
     qDebug() << locFrameExtrComm;
     progBarUpdateLabel("Extracting Frames from Video",0);
@@ -6072,38 +6072,34 @@ void MainWindow::on_pbSnapVid_clicked()
     //-----------------------------------------------------
     // Update mainImage from Frames
     //-----------------------------------------------------
-    funcUpdateImageFromFolder(tmpFramesPath,_FRAME_EXTENSION);
+    funcUpdateImageFromFolder(tmpFramesPath);
 
     funcResetStatusBar();
 
 }
 
-int MainWindow::funcUpdateImageFromFolder( QString folder, QString fileExtension )
+int MainWindow::funcUpdateImageFromFolder(const QString &folder)
 {
-    numFrames = funcAccountFilesInFolder( folder );
-    if( numFrames <= 0 )
-    {
-        funcShowMsgERROR("Empty Folder: " + folder);
-        return 0;
-    }
-    else
-    {
-        //Image Received Path
-        int idFrame;
-        idFrame = ceil( numFrames * 0.6 );
-        QString tmpImgRec;
-        tmpImgRec.append( folder );
-        tmpImgRec.append( QString::number(idFrame) );
-        tmpImgRec.append( fileExtension );
+    //-------------------------------------------------
+    //Get List of Files in Directory
+    //-------------------------------------------------
+    QList<QFileInfo> lstImages = funcListFilesInDir( folder );
+    if( lstImages.size() <= 0 )
+        return _ERROR;
 
-        //Update Received Image
-        free(globalEditImg);
-        globalEditImg = new QImage(tmpImgRec);
-        updateDisplayImage(globalEditImg);
-        qDebug() << tmpImgRec;
+    //-------------------------------------------------
+    //Get a Image
+    //-------------------------------------------------
+    int pos;
+    pos = round( (float)lstImages.size() * 0.5 );
+    QImage tmpImg( lstImages.at(pos).absoluteFilePath().trimmed() );
 
-    }
-    return 1;
+    //-------------------------------------------------
+    //Update Image Displayed
+    //-------------------------------------------------
+    updateDisplayImage( &tmpImg );
+
+    return _OK;
 }
 
 
@@ -7371,7 +7367,7 @@ void MainWindow::on_pbTimeLapse_clicked()
     //--------------------------------------
     //Update Image Displayed
     //--------------------------------------
-    funcUpdateImageFromFolder(tmpLocalFolder,_SNAPSHOT_REMOTE_EXTENSION);
+    funcUpdateImageFromFolder(tmpLocalFolder);
     funcResetStatusBar();
 
 }
@@ -9229,7 +9225,7 @@ void MainWindow::on_actionFull_Video_triggered()
     locFrameExtrComm.append(_PATH_VIDEO_RECEIVED_H264);
     locFrameExtrComm.append(" ");
     locFrameExtrComm.append(tmpFramesPath);
-    locFrameExtrComm.append("%d");
+    locFrameExtrComm.append("%07d");
     locFrameExtrComm.append(_FRAME_EXTENSION);
     qDebug() << locFrameExtrComm;
     progBarUpdateLabel("Extracting Frames from Video",0);
@@ -9243,7 +9239,7 @@ void MainWindow::on_actionFull_Video_triggered()
     //-----------------------------------------------------
     // Update mainImage from Frames
     //-----------------------------------------------------
-    funcUpdateImageFromFolder(tmpFramesPath,_FRAME_EXTENSION);
+    funcUpdateImageFromFolder(tmpFramesPath);
 
 
 
@@ -9990,7 +9986,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     //----------------------------------------------
     //Read Slide Calibration File
     //----------------------------------------------
-    structSlideCalibration slideCalibration;
+    structSlideCalibration slideCalibration;//_PATH_SLIDE_ACTUAL_CALIB_PATH
     if( funcReadSlideCalib( calibPath, &slideCalibration ) != _OK )
     {
         funcShowMsgERROR_Timeout("Reading Slide Calibration File");
@@ -10570,4 +10566,330 @@ void MainWindow::on_actionRestore_Original_triggered()
 
     //Update Edit View
     updateImageCanvasEdit(globalEditImg);
+}
+
+void MainWindow::on_actionExtract_frames_2_triggered()
+{
+    //-----------------------------------------------
+    //Read Video Source
+    //-----------------------------------------------
+    QString videoPath;
+    if(
+            funcLetUserSelectFile(
+                                    &videoPath,
+                                    "Select Video...",
+                                    _PATH_LAST_VIDEO_OPENED,
+                                    "./tmpImages/",
+                                    this
+                                 ) != _OK
+    ){
+        return (void)false;
+    }
+
+    //-----------------------------------------------
+    //Extract video Frames
+    //-----------------------------------------------
+    //-----------------------------------------------------
+    // Extract Frames from Video
+    //-----------------------------------------------------
+
+    //Clear local folder
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    funcClearDirFolder( tmpFramesPath );
+
+    //Extract Frames from Local Video
+    QString locFrameExtrComm;
+    locFrameExtrComm.append("ffmpeg -framerate ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -r ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -i ");
+    locFrameExtrComm.append( videoPath.trimmed() );
+    locFrameExtrComm.append(" ");
+    locFrameExtrComm.append(tmpFramesPath);
+    locFrameExtrComm.append("%07d");
+    locFrameExtrComm.append(_FRAME_EXTENSION);
+    qDebug() << locFrameExtrComm;
+    progBarUpdateLabel("Extracting Frames from Video",0);
+    if( !funcExecuteCommand(locFrameExtrComm) )
+    {
+        funcShowMsg("ERROR","Extracting Frames from Video");
+    }
+    progBarUpdateLabel("",0);
+
+    //-----------------------------------------------------
+    // Update mainImage from Frames
+    //-----------------------------------------------------
+    funcUpdateImageFromFolder(tmpFramesPath);
+
+    funcResetStatusBar();
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void MainWindow::on_actionSlide_Max_Wavelength_triggered()
+{
+    //-----------------------------------------
+    //Get Last Max Wavelength
+    //-----------------------------------------
+    float lastMaxWave;
+    lastMaxWave = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toFloat(0);
+    lastMaxWave = ( lastMaxWave <= 0.0 )?_RASP_CAM_MAX_WAVELENGTH:lastMaxWave;
+
+    //-----------------------------------------
+    //Get Max Wavelength
+    //-----------------------------------------
+    QString maxWavelen;
+    maxWavelen = funcGetParam("Max Wavelength",QString::number(lastMaxWave));
+    if( maxWavelen.isEmpty() )
+    {
+        funcShowMsgERROR_Timeout("Reading Max Wavelength");
+        return (void)false;
+    }
+
+    //-----------------------------------------
+    //Save Max Wavelength
+    //-----------------------------------------
+    if( saveFile(_PATH_SLIDE_MAX_WAVELENGTH,maxWavelen) == true )
+    {
+        funcShowMsgSUCCESS_Timeout("File Save Successfully");
+    }
+    else
+    {
+        funcShowMsgERROR_Timeout("Saving Max Wavelength");
+    }
+
+}
+
+void MainWindow::on_actionBuild_HypCube_triggered()
+{
+    //--------------------------------------------
+    //Read Slide Calibration
+    //--------------------------------------------
+    //Get Default Slide Calibration Path
+    QString defaCalibPath;
+    defaCalibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    if( defaCalibPath.isEmpty() )
+    {
+        funcShowMsg("Alert!","Please, Set Default Slide Calibration");
+        return (void)false;
+    }
+    //Read Default Calibration Path
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( defaCalibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
+        return (void)false;
+    }
+
+    //--------------------------------------------
+    //Define Max Wavelength
+    //--------------------------------------------
+    double maxWavelen;
+    maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
+    if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
+    {
+        maxWavelen = _RASP_CAM_MAX_WAVELENGTH;
+    }
+
+    //--------------------------------------------
+    //Define Flat Plane
+    //--------------------------------------------
+    QPoint P1, P2;
+    int distPixFromLower;
+    maxWavelen = maxWavelen - slideCalibration.originWave;
+    distPixFromLower = round( funcApplyLR(maxWavelen,slideCalibration.wave2DistLR,true) );
+    P1.setX( slideCalibration.originX );
+    P1.setY( slideCalibration.originY );
+    P2.setX( slideCalibration.originX + distPixFromLower );
+    P2.setY( slideCalibration.originY + slideCalibration.originH );
+    std::cout << "(" << P1.x() << ", " << P1.y() << ") to (" << P2.x() << ", " << P2.y() << ")" << std::endl;
+
+    //--------------------------------------------
+    //Get List of Files in Default Directory
+    //--------------------------------------------
+    //Get Files from Dir
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    //Calc Number of Stabilization Frames
+    int numStabFrames;
+    numStabFrames = (_STABILIZATION_SECS * _VIDEO_FRAME_RATE)-1;
+    //List All Files in Directory
+    QList<QFileInfo> lstFrames = funcListFilesInDir( tmpFramesPath );
+    std::cout << "numFrames: " << lstFrames.size() << std::endl;
+    std::cout << "stabilizationFrames: " << numStabFrames << std::endl;
+    if( lstFrames.size() < numStabFrames )
+    {
+        funcShowMsgERROR_Timeout("Number of Files Insufficient");
+        mouseCursorReset();
+        return (void)false;
+    }
+
+    //--------------------------------------------
+    //Get, Transform and Put-back Transformed File
+    //--------------------------------------------
+    //Define subimage
+    QRect subImgRec;
+    subImgRec.setX( P1.x() );
+    subImgRec.setY( P1.y() );
+    subImgRec.setWidth( P2.x() - P1.x() );
+    subImgRec.setHeight( P2.y() - P1.y() );
+    //Update Progess Bar
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    progBarUpdateLabel("Putting Transformed Frames into Memory...",0);
+    //Process and Save Frames
+    QImage tmpImg;
+    int i, progVal;
+    progVal = 0;
+    //Remove Stabilization Frames
+    for( i=0; i<numStabFrames; i++ )
+    {
+        //std::cout << "DEL-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
+        if( funcDeleteFile(lstFrames.at(i).absoluteFilePath()) != _OK )
+        {
+            funcShowMsgERROR("Deleting: "+lstFrames.at(i).absoluteFilePath());
+            break;
+        }
+    }
+
+    //-------------------------------------------------
+    //Get into Memory Transformed Frames
+    //-------------------------------------------------
+    lstFrames = funcListFilesInDir( tmpFramesPath );
+    QList<QImage> lstTransImages;
+    for( i=0; i<lstFrames.size(); i++ )
+    {
+        //std::cout << "MOD-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
+        tmpImg  = QImage( lstFrames.at(i).absoluteFilePath() );
+        tmpImg  = tmpImg.transformed( slideCalibration.translation );
+        tmpImg  = tmpImg.copy(subImgRec);
+        lstTransImages.append( tmpImg );
+        //Update Progress Bar
+        progVal = round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 );
+        ui->progBar->setValue(progVal);
+        ui->progBar->update();
+    }
+
+    //-------------------------------------------------
+    //Update Image Displayed
+    //-------------------------------------------------
+    int pos;
+    tmpImg = lstTransImages.at(pos);
+    pos = round( (float)lstTransImages.size() * 0.5 );
+    updateDisplayImage( &tmpImg );
+
+    //--------------------------------------------
+    //Save Transformed Images From Memory
+    //--------------------------------------------
+    //Ask to the User
+    if( funcShowMsgYesNo("Alert!","Save Frames into HDD",this) == 0 )
+    {
+        //Reset Progress Bar
+        ui->progBar->setValue(0);
+        ui->progBar->setVisible(false);
+        ui->progBar->update();
+        progBarUpdateLabel("",0);
+        return (void)true;
+    }
+
+    //Hide Progress Bar
+    progVal = 0;
+    ui->progBar->setValue(progVal);
+    ui->progBar->update();
+    progBarUpdateLabel("Saving Transformed Images Into HDD",0);
+    for( i=0; i<lstTransImages.size(); i++ )
+    {
+        //Save Image Into HDD
+        lstTransImages.at(i).save( lstFrames.at(i).absoluteFilePath() );
+        //Update Progress Bar
+        progVal = round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 );
+        ui->progBar->setValue(progVal);
+        ui->progBar->update();
+    }
+
+    //Reset Progress Bar
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(false);
+    ui->progBar->update();
+    progBarUpdateLabel("",0);
+
+    //Notify Success
+    funcShowMsgSUCCESS_Timeout("Optical Correction Complete Successfully");
+
+
+}
+
+void MainWindow::on_actionBuild_HypCube_2_triggered()
+{
+    //--------------------------------------------
+    //Read Slide Calibration
+    //--------------------------------------------
+    //Get Default Slide Calibration Path
+    QString defaCalibPath;
+    defaCalibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    if( defaCalibPath.isEmpty() )
+    {
+        funcShowMsg("Alert!","Please, Set Default Slide Calibration");
+        return (void)false;
+    }
+    //Read Default Calibration Path
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( defaCalibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
+        return (void)false;
+    }
+
+    //--------------------------------------------
+    //Define Max Wavelength
+    //--------------------------------------------
+    double maxWavelen;
+    maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
+    if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
+    {
+        maxWavelen = _RASP_CAM_MAX_WAVELENGTH;
+    }
+
+    //--------------------------------------------
+    //Get List of Files in Default Directory
+    //--------------------------------------------
+    //Get Files from Dir
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    //List All Files in Directory
+    QList<QFileInfo> lstFrames = funcListFilesInDir( tmpFramesPath );
+    std::cout << "numFrames: " << lstFrames.size() << std::endl;
+    if( lstFrames.size() < 3 )
+    {
+        funcShowMsgERROR_Timeout("Number of Files Insufficient");
+        mouseCursorReset();
+        return (void)false;
+    }
+
+    //--------------------------------------------
+    //Put Frames into Memory
+    //--------------------------------------------
+
+
+
+
 }

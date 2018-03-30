@@ -50,13 +50,13 @@ int funcDeleteFile( QString fileName )
     if( tmpFile.exists() )
     {
         tmpFile.remove();
-        return 1;//File exists and removed
+        return _OK;//File exists and removed
     }
     else
     {
-        return 2;//File does not exists but is equal to be removed
+        return _FAILURE;//File does not exists but is equal to be removed
     }
-    return -1;//Error
+    return _ERROR;//Error
 }
 
 QString funcRemoveFileNameFromPath( QString Path ){

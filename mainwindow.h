@@ -477,7 +477,7 @@ private slots:
 
     void on_pbSnapVid_clicked();
 
-    int funcUpdateImageFromFolder(QString folder , QString fileExtension);
+    int funcUpdateImageFromFolder(const QString &folder);
 
     //void on_pbSnapshot_2_clicked();
 
@@ -644,6 +644,14 @@ private slots:
     void on_actionApply_Transformation_triggered();
 
     void on_actionRestore_Original_triggered();    
+
+    void on_actionExtract_frames_2_triggered();
+
+    void on_actionSlide_Max_Wavelength_triggered();
+
+    void on_actionBuild_HypCube_triggered();
+
+    void on_actionBuild_HypCube_2_triggered();
 
 private:
     Ui::MainWindow *ui;

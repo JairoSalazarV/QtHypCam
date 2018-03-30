@@ -30,6 +30,7 @@
     #define _MJPEG                          1
 
     #define _VIDEO_FRAME_RATE               30
+    #define _STABILIZATION_SECS             3
 
     #define _RIGHT                          1
     #define _ABOVE                          2
@@ -77,6 +78,7 @@
     #define _RASP_CAM_8MP_VIDEO_H           1232 //1080 | 1232
 
     #define _RASP_CAM_MAX_WAVELENGTH        950  //Used During Slide Clibration
+    #define _RASP_CAM_MIN_WAVELENGTH        300  //Used During Slide Clibration
 
 
 #endif // LSTCUSTOMS_H
