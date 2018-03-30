@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>841</width>
-    <height>252</height>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,7 +95,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>198</y>
+     <y>243</y>
      <width>161</width>
      <height>28</height>
     </rect>
@@ -108,7 +108,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>150</y>
+     <y>195</y>
      <width>161</width>
      <height>28</height>
     </rect>
@@ -118,7 +118,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>155</y>
+     <y>200</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -131,7 +131,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>110</y>
+     <y>155</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -144,7 +144,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>105</y>
+     <y>150</y>
      <width>161</width>
      <height>29</height>
     </rect>
@@ -154,6 +154,45 @@
    </property>
    <property name="maximum">
     <number>3000</number>
+   </property>
+  </widget>
+  <widget class="QLabel" name="labelHor_5">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>105</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Transformation</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbAffineTrans">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>100</y>
+     <width>41</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="txtAffineTrans">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>100</y>
+     <width>631</width>
+     <height>28</height>
+    </rect>
    </property>
   </widget>
  </widget>

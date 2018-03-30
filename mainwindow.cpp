@@ -10002,6 +10002,11 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     //**********************************************
 
     //----------------------------------------------
+    //Apply Affine Transformation
+    //----------------------------------------------
+    *globalEditImg  = globalEditImg->transformed(slideCalibration.translation);
+
+    //----------------------------------------------
     //Validate Calibration-Size and Image-Size
     //----------------------------------------------
     if(
@@ -10101,7 +10106,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     //----------------------------------------------
     //Save Image
     //----------------------------------------------
-    if( funcShowMsgYesNo("Saving Image","Save image?") )
+    if( funcShowMsgYesNo( "Saving Image", "Save image?", this ) )
     {
         //filePath:         File output, filename selected by the user
         //title:            Showed to User, what kind of file is the user selecting
@@ -10143,7 +10148,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
 
     //**********************************************
     //Display the Wavalength Selected by User
-    //**********************************************
+    //**********************************************    
 
     //----------------------------------------------
     //Let the user select Slide Calibration File
@@ -10170,6 +10175,11 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     //**********************************************
     //Draw Over Real Image
     //**********************************************
+
+    //----------------------------------------------
+    //Apply Affine Transformation
+    //----------------------------------------------
+    *globalEditImg  = globalEditImg->transformed(slideCalibration.translation);
 
     //----------------------------------------------
     //Validate Calibration-Size and Image-Size
@@ -10524,78 +10534,12 @@ void MainWindow::on_actionApply_Rotation_triggered()
 
 void MainWindow::on_actionApply_Transformation_triggered()
 {
-    //-------------------------------------
-    //Read lines
-    //-------------------------------------
-    QString lowerLinePath, upperLinePath;
-    //Read Lower Line
-    if(
-            funcLetUserSelectFile(
-                                    &lowerLinePath,
-                                    "Select Horizontal Lower Bound...",
-                                    _PATH_LAST_LINE_OPENED,
-                                    "./XML/lines/",
-                                    this
-                                 ) != _OK
-    ){
-        return (void)false;
-    }
-
-    //Read Upper Line
-    if(
-            funcLetUserSelectFile(
-                                    &upperLinePath,
-                                    "Select Horizontal Upper Bound...",
-                                    _PATH_LAST_LINE_OPENED,
-                                    "./XML/lines/",
-                                    this
-                                 ) != _OK
-    ){
-        return (void)false;
-    }
-
-    //-------------------------------------
-    //Read Lines FromHDD
-    //-------------------------------------
-    structLine lowerLine, upperLine;
-    funcReadLineFromXML(&lowerLinePath,&lowerLine);
-    funcReadLineFromXML(&upperLinePath,&upperLine);
-
-    //-------------------------------------
-    //Define the quad transformation
-    //-------------------------------------
-    //Original Points
-    QVector<QPointF> originPoints;
-    originPoints.append( QPointF(upperLine.x1,upperLine.y1) );
-    originPoints.append( QPointF(upperLine.x2,upperLine.y2) );
-    originPoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
-    originPoints.append( QPointF(lowerLine.x2,lowerLine.y2) );
-    //Destine Points
-    QVector<QPointF> destinePoints;
-    destinePoints.append( QPointF(upperLine.x1,upperLine.y1) );
-    destinePoints.append( QPointF(upperLine.x2,upperLine.y1) );
-    destinePoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
-    destinePoints.append( QPointF(lowerLine.x2,lowerLine.y1) );
-    //Transformation Quads
-    QPolygonF originQuad(originPoints);
-    QPolygonF destineQuad(destinePoints);
-
-    //-------------------------------------
-    //Build Transformation
-    //-------------------------------------
-    //Vanashing Point
     QTransform tmpTrans;
-    if( tmpTrans.quadToQuad(originQuad,destineQuad,tmpTrans) == false )
+    if( funcGetTranslation( &tmpTrans, this ) != _OK )
     {
-        funcShowMsgERROR_Timeout("Transformation does not exists");
+        funcShowMsgERROR_Timeout("Reading Slide Calibration");
         return (void)false;
     }
-    //Rotate
-    float degree;
-    QString tmpRotation;
-    tmpRotation = readAllFile(_PATH_LAST_ONEAXIS_ROTATION).trimmed();
-    degree = (tmpRotation.isEmpty())?0.0:tmpRotation.toFloat(0);
-    tmpTrans.rotate(degree);
 
     //-------------------------------------
     //Display Image Transformation
@@ -10609,4 +10553,16 @@ void MainWindow::on_actionApply_Transformation_triggered()
     updateImageCanvasEdit(globalEditImg);
 
     std::cout << "Finished successfully" << std::endl;
+}
+
+void MainWindow::on_actionRestore_Original_triggered()
+{
+    //Return Backup
+    *globalEditImg = *globalBackEditImg;
+
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
 }

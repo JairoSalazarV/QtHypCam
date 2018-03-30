@@ -38,6 +38,8 @@ private slots:
 
     void funcTableToList(QList<structLine>* lstLines);
 
+    void on_pbGenAffinTrans_clicked();
+
 private:
     Ui::formSlideLinearRegression *ui;
 };

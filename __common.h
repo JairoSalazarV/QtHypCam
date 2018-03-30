@@ -72,7 +72,7 @@
 
     int *indexToxy( int index, int w, int h );
 
-    int funcShowMsgYesNo( QString title, QString msg );
+    int funcShowMsgYesNo( QString title, QString msg, QWidget* parent=Q_NULLPTR );
 
     bool funcGetRaspParamFromXML(structRaspcamSettings *raspcamSettings , QString filePath);
 
@@ -247,6 +247,8 @@
 
     int funcReadHorHalfCalib(const QString &filePath,structSlideCalibration* slideCalibration);
 
+    int funcReadAffineTransXML( const QString &filePath, QTransform* T );
+
     int funcReadVertHalfCalib(
                                 const QString &filePath,
                                 float *referenceX2,
@@ -286,5 +288,13 @@
                      );
 
     int funcLetUserSelectDirectory( );
+
+    int funcGetTranslation( QTransform* tmpTrans, QWidget *parent=Q_NULLPTR );
+
+    int funcLines2Translation(
+                                QTransform* tmpTrans,
+                                const structLine &lowerLine,
+                                const structLine &upperLine
+                             );
 
 #endif // __COMMON_H

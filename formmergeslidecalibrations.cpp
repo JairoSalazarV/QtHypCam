@@ -60,11 +60,12 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     //----------------------------------------------
     QString CameraID(ui->txtCameraID->text().trimmed());
     if(
-            CameraID.isEmpty() ||
-            ui->txtHorPath->text().trimmed().isEmpty() ||
-            ui->txtVertPath->text().trimmed().isEmpty()
+            CameraID.isEmpty()                              ||
+            ui->txtHorPath->text().trimmed().isEmpty()      ||
+            ui->txtVertPath->text().trimmed().isEmpty()     ||
+            ui->txtAffineTrans->text().trimmed().isEmpty()
     ){
-        funcShowMsgERROR_Timeout("All Fields Required");
+        funcShowMsgERROR_Timeout("All Fields are Required");
         return (void)false;
     }
 
@@ -83,6 +84,16 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
                             &referenceX2,
                             &slideCalibration
                          );
+
+    //--------------------------------
+    //Load Affine Transformation
+    //--------------------------------
+    QTransform T;
+    if( funcReadAffineTransXML( ui->txtAffineTrans->text().trimmed(), &T ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Affine Transformation");
+        return (void)false;
+    }
 
     //---------------------------------------
     //Get Origin Point
@@ -109,7 +120,8 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     if(
             funcSaveSlideCalibration(
                                         &fullPathName,
-                                        &slideCalibration
+                                        &slideCalibration,
+                                        &T
                                     ) != _OK
     ){
         funcShowMsgERROR_Timeout("Saving Slide Calibration File");
@@ -123,7 +135,8 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
 int formMergeSlideCalibrations
     ::funcSaveSlideCalibration(
                                     QString* pathDestine,
-                                    structSlideCalibration* slideCalibration
+                                    structSlideCalibration* slideCalibration,
+                                    QTransform *T
 ){
 
     //-----------------------------------
@@ -151,7 +164,10 @@ int formMergeSlideCalibrations
                 << "wave2DistA" << "wave2DistB"
                 << "vertA"      << "vertB"
                 << "horizA"     << "horizB"
-                << "maxNumCols";
+                << "maxNumCols"
+                << "Tm11"       << "Tm12"       << "Tm13"
+                << "Tm21"       << "Tm22"       << "Tm23"
+                << "Tm31"       << "Tm32"       << "Tm33" ;
 
     //-----------------------------------
     //Fill Values
@@ -171,7 +187,16 @@ int formMergeSlideCalibrations
                 << QString::number(slideCalibration->vertLR.b)
                 << QString::number(slideCalibration->horizLR.a)
                 << QString::number(slideCalibration->horizLR.b)
-                << QString::number(distPixFromLower);
+                << QString::number(distPixFromLower)
+                << QString::number(T->m11())
+                << QString::number(T->m12())
+                << QString::number(T->m13())
+                << QString::number(T->m21())
+                << QString::number(T->m22())
+                << QString::number(T->m23())
+                << QString::number(T->m31())
+                << QString::number(T->m32())
+                << QString::number(T->m33());
 
     //-----------------------------------
     //Save Slide Calibration File
@@ -184,3 +209,18 @@ int formMergeSlideCalibrations
     return _OK;
 }
 
+
+void formMergeSlideCalibrations::on_pbAffineTrans_clicked()
+{
+    //--------------------------------
+    //Define Transformation Origin
+    //--------------------------------
+    QString defaPath;
+    defaPath.append(_PATH_LOCAL_SYNC_FOLDERS);
+    defaPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
+    if( funcLetUserSelectFile( &defaPath ) != _OK )
+    {
+        return (void)false;
+    }
+    ui->txtAffineTrans->setText(defaPath);
+}

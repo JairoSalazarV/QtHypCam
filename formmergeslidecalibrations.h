@@ -25,10 +25,13 @@ private slots:
 
     int funcSaveSlideCalibration(
                                     QString* pathDestine,
-                                    structSlideCalibration* slideCalibration
+                                    structSlideCalibration* slideCalibration,
+                                    QTransform* T
                                 );
 
 
+
+    void on_pbAffineTrans_clicked();
 
 private:
     Ui::formMergeSlideCalibrations *ui;

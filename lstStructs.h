@@ -250,6 +250,7 @@
         linearRegresion wave2DistLR;
         linearRegresion vertLR;
         linearRegresion horizLR;
+        QTransform translation;
     }structSlideCalibration;
 
     typedef struct colorAnalyseResult{

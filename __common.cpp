@@ -1199,9 +1199,9 @@ int xyToIndex( int x, int y, int w)
 }
 
 
-int funcShowMsgYesNo( QString title, QString msg ){
+int funcShowMsgYesNo( QString title, QString msg, QWidget* parent){
     //int integerValue = 10;
-    QMessageBox yesNoMsgBox;
+    QMessageBox yesNoMsgBox(parent);
     yesNoMsgBox.setWindowTitle(title);
     yesNoMsgBox.setText(msg);
     //yesNoMsgBox.setInformativeText(QString(info).append(QVariant(integerValue).toString()));
@@ -2715,7 +2715,6 @@ int funcReadHorHalfCalib(
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
 
-
     //Parse the XML until we reach end of it
     while(!xmlReader->atEnd() && !xmlReader->hasError()) {
         // Read next element
@@ -2733,12 +2732,69 @@ int funcReadHorHalfCalib(
                 slideCalibration->horizLR.b = xmlReader->readElementText().toFloat(0);
         }
     }
+
+    //Set translation
+    //slideCalibration->translation.setMatrix( m11, m12, m13, m21, m22, m23, m31, m32, m33 );
+
     if(xmlReader->hasError()) {
         funcShowMsg("Parse Error",xmlReader->errorString());
         return _ERROR;
     }
     xmlReader->clear();
     xmlFile->close();
+    return _OK;
+}
+
+int funcReadAffineTransXML( const QString &filePath, QTransform* T )
+{
+
+    QFile *xmlFile = new QFile( filePath );
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+    //Parse the XML until we reach end of it
+    double m11=0.0, m12=0.0, m13=0.0, m21=0.0, m22=0.0, m23=0.0, m31=0.0, m32=0.0, m33=0.0;
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement) {
+            if( xmlReader->name()=="Tm11" )
+                m11 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm12" )
+                m12 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm13" )
+                m13 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm21" )
+                m21 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm22" )
+                m22 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm23" )
+                m23 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm31" )
+                m31 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm32" )
+                m32 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm33" )
+                m33 = xmlReader->readElementText().toDouble(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+
+    //Set translation
+    T->setMatrix( m11, m12, m13, m21, m22, m23, m31, m32, m33 );
+
     return _OK;
 }
 
@@ -2788,6 +2844,8 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
 
+    double m11=0.0, m12=0.0, m13=0.0, m21=0.0, m22=0.0, m23=0.0, m31=0.0, m32=0.0, m33=0.0;
+
 
     //Parse the XML until we reach end of it
     while(!xmlReader->atEnd() && !xmlReader->hasError()) {
@@ -2828,6 +2886,24 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
                 slideCalibration->horizLR.b = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="maxNumCols" )
                 slideCalibration->maxNumCols = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="Tm11" )
+                m11 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm12" )
+                m12 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm13" )
+                m13 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm21" )
+                m21 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm22" )
+                m22 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm23" )
+                m23 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm31" )
+                m31 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm32" )
+                m32 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="Tm33" )
+                m33 = xmlReader->readElementText().toDouble(0);
         }
     }
     if(xmlReader->hasError()) {
@@ -2836,6 +2912,10 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
     }
     xmlReader->clear();
     xmlFile->close();
+
+    //Save Transformation
+    slideCalibration->translation.setMatrix(m11,m12,m13,m21,m22,m23,m31,m32,m33);
+
     return _OK;
 
 }
@@ -2987,5 +3067,95 @@ int funcLetUserSelectDirectory( )
     return _OK;
 }
 
+int funcGetTranslation( QTransform* tmpTrans, QWidget *parent )
+{
+    //-------------------------------------
+    //Read lines
+    //-------------------------------------
+    QString lowerLinePath, upperLinePath;
+    //Read Lower Line
+    if(
+            funcLetUserSelectFile(
+                                    &lowerLinePath,
+                                    "Select Horizontal Lower Bound...",
+                                    _PATH_LAST_LINE_OPENED,
+                                    "./XML/lines/",
+                                    parent
+                                 ) != _OK
+    ){
+        return _ERROR;
+    }
 
+    //Read Upper Line
+    if(
+            funcLetUserSelectFile(
+                                    &upperLinePath,
+                                    "Select Horizontal Upper Bound...",
+                                    _PATH_LAST_LINE_OPENED,
+                                    "./XML/lines/",
+                                    parent
+                                 ) != _OK
+    ){
+        return _ERROR;
+    }
+
+    //-------------------------------------
+    //Read Lines FromHDD
+    //-------------------------------------
+    structLine lowerLine, upperLine;
+    funcReadLineFromXML(&lowerLinePath,&lowerLine);
+    funcReadLineFromXML(&upperLinePath,&upperLine);
+
+
+    if( funcLines2Translation(tmpTrans, lowerLine, upperLine) != _OK )
+    {
+        return _ERROR;
+    }
+
+    return _OK;
+}
+
+
+int funcLines2Translation(
+                            QTransform* tmpTrans,
+                            const structLine &lowerLine,
+                            const structLine &upperLine
+){
+    //-------------------------------------
+    //Define the quad transformation
+    //-------------------------------------
+    //Original Points
+    QVector<QPointF> originPoints;
+    originPoints.append( QPointF(upperLine.x1,upperLine.y1) );
+    originPoints.append( QPointF(upperLine.x2,upperLine.y2) );
+    originPoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
+    originPoints.append( QPointF(lowerLine.x2,lowerLine.y2) );
+    //Destine Points
+    QVector<QPointF> destinePoints;
+    destinePoints.append( QPointF(upperLine.x1,upperLine.y1) );
+    destinePoints.append( QPointF(upperLine.x2,upperLine.y1) );
+    destinePoints.append( QPointF(lowerLine.x1,lowerLine.y1) );
+    destinePoints.append( QPointF(lowerLine.x2,lowerLine.y1) );
+    //Transformation Quads
+    QPolygonF originQuad(originPoints);
+    QPolygonF destineQuad(destinePoints);
+
+    //-------------------------------------
+    //Build Transformation
+    //-------------------------------------
+    //Vanashing Point
+    if( tmpTrans->quadToQuad(originQuad,destineQuad,*tmpTrans) == false )
+    {
+        funcShowMsgERROR_Timeout("Transformation does not exists");
+        return _ERROR;
+    }
+    //Rotate
+    float degree;
+    QString tmpRotation;
+    tmpRotation = readAllFile(_PATH_LAST_ONEAXIS_ROTATION).trimmed();
+    degree = (tmpRotation.isEmpty())?0.0:tmpRotation.toFloat(0);
+    tmpTrans->rotate(degree);
+
+    return _OK;
+}
 

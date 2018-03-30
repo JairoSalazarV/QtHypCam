@@ -1575,6 +1575,7 @@ QSlider::handle:horizontal {
    </attribute>
    <addaction name="actionSelection"/>
    <addaction name="separator"/>
+   <addaction name="actionRestore_Original"/>
    <addaction name="actionRect"/>
    <addaction name="actionHorizontalLine"/>
    <addaction name="actionVerticalLine"/>
@@ -2318,6 +2319,21 @@ QSlider::handle:horizontal {
   <action name="actionApply_Transformation">
    <property name="text">
     <string>Apply Transformation</string>
+   </property>
+  </action>
+  <action name="actionRestore_Original">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/add-66.png</normaloff>:/new/icons/imagenInte/add-66.png</iconset>
+   </property>
+   <property name="text">
+    <string>Restore Original</string>
+   </property>
+   <property name="toolTip">
+    <string>Restore Original</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
    </property>
   </action>
  </widget>

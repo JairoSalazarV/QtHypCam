@@ -35,7 +35,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
         fileToOpen = "./XML/lines/slideV1_002/712nm.xml";
         funcAddRowToTable(&fileToOpen);
     }
-    if(1)
+    if(0)
     {
         //fileToOpen = "./XML/lines/slideV1_002/verticalLowerBound.xml";
         //funcAddRowToTable(&fileToOpen);        
@@ -340,7 +340,6 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
         return (void)false;
     }
 
-
     //--------------------------------------
     //Calculate Average Slope
     //--------------------------------------
@@ -360,7 +359,7 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
     if(
             funcLetUserDefineFile(
                                     &filenamePath,
-                                    "Select Half-Calibration File",
+                                    "Select Half-Calibration File...",
                                     ".xml",
                                     new QString(_PATH_LAST_PATH_OPENED),
                                     new QString("./XML/lines/")
@@ -387,37 +386,36 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
         funcShowMsgERROR_Timeout("Saving Calibration");
         return (void)false;
     }
+}
 
-
-
-    /*
+void formSlideLinearRegression::on_pbGenAffinTrans_clicked()
+{
+    int numLines;
     //--------------------------------------
-    //Calculate Average Slope
+    //Save Lines Into Memory
     //--------------------------------------
-    int difference;
-    difference = round(
-                        (float)(
-                                    (lstLines.at(0).y2 - lstLines.at(0).y1) +
-                                    (lstLines.at(1).y2 - lstLines.at(1).y1)
-                                ) / 2.0
-                      );
-    float m;
-    m = (float)(lstLines.at(0).y2-lstLines.at(0).y1) /
-        (float)(lstLines.at(0).x2-lstLines.at(0).x1);
-    structLine tmpLine;
-    //Backup Line
-    tmpLine.canvasW     = lstLines.at(0).canvasW;
-    tmpLine.canvasH     = lstLines.at(0).canvasH;
-    tmpLine.x1          = lstLines.at(0).x1;
-    tmpLine.y1          = lstLines.at(0).y1;
-    tmpLine.x2          = lstLines.at(0).x2;
-    tmpLine.y2          = lstLines.at(0).y1 + difference;
-    tmpLine.m           = m;
-    tmpLine.wavelength  = 0;
-    tmpLine.oritation   = _HORIZONTAL;
-    tmpLine.colorR      = 255;
-    tmpLine.colorG      = 255;
-    tmpLine.colorB      = 255;
+    numLines = ui->tableLstPoints->rowCount();
+    QList<structLine> lstLines;
+    funcTableToList(&lstLines);
+    if( numLines < 2 )
+    {
+        funcShowMsgERROR_Timeout("It requires 2 Lines");
+        return (void)false;
+    }
+
+    //--------------------------------------
+    //Get Hor Lower and later Upper Bound
+    //--------------------------------------
+    QTransform tmpTrans;
+    if( funcLines2Translation(
+                                &tmpTrans,
+                                lstLines.at(0),
+                                lstLines.at(1)
+                             ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Reading Slide Calibration");
+        return (void)false;
+    }
 
     //--------------------------------------
     //Save Horizontal Calibration
@@ -427,18 +425,34 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
     if(
             funcLetUserDefineFile(
                                     &filenamePath,
-                                    "Select Half-Calibration File",
+                                    "Define Affine Transformation Output File...",
                                     ".xml",
                                     new QString(_PATH_LAST_PATH_OPENED),
-                                    "./XML/lines/"
+                                    new QString("./XML/lines/"),
+                                    this
                                  ) != _OK
     ){
         funcShowMsgERROR_Timeout("Defining Filename from User");
         return (void)false;
     }
     //Save Line
-    funcExportLineToXML(&tmpLine,filenamePath);
-    */
-
-
+    QList<QString> lstFixtures;
+    QList<QString> lstValues;
+    lstFixtures << "Tm11" << "Tm12" << "Tm13"
+                << "Tm21" << "Tm22" << "Tm23"
+                << "Tm31" << "Tm32" << "Tm33";
+    lstValues   << QString::number(tmpTrans.m11())
+                << QString::number(tmpTrans.m12())
+                << QString::number(tmpTrans.m13())
+                << QString::number(tmpTrans.m21())
+                << QString::number(tmpTrans.m22())
+                << QString::number(tmpTrans.m23())
+                << QString::number(tmpTrans.m31())
+                << QString::number(tmpTrans.m32())
+                << QString::number(tmpTrans.m33());
+    if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Saving Affine Transformation");
+        return (void)false;
+    }
 }

@@ -643,6 +643,8 @@ private slots:
 
     void on_actionApply_Transformation_triggered();
 
+    void on_actionRestore_Original_triggered();    
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
