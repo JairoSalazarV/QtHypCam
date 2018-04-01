@@ -201,7 +201,7 @@ int formMergeSlideCalibrations
     //-----------------------------------
     //Save Slide Calibration File
     //-----------------------------------
-    if( funcSaveXML(pathDestine,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(*pathDestine,&lstFixtures,&lstValues) != _OK )
     {
         return _ERROR;
     }

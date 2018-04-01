@@ -14,9 +14,20 @@ class formBuildSlideHypeCubePreview : public QDialog
 {
     Q_OBJECT
 
+    QList<QImage> lstImgs;
+    QList<QFileInfo> lstImagePaths;
+    structExportHypcubeSettings mainExportSettings;    
+
 public:
     explicit formBuildSlideHypeCubePreview(QWidget *parent = 0);
     ~formBuildSlideHypeCubePreview();
+
+    enum copyType{
+        copyOverride,
+        copyAverage,
+        copyMin,
+        copyMax
+    };
 
 private slots:
     void on_pbApply_clicked();
@@ -29,15 +40,23 @@ private slots:
 
     void refreshGVImage(QImage* imgPreview);
 
-    //void on_pbAutoStepIncrement_clicked();
-
-    //void on_pbAutoStepDecrement_clicked();
+    int funcCopyImageSubareas(
+                                const QRect &originRect,
+                                const QPoint &destinePoint,
+                                const QImage &origImg,
+                                QImage* destineImg,
+                                int type=copyOverride
+                             );
 
     void on_pbFolder_clicked();
 
     QString concatenateParameters(int firstTime=0);
 
     int setLastExecution(QString parameters);
+
+    void on_pbUploadImages_clicked();
+
+    void on_pbSettings_clicked();
 
 private:
     Ui::formBuildSlideHypeCubePreview *ui;

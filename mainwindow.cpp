@@ -150,6 +150,7 @@
 #include <formmerge3grayintoargb.h>
 
 #include <QTransform>
+#include <formhypcubebuildsettings.h>
 
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
@@ -10839,57 +10840,38 @@ void MainWindow::on_actionBuild_HypCube_triggered()
 
 void MainWindow::on_actionBuild_HypCube_2_triggered()
 {
-    //--------------------------------------------
-    //Read Slide Calibration
-    //--------------------------------------------
-    //Get Default Slide Calibration Path
-    QString defaCalibPath;
-    defaCalibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
-    if( defaCalibPath.isEmpty() )
-    {
-        funcShowMsg("Alert!","Please, Set Default Slide Calibration");
-        return (void)false;
-    }
-    //Read Default Calibration Path
-    structSlideCalibration slideCalibration;
-    if( funcReadSlideCalib( defaCalibPath, &slideCalibration ) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
-        return (void)false;
-    }
-
-    //--------------------------------------------
-    //Define Max Wavelength
-    //--------------------------------------------
-    double maxWavelen;
-    maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
-    if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
-    {
-        maxWavelen = _RASP_CAM_MAX_WAVELENGTH;
-    }
-
-    //--------------------------------------------
-    //Get List of Files in Default Directory
-    //--------------------------------------------
-    //Get Files from Dir
+    //-----------------------------------------------
+    //Get Lst Images From Folder
+    //-----------------------------------------------
     QString tmpFramesPath;
     tmpFramesPath.append(_PATH_VIDEO_FRAMES);
     tmpFramesPath.append("tmp/");
-    //List All Files in Directory
-    QList<QFileInfo> lstFrames = funcListFilesInDir( tmpFramesPath );
-    std::cout << "numFrames: " << lstFrames.size() << std::endl;
-    if( lstFrames.size() < 3 )
-    {
-        funcShowMsgERROR_Timeout("Number of Files Insufficient");
-        mouseCursorReset();
-        return (void)false;
-    }
+    QList<QImage> lstImgs;
+    QList<QFileInfo> lstImagePaths;
+    progBarUpdateLabel("Putting Images into Memory...",0);
+    funcGetImagesFromFolder( tmpFramesPath, &lstImgs, &lstImagePaths, ui->progBar );
+    progBarUpdateLabel("",0);
+    //Update Image Displayed
+    int middlePos = round( (float)lstImgs.size()*0.5 );
+    QImage middelImg( lstImagePaths.at(middlePos).absoluteFilePath().trimmed() );
+    updateDisplayImage( &middelImg );
 
-    //--------------------------------------------
-    //Put Frames into Memory
-    //--------------------------------------------
-
+    //-----------------------------------------------
+    //Get Lst Images From Folder
+    //-----------------------------------------------
 
 
 
 }
+
+void MainWindow::on_actionSlide_HypCube_Building_triggered()
+{
+    formHypcubeBuildSettings* tmpForm = new formHypcubeBuildSettings(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
+}
+
+
+
+
+

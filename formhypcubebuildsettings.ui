@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>formHypcubeBuildSettings</class>
+ <widget class="QDialog" name="formHypcubeBuildSettings">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>369</width>
+    <height>222</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Hypcube Exportation Settings</string>
+  </property>
+  <widget class="QPushButton" name="pbSave">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>180</y>
+     <width>331</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Update</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="cbFlip">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>140</y>
+     <width>51</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Flip</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="spinboxSpectralResolution">
+   <property name="geometry">
+    <rect>
+     <x>208</x>
+     <y>17</y>
+     <width>141</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="value">
+    <double>1.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>21</y>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Spectral Resolution (nm)</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>61</y>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Spatial Resolution (pix)</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="spinboxSpatialOverlap">
+   <property name="geometry">
+    <rect>
+     <x>208</x>
+     <y>96</y>
+     <width>141</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="value">
+    <double>30.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>100</y>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Spatial Overlap (%)</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="spinboxSpatialResolution">
+   <property name="geometry">
+    <rect>
+     <x>208</x>
+     <y>56</y>
+     <width>141</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="value">
+    <number>3</number>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

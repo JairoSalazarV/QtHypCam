@@ -14,7 +14,7 @@
     #define _PATH_LAST_REMOTE_FOLDER        "./settings/lastRemoteFolder.hypcam"
     #define _PATH_LAST_REMOTE_FILE          "./settings/lastRemoteFile.hypcam"
     #define _PATH_LAST_LOCAL_FOLDER         "./settings/lastLocalFolder.hypcam"
-    #define _PATH_LAST_LOCAL_FILE           "./settings/lastLocalFile.hypcam"
+    #define _PATH_LAST_LOCAL_FILE           "./settings/lastLocalFile.hypcam"    
 
     #define _PATH_REMOTE_TMPSETTINGS        "./tmpSettings/slideSettings.xml"
 
@@ -50,7 +50,7 @@
     #define _PATH_BLUE_SENS_NORM            "./settings/Calib/responses/blueSensivilityNorm.hypcam"
     #define _PATH_HALOGEN_IRRADIATION       "./settings/Calib/responses/halogenIrradiation.hypcam"
     #define _PATH_RGB_SENSIVILITIES         "./settings/Calib/responses/sensitivities.hypcam"
-    #define _PATH_LAST_ONEAXIS_ROTATION     "./settings/Calib/oneAxisRotation.hypcam"
+    #define _PATH_LAST_ONEAXIS_ROTATION     "./settings/Calib/oneAxisRotation.hypcam"    
 
     #define _PATH_LAST_IMG_OPEN                     "./settings/lastPaths/selectImage.hypcam"
     #define _PATH_LAST_USED_IMG_FILENAME            "./settings/lastPaths/lastImageOpen.hypcam"
@@ -117,6 +117,7 @@
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
+    #define _PATH_SLIDE_EXPORTING_HYPCUBE   "./XML/slideExportingHypcube.xml"
 
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"

@@ -481,6 +481,14 @@
         //float   m;//Slope
     }structLine;
 
+    typedef struct structExportHypcubeSettings
+    {
+        float spectralResolution;
+        int   spatialResolution;
+        float spatialOverlap;
+        int   flip;
+    }structExportHypcubeSettings;
+
 
 
 

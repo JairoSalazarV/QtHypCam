@@ -47,7 +47,8 @@ SOURCES += main.cpp\
     formslidelinearregression.cpp \
     custombrezierline.cpp \
     formmergeslidecalibrations.cpp \
-    formmerge3grayintoargb.cpp
+    formmerge3grayintoargb.cpp \
+    formhypcubebuildsettings.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -85,7 +86,8 @@ HEADERS  += mainwindow.h \
     formslidelinearregression.h \
     custombrezierline.h \
     formmergeslidecalibrations.h \
-    formmerge3grayintoargb.h
+    formmerge3grayintoargb.h \
+    formhypcubebuildsettings.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -105,7 +107,8 @@ FORMS    += mainwindow.ui \
     formgenlinearregression.ui \
     formslidelinearregression.ui \
     formmergeslidecalibrations.ui \
-    formmerge3grayintoargb.ui
+    formmerge3grayintoargb.ui \
+    formhypcubebuildsettings.ui
 
 RESOURCES += \
     lstImgs.qrc

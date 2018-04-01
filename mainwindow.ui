@@ -1441,6 +1441,7 @@ QSlider::handle:horizontal {
      <addaction name="actionDiffraction_Origin"/>
      <addaction name="actionSlide_Calibration_File"/>
      <addaction name="actionSlide_Max_Wavelength"/>
+     <addaction name="actionSlide_HypCube_Building"/>
     </widget>
     <addaction name="actionNDVI_Algorithm"/>
     <addaction name="actionSync_Folder"/>
@@ -2376,6 +2377,11 @@ QSlider::handle:horizontal {
   <action name="actionBuild_HypCube_2">
    <property name="text">
     <string>Build HypCube</string>
+   </property>
+  </action>
+  <action name="actionSlide_HypCube_Building">
+   <property name="text">
+    <string>Slide HypCube Building</string>
    </property>
   </action>
  </widget>

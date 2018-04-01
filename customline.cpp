@@ -128,7 +128,7 @@ void customLine::funcSaveLineParameters()
     //----------------------------------------
     //Save line
     //----------------------------------------
-    if( funcSaveXML(&tmpName,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(tmpName,&lstFixtures,&lstValues) != _OK )
     {
         funcShowMsgERROR("Saving Line Parameters");
     }

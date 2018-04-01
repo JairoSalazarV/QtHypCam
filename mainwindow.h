@@ -653,6 +653,8 @@ private slots:
 
     void on_actionBuild_HypCube_2_triggered();
 
+    void on_actionSlide_HypCube_Building_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

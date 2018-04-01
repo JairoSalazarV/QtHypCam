@@ -4,6 +4,8 @@
 #include <lstpaths.h>
 #include <QGraphicsPixmapItem>
 #include <__common.h>
+#include <formhypcubebuildsettings.h>
+#include <formhypcubebuildsettings.h>
 
 formBuildSlideHypeCubePreview
 ::formBuildSlideHypeCubePreview(QWidget *parent) :
@@ -45,6 +47,24 @@ formBuildSlideHypeCubePreview
 
     QString framePath = readAllFile(_PATH_LAST_PATH_OPENED).trimmed();
     ui->txtFolder->setText(framePath);
+    ui->progBar->setVisible(false);
+
+
+    //------------------------------------------------------
+    //Load Exporting Slide Hypcube
+    //------------------------------------------------------
+    if( fileExists( _PATH_SLIDE_EXPORTING_HYPCUBE ) )
+    {
+        formHypcubeBuildSettings* tmpHypSettings = new formHypcubeBuildSettings(this);
+        if( tmpHypSettings->funcReadSettings(&mainExportSettings) != _OK )
+        {
+            funcShowMsgERROR("Reading Exporting Settings");
+        }
+    }
+    else
+    {
+        funcShowMsgERROR("Exporting Settings don't exists");
+    }
 
 }
 
@@ -55,6 +75,168 @@ formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
 
 void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 {
+    //------------------------------------------------------
+    //Load Exporting Slide Hypcube
+    //------------------------------------------------------    
+    if( fileExists( _PATH_SLIDE_EXPORTING_HYPCUBE ) )
+    {        
+        formHypcubeBuildSettings* formHypSettings = new formHypcubeBuildSettings(this);
+        if( formHypSettings->funcReadSettings(&mainExportSettings) != _OK )
+        {
+            funcShowMsgERROR("Reading Exporting Settings");
+            return (void)false;
+        }
+    }
+    else
+    {
+        funcShowMsgERROR("Exporting Settings don't exists");
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Load Imagery
+    //------------------------------------------------------
+    if( lstImgs.size() == 0 )
+    {
+        //Get Lst Images From Folder
+        ui->labelProgBar->setText("Putting Images into Memory...");
+        funcGetImagesFromFolder(
+                                    ui->txtFolder->text().trimmed(),
+                                    &lstImgs,
+                                    &lstImagePaths,
+                                    ui->progBar
+                                );
+        ui->labelProgBar->setText("");
+    }
+
+    //------------------------------------------------------
+    //Load Slide Calibration Settings
+    //------------------------------------------------------
+    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    structSlideCalibration mainCalibration;
+    if( funcReadSlideCalib( calibPath, &mainCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Reserve Memory
+    //------------------------------------------------------
+    int layerW, layerH, layerTmpPos;
+    int slideW, slideH, imgW, numFrames;
+    int overlapW, notOverlapW;
+    imgW        = lstImgs.at(0).width();
+    slideW      = mainExportSettings.spatialResolution;
+    slideH      = lstImgs.at(0).height();
+    numFrames   = lstImgs.size();
+    layerW      = imgW + ( slideW * numFrames ) - 1;
+    layerH      = lstImgs.at(0).height();
+    overlapW    = floor( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
+    notOverlapW = slideW - overlapW;
+    //std::cout << "Image Created(" << layerW << ", " << layerH << ")" << std::endl;
+
+    //------------------------------------------------------
+    //Calculate Spectral Location
+    //------------------------------------------------------
+    int framePos, overlapPos, maxPos;
+    float wavelength;
+    maxPos          = imgW-slideW;
+    wavelength      = ui->spinBoxWavelen->value() - mainCalibration.originWave;
+    framePos        = round( funcApplyLR(wavelength,mainCalibration.wave2DistLR,false) );
+    framePos        = framePos - round((float)slideW/2.0);
+    framePos        = (framePos<0)?0:framePos;//Minimum position
+    framePos        = (framePos<maxPos)?framePos:maxPos;
+    framePos       += overlapW;
+    overlapPos      = framePos - overlapW;
+    layerTmpPos     = framePos;
+
+    /*
+    std::cout << "originWave: " << mainCalibration.originWave << "nm" << std::endl;
+    std::cout << "wavelength: " << mainCalibration.originWave + wavelength << "nm" << std::endl;
+    std::cout << "framePos: " << framePos << "px" << std::endl;
+    std::cout << "overlapPos: " << overlapPos << "px" << std::endl;
+    std::cout << "layerTmpPos: " << layerTmpPos << "px" << std::endl;*/
+
+    //======================================================
+    //Build Layer
+    //======================================================
+    QImage* mainTmpLayerImg = new QImage(layerW,layerH,QImage::Format_RGB32);
+
+    mouseCursorWait();
+    //------------------------------------------------------
+    //Copy Fist Slide
+    //------------------------------------------------------
+    //std::cout << "slideW: " << slideW << " overlapW: " << overlapW <<  std::endl;
+    //std::cout << "First_1-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+    QRect originRect;
+    QPoint destinePoint;
+    //Origin Rectangle
+    originRect.setX(framePos);
+    originRect.setY(0);
+    originRect.setWidth(slideW);
+    originRect.setHeight(slideH);
+    //Destine Rectangle
+    destinePoint.setX(layerTmpPos);
+    destinePoint.setY(0);
+    //Copy Slide
+    funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(0), mainTmpLayerImg );
+    layerTmpPos += slideW - overlapW;
+    //std::cout << "First_2-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+
+    //------------------------------------------------------
+    //Copy Remainder Slides
+    //------------------------------------------------------    
+    int idImg;
+    for( idImg=1; idImg<lstImgs.size(); idImg++ )
+    {        
+        //..................................................
+        //Copy Overlap
+        //..................................................
+        //Origin Rectangle
+        originRect.setX(overlapPos);
+        originRect.setY(0);
+        originRect.setWidth(overlapW);
+        originRect.setHeight(slideH);
+        //Destine Init Point
+        destinePoint.setX(layerTmpPos);
+        destinePoint.setY(0);
+        //Copy Slide
+        //std::cout << "AntesOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), mainTmpLayerImg, copyMax );
+        layerTmpPos += overlapW;
+
+        //Origin Rectangle
+        originRect.setX(framePos);
+        originRect.setY(0);
+        originRect.setWidth(notOverlapW);
+        originRect.setHeight(slideH);
+        //Destine Init Point
+        destinePoint.setX(layerTmpPos);
+        destinePoint.setY(0);
+        //Copy Slide
+        //std::cout << "AntesNotOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), mainTmpLayerImg, copyMax );
+        layerTmpPos += notOverlapW;
+
+    }
+
+    //------------------------------------------------------
+    //Flip if Required
+    //------------------------------------------------------
+    if( mainExportSettings.flip )
+    {
+        *mainTmpLayerImg = mainTmpLayerImg->mirrored(true,false);
+    }
+    mouseCursorReset();
+
+    //------------------------------------------------------
+    //Display Image
+    //------------------------------------------------------
+    displayImageFullScreen(mainTmpLayerImg);
+
+
+    /*
     mouseCursorWait();
 
     //--------------------------------
@@ -95,10 +277,10 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
         return (void)false;
     }
 
-    //********************************
+    //=========================================
     //Build Slide Hyperspectral Image
-    //********************************
-    int i;
+    //=========================================
+    int i;*/
 
     /*
     for(i=0; i<lstFrames.size(); i++)
@@ -108,7 +290,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 
 
 
-
+    /*
     int imgW, imgH, slideW;
     slideW  = ui->spinSlideW->value();
     imgW    = slideW * lstFrames.size();
@@ -201,7 +383,81 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 
     //Reset Progress Bar
     //funcResetStatusBar();
+    */
 
+}
+
+int formBuildSlideHypeCubePreview::funcCopyImageSubareas(
+                                                            const QRect  &originRect,
+                                                            const QPoint &destinePoint,
+                                                            const QImage &origImg,
+                                                            QImage* destineImg,
+                                                            int type
+){
+    //type[ 0:override | 1:Average | 2: maxVal | 3:minVal ]
+
+    int x, y;
+    int originX, originY;
+    int destineX, destineY;
+    int aux;
+    QColor originColor;
+    QColor destineColor;
+    QColor tmpColor;
+    //std::cout << "Pos: " << destineRect.x() << std::endl;
+    for(x=0; x<originRect.width(); x++)
+    {
+        for(y=0; y<originRect.height(); y++)
+        {
+            //Calc Coordinates
+            originX         = originRect.x()   + x;
+            originY         = originRect.y()   + y;
+            destineX        = destinePoint.x() + x;
+            destineY        = destinePoint.y() + y;
+            //std::cout << "oX: "     << originX << " oY: "   << originY << " dX: "
+            //          << destineX   << " dY: " << destineY  << std::endl;
+            //..................
+            //Set Pixel
+            //..................
+            //Override
+            if( type == copyOverride )
+            {
+                originColor = origImg.pixelColor(originX,originY);
+                destineImg->setPixelColor(QPoint(destineX,destineY),originColor);
+            }
+            //Average
+            if( type == copyAverage )
+            {
+                originColor     = origImg.pixelColor(originX,originY);
+                destineColor    = destineImg->pixelColor(destineX,destineY);                
+                tmpColor.setRed( round( (float)(originColor.red() + destineColor.red())/2.0 ) );
+                tmpColor.setGreen( round( (float)(originColor.green() + destineColor.green())/2.0 ) );
+                tmpColor.setBlue( round( (float)(originColor.blue() + destineColor.blue())/2.0 ) );
+                destineImg->setPixelColor(QPoint(destineX,destineY),tmpColor);
+                //std::cout << "O -> R: " << originColor.red() << " G: " << originColor.green() << " B: " << originColor.blue() << std::endl;
+                //std::cout << "D -> R: " << destineColor.red() << " G: " << destineColor.green() << " B: " << destineColor.blue() << std::endl;
+                //std::cout << "A -> R: " << tmpColor.red() << " G: " << tmpColor.green() << " B: " << tmpColor.blue() << std::endl;
+            }
+            //Maximum
+            if( type == copyMax )
+            {
+                originColor     = origImg.pixelColor(originX,originY);
+                destineColor    = destineImg->pixelColor(destineX,destineY);
+                aux = (originColor.red() > destineColor.red() )?originColor.red():destineColor.red();
+                tmpColor.setRed( aux );
+                aux = (originColor.green() > destineColor.green() )?originColor.green():destineColor.green();
+                tmpColor.setGreen( aux );
+                aux = (originColor.blue() > destineColor.blue() )?originColor.blue():destineColor.blue();
+                tmpColor.setBlue( aux );
+                destineImg->setPixelColor(QPoint(destineX,destineY),tmpColor);
+                //std::cout << "O -> R: " << originColor.red() << " G: " << originColor.green() << " B: " << originColor.blue() << std::endl;
+                //std::cout << "D -> R: " << destineColor.red() << " G: " << destineColor.green() << " B: " << destineColor.blue() << std::endl;
+                //std::cout << "A -> R: " << tmpColor.red() << " G: " << tmpColor.green() << " B: " << tmpColor.blue() << std::endl;
+            }
+        }
+    }
+
+
+    return _OK;
 }
 
 void formBuildSlideHypeCubePreview::refreshGVImage(QImage* imgPreview)
@@ -563,9 +819,11 @@ void formBuildSlideHypeCubePreview::on_pbFolder_clicked()
 
 QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
 {
+
     //firstTime -> new file to be created
     QString lstParameters;
-
+    firstTime = firstTime;
+    /*
     lstParameters = (firstTime)?_PATH_VIDEO_FRAMES:ui->txtFolder->text();
     lstParameters.append(","+QString::number(ui->spinSlideW->value()));
     //lstParameters.append(","+QString::number(ui->spinSlideLocation->value()));
@@ -576,13 +834,14 @@ QString formBuildSlideHypeCubePreview::concatenateParameters(int firstTime)
         lstParameters.append(",1");
     else
         lstParameters.append(",0");
-
+    */
 
     return lstParameters;
 }
 
 int formBuildSlideHypeCubePreview::setLastExecution(QString parameters)
 {
+    parameters = parameters;
     //std::cout << "parameters: " << parameters.toStdString() << std::endl;
     //if( parameters.isEmpty() )
     //    return _ERROR;
@@ -598,4 +857,32 @@ int formBuildSlideHypeCubePreview::setLastExecution(QString parameters)
     //   ui->cbFlip->setChecked(true);
 
     return _OK;
+}
+
+void formBuildSlideHypeCubePreview::on_pbUploadImages_clicked()
+{
+
+    if( !funcShowMsgYesNo("Alert!","Upload Images?",this) )
+    {
+        return (void)false;
+    }
+
+    //-----------------------------------------------
+    //Get Lst Images From Folder
+    //-----------------------------------------------
+    ui->labelProgBar->setText("Putting Images into Memory...");
+    funcGetImagesFromFolder(
+                                ui->txtFolder->text().trimmed(),
+                                &lstImgs,
+                                &lstImagePaths,
+                                ui->progBar
+                            );
+    ui->labelProgBar->setText("");
+}
+
+void formBuildSlideHypeCubePreview::on_pbSettings_clicked()
+{
+    formHypcubeBuildSettings* tmpForm = new formHypcubeBuildSettings(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
 }

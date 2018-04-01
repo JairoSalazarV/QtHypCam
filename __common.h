@@ -24,6 +24,8 @@
 
     #include <iostream>
 
+    #include <QProgressBar>
+
     QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib );
 
     double funcDet2x2(double **M);
@@ -78,7 +80,7 @@
 
     void funcRGB2XYZ(colSpaceXYZ *spaceXYZ, float Red, float Green, float Blue);
 
-    bool saveFile( QString fileName, QString contain );
+    bool saveFile(const QString &fileName, QString contain );
 
     //IplImage *funcGetImgFromCam(int usb, int stabMs );
 
@@ -203,9 +205,9 @@
 
 
     //
-    int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* lstValues);
+    int funcSaveXML(const QString &fileName, QList<QString>* lstFixtures, QList<QString>* lstValues);
 
-    void funcGuaranteeExtension(QString* filename, QString extension);
+    void funcGuaranteeExtension(QString *filename, QString extension);
 
     int funcReadLineFromXML(QString* filePath, structLine *tmpLine);
 
@@ -295,5 +297,12 @@
                                 const structLine &lowerLine,
                                 const structLine &upperLine
                              );
+
+    int funcGetImagesFromFolder(
+                                    const QString &Dir,
+                                    QList<QImage>* lstTransImages,
+                                    QList<QFileInfo>* lstImagePaths,
+                                    QProgressBar* progBar = Q_NULLPTR
+                               );
 
 #endif // __COMMON_H

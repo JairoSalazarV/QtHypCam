@@ -544,7 +544,7 @@ IplImage *funcGetImgFromCam( int usb, int stabMs ){
 }
 */
 
-bool saveFile( QString fileName, QString contain ){
+bool saveFile( const QString &fileName, QString contain ){
     QFile file(fileName);
     if(file.exists()){
         if(!file.remove()){
@@ -1759,11 +1759,11 @@ void funcNDVI(
     // Apply Classic NDVI
     //......................................
     int x, y;
-    double NDVI, maxNDVI, minNDVI, range;
+    double NDVI, maxNDVI, minNDVI;
     QRgb tmpPixel;
     maxNDVI = 0.0;
     minNDVI = 1.0;
-    range   = 1.0 - lowerBound;
+    //range   = 1.0 - lowerBound;
     double infraredSensed;
     double redSensed;
     for( x=0; x<imgToNDVI->width(); x++ )
@@ -2292,7 +2292,7 @@ QString funcGetParam(QString label, QString defaultValue)
                                 );
 }
 
-int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* lstValues)
+int funcSaveXML(const QString &fileName, QList<QString>* lstFixtures, QList<QString>* lstValues)
 {
     //Receives filename only, without path
     //[path=null][filename].xml
@@ -2316,7 +2316,9 @@ int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* 
     //Save File XML
     //-----------------------------------
     //Validate Filename
-    funcGuaranteeExtension(fileName,"xml");
+    QString fileNameFixed;
+    fileNameFixed.append(fileName);
+    funcGuaranteeExtension(&fileNameFixed,"xml");
     //Prepare file contain
     QString tmpContain;
     tmpContain.append( "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" );
@@ -2332,7 +2334,7 @@ int funcSaveXML(QString* fileName, QList<QString>* lstFixtures, QList<QString>* 
     tmpContain.append("</Variables>");
 
     //Save file
-    if( saveFile( *fileName, tmpContain ) == false )
+    if( saveFile( fileNameFixed, tmpContain ) == false )
     {
         //funcShowMsg("ERROR","Saving XML");
         return _ERROR;
@@ -2604,7 +2606,7 @@ void funcExportLineToXML(structLine* tmpLine, const QString filePath)
     lstValues.append(QString::number(tmpLine->oritation));
 
     //Save line
-    if( funcSaveXML((QString*)&filePath,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(filePath,&lstFixtures,&lstValues) != _OK )
     {
         funcShowMsgERROR("Saving Line Parameters");
     }
@@ -3164,3 +3166,90 @@ int funcLines2Translation(
     return _OK;
 }
 
+int funcGetImagesFromFolder(
+                                const QString &Dir,
+                                QList<QImage>* lstTransImages,
+                                QList<QFileInfo>* lstImagePaths,
+                                QProgressBar *progBar
+){
+    //--------------------------------------------
+    //Read Slide Calibration
+    //--------------------------------------------
+    //Get Default Slide Calibration Path
+    QString defaCalibPath;
+    defaCalibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    if( defaCalibPath.isEmpty() )
+    {
+        funcShowMsg("Alert!","Please, Set Default Slide Calibration");
+        return _ERROR;
+    }
+    //Read Default Calibration Path
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( defaCalibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
+        return _ERROR;
+    }
+
+    //--------------------------------------------
+    //Define Max Wavelength
+    //--------------------------------------------
+    double maxWavelen;
+    maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
+    if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
+    {
+        maxWavelen = _RASP_CAM_MAX_WAVELENGTH;
+    }
+
+    //--------------------------------------------
+    //Get List of Files in Default Directory
+    //--------------------------------------------
+    //List All Files in Directory
+    *lstImagePaths = funcListFilesInDir( Dir );
+    std::cout << "numFrames: " << lstImagePaths->size() << std::endl;
+    if( lstImagePaths->size() < 3 )
+    {
+        funcShowMsgERROR_Timeout("Number of Files Insufficient");
+        mouseCursorReset();
+        return _ERROR;
+    }
+
+    //-------------------------------------------------
+    //Get into Memory Transformed Frames
+    //-------------------------------------------------
+    int i, progVal;
+    //Update Image Displayed
+    if( progBar != Q_NULLPTR )
+    {
+        progBar->setValue(0);
+        progBar->setVisible(true);
+        progBar->update();
+    }
+    mouseCursorWait();
+    *lstImagePaths  = funcListFilesInDir( Dir );
+    for( i=0; i<lstImagePaths->size(); i++ )
+    {
+        //std::cout << "MOD-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
+        lstTransImages->append( QImage( lstImagePaths->at(i).absoluteFilePath() ) );
+        //Update Progress Bar
+        progVal = round( ( (float)(i) / (float)lstImagePaths->size() ) * 100.0 );
+        if( progBar != Q_NULLPTR )
+        {
+            progBar->setValue(progVal);
+            progBar->update();
+        }
+    }
+    mouseCursorReset();
+
+    //-------------------------------------------------
+    //Reset Progress Bar
+    //-------------------------------------------------
+    if( progBar != Q_NULLPTR )
+    {
+        progBar->setValue(0);
+        progBar->setVisible(false);
+        progBar->update();
+    }
+
+    return _OK;
+}

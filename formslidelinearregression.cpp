@@ -313,7 +313,7 @@ int formSlideLinearRegression
     //------------------------------------
     //Save .XML file
     //------------------------------------
-    if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(filenamePath,&lstFixtures,&lstValues) != _OK )
     {
         return _ERROR;
     }
@@ -381,7 +381,7 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
                 << QString::number(bigH)
                 << QString::number(horizLR.a)
                 << QString::number(horizLR.b);
-    if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(filenamePath,&lstFixtures,&lstValues) != _OK )
     {
         funcShowMsgERROR_Timeout("Saving Calibration");
         return (void)false;
@@ -450,7 +450,7 @@ void formSlideLinearRegression::on_pbGenAffinTrans_clicked()
                 << QString::number(tmpTrans.m31())
                 << QString::number(tmpTrans.m32())
                 << QString::number(tmpTrans.m33());
-    if( funcSaveXML(&filenamePath,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(filenamePath,&lstFixtures,&lstValues) != _OK )
     {
         funcShowMsgERROR_Timeout("Saving Affine Transformation");
         return (void)false;
