@@ -10,6 +10,7 @@
     #define _PATH_PORT_TO_CONNECT           "./settings/socketPort.hypcam"
     #define _PATH_LAST_ROTATION             "./settings/lastRotation.hypcam"
     #define _PATH_HALOGEN_FUNCTION          "./settings/halogenFunction.hypcam"
+    #define _PATH_LAST_WAVELEN_SIMULATOR    "./settings/lasWavelengthSimulator.hypcam"
 
     #define _PATH_LAST_REMOTE_FOLDER        "./settings/lastRemoteFolder.hypcam"
     #define _PATH_LAST_REMOTE_FILE          "./settings/lastRemoteFile.hypcam"

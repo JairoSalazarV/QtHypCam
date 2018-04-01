@@ -909,8 +909,8 @@ void funcShowMsg(QString title, QString msg, QWidget *parent){
     yesNoMsgBox.exec();
 }
 
-void funcShowMsgERROR(QString msg){
-    QMessageBox yesNoMsgBox;
+void funcShowMsgERROR(QString msg, QWidget* parent){
+    QMessageBox yesNoMsgBox(parent);
     yesNoMsgBox.setWindowTitle("ERROR");
     yesNoMsgBox.setText(msg);
     yesNoMsgBox.setDefaultButton(QMessageBox::Ok);
@@ -1694,10 +1694,10 @@ extern void* funcAllocInteger3DMatrixMemo( int rows, int cols, int layers, int**
 }
 
 
-void displayImageFullScreen( QImage* tmpImg )
+void displayImageFullScreen( const QImage &tmpImg )
 {
     //Set screem geometry
-    QPixmap tmpPix = QPixmap::fromImage(*tmpImg);
+    QPixmap tmpPix = QPixmap::fromImage(tmpImg);
     int screen2Work = (QApplication::desktop()->screenCount()>1)?1:-1;
     QRect screen = QApplication::desktop()->screenGeometry(screen2Work);
     int gvW = (tmpPix.width()<screen.width())?tmpPix.width():screen.width();

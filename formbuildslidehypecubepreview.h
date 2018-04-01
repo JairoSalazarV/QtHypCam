@@ -14,6 +14,7 @@ class formBuildSlideHypeCubePreview : public QDialog
 {
     Q_OBJECT
 
+    QImage layerBackup;
     QList<QImage> lstImgs;
     QList<QFileInfo> lstImagePaths;
     structExportHypcubeSettings mainExportSettings;    
@@ -21,6 +22,11 @@ class formBuildSlideHypeCubePreview : public QDialog
 public:
     explicit formBuildSlideHypeCubePreview(QWidget *parent = 0);
     ~formBuildSlideHypeCubePreview();
+
+    QImage funcGetLayerAtWavelength(
+                                        const float &wavelength,
+                                        const structSlideCalibration &mainCalibration
+                                   );
 
     enum copyType{
         copyOverride,
@@ -48,6 +54,8 @@ private slots:
                                 int type=copyOverride
                              );
 
+    //int funcGetWavelengthImage( const float &wavelen, QImage* imageContainer );
+
     void on_pbFolder_clicked();
 
     QString concatenateParameters(int firstTime=0);
@@ -57,6 +65,8 @@ private slots:
     void on_pbUploadImages_clicked();
 
     void on_pbSettings_clicked();
+
+    void on_pbSave_clicked();
 
 private:
     Ui::formBuildSlideHypeCubePreview *ui;

@@ -44,7 +44,7 @@
     void funcObtSettings( structSettings * lstSettings);
 
     void funcShowMsg( QString title, QString msg, QWidget *parent=Q_NULLPTR );
-    void funcShowMsgERROR(QString msg);
+    void funcShowMsgERROR(QString msg, QWidget *parent=Q_NULLPTR);
 
     int funcShowSelDir(const QString &title, QString startedPath, QString* dirSelected);
     int funcShowSelDir(QString startedPath, QString* dirSelected);
@@ -147,7 +147,7 @@
 
     extern void *funcAllocInteger3DMatrixMemo(int rows, int cols, int layers, int*** M );
 
-    void displayImageFullScreen(QImage *tmpImg );
+    void displayImageFullScreen(const QImage &tmpImg );
 
     void funcNDVI(
                     QImage *imgToNDVI,

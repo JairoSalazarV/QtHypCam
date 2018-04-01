@@ -7890,7 +7890,7 @@ void MainWindow::on_actionNDVI_Algorithm_triggered()
 void MainWindow::on_actionFull_Screen_triggered()
 {
     QImage tmpImg(auxQstring);
-    displayImageFullScreen(&tmpImg);
+    displayImageFullScreen(tmpImg);
 }
 
 void MainWindow::on_actionDisplay_Original_triggered()

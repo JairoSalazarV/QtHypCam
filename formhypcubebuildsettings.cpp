@@ -69,7 +69,7 @@ int formHypcubeBuildSettings::funcReadSettings(structExportHypcubeSettings* hypc
     QFile *xmlFile = new QFile(_PATH_SLIDE_EXPORTING_HYPCUBE);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        funcShowMsg("ERROR","Opening _PATH_SLIDE_EXPORTING_HYPCUBE");
+        funcShowMsg("ERROR","Opening _PATH_SLIDE_EXPORTING_HYPCUBE",this);
         return _ERROR;
     }
     QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);

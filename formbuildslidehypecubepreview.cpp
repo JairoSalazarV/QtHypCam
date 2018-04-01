@@ -65,6 +65,12 @@ formBuildSlideHypeCubePreview
     {
         funcShowMsgERROR("Exporting Settings don't exists");
     }
+    //Load last wavelength
+    float lastWavelen = readAllFile(_PATH_LAST_WAVELEN_SIMULATOR).trimmed().toFloat(0);
+    if( lastWavelen>0 )
+    {
+        ui->spinBoxWavelen->setValue(lastWavelen);
+    }
 
 }
 
@@ -73,13 +79,135 @@ formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
     delete ui;
 }
 
+QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
+                                                                const float &wavelength,
+                                                                const structSlideCalibration &mainCalibration
+){
+    //------------------------------------------------------
+    //Reserve Memory
+    //------------------------------------------------------
+    int layerW, layerH, layerTmpPos;
+    int slideW, slideH, imgW, numFrames;
+    int overlapW, notOverlapW;
+    imgW        = lstImgs.at(0).width();
+    slideW      = mainExportSettings.spatialResolution;
+    slideH      = lstImgs.at(0).height();
+    numFrames   = lstImgs.size();
+    layerW      = imgW + ( slideW * numFrames ) - 1;
+    layerH      = lstImgs.at(0).height();
+    overlapW    = floor( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
+    notOverlapW = slideW - overlapW;
+    //std::cout << "Image Created(" << layerW << ", " << layerH << ")" << std::endl;
+
+    //------------------------------------------------------
+    //Calculate Spectral Location
+    //------------------------------------------------------
+    int framePos, overlapPos, maxPos;
+    float internWavelen;
+    maxPos          = imgW-slideW;
+    internWavelen   = wavelength - mainCalibration.originWave;
+    framePos        = round( funcApplyLR(internWavelen,mainCalibration.wave2DistLR,false) );
+    framePos        = framePos - round((float)slideW/2.0);
+    framePos        = (framePos<0)?0:framePos;//Minimum position
+    framePos        = (framePos<maxPos)?framePos:maxPos;
+    framePos       += overlapW;
+    overlapPos      = framePos - overlapW;
+    layerTmpPos     = framePos;
+
+    /*
+    std::cout << "originWave: " << mainCalibration.originWave << "nm" << std::endl;
+    std::cout << "internWavelen: " << mainCalibration.originWave + internWavelen << "nm" << std::endl;
+    std::cout << "framePos: " << framePos << "px" << std::endl;
+    std::cout << "overlapPos: " << overlapPos << "px" << std::endl;
+    std::cout << "layerTmpPos: " << layerTmpPos << "px" << std::endl;*/
+
+    //======================================================
+    //Build Layer
+    //======================================================
+    QImage mainTmpLayerImg(layerW,layerH,QImage::Format_RGB32);
+    mainTmpLayerImg.fill(Qt::GlobalColor::black);
+
+    mouseCursorWait();
+    //------------------------------------------------------
+    //Copy Fist Slide
+    //------------------------------------------------------
+    //std::cout << "slideW: " << slideW << " overlapW: " << overlapW <<  std::endl;
+    //std::cout << "First_1-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+    QRect originRect;
+    QPoint destinePoint;
+    //Origin Rectangle
+    originRect.setX(framePos);
+    originRect.setY(0);
+    originRect.setWidth(slideW);
+    originRect.setHeight(slideH);
+    //Destine Rectangle
+    destinePoint.setX(layerTmpPos);
+    destinePoint.setY(0);
+    //Copy Slide
+    funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(0), &mainTmpLayerImg );
+    layerTmpPos += slideW - overlapW;
+    //std::cout << "First_2-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+
+    //------------------------------------------------------
+    //Copy Remainder Slides
+    //------------------------------------------------------
+    int idImg;
+    for( idImg=1; idImg<lstImgs.size(); idImg++ )
+    {
+        //..................................................
+        //Copy Overlap
+        //..................................................
+        //Origin Rectangle
+        originRect.setX(overlapPos);
+        originRect.setY(0);
+        originRect.setWidth(overlapW);
+        originRect.setHeight(slideH);
+        //Destine Init Point
+        destinePoint.setX(layerTmpPos);
+        destinePoint.setY(0);
+        //Copy Slide
+        //std::cout << "AntesOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyMax );
+        layerTmpPos += overlapW;
+
+        //Origin Rectangle
+        originRect.setX(framePos);
+        originRect.setY(0);
+        originRect.setWidth(notOverlapW);
+        originRect.setHeight(slideH);
+        //Destine Init Point
+        destinePoint.setX(layerTmpPos);
+        destinePoint.setY(0);
+        //Copy Slide
+        //std::cout << "AntesNotOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyMax );
+        layerTmpPos += notOverlapW;
+
+    }
+
+    //------------------------------------------------------
+    //Flip if Required
+    //------------------------------------------------------
+    if( mainExportSettings.flip )
+    {
+        mainTmpLayerImg = mainTmpLayerImg.mirrored(true,false);
+    }
+    mouseCursorReset();
+
+    //------------------------------------------------------
+    //Return Layer Image Created
+    //------------------------------------------------------
+    return mainTmpLayerImg;
+
+}
+
 void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 {
     //------------------------------------------------------
     //Load Exporting Slide Hypcube
-    //------------------------------------------------------    
+    //------------------------------------------------------
     if( fileExists( _PATH_SLIDE_EXPORTING_HYPCUBE ) )
-    {        
+    {
         formHypcubeBuildSettings* formHypSettings = new formHypcubeBuildSettings(this);
         if( formHypSettings->funcReadSettings(&mainExportSettings) != _OK )
         {
@@ -118,272 +246,19 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     {
         funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
         return (void)false;
-    }
+    }  
 
     //------------------------------------------------------
-    //Reserve Memory
+    //Get Layer
     //------------------------------------------------------
-    int layerW, layerH, layerTmpPos;
-    int slideW, slideH, imgW, numFrames;
-    int overlapW, notOverlapW;
-    imgW        = lstImgs.at(0).width();
-    slideW      = mainExportSettings.spatialResolution;
-    slideH      = lstImgs.at(0).height();
-    numFrames   = lstImgs.size();
-    layerW      = imgW + ( slideW * numFrames ) - 1;
-    layerH      = lstImgs.at(0).height();
-    overlapW    = floor( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
-    notOverlapW = slideW - overlapW;
-    //std::cout << "Image Created(" << layerW << ", " << layerH << ")" << std::endl;
+    layerBackup = funcGetLayerAtWavelength( ui->spinBoxWavelen->value(), mainCalibration );
+    displayImageFullScreen( layerBackup );
 
     //------------------------------------------------------
-    //Calculate Spectral Location
+    //Save Last Wavelength
     //------------------------------------------------------
-    int framePos, overlapPos, maxPos;
-    float wavelength;
-    maxPos          = imgW-slideW;
-    wavelength      = ui->spinBoxWavelen->value() - mainCalibration.originWave;
-    framePos        = round( funcApplyLR(wavelength,mainCalibration.wave2DistLR,false) );
-    framePos        = framePos - round((float)slideW/2.0);
-    framePos        = (framePos<0)?0:framePos;//Minimum position
-    framePos        = (framePos<maxPos)?framePos:maxPos;
-    framePos       += overlapW;
-    overlapPos      = framePos - overlapW;
-    layerTmpPos     = framePos;
+    //saveFile(_PATH_LAST_WAVELEN_SIMULATOR,QString::number(ui->spinBoxWavelen->value()));
 
-    /*
-    std::cout << "originWave: " << mainCalibration.originWave << "nm" << std::endl;
-    std::cout << "wavelength: " << mainCalibration.originWave + wavelength << "nm" << std::endl;
-    std::cout << "framePos: " << framePos << "px" << std::endl;
-    std::cout << "overlapPos: " << overlapPos << "px" << std::endl;
-    std::cout << "layerTmpPos: " << layerTmpPos << "px" << std::endl;*/
-
-    //======================================================
-    //Build Layer
-    //======================================================
-    QImage* mainTmpLayerImg = new QImage(layerW,layerH,QImage::Format_RGB32);
-
-    mouseCursorWait();
-    //------------------------------------------------------
-    //Copy Fist Slide
-    //------------------------------------------------------
-    //std::cout << "slideW: " << slideW << " overlapW: " << overlapW <<  std::endl;
-    //std::cout << "First_1-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
-    QRect originRect;
-    QPoint destinePoint;
-    //Origin Rectangle
-    originRect.setX(framePos);
-    originRect.setY(0);
-    originRect.setWidth(slideW);
-    originRect.setHeight(slideH);
-    //Destine Rectangle
-    destinePoint.setX(layerTmpPos);
-    destinePoint.setY(0);
-    //Copy Slide
-    funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(0), mainTmpLayerImg );
-    layerTmpPos += slideW - overlapW;
-    //std::cout << "First_2-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
-
-    //------------------------------------------------------
-    //Copy Remainder Slides
-    //------------------------------------------------------    
-    int idImg;
-    for( idImg=1; idImg<lstImgs.size(); idImg++ )
-    {        
-        //..................................................
-        //Copy Overlap
-        //..................................................
-        //Origin Rectangle
-        originRect.setX(overlapPos);
-        originRect.setY(0);
-        originRect.setWidth(overlapW);
-        originRect.setHeight(slideH);
-        //Destine Init Point
-        destinePoint.setX(layerTmpPos);
-        destinePoint.setY(0);
-        //Copy Slide
-        //std::cout << "AntesOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
-        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), mainTmpLayerImg, copyMax );
-        layerTmpPos += overlapW;
-
-        //Origin Rectangle
-        originRect.setX(framePos);
-        originRect.setY(0);
-        originRect.setWidth(notOverlapW);
-        originRect.setHeight(slideH);
-        //Destine Init Point
-        destinePoint.setX(layerTmpPos);
-        destinePoint.setY(0);
-        //Copy Slide
-        //std::cout << "AntesNotOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
-        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), mainTmpLayerImg, copyMax );
-        layerTmpPos += notOverlapW;
-
-    }
-
-    //------------------------------------------------------
-    //Flip if Required
-    //------------------------------------------------------
-    if( mainExportSettings.flip )
-    {
-        *mainTmpLayerImg = mainTmpLayerImg->mirrored(true,false);
-    }
-    mouseCursorReset();
-
-    //------------------------------------------------------
-    //Display Image
-    //------------------------------------------------------
-    displayImageFullScreen(mainTmpLayerImg);
-
-
-    /*
-    mouseCursorWait();
-
-    //--------------------------------
-    //Read Calibrations
-    //--------------------------------
-    QString calFilename;
-    calFilename = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
-    std::cout << "fileContain: " << calFilename.toStdString() << std::endl;
-    structSlideCalibration slideCalibration;
-    if( funcReadSlideCalib(calFilename,&slideCalibration) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration");
-        mouseCursorReset();
-        return (void)false;
-    }
-
-    //--------------------------------
-    //List Files in Folder
-    //--------------------------------
-    //Validate Frames Path
-    QString framePath;
-    if( ui->txtFolder->text().trimmed().isEmpty() )
-    {
-        funcShowMsgERROR_Timeout("Invalid Folder");
-        mouseCursorReset();
-        return (void)false;
-    }
-    framePath = ui->txtFolder->text().trimmed();
-
-    //Get files from Dir
-    QList<QFileInfo> lstFrames = funcListFilesInDir(framePath);
-
-    std::cout << "numFrames: " << lstFrames.size() << std::endl;
-    if( lstFrames.size() < 2 )
-    {
-        funcShowMsgERROR_Timeout("The number of files are not enought");
-        mouseCursorReset();
-        return (void)false;
-    }
-
-    //=========================================
-    //Build Slide Hyperspectral Image
-    //=========================================
-    int i;*/
-
-    /*
-    for(i=0; i<lstFrames.size(); i++)
-    {
-        std::cout << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
-    }*/
-
-
-
-    /*
-    int imgW, imgH, slideW;
-    slideW  = ui->spinSlideW->value();
-    imgW    = slideW * lstFrames.size();
-    imgH    = slideCalibration.originH;
-    //Reserve Subarea Memory
-    int** tmpSubarea = (int**)malloc(imgH * sizeof(int*));
-    for(i=0; i<imgH; i++)
-    {
-        tmpSubarea[i] = (int*)malloc(slideW * sizeof(int));
-    }
-
-    //----------------------------------------------
-    //Calculate Distance from Lower Bound
-    //----------------------------------------------
-    float wavelength;
-    int newX1, newX2;
-    int distPixFromLower;
-    wavelength = ui->spinBoxWavelen->value() - slideCalibration.originWave;
-    if( wavelength < 0.0 )
-    {
-        funcShowMsgERROR("Image must to be bigger than "+QString::number(slideCalibration.originWave));
-        mouseCursorReset();
-        return (void)false;
-    }
-    distPixFromLower = round( funcApplyLR(wavelength,slideCalibration.wave2DistLR,true) );
-    std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
-    //newX1 muns to be located in the middle
-    newX1   = distPixFromLower - round((float)ui->spinSlideW->value() / 2.0);
-    newX2   = newX1 + ui->spinSlideW->value();
-    //Get the subarea
-    QPoint p1, p2;
-    p1.setX(newX1); p1.setY(0);
-    p2.setX(newX2); p2.setY(slideCalibration.originH);
-    newX1 = (newX1>0)?newX1:0;
-    p1.setX(newX1);
-
-    //----------------------------------------------
-    //Get QE Area
-    //----------------------------------------------
-    int initPos = 0;
-    int row, col;
-    //Create Image
-    //Create virtual Image
-    QImage tmpImgWave(QSize(imgW,imgH),QImage::Format_RGB32);
-    //Copy subarea
-    QImage tmpImg;
-    int j = 0;
-    for(i=lstFrames.size()-1; i>=0; i--,j++)
-    {
-        //Read Image
-        //std::cout << lstFrames.at(i).absoluteFilePath().trimmed().toStdString() << std::endl;
-        tmpImg = QImage( lstFrames.at(i).absoluteFilePath().trimmed() );
-        //Get subarea
-        initPos = j * slideW;
-        if(
-                funcGetQEArea(
-                                p1,
-                                p2,
-                                tmpSubarea,
-                                tmpImg,
-                                slideCalibration
-                             ) != _OK
-        ){
-            //funcShowMsgERROR_Timeout("Reading QE Area");
-            mouseCursorReset();
-            return (void)false;
-        }
-        //std::cout << "i: " << i << std::endl;
-        //Copy Subarea into image
-        for(col=0; col<slideW; col++)
-        {
-            for(row=0; row<imgH; row++)
-            {
-                //std::cout << "tmpSubarea[col][row]: " << tmpSubarea[row][col] << std::endl;
-                tmpImgWave.setPixelColor(
-                                            QPoint(initPos+col,row),
-                                            QColor(tmpSubarea[row][col],tmpSubarea[row][col],tmpSubarea[row][col])
-                                        );
-            }
-        }
-    }
-    //funcShowMsgSUCCESS_Timeout("Creado");
-
-    //----------------------------------------------
-    //Display Result
-    //----------------------------------------------
-    refreshGVImage(&tmpImgWave);
-
-    mouseCursorReset();
-
-    //Reset Progress Bar
-    //funcResetStatusBar();
-    */
 
 }
 
@@ -885,4 +760,47 @@ void formBuildSlideHypeCubePreview::on_pbSettings_clicked()
     formHypcubeBuildSettings* tmpForm = new formHypcubeBuildSettings(this);
     tmpForm->setModal(true);
     tmpForm->show();
+}
+
+void formBuildSlideHypeCubePreview::on_pbSave_clicked()
+{
+    //------------------------------------------
+    //Check if Images is Valid
+    //------------------------------------------
+    if( layerBackup.isNull() )
+    {
+        funcShowMsgERROR("Not Image to Export",this);
+        return (void)false;
+    }
+
+    //------------------------------------------
+    //Get image filename
+    //------------------------------------------
+    QString fileName;
+    if(
+            funcLetUserDefineFile(
+                                    &fileName,
+                                    "Define Image Filename",
+                                    ".png",
+                                    new QString(_PATH_LAST_IMG_SAVED),
+                                    new QString(_PATH_LAST_IMG_SAVED),
+                                    this
+                                 ) != _OK
+    ){
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Save Image
+    //------------------------------------------------------
+    layerBackup.save(fileName);
+    funcShowMsgSUCCESS_Timeout("Image Saved Successfully",this);
+
+    //------------------------------------------------------
+    //Save Last Wavelength
+    //------------------------------------------------------
+    saveFile(_PATH_LAST_WAVELEN_SIMULATOR,QString::number(ui->spinBoxWavelen->value()));
+
+
+
 }
