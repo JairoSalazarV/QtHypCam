@@ -288,7 +288,7 @@
                         const structSlideCalibration &slideCalibration
                      );
 
-    int funcLetUserSelectDirectory( );
+    int funcLetUserSelectDirectory(const QString &originDir, QString *Dir);
 
     int funcGetTranslation( QTransform* tmpTrans, QWidget *parent=Q_NULLPTR );
 

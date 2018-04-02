@@ -20,19 +20,19 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     if(0)
     {
-        fileToOpen = "./XML/lines/slideV1_002/408nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/408nm.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/438nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/438nm.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/492nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/492nm.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/550nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/550nm.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/586nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/586nm.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/620nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/620nm.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/712nm.xml";
+        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/712nm.xml";
         funcAddRowToTable(&fileToOpen);
     }
     if(0)
@@ -154,12 +154,12 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     if(
             funcLetUserSelectFile(
                                     &lowerBoundLinePath,
-                                    "Select the Lower Bound Line",
+                                    "Select the VERTICAL Lower Bound Line...",
                                     _PATH_LAST_PATH_OPENED,
                                     "./XML/lines/"
                                  ) != _OK
     ){
-        funcShowMsgERROR_Timeout("Reading File-path");
+        funcShowMsgERROR_Timeout("Reading Lower Bound Line");
         return (void)false;
     }
     //get lower bound line
@@ -171,7 +171,7 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //Obtain the Smallest Wavelength
     float dist2FirstLine, smallestWaveLen;
     dist2FirstLine  = (float)(lstLines.at(0).x1 - lowerVerLine.x1);
-    smallestWaveLen = funcApplyLR( dist2FirstLine, dist2WaveLR, true );
+    smallestWaveLen = funcApplyLR( dist2FirstLine, dist2WaveLR, false );
     lowerVerLine.wavelength = lstLines.at(0).wavelength - smallestWaveLen;
     //std::cout << " smallestWaveLen: "           << smallestWaveLen       << std::endl;
     //std::cout << "dist2FirstLine: "             << dist2FirstLine           << std::endl;
@@ -179,6 +179,19 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
 
     //std::cout << "Orig P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
     //std::cout << "Orig P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
+
+    //--------------------------------------
+    //Obtain Higher(Wavelength)
+    //--------------------------------------
+    structVerticalCalibrationSettings vertCalibSettings;
+    if( fileExists(_PATH_SLIDE_MAX_WAVELENGTH) )
+    {
+        vertCalibSettings.maxWavelength = readAllFile( _PATH_SLIDE_MAX_WAVELENGTH ).trimmed().toFloat(0);
+    }
+    else
+    {
+        vertCalibSettings.maxWavelength = _RASP_CAM_MAX_WAVELENGTH;
+    }
 
     //--------------------------------------
     //Get Average Slope and,
@@ -217,7 +230,8 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
                                             &lowerVerLine,
                                             &dist2WaveLR,
                                             &wave2DistLR,
-                                            &vertLR
+                                            &vertLR,
+                                            &vertCalibSettings
                                         ) != _OK
     ){
         funcShowMsgERROR_Timeout("Saving Half Calibration File");
@@ -265,7 +279,8 @@ int formSlideLinearRegression
                                         structLine* lowerVerLine,
                                         linearRegresion* dist2WaveLR,
                                         linearRegresion* wave2DistLR,
-                                        linearRegresion* vertLR
+                                        linearRegresion* vertLR,
+                                        structVerticalCalibrationSettings* vertCalibSettings
 ){
     //------------------------------------
     //Get Output Filename from User
@@ -292,7 +307,7 @@ int formSlideLinearRegression
     lstFixtures << "imgW"           << "imgH"                
                 << "lowerBoundX1"   << "lowerBoundY1"
                 << "lowerBoundX2"   << "lowerBoundY2"
-                << "lowerBoundWave"
+                << "lowerBoundWave" << "higherBoundWave"
                 << "dist2WaveA"     << "dist2WaveB"
                 << "wave2DistA"     << "wave2DistB"
                 << "vertA"          << "vertB";    
@@ -303,6 +318,7 @@ int formSlideLinearRegression
     lstValues   << QString::number(lowerVerLine->x2);
     lstValues   << QString::number(lowerVerLine->y2);
     lstValues   << QString::number(lowerVerLine->wavelength);
+    lstValues   << QString::number(vertCalibSettings->maxWavelength);
     lstValues   << QString::number(dist2WaveLR->a);
     lstValues   << QString::number(dist2WaveLR->b);
     lstValues   << QString::number(wave2DistLR->a);

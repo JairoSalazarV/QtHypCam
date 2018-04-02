@@ -245,6 +245,7 @@
         int     originH;
         int     maxNumCols;
         float   originWave;
+        float   maxWave;
         QString xyMatrix;
         linearRegresion dist2WaveLR;
         linearRegresion wave2DistLR;
@@ -488,6 +489,11 @@
         float spatialOverlap;
         int   flip;
     }structExportHypcubeSettings;
+
+    typedef struct structVerticalCalibrationSettings
+    {
+        float maxWavelength = 0.0;
+    }structVerticalCalibrationSettings;
 
 
 

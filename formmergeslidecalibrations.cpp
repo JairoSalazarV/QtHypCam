@@ -160,6 +160,7 @@ int formMergeSlideCalibrations
     QList<QString> lstFixtures;
     lstFixtures << "imgW"       << "imgH"                
                 << "originX"    << "originY"    << "originH"    << "originWave"
+                << "maxWavelen"
                 << "dist2WaveA" << "dist2WaveB"
                 << "wave2DistA" << "wave2DistB"
                 << "vertA"      << "vertB"
@@ -179,6 +180,7 @@ int formMergeSlideCalibrations
                 << QString::number(slideCalibration->originY)
                 << QString::number(slideCalibration->originH)                   
                 << QString::number(slideCalibration->originWave)
+                << QString::number(slideCalibration->maxWave)
                 << QString::number(slideCalibration->dist2WaveLR.a)
                 << QString::number(slideCalibration->dist2WaveLR.b)
                 << QString::number(slideCalibration->wave2DistLR.a)

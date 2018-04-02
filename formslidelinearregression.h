@@ -29,7 +29,8 @@ private slots:
                                             structLine* lowerVerLine,
                                             linearRegresion* dist2WaveLR,
                                             linearRegresion* wave2DistLR,
-                                            linearRegresion* vertLR
+                                            linearRegresion* vertLR,
+                                            structVerticalCalibrationSettings* vertCalibSettings
                                        );
 
     void on_pbGenHorRegression_clicked();

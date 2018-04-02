@@ -2307,7 +2307,7 @@ int funcSaveXML(const QString &fileName, QList<QString>* lstFixtures, QList<QStr
                             QString::number(lstFixtures->size())+
                             ") and Values("+
                             QString::number(lstValues->size())+
-                            ") have diferent size"
+                            ") have diferent size for: " + fileName
                         );
         return _ERROR;
     }
@@ -2684,6 +2684,8 @@ int funcReadVertHalfCalib(
                 *referenceX2 = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="lowerBoundWave" )
                 slideCalibration->originWave = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="higherBoundWave" )
+                slideCalibration->maxWave = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="dist2WaveA" )
                 slideCalibration->dist2WaveLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="dist2WaveB" )
@@ -2870,6 +2872,8 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
                 slideCalibration->originH = xmlReader->readElementText().toInt(0);
             if( xmlReader->name()=="originWave" )
                 slideCalibration->originWave = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="maxWavelen" )
+                slideCalibration->maxWave = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="dist2WaveA" )
                 slideCalibration->dist2WaveLR.a = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="dist2WaveB" )
@@ -3065,13 +3069,9 @@ int funcGetQEArea(
     return _OK;
 }
 
-int funcLetUserSelectDirectory( )
+int funcLetUserSelectDirectory( const QString &originDir, QString* Dir  )
 {
-
-
-
-
-    return _OK;
+    return funcShowSelDir(originDir, Dir);
 }
 
 int funcGetTranslation( QTransform* tmpTrans, QWidget *parent )

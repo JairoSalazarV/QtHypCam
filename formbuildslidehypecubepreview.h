@@ -25,7 +25,7 @@ public:
 
     QImage funcGetLayerAtWavelength(
                                         const float &wavelength,
-                                        const structSlideCalibration &mainCalibration
+                                        const structSlideCalibration &mainSlideCalibration
                                    );
 
     enum copyType{
@@ -54,6 +54,8 @@ private slots:
                                 int type=copyOverride
                              );
 
+    int funcReloadExportSettings();
+
     //int funcGetWavelengthImage( const float &wavelen, QImage* imageContainer );
 
     void on_pbFolder_clicked();
@@ -67,6 +69,8 @@ private slots:
     void on_pbSettings_clicked();
 
     void on_pbSave_clicked();
+
+    void on_pbExportImages_clicked();
 
 private:
     Ui::formBuildSlideHypeCubePreview *ui;

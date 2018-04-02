@@ -81,8 +81,24 @@ formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
 
 QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
                                                                 const float &wavelength,
-                                                                const structSlideCalibration &mainCalibration
+                                                                const structSlideCalibration &mainSlideCalibration
 ){
+    //------------------------------------------------------
+    //Load Imagery
+    //------------------------------------------------------
+    if( lstImgs.size() == 0 )
+    {
+        //Get Lst Images From Folder
+        ui->labelProgBar->setText("Putting Images into Memory...");
+        funcGetImagesFromFolder(
+                                    ui->txtFolder->text().trimmed(),
+                                    &lstImgs,
+                                    &lstImagePaths,
+                                    ui->progBar
+                                );
+        ui->labelProgBar->setText("");
+    }
+
     //------------------------------------------------------
     //Reserve Memory
     //------------------------------------------------------
@@ -105,8 +121,8 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
     int framePos, overlapPos, maxPos;
     float internWavelen;
     maxPos          = imgW-slideW;
-    internWavelen   = wavelength - mainCalibration.originWave;
-    framePos        = round( funcApplyLR(internWavelen,mainCalibration.wave2DistLR,false) );
+    internWavelen   = wavelength - mainSlideCalibration.originWave;
+    framePos        = round( funcApplyLR(internWavelen,mainSlideCalibration.wave2DistLR,false) );
     framePos        = framePos - round((float)slideW/2.0);
     framePos        = (framePos<0)?0:framePos;//Minimum position
     framePos        = (framePos<maxPos)?framePos:maxPos;
@@ -115,8 +131,8 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
     layerTmpPos     = framePos;
 
     /*
-    std::cout << "originWave: " << mainCalibration.originWave << "nm" << std::endl;
-    std::cout << "internWavelen: " << mainCalibration.originWave + internWavelen << "nm" << std::endl;
+    std::cout << "originWave: " << mainSlideCalibration.originWave << "nm" << std::endl;
+    std::cout << "internWavelen: " << mainSlideCalibration.originWave + internWavelen << "nm" << std::endl;
     std::cout << "framePos: " << framePos << "px" << std::endl;
     std::cout << "overlapPos: " << overlapPos << "px" << std::endl;
     std::cout << "layerTmpPos: " << layerTmpPos << "px" << std::endl;*/
@@ -204,62 +220,51 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
 void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 {
     //------------------------------------------------------
-    //Load Exporting Slide Hypcube
+    //Reload Export Settings
     //------------------------------------------------------
+    funcReloadExportSettings();
+
+    //------------------------------------------------------
+    //Load Slide Calibration Settings Set as Default
+    //------------------------------------------------------
+    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    structSlideCalibration mainSlideCalibration;
+    if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Get Layer
+    //------------------------------------------------------
+    layerBackup = funcGetLayerAtWavelength( ui->spinBoxWavelen->value(), mainSlideCalibration );
+    displayImageFullScreen( layerBackup );
+
+    //------------------------------------------------------
+    //Save Last Wavelength
+    //------------------------------------------------------
+    saveFile(_PATH_LAST_WAVELEN_SIMULATOR,QString::number(ui->spinBoxWavelen->value()));
+
+}
+
+int formBuildSlideHypeCubePreview::funcReloadExportSettings()
+{
     if( fileExists( _PATH_SLIDE_EXPORTING_HYPCUBE ) )
     {
         formHypcubeBuildSettings* formHypSettings = new formHypcubeBuildSettings(this);
         if( formHypSettings->funcReadSettings(&mainExportSettings) != _OK )
         {
             funcShowMsgERROR("Reading Exporting Settings");
-            return (void)false;
+            return _ERROR;
         }
     }
     else
     {
         funcShowMsgERROR("Exporting Settings don't exists");
-        return (void)false;
+        return _ERROR;
     }
-
-    //------------------------------------------------------
-    //Load Imagery
-    //------------------------------------------------------
-    if( lstImgs.size() == 0 )
-    {
-        //Get Lst Images From Folder
-        ui->labelProgBar->setText("Putting Images into Memory...");
-        funcGetImagesFromFolder(
-                                    ui->txtFolder->text().trimmed(),
-                                    &lstImgs,
-                                    &lstImagePaths,
-                                    ui->progBar
-                                );
-        ui->labelProgBar->setText("");
-    }
-
-    //------------------------------------------------------
-    //Load Slide Calibration Settings
-    //------------------------------------------------------
-    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
-    structSlideCalibration mainCalibration;
-    if( funcReadSlideCalib( calibPath, &mainCalibration ) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
-        return (void)false;
-    }  
-
-    //------------------------------------------------------
-    //Get Layer
-    //------------------------------------------------------
-    layerBackup = funcGetLayerAtWavelength( ui->spinBoxWavelen->value(), mainCalibration );
-    displayImageFullScreen( layerBackup );
-
-    //------------------------------------------------------
-    //Save Last Wavelength
-    //------------------------------------------------------
-    //saveFile(_PATH_LAST_WAVELEN_SIMULATOR,QString::number(ui->spinBoxWavelen->value()));
-
-
+    return _OK;
 }
 
 int formBuildSlideHypeCubePreview::funcCopyImageSubareas(
@@ -803,4 +808,100 @@ void formBuildSlideHypeCubePreview::on_pbSave_clicked()
 
 
 
+}
+
+void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
+{
+    //------------------------------------------------------
+    //Define Output Dir
+    //------------------------------------------------------
+    QString destineDir;
+    if( funcLetUserSelectDirectory(_PATH_LAST_PATH_OPENED,&destineDir) != _OK )
+    {
+        funcShowMsgERROR("Saving Directory",this);
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Reload Export Settings
+    //------------------------------------------------------
+    funcReloadExportSettings();
+
+    //------------------------------------------------------
+    //Load Slide Calibration Settings Set as Default
+    //------------------------------------------------------
+    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    structSlideCalibration mainSlideCalibration;
+    if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Load Imagery
+    //------------------------------------------------------
+    if( lstImgs.size() == 0 )
+    {
+        //Get Lst Images From Folder
+        ui->labelProgBar->setText("Putting Images into Memory...");
+        funcGetImagesFromFolder(
+                                    ui->txtFolder->text().trimmed(),
+                                    &lstImgs,
+                                    &lstImagePaths,
+                                    ui->progBar
+                                );
+        ui->labelProgBar->setText("");
+    }
+
+    //------------------------------------------------------
+    //Calculate Spectral Resolution
+    // Ralf Pag. 6
+    // Spectral Resolution = (x_ir - x_ib) / (lambda_r - lambda_b)
+    //------------------------------------------------------
+    float maxWavelen, minWavelen, specRes, specW;
+    int imgW;
+    maxWavelen  = mainSlideCalibration.maxWave;
+    minWavelen  = mainSlideCalibration.originWave;
+    imgW        = lstImgs.at(0).width();
+    specW       = maxWavelen - minWavelen;
+    specRes     = (float)imgW / specW;
+    //std::cout << "maxWavelen: " << maxWavelen << std::endl;
+    //std::cout << "minWavelen: " << minWavelen << std::endl;
+    //std::cout << "specW: " << specW << std::endl;
+    std::cout << "specRes: " << specRes << std::endl;
+
+    //------------------------------------------------------
+    //Get Layer
+    //------------------------------------------------------
+    float specI, percentage;
+    QString tmpFileName;
+    percentage = 0.0;
+    //Update Progressbar
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(true);
+    mouseCursorWait();
+    for( specI=minWavelen; specI<=maxWavelen; specI+=specRes )
+    {
+        //Update Progress Bar
+        percentage = round( ((specI-minWavelen) / (maxWavelen-minWavelen))*100.0 );
+        ui->labelProgBar->setText("Exporting Layer " + QString::number(specI) + "nm...");
+        ui->progBar->setValue(percentage);
+        //Define Filename
+        tmpFileName.clear();
+        tmpFileName.append(destineDir);
+        tmpFileName.append(QString::number(specI));
+        tmpFileName.append(_FRAME_EXTENSION);
+        //std::cout << "specI: " << specI << " tmpFileName: " << tmpFileName.toStdString() << std::endl;
+        //Get Layer
+        layerBackup = funcGetLayerAtWavelength( specI, mainSlideCalibration );
+        //Save Layer
+        //layerBackup.save(tmpFileName);
+    }
+
+    //Update Progressbar
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(false);
+    ui->labelProgBar->setText("");
+    mouseCursorReset();
 }

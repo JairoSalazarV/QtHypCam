@@ -195,6 +195,20 @@
     </rect>
    </property>
   </widget>
+  <zorder>pbMergeCalibration</zorder>
+  <zorder>pbHorizontal</zorder>
+  <zorder>labelHor</zorder>
+  <zorder>txtHorPath</zorder>
+  <zorder>labelHor_2</zorder>
+  <zorder>txtVertPath</zorder>
+  <zorder>pbVertical</zorder>
+  <zorder>txtCameraID</zorder>
+  <zorder>labelHor_3</zorder>
+  <zorder>labelHor_4</zorder>
+  <zorder>spinBoxOriginH</zorder>
+  <zorder>labelHor_5</zorder>
+  <zorder>pbAffineTrans</zorder>
+  <zorder>txtAffineTrans</zorder>
  </widget>
  <resources/>
  <connections/>
