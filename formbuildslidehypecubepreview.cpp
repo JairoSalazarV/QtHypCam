@@ -106,36 +106,28 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
     int slideW, slideH, imgW, numFrames;
     int overlapW, notOverlapW;
     imgW        = lstImgs.at(0).width();
+    numFrames   = lstImgs.size();
     slideW      = mainExportSettings.spatialResolution;
     slideH      = lstImgs.at(0).height();
-    numFrames   = lstImgs.size();
-    layerW      = imgW + ( slideW * numFrames ) - 1;
-    layerH      = lstImgs.at(0).height();
-    overlapW    = floor( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
+    overlapW    = ceil( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
     notOverlapW = slideW - overlapW;
-    //std::cout << "Image Created(" << layerW << ", " << layerH << ")" << std::endl;
+    layerW      = imgW + ( notOverlapW * (numFrames-1) );
+    layerH      = lstImgs.at(0).height();
 
     //------------------------------------------------------
     //Calculate Spectral Location
     //------------------------------------------------------
-    int framePos, overlapPos, maxPos;
+    int frameNotOverlapPos, frameOverlapPos, maxPos;
     float internWavelen;
-    maxPos          = imgW-slideW;
-    internWavelen   = wavelength - mainSlideCalibration.originWave;
-    framePos        = round( funcApplyLR(internWavelen,mainSlideCalibration.wave2DistLR,false) );
-    framePos        = framePos - round((float)slideW/2.0);
-    framePos        = (framePos<0)?0:framePos;//Minimum position
-    framePos        = (framePos<maxPos)?framePos:maxPos;
-    framePos       += overlapW;
-    overlapPos      = framePos - overlapW;
-    layerTmpPos     = framePos;
-
-    /*
-    std::cout << "originWave: " << mainSlideCalibration.originWave << "nm" << std::endl;
-    std::cout << "internWavelen: " << mainSlideCalibration.originWave + internWavelen << "nm" << std::endl;
-    std::cout << "framePos: " << framePos << "px" << std::endl;
-    std::cout << "overlapPos: " << overlapPos << "px" << std::endl;
-    std::cout << "layerTmpPos: " << layerTmpPos << "px" << std::endl;*/
+    maxPos              = imgW-slideW-1;
+    internWavelen       = wavelength - mainSlideCalibration.originWave;
+    frameNotOverlapPos  = round( funcApplyLR(internWavelen,mainSlideCalibration.wave2DistLR,false) );
+    frameNotOverlapPos  = frameNotOverlapPos - round((float)slideW/2.0);
+    frameNotOverlapPos  = (frameNotOverlapPos<0)?0:frameNotOverlapPos;//Minimum position
+    frameNotOverlapPos  = (frameNotOverlapPos<maxPos)?frameNotOverlapPos:maxPos;
+    frameNotOverlapPos += overlapW;
+    frameOverlapPos     = frameNotOverlapPos - overlapW;
+    layerTmpPos         = frameOverlapPos;
 
     //======================================================
     //Build Layer
@@ -147,12 +139,10 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
     //------------------------------------------------------
     //Copy Fist Slide
     //------------------------------------------------------
-    //std::cout << "slideW: " << slideW << " overlapW: " << overlapW <<  std::endl;
-    //std::cout << "First_1-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
     QRect originRect;
     QPoint destinePoint;
-    //Origin Rectangle
-    originRect.setX(framePos);
+    //Origin Rectangle [overlapPos is at the left and notOverlapPos on the Right]
+    originRect.setX(frameOverlapPos);
     originRect.setY(0);
     originRect.setWidth(slideW);
     originRect.setHeight(slideH);
@@ -161,8 +151,7 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
     destinePoint.setY(0);
     //Copy Slide
     funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(0), &mainTmpLayerImg );
-    layerTmpPos += slideW - overlapW;
-    //std::cout << "First_2-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
+    layerTmpPos += notOverlapW;
 
     //------------------------------------------------------
     //Copy Remainder Slides
@@ -174,7 +163,7 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
         //Copy Overlap
         //..................................................
         //Origin Rectangle
-        originRect.setX(overlapPos);
+        originRect.setX(frameOverlapPos);
         originRect.setY(0);
         originRect.setWidth(overlapW);
         originRect.setHeight(slideH);
@@ -182,12 +171,14 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
         destinePoint.setX(layerTmpPos);
         destinePoint.setY(0);
         //Copy Slide
-        //std::cout << "AntesOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
-        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyMax );
-        layerTmpPos += overlapW;
+        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyAverage );
+        layerTmpPos += overlapW;        
 
+        //..................................................
+        //Copy Non-Overlap
+        //..................................................
         //Origin Rectangle
-        originRect.setX(framePos);
+        originRect.setX(frameNotOverlapPos);
         originRect.setY(0);
         originRect.setWidth(notOverlapW);
         originRect.setHeight(slideH);
@@ -195,10 +186,8 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
         destinePoint.setX(layerTmpPos);
         destinePoint.setY(0);
         //Copy Slide
-        //std::cout << "AntesNotOver-> framePos: " << framePos << " layerTmpPos: " << layerTmpPos <<  std::endl;
         funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyMax );
-        layerTmpPos += notOverlapW;
-
+        layerTmpPos += (notOverlapW - overlapW);
     }
 
     //------------------------------------------------------
