@@ -894,3 +894,99 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
     ui->labelProgBar->setText("");
     mouseCursorReset();
 }
+
+void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
+{
+    //------------------------------------------------------
+    //Define Output Dir
+    //------------------------------------------------------
+    QString destineDir;
+    if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
+    {
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Reload Export Settings
+    //------------------------------------------------------
+    funcReloadExportSettings();
+
+    //------------------------------------------------------
+    //Load Slide Calibration Settings Set as Default
+    //------------------------------------------------------
+    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    structSlideCalibration mainSlideCalibration;
+    if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Load Imagery
+    //------------------------------------------------------
+    if( lstImgs.size() == 0 )
+    {
+        //Get Lst Images From Folder
+        ui->labelProgBar->setText("Putting Images into Memory...");
+        funcGetImagesFromFolder(
+                                    ui->txtFolder->text().trimmed(),
+                                    &lstImgs,
+                                    &lstImagePaths,
+                                    ui->progBar
+                                );
+        ui->labelProgBar->setText("");
+    }
+
+    //------------------------------------------------------
+    //Calculate Spectral Resolution
+    // Ralf Pag. 6
+    // Spectral Resolution = (x_ir - x_ib) / (lambda_r - lambda_b)
+    //------------------------------------------------------
+    float maxWavelen, minWavelen, specRes, specW;
+    int imgW;
+    maxWavelen  = mainSlideCalibration.maxWave;
+    minWavelen  = mainSlideCalibration.originWave;
+    imgW        = lstImgs.at(0).width();
+    specW       = maxWavelen - minWavelen;
+    specRes     = (float)imgW / specW;
+    specRes     = mainExportSettings.spectralResolution;
+    //std::cout << "maxWavelen: " << maxWavelen << std::endl;
+    //std::cout << "minWavelen: " << minWavelen << std::endl;
+    //std::cout << "specW: " << specW << std::endl;
+    std::cout << "specRes: " << specRes << std::endl;
+
+    //------------------------------------------------------
+    //Get Layer
+    //------------------------------------------------------
+    float specI, percentage;
+    percentage = 0.0;
+    //Update Progressbar
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(true);
+    //Define Layers Container
+    QList<QImage> lstLayers;
+    mouseCursorWait();
+    for( specI=minWavelen; specI<=maxWavelen; specI+=specRes )
+    {
+        //Update Progress Bar
+        percentage = round( ((specI-minWavelen) / (maxWavelen-minWavelen))*100.0 );
+        ui->labelProgBar->setText("Exporting Layer " + QString::number(specI) + "nm...");
+        ui->progBar->setValue(percentage);
+        //Get Layer
+        QImage tmpImg = funcGetLayerAtWavelength( specI, mainSlideCalibration );
+        //Save Layer
+        lstLayers.append(tmpImg);
+    }
+
+    //Update Progressbar
+    ui->progBar->setValue(0);
+    ui->progBar->setVisible(false);
+    ui->labelProgBar->setText("");
+    mouseCursorReset();
+
+    //Notify
+    funcShowMsgSUCCESS_Timeout("Hypercube loaded Satisfactory");
+
+
+}

@@ -3071,7 +3071,18 @@ int funcGetQEArea(
 
 int funcLetUserSelectDirectory( const QString &originDir, QString* Dir  )
 {
-    return funcShowSelDir(originDir, Dir);
+    QString originPath = readAllFile(originDir.trimmed()).trimmed();
+
+    //Get Directory
+    if( funcShowSelDir(originPath, Dir) != _OK )
+    {
+        return _ERROR;
+    }
+
+    //Update Original Path
+    saveFile(originDir,*Dir);
+
+    return _OK;
 }
 
 int funcGetTranslation( QTransform* tmpTrans, QWidget *parent )

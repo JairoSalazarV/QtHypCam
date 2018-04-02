@@ -72,6 +72,8 @@ private slots:
 
     void on_pbExportImages_clicked();
 
+    void on_pbExportCube_clicked();
+
 private:
     Ui::formBuildSlideHypeCubePreview *ui;
 };
