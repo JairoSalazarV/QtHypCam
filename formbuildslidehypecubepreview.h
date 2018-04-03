@@ -34,8 +34,8 @@ public:
 
     int funcSlideSpectralImageUnzip(
                                         u_int8_t*** slideHypCube,
-                                        const int &idImg,
-                                        const QImage &tmpImg,
+                                        int idImg,
+                                        QImage* tmpImg,
                                         const structSlideHypCubeSize &slideHypcubeSize
                                    );
 
@@ -52,11 +52,11 @@ public:
 
     int funcCopyDiffToSlideHypCube(
                                         u_int8_t*** slideHypCube,
-                                        const QImage &tmpImg,
-                                        const QRect &originRect,
-                                        const int &destineX,
-                                        const int &destineZ,
-                                        const int &type
+                                        QImage* tmpImg,
+                                        QRect* originRect,
+                                        int destineX,
+                                        int destineZ,
+                                        int type
                                    );
 
 

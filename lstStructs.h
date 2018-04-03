@@ -511,6 +511,7 @@
         float* lstWavelengths;
         int* lstOverlapPos;
         int* lstNotOverlapPos;
+        int* lstDestineInitX;
     }structSlideHypCubeSize;
 
 

@@ -305,7 +305,7 @@
                                     QProgressBar* progBar = Q_NULLPTR
                                );
 
-    int funcPixelToQE( const QColor &tmpPixColor, float* pixQE );
+    float funcPixelToQE( const QColor &tmpPixColor );
 
 
 #endif // __COMMON_H
