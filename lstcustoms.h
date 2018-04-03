@@ -2,6 +2,8 @@
 #define LSTCUSTOMS_H
 
 
+    #define _VERSION_TXT                    "Beta 1.0"
+
     const unsigned int frameBodyLen = 1024;
     #define FRAME_COMM_LEN                  1024
     //#define _BIG_WIDTH 2592 //2592 | 640 | 320

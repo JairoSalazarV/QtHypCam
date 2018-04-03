@@ -1208,15 +1208,31 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     //Save Slide Hypcube's Data
     //------------------------------------------------------
     QList<QString> lstFixtures, lstValues;
-    lstFixtures << "Date"
-                << "W"              << "H"      << "L"
-                << "codification"   << "pixLen"
-                << "x_0"            << "y_0";
+    lstFixtures << "Autor"
+                << "Web"
+                << "Contact"
+                << "About"
+                << "license"
+                << "Date"
+                << "Type"
+                << "hypcubeW"           << "hypcubeH"               << "hypcubeL"
+                << "initWavelength"     << "spectralResolution"     << "wavelengthUnits"
+                << "codification"       << "pixLen"
+                << "x_0"                << "y_0";
 
-    lstValues   << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss")
+    lstValues   << "Jairo Salazar-Vazquez"
+                << "dotech.us"
+                << "jairosalazarvazquez@gmail.com"
+                << "Generated with HypCam " + QString(_VERSION_TXT)
+                << "GPL-GNU No Warranty"
+                << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss")
+                << "Raw Data"
                 << QString::number(slideHypcubeSize.hypcubeW)
                 << QString::number(slideHypcubeSize.hypcubeH)
                 << QString::number(slideHypcubeSize.hypcubeL)
+                << QString::number(mainSlideCalibration.originWave)
+                << QString::number(slideHypcubeSize.specResolution)
+                << "nanometers"
                 << "DIM(x,y,[bands 1,2,...,L])"
                 << "u_int8_t"
                 << "Left"
