@@ -205,7 +205,12 @@
 
 
     //
-    int funcSaveXML(const QString &fileName, QList<QString>* lstFixtures, QList<QString>* lstValues);
+    int funcSaveXML(
+                        const QString &fileName,
+                        QList<QString>* lstFixtures,
+                        QList<QString>* lstValues,
+                        bool notify=true
+                   );
 
     void funcGuaranteeExtension(QString *filename, QString extension);
 

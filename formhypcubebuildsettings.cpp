@@ -52,7 +52,7 @@ void formHypcubeBuildSettings::on_pbSave_clicked()
     //----------------------------------------------
     //Save XML
     //----------------------------------------------
-    if( funcSaveXML(_PATH_SLIDE_EXPORTING_HYPCUBE,&lstFixtures,&lstValues) != _OK )
+    if( funcSaveXML(_PATH_SLIDE_EXPORTING_HYPCUBE,&lstFixtures,&lstValues,true) != _OK )
     {
         funcShowMsgERROR("Saving Settings");
     }

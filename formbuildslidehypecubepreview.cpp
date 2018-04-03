@@ -988,14 +988,12 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     //------------------------------------------------------
     //Define Output Dir
     //------------------------------------------------------
-    if( 0 )
+    QString destineDir;
+    if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
     {
-        QString destineDir;
-        if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
-        {
-            return (void)false;
-        }
+        return (void)false;
     }
+
 
     //------------------------------------------------------
     //Reload Export Settings
@@ -1042,7 +1040,7 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     memset(slideHypcubeSize.lstWavelengths,'\0',slideHypcubeSize.hypcubeL*sizeof(float));
     memset(slideHypcubeSize.lstOverlapPos,'\0',slideHypcubeSize.hypcubeL*sizeof(int));
     memset(slideHypcubeSize.lstNotOverlapPos,'\0',slideHypcubeSize.hypcubeL*sizeof(int));
-    if( 1 )
+    if( 0 )
     {
         std::cout << "W: " << slideHypcubeSize.hypcubeW << std::endl;
         std::cout << "H: " << slideHypcubeSize.hypcubeH << std::endl;
@@ -1134,7 +1132,7 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     //------------------------------------------------------
     //Show the Result
     //------------------------------------------------------
-    if( 1 )
+    if( 0 )
     {
         for(i=0; i<slideHypcubeSize.hypcubeL; i+=5)
         {
@@ -1143,6 +1141,7 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
         }
     }
 
+    /*
     //------------------------------------------------------
     //Compare Layers
     //------------------------------------------------------
@@ -1165,12 +1164,70 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
 
         std::cout << "numDifferent: " << numDifferent << std::endl;
 
-    }
+    }*/
 
     //------------------------------------------------------
     //Save Slide Hypcube
     //------------------------------------------------------
+    int x, y;
+    int binLen, binPos;
+    binLen  = slideHypcubeSize.hypcubeW *
+              slideHypcubeSize.hypcubeH *
+              slideHypcubeSize.hypcubeL;
+    binPos  = 0;
+    u_int8_t* serialHypCube = (u_int8_t*)malloc(binLen*sizeof(u_int8_t));
+    //Serialize Slide Hypercube
+    for(x=0; x<slideHypcubeSize.hypcubeW; x++)
+    {
+        for(y=0; y<slideHypcubeSize.hypcubeH; y++)
+        {
+            memcpy(
+                        &serialHypCube[binPos],
+                        &slideHypCube[x][y],
+                        slideHypcubeSize.hypcubeL * sizeof(u_int8_t)
+                  );
+            binPos += slideHypcubeSize.hypcubeL;
+        }
+    }
+    //Create Output Filename
+    QString outFilename;
+    outFilename.append(destineDir);
+    outFilename.append("slideHypcube");
+    outFilename.append(_EXT_HYPERCUBE);
+    //Save File
+    if( saveBinFile_From_u_int8_T(
+                                    outFilename.toStdString(),
+                                    serialHypCube,
+                                    binLen
+                                  ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Saving Hypercube into HDD");
+    }
 
+    //------------------------------------------------------
+    //Save Slide Hypcube's Data
+    //------------------------------------------------------
+    QList<QString> lstFixtures, lstValues;
+    lstFixtures << "Date"
+                << "W"              << "H"      << "L"
+                << "codification"   << "pixLen"
+                << "x_0"            << "y_0";
+
+    lstValues   << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss")
+                << QString::number(slideHypcubeSize.hypcubeW)
+                << QString::number(slideHypcubeSize.hypcubeH)
+                << QString::number(slideHypcubeSize.hypcubeL)
+                << "DIM(x,y,[bands 1,2,...,L])"
+                << "u_int8_t"
+                << "Left"
+                << "Up";
+
+    outFilename.clear();
+    outFilename.append(destineDir);
+    outFilename.append("info.xml");
+    funcSaveXML(outFilename,&lstFixtures,&lstValues,false);
+    //Notify Success
+    funcShowMsgSUCCESS_Timeout("Slide Hypercube Saved Successfully",this);
 
 
     //------------------------------------------------------

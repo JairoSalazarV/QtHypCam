@@ -1343,7 +1343,7 @@ int saveBinFile_From_u_int8_T( std::string fileName, uint8_t *data, size_t len)
     fp.open( fileName, std::ios::out | std::ios::binary );
     fp.write((char*)data, len);
     fp.close();
-    return 1;
+    return _OK;
 }
 
 int fileExists( QString fileName )
@@ -2292,8 +2292,12 @@ QString funcGetParam(QString label, QString defaultValue)
                                 );
 }
 
-int funcSaveXML(const QString &fileName, QList<QString>* lstFixtures, QList<QString>* lstValues)
-{
+int funcSaveXML(
+                    const QString &fileName,
+                    QList<QString>* lstFixtures,
+                    QList<QString>* lstValues,
+                    bool notify
+){
     //Receives filename only, without path
     //[path=null][filename].xml
 
@@ -2341,7 +2345,10 @@ int funcSaveXML(const QString &fileName, QList<QString>* lstFixtures, QList<QStr
     }
     else
     {
-        funcShowMsg("Success","XML saved successfully");
+        if( notify == true )
+        {
+            funcShowMsg("Success","XML saved successfully");
+        }
     }
     return _OK;
 }

@@ -25,6 +25,7 @@
     //#define _BLUE_WAVELENGHT                438
 
     #define _EXTENTION                      ".hypcam"
+    #define _EXT_HYPERCUBE                  ".hypercube"
 
     #define _H264                           0
     #define _MJPEG                          1
