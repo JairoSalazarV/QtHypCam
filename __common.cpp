@@ -3264,3 +3264,10 @@ int funcGetImagesFromFolder(
 
     return _OK;
 }
+
+
+int funcPixelToQE(const QColor &tmpPixColor, float* pixQE)
+{
+    *pixQE = (float)pixelMaxValue(tmpPixColor);
+    return _OK;
+}

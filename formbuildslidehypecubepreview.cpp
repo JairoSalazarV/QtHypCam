@@ -1100,15 +1100,41 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     //For Each Image
     //------------------------------------------------------
     int idImg;
-    //for( idImg=0; idImg<lstImgs.size(); idImg++ )
-    for( idImg=0; idImg<1; idImg++ )
+
+    //Update Progress Bar
+    mouseCursorWait();
+    ui->progBar->setVisible(true);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    ui->labelProgBar->setText("Building Slide Hypercube...");
+    int tmpProgress = 0;
+    for( idImg=0; idImg<lstImgs.size(); idImg++ )
     {
         funcSlideSpectralImageUnzip(
                                         slideHypCube,
                                         idImg,
-                                        (QImage*)&lstImgs.at(idImg),
+                                        lstImgs.at(idImg),
                                         slideHypcubeSize
                                    );
+        //Update Progress Bar
+        tmpProgress = round( ((float)idImg / (float)lstImgs.size()) * 100.0 );
+        ui->progBar->setValue(tmpProgress);
+        ui->progBar->update();
+    }
+    //Update Progress Bar
+    ui->progBar->setVisible(false);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    ui->labelProgBar->setText("");
+    mouseCursorReset();
+
+    //------------------------------------------------------
+    //Show the Result
+    //------------------------------------------------------
+    if( 1 )
+    {
+        QImage layer = funcGetLayerFromHypCube( slideHypCube, slideHypcubeSize, 1 );
+        displayImageFullScreen(layer);
     }
 
     //------------------------------------------------------
@@ -1124,6 +1150,36 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     }
     delete[] slideHypCube;
     std::cout << "Released HypCube Memory" << std::endl;
+
+}
+
+QImage formBuildSlideHypeCubePreview
+        ::funcGetLayerFromHypCube(
+                                    u_int8_t*** slideHypCube,
+                                    const structSlideHypCubeSize &slideHypcubeSize,
+                                    const int idLayer
+                                 )
+{
+    QImage tmpLayer( slideHypcubeSize.hypcubeW, slideHypcubeSize.hypcubeH, QImage::Format_RGB32 );
+    tmpLayer.fill(Qt::GlobalColor::black);
+
+    int x,y;
+    for(x=0; x<slideHypcubeSize.hypcubeW; x++)
+    {
+        for(y=0; y<slideHypcubeSize.hypcubeH; y++)
+        {
+            tmpLayer.setPixelColor(
+                                        QPoint(x,y),
+                                        QColor(
+                                                    slideHypCube[x][y][idLayer],
+                                                    slideHypCube[x][y][idLayer],
+                                                    slideHypCube[x][y][idLayer]
+                                               )
+                                   );
+        }
+    }
+
+    return tmpLayer;
 
 }
 
@@ -1162,15 +1218,103 @@ void formBuildSlideHypeCubePreview
 
 
 int formBuildSlideHypeCubePreview
-    ::funcSlideSpectralImageUnzip(
-                                    u_int8_t*** slideHypCube,
+    ::funcSlideSpectralImageUnzip(u_int8_t*** slideHypCube,
                                     const int &idImg,
-                                    QImage* tmpImg,
+                                    const QImage &tmpImg,
                                     const structSlideHypCubeSize &slideHypcubeSize
 ){
 
+    //----------------------------------------------
+    //For Each Layer
+    //----------------------------------------------
+    int l;
+    int overlapPos, nonoverlapPos;
+    int overlapW, nonOverlapW;
+    int tmpType;
+    QRect tmpOriginRect;
+    int tmpDestineX;
 
+    overlapW    = slideHypcubeSize.overlapW;
+    nonOverlapW = slideHypcubeSize.notOverlapW;
+    for( l=0; l<slideHypcubeSize.hypcubeL; l++ )
+    {
+        //.............................................
+        //Calc Position
+        //.............................................
+        overlapPos      = slideHypcubeSize.lstOverlapPos[l];
+        nonoverlapPos   = slideHypcubeSize.lstNotOverlapPos[l];
+        tmpType         = (idImg==0)?copyMax:copyAverage;
 
+        //.............................................
+        //Overlap
+        //.............................................
+        //Origin Rect
+        tmpOriginRect.setX( overlapPos );
+        tmpOriginRect.setY( 0 );
+        tmpOriginRect.setWidth( overlapW );
+        tmpOriginRect.setHeight( tmpImg.height() );
+        //Destine into the HypCube
+        tmpDestineX = (idImg * nonOverlapW);
+        //Copy
+        funcCopyDiffToSlideHypCube( slideHypCube, tmpImg, tmpOriginRect, tmpDestineX, l, tmpType );
+
+        //.............................................
+        //NonOverlap
+        //.............................................
+        //Origin Rect
+        tmpOriginRect.setX( nonoverlapPos );
+        tmpOriginRect.setY( 0 );
+        tmpOriginRect.setWidth( nonOverlapW );
+        tmpOriginRect.setHeight( tmpImg.height() );
+        //Destine into the HypCube
+        tmpDestineX = (idImg * nonOverlapW) + overlapW;
+        funcCopyDiffToSlideHypCube( slideHypCube, tmpImg, tmpOriginRect, tmpDestineX, l, copyMax );
+    }
+    return _OK;
+}
+
+int formBuildSlideHypeCubePreview
+    ::funcCopyDiffToSlideHypCube(
+                                    u_int8_t*** slideHypCube,
+                                    const QImage &tmpImg,
+                                    const QRect &originRect,
+                                    const int &destineX,
+                                    const int &destineZ,
+                                    const int &type
+
+){
+
+    int x, y;
+    float tmpQE;
+    u_int8_t tmpLastQE;
+    QColor tmpColor;
+    for( x=0; x<originRect.width(); x++ )
+    {
+        for( y=0; y<originRect.height(); y++ )
+        {
+            //Get the color
+            tmpColor    = tmpImg.pixelColor(x,y);
+            tmpLastQE   = slideHypCube[destineX+x][y][destineZ];
+            tmpQE       = 0.0;
+            funcPixelToQE(tmpColor,&tmpQE);
+            //Evaluate and apply copy type
+            if( type == copyAverage )
+            {
+                slideHypCube[destineX+x][y][destineZ] = (u_int8_t)round(((float)tmpLastQE + tmpQE)/2.0);
+            }
+            else if( type == copyOverride )
+            {
+                slideHypCube[destineX+x][y][destineZ] = (u_int8_t)tmpQE;
+            }
+            else if( type == copyMax )
+            {
+                slideHypCube[destineX+x][y][destineZ] = (tmpLastQE>(u_int8_t)tmpQE)?tmpLastQE:(u_int8_t)tmpQE;
+            }else if( type == copyMin )
+            {
+                slideHypCube[destineX+x][y][destineZ] = (tmpLastQE>(u_int8_t)tmpQE)?(u_int8_t)tmpQE:tmpLastQE;
+            }
+        }
+    }
 
     return _OK;
 }

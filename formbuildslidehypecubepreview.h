@@ -35,7 +35,7 @@ public:
     int funcSlideSpectralImageUnzip(
                                         u_int8_t*** slideHypCube,
                                         const int &idImg,
-                                        QImage* tmpImg,
+                                        const QImage &tmpImg,
                                         const structSlideHypCubeSize &slideHypcubeSize
                                    );
 
@@ -43,6 +43,21 @@ public:
                                             structSlideHypCubeSize* slideHypcubeSize,
                                             const structSlideCalibration &mainSlideCalibration
                                     );
+
+    QImage funcGetLayerFromHypCube(
+                                        u_int8_t*** slideHypCube,
+                                        const structSlideHypCubeSize &slideHypcubeSize,
+                                        const int idLayer
+                                  );
+
+    int funcCopyDiffToSlideHypCube(
+                                        u_int8_t*** slideHypCube,
+                                        const QImage &tmpImg,
+                                        const QRect &originRect,
+                                        const int &destineX,
+                                        const int &destineZ,
+                                        const int &type
+                                   );
 
 
     enum copyType{
