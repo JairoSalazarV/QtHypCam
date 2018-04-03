@@ -23,10 +23,27 @@ public:
     explicit formBuildSlideHypeCubePreview(QWidget *parent = 0);
     ~formBuildSlideHypeCubePreview();
 
-    QImage funcGetLayerAtWavelength(
+    QImage funcGetImageAtWavelength(
                                         const float &wavelength,
                                         const structSlideCalibration &mainSlideCalibration
                                    );
+    int funcCalcHypercubeSize(
+                                    const structSlideCalibration &mainSlideCalibration,
+                                    structSlideHypCubeSize* slidecHypCubeSize
+                             );
+
+    int funcSlideSpectralImageUnzip(
+                                        u_int8_t*** slideHypCube,
+                                        const int &idImg,
+                                        QImage* tmpImg,
+                                        const structSlideHypCubeSize &slideHypcubeSize
+                                   );
+
+    void funcCalcLstWaveAndPositions(
+                                            structSlideHypCubeSize* slideHypcubeSize,
+                                            const structSlideCalibration &mainSlideCalibration
+                                    );
+
 
     enum copyType{
         copyOverride,

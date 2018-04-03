@@ -79,9 +79,10 @@ formBuildSlideHypeCubePreview::~formBuildSlideHypeCubePreview()
     delete ui;
 }
 
-QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
-                                                                const float &wavelength,
-                                                                const structSlideCalibration &mainSlideCalibration
+QImage formBuildSlideHypeCubePreview
+       ::funcGetImageAtWavelength(
+                                    const float &wavelength,
+                                    const structSlideCalibration &mainSlideCalibration
 ){
     //------------------------------------------------------
     //Load Imagery
@@ -206,6 +207,89 @@ QImage formBuildSlideHypeCubePreview::funcGetLayerAtWavelength(
 
 }
 
+int formBuildSlideHypeCubePreview
+        ::funcCalcHypercubeSize(
+                                    const structSlideCalibration &mainSlideCalibration,
+                                    structSlideHypCubeSize* slidecHypCubeSize
+){
+    //Memset
+    memset(slidecHypCubeSize,'\0',sizeof(structSlideHypCubeSize));
+
+    //------------------------------------------------------
+    //Load Imagery
+    //------------------------------------------------------
+    if( lstImgs.size() == 0 )
+    {
+        //Get Lst Images From Folder
+        ui->labelProgBar->setText("Putting Images into Memory...");
+        funcGetImagesFromFolder(
+                                    ui->txtFolder->text().trimmed(),
+                                    &lstImgs,
+                                    &lstImagePaths,
+                                    ui->progBar
+                                );
+        ui->labelProgBar->setText("");
+    }
+
+    //------------------------------------------------------
+    //Reserve Memory
+    //------------------------------------------------------
+    int layerW, layerH;
+    int slideW, slideH, imgW, imgH, numFrames;
+    int overlapW, notOverlapW;
+    imgW        = lstImgs.at(0).width();
+    imgH        = lstImgs.at(0).height();
+    numFrames   = lstImgs.size();
+    slideW      = mainExportSettings.spatialResolution;
+    slideH      = lstImgs.at(0).height();
+    overlapW    = ceil( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
+    notOverlapW = slideW - overlapW;
+    layerW      = imgW + ( notOverlapW * (numFrames-1) );
+    layerH      = lstImgs.at(0).height();
+
+    //------------------------------------------------------
+    // Calculate Spectral Resolution
+    // Ralf Pag. 6
+    // Spectral Resolution = (x_ir - x_ib) / (lambda_r - lambda_b)
+    //------------------------------------------------------
+    float specRes, specW;
+    specW   = mainSlideCalibration.maxWave - mainSlideCalibration.originWave;
+    if( mainExportSettings.spectralResolution == 0.0 )
+    {
+        int imgW;
+        imgW        = lstImgs.at(0).width();
+        specRes     = (float)imgW / specW;
+    }
+    else
+    {
+        specRes     = mainExportSettings.spectralResolution;
+    }
+    int L;
+    L = floor(specW / specRes);
+
+    //------------------------------------------------------
+    //Fill Parameters
+    //------------------------------------------------------
+    slidecHypCubeSize->hypcubeW         = layerW;
+    slidecHypCubeSize->hypcubeH         = layerH;
+    slidecHypCubeSize->hypcubeL         = L;
+    slidecHypCubeSize->imgW             = imgW;
+    slidecHypCubeSize->imgH             = imgH;
+    slidecHypCubeSize->slideW           = slideW;
+    slidecHypCubeSize->slideH           = slideH;
+    slidecHypCubeSize->overlapW         = overlapW;
+    slidecHypCubeSize->notOverlapW      = notOverlapW;
+    slidecHypCubeSize->specW            = specW;
+    slidecHypCubeSize->specResolution   = specRes;
+
+    //------------------------------------------------------
+    //Return Layer Image Created
+    //------------------------------------------------------
+    return _OK;
+
+}
+
+
 void formBuildSlideHypeCubePreview::on_pbApply_clicked()
 {
     //------------------------------------------------------
@@ -227,7 +311,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //------------------------------------------------------
     //Get Layer
     //------------------------------------------------------
-    layerBackup = funcGetLayerAtWavelength( ui->spinBoxWavelen->value(), mainSlideCalibration );
+    layerBackup = funcGetImageAtWavelength( ui->spinBoxWavelen->value(), mainSlideCalibration );
     displayImageFullScreen( layerBackup );
 
     //------------------------------------------------------
@@ -883,7 +967,7 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
         tmpFileName.append(_FRAME_EXTENSION);
         //std::cout << "specI: " << specI << " tmpFileName: " << tmpFileName.toStdString() << std::endl;
         //Get Layer
-        layerBackup = funcGetLayerAtWavelength( specI, mainSlideCalibration );
+        layerBackup = funcGetImageAtWavelength( specI, mainSlideCalibration );
         //Save Layer
         //layerBackup.save(tmpFileName);
     }
@@ -897,13 +981,20 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
 
 void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
 {
+    //======================================================
+    //PREPARE VARIABLES AND ENVIROMENT
+    //======================================================
+
     //------------------------------------------------------
     //Define Output Dir
     //------------------------------------------------------
-    QString destineDir;
-    if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
+    if( 0 )
     {
-        return (void)false;
+        QString destineDir;
+        if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
+        {
+            return (void)false;
+        }
     }
 
     //------------------------------------------------------
@@ -939,54 +1030,147 @@ void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
     }
 
     //------------------------------------------------------
-    //Calculate Spectral Resolution
-    // Ralf Pag. 6
-    // Spectral Resolution = (x_ir - x_ib) / (lambda_r - lambda_b)
-    //------------------------------------------------------
-    float maxWavelen, minWavelen, specRes, specW;
-    int imgW;
-    maxWavelen  = mainSlideCalibration.maxWave;
-    minWavelen  = mainSlideCalibration.originWave;
-    imgW        = lstImgs.at(0).width();
-    specW       = maxWavelen - minWavelen;
-    specRes     = (float)imgW / specW;
-    specRes     = mainExportSettings.spectralResolution;
-    //std::cout << "maxWavelen: " << maxWavelen << std::endl;
-    //std::cout << "minWavelen: " << minWavelen << std::endl;
-    //std::cout << "specW: " << specW << std::endl;
-    std::cout << "specRes: " << specRes << std::endl;
-
-    //------------------------------------------------------
-    //Get Layer
-    //------------------------------------------------------
-    float specI, percentage;
-    percentage = 0.0;
-    //Update Progressbar
-    ui->progBar->setValue(0);
-    ui->progBar->setVisible(true);
-    //Define Layers Container
-    QList<QImage> lstLayers;
-    mouseCursorWait();
-    for( specI=minWavelen; specI<=maxWavelen; specI+=specRes )
+    //Get Hypercube Size
+    //------------------------------------------------------    
+    structSlideHypCubeSize slideHypcubeSize;
+    funcCalcHypercubeSize( mainSlideCalibration, &slideHypcubeSize );
+    //Reserve Memory
+    slideHypcubeSize.lstWavelengths     = (float*)malloc(slideHypcubeSize.hypcubeL*sizeof(float));
+    slideHypcubeSize.lstOverlapPos      = (int*)malloc(slideHypcubeSize.hypcubeL*sizeof(int));
+    slideHypcubeSize.lstNotOverlapPos   = (int*)malloc(slideHypcubeSize.hypcubeL*sizeof(int));
+    memset(slideHypcubeSize.lstWavelengths,'\0',slideHypcubeSize.hypcubeL*sizeof(float));
+    memset(slideHypcubeSize.lstOverlapPos,'\0',slideHypcubeSize.hypcubeL*sizeof(int));
+    memset(slideHypcubeSize.lstNotOverlapPos,'\0',slideHypcubeSize.hypcubeL*sizeof(int));
+    if( 0 )
     {
-        //Update Progress Bar
-        percentage = round( ((specI-minWavelen) / (maxWavelen-minWavelen))*100.0 );
-        ui->labelProgBar->setText("Exporting Layer " + QString::number(specI) + "nm...");
-        ui->progBar->setValue(percentage);
-        //Get Layer
-        QImage tmpImg = funcGetLayerAtWavelength( specI, mainSlideCalibration );
-        //Save Layer
-        lstLayers.append(tmpImg);
+        std::cout << "W: " << slideHypcubeSize.hypcubeW << std::endl;
+        std::cout << "H: " << slideHypcubeSize.hypcubeH << std::endl;
+        std::cout << "L: " << slideHypcubeSize.hypcubeL << std::endl;
+        std::cout << "slideW: " << slideHypcubeSize.slideW << std::endl;
+        std::cout << "slideH: " << slideHypcubeSize.slideH << std::endl;
+        std::cout << "overlapW: " << slideHypcubeSize.overlapW << std::endl;
+        std::cout << "notOverlapW: " << slideHypcubeSize.notOverlapW << std::endl;
+        std::cout << "specW: " << slideHypcubeSize.specW << std::endl;
+        std::cout << "specRes: " << slideHypcubeSize.specResolution << std::endl;
     }
 
-    //Update Progressbar
-    ui->progBar->setValue(0);
-    ui->progBar->setVisible(false);
-    ui->labelProgBar->setText("");
-    mouseCursorReset();
+    //======================================================
+    //BUILD THE SLIDE HYPERCUBE
+    //======================================================
 
-    //Notify
-    funcShowMsgSUCCESS_Timeout("Hypercube loaded Satisfactory");
+    //------------------------------------------------------
+    //Calculate Frame's Position
+    //------------------------------------------------------
+    funcCalcLstWaveAndPositions( &slideHypcubeSize, mainSlideCalibration );
+    if( 0 )
+    {
+        int l;
+        for(l=0; l<slideHypcubeSize.hypcubeL; l++)
+        {
+            std::cout << "B) "
+                      << " l: "  << l
+                      << " wavelength: "  << slideHypcubeSize.lstWavelengths[l]
+                      << " overlapPos: "    << slideHypcubeSize.lstOverlapPos[l]
+                      << " nonOverlapPos: " << slideHypcubeSize.lstNotOverlapPos[l]
+                      << std::endl;
+        }
+    }
+
+    //------------------------------------------------------
+    //Reserve Memory
+    //------------------------------------------------------
+    int i, j;
+    int W, H, L;
+    W = slideHypcubeSize.hypcubeW;
+    H = slideHypcubeSize.hypcubeH;
+    L = slideHypcubeSize.hypcubeL;
+    u_int8_t*** slideHypCube;
+    slideHypCube = (u_int8_t***)malloc( W * sizeof(u_int8_t**) );
+    for( i=0; i<W; i++ )
+    {
+        slideHypCube[i] = (u_int8_t**)malloc( H * sizeof(u_int8_t*) );
+        for( j=0; j<H; j++ )
+        {
+            slideHypCube[i][j] = (u_int8_t*)malloc( L * sizeof(u_int8_t) );
+            memset(slideHypCube[i][j],'\0',L * sizeof(u_int8_t));
+        }
+    }
+
+    //------------------------------------------------------
+    //For Each Image
+    //------------------------------------------------------
+    int idImg;
+    //for( idImg=0; idImg<lstImgs.size(); idImg++ )
+    for( idImg=0; idImg<1; idImg++ )
+    {
+        funcSlideSpectralImageUnzip(
+                                        slideHypCube,
+                                        idImg,
+                                        (QImage*)&lstImgs.at(idImg),
+                                        slideHypcubeSize
+                                   );
+    }
+
+    //------------------------------------------------------
+    //Free Memory
+    //------------------------------------------------------
+    for( i=0; i<W; i++ )
+    {
+        for( j=0; j<H; j++ )
+        {
+            delete[] slideHypCube[i][j];
+        }
+        delete[] slideHypCube[i];
+    }
+    delete[] slideHypCube;
+    std::cout << "Released HypCube Memory" << std::endl;
+
+}
+
+void formBuildSlideHypeCubePreview
+     ::funcCalcLstWaveAndPositions(
+                                        structSlideHypCubeSize* slideHypcubeSize,
+                                        const structSlideCalibration &mainSlideCalibration
+){
+    //------------------------------------------------------
+    //Calculate Frame's Position
+    //------------------------------------------------------    
+    //Calc Wavelegths and Positions
+    int i, maxOverlapImgPos;
+    float internWavelen;
+    maxOverlapImgPos    = slideHypcubeSize->imgW - slideHypcubeSize->slideW;
+    for( i=0; i<slideHypcubeSize->hypcubeL; i++ ){
+        //Save Wavelength
+        slideHypcubeSize->lstWavelengths[i]  = mainSlideCalibration.originWave +
+                                               ( i * slideHypcubeSize->specResolution );
+        //Overlap Initial Position
+        internWavelen       = slideHypcubeSize->lstWavelengths[i] - mainSlideCalibration.originWave;
+        slideHypcubeSize->lstOverlapPos[i]   = round( funcApplyLR(
+                                                                    internWavelen,
+                                                                    mainSlideCalibration.wave2DistLR,
+                                                                    false
+                                                                )
+                                                   );
+        //std::cout << "dentrOverlap: " << slideHypcubeSize->lstOverlapPos[i] << std::endl;
+        slideHypcubeSize->lstOverlapPos[i]   = slideHypcubeSize->lstOverlapPos[i] - round((float)slideHypcubeSize->slideW/2.0);
+        slideHypcubeSize->lstOverlapPos[i]   = (slideHypcubeSize->lstOverlapPos[i]<0)?0:slideHypcubeSize->lstOverlapPos[i];//Minimum position
+        slideHypcubeSize->lstOverlapPos[i]   = (slideHypcubeSize->lstOverlapPos[i]<maxOverlapImgPos)?slideHypcubeSize->lstOverlapPos[i]:maxOverlapImgPos;
+        //Non-Overlap Initial Position
+        slideHypcubeSize->lstNotOverlapPos[i]= slideHypcubeSize->lstOverlapPos[i] + slideHypcubeSize->overlapW;
+    }
+}
 
 
+int formBuildSlideHypeCubePreview
+    ::funcSlideSpectralImageUnzip(
+                                    u_int8_t*** slideHypCube,
+                                    const int &idImg,
+                                    QImage* tmpImg,
+                                    const structSlideHypCubeSize &slideHypcubeSize
+){
+
+
+
+
+    return _OK;
 }

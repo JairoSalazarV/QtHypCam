@@ -26,7 +26,7 @@
   <widget class="QPushButton" name="pbApply">
    <property name="geometry">
     <rect>
-     <x>660</x>
+     <x>630</x>
      <y>40</y>
      <width>31</width>
      <height>28</height>
@@ -128,7 +128,7 @@
   <widget class="QLabel" name="labelProgBar">
    <property name="geometry">
     <rect>
-     <x>790</x>
+     <x>760</x>
      <y>55</y>
      <width>371</width>
      <height>20</height>
@@ -144,7 +144,7 @@
   <widget class="QProgressBar" name="progBar">
    <property name="geometry">
     <rect>
-     <x>790</x>
+     <x>760</x>
      <y>40</y>
      <width>371</width>
      <height>16</height>
@@ -190,7 +190,7 @@
   <widget class="QPushButton" name="pbExportCube">
    <property name="geometry">
     <rect>
-     <x>740</x>
+     <x>710</x>
      <y>40</y>
      <width>31</width>
      <height>28</height>
@@ -210,7 +210,7 @@
   <widget class="QPushButton" name="pbExportImages">
    <property name="geometry">
     <rect>
-     <x>700</x>
+     <x>670</x>
      <y>40</y>
      <width>31</width>
      <height>28</height>

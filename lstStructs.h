@@ -495,6 +495,24 @@
         float maxWavelength = 0.0;
     }structVerticalCalibrationSettings;
 
+    typedef struct structSlideHypCubeSize
+    {
+        int hypcubeW;
+        int hypcubeH;
+        int hypcubeL;
+        int imgW;
+        int imgH;
+        int slideW;
+        int slideH;
+        int overlapW;
+        int notOverlapW;
+        float specW;
+        float specResolution;
+        float* lstWavelengths;
+        int* lstOverlapPos;
+        int* lstNotOverlapPos;
+    }structSlideHypCubeSize;
+
 
 
 
