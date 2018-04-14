@@ -655,6 +655,8 @@ private slots:
 
     void on_actionSlide_HypCube_Building_triggered();
 
+    void on_actionCamera_Sensitivities_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

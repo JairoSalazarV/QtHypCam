@@ -3277,3 +3277,23 @@ float funcPixelToQE(const QColor &tmpPixColor)
 {
     return (float)pixelMaxValue(tmpPixColor);
 }
+
+
+QList<double> getNormedFunction( QString fileName )
+{
+    QString contain;
+    contain = readFileParam(fileName);
+    QList<QString> irradiation;
+    QList<double> function;
+    irradiation = contain.split(",");
+    int i;
+    double max;
+    max = irradiation.at(0).toDouble(0);
+    irradiation.removeAt(0);
+    for(i=0;i<irradiation.count();i++)
+    {
+        function.append(irradiation.at(i).toDouble(0) / max );
+        //printf("%.4f,",function.at(i));
+    }
+    return function;
+}

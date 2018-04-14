@@ -37,6 +37,7 @@
     #define _PATH_CALIB_LR_TMP_ORIGIN       "./settings/Calib/diffractionOrigin.hypcam"
     #define _PATH_SLIDE_ACTUAL_CALIB_PATH   "./settings/Calib/actualSlideCalibrarion.hypcam"
 
+
     #define _PATH_WAVE_OPTIONS              "./settings/waveOptions.hypcam"
     #define _PATH_WAVE_CHOISES              "./settings/waveChoises.hypcam"
 
@@ -120,6 +121,7 @@
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
     #define _PATH_SLIDE_EXPORTING_HYPCUBE   "./XML/slideExportingHypcube.xml"
+    #define _PATH_SLIDE_RGB_SENSITIVITIES   "./XML/slideRGBSensitivities.xml"
 
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"

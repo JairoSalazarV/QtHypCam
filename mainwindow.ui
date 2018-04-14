@@ -1468,6 +1468,7 @@ QSlider::handle:horizontal {
        <string>Compute</string>
       </property>
       <addaction name="actionBuld_HypImg"/>
+      <addaction name="actionCamera_Sensitivities"/>
      </widget>
      <addaction name="actionSlideDiffraction"/>
      <addaction name="actionTimelapse"/>
@@ -2382,6 +2383,11 @@ QSlider::handle:horizontal {
   <action name="actionSlide_HypCube_Building">
    <property name="text">
     <string>Slide HypCube Building</string>
+   </property>
+  </action>
+  <action name="actionCamera_Sensitivities">
+   <property name="text">
+    <string>Camera Sensitivities</string>
    </property>
   </action>
  </widget>

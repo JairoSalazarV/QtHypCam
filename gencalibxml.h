@@ -97,9 +97,7 @@ private slots:
 
     void clearWavelengthChoised();
 
-    void calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal);
-
-    QList<double> getNormedFunction( QString fileName );
+    void calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal);    
 
     QVector2D getSqUsableIni();
 

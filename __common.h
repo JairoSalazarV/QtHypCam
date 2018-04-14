@@ -313,4 +313,7 @@
     float funcPixelToQE( const QColor &tmpPixColor );
 
 
+    QList<double> getNormedFunction( QString fileName );
+
+
 #endif // __COMMON_H

@@ -304,7 +304,7 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     structSlideCalibration mainSlideCalibration;
     if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
     {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath,this);
         return (void)false;
     }
 
@@ -938,7 +938,8 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
     minWavelen  = mainSlideCalibration.originWave;
     imgW        = lstImgs.at(0).width();
     specW       = maxWavelen - minWavelen;
-    specRes     = (float)imgW / specW;
+    //specRes     = (float)imgW / specW;
+    specRes     = mainExportSettings.spectralResolution;
     //std::cout << "maxWavelen: " << maxWavelen << std::endl;
     //std::cout << "minWavelen: " << minWavelen << std::endl;
     //std::cout << "specW: " << specW << std::endl;
@@ -969,7 +970,7 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
         //Get Layer
         layerBackup = funcGetImageAtWavelength( specI, mainSlideCalibration );
         //Save Layer
-        //layerBackup.save(tmpFileName);
+        layerBackup.save(tmpFileName);
     }
 
     //Update Progressbar
