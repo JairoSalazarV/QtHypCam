@@ -237,6 +237,20 @@
         float b;
     }structHorizontalCalibration;
 
+    typedef struct structSlideSensitivities
+    {
+        int     filled=0;
+        QString ralphSR;
+        QString ralphSG;
+        QString ralphSB;
+        QString wSR;
+        QString wSG;
+        QString wSB;
+        QString originalSR;
+        QString originalSG;
+        QString originalSB;
+    }structSlideSensitivities;
+
     typedef struct structSlideCalibration{
         int     imgW;
         int     imgH;
@@ -252,6 +266,7 @@
         linearRegresion vertLR;
         linearRegresion horizLR;
         QTransform translation;
+        structSlideSensitivities sensitivities;
     }structSlideCalibration;
 
     typedef struct colorAnalyseResult{

@@ -81,7 +81,8 @@
     #define _PATH_SLIDE_HALOGEN_SENSITIVITIES       "./settings/Calib/slideHalogenSensitivities.hypcam"
     #define _PATH_SLIDE_MAX_WAVELENGTH              "./settings/Calib/slideMaxWavelength.hypcam"
 
-
+    #define _PATH_DEFA_CALIB                "./settings/Calib/"
+    #define _PATH_CALIB_LAST_OPEN           "./settings/Calib/lastCalibPathOpen.hypcam"
 
     #define _PATH_IMG_FILTERED              "./tmpImages/Filtered/"
     #define _PATH_CUSTOM_GV_DEFAULT         "./tmpImages/customGraphicView.png"
@@ -120,8 +121,7 @@
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
-    #define _PATH_SLIDE_EXPORTING_HYPCUBE   "./XML/slideExportingHypcube.xml"
-    #define _PATH_SLIDE_RGB_SENSITIVITIES   "./XML/slideRGBSensitivities.xml"
+    #define _PATH_SLIDE_EXPORTING_HYPCUBE   "./XML/slideExportingHypcube.xml"    
 
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"
@@ -142,6 +142,8 @@
     #define _PATH_LOCAL_FOLDER_SLIDELAPSE   "tmpSlideLapse/"
     #define _PATH_LOCAL_FOLDER_TEST_SLIDE   "tmp/"
     #define _PATH_LOCAL_SLIDE_HYPIMG        "./tmpImages/frames/slideHypImg/"
+
+    #define _PATH_LOCAL_SYNC_FOLDERS        "./SYNC/"
 
 
 

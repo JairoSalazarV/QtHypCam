@@ -1544,6 +1544,7 @@ QSlider::handle:horizontal {
     <addaction name="actionLinear_Regression"/>
     <addaction name="separator"/>
     <addaction name="actionSlide_Linear_Regression"/>
+    <addaction name="actionCalc_Sensitivities"/>
     <addaction name="separator"/>
     <addaction name="menuPlot"/>
     <addaction name="separator"/>
@@ -2388,6 +2389,11 @@ QSlider::handle:horizontal {
   <action name="actionCamera_Sensitivities">
    <property name="text">
     <string>Camera Sensitivities</string>
+   </property>
+  </action>
+  <action name="actionCalc_Sensitivities">
+   <property name="text">
+    <string>Calc Sensitivities</string>
    </property>
   </action>
  </widget>

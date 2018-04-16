@@ -21,9 +21,9 @@ void formMergeSlideCalibrations::on_pbHorizontal_clicked()
     //Define Video Origin
     //--------------------------------
     QString defaVideoPath;
-    defaVideoPath.append(_PATH_LOCAL_SYNC_FOLDERS);
-    defaVideoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
-    if( funcLetUserSelectFile( &defaVideoPath ) != _OK )
+    defaVideoPath.append(_PATH_LAST_PATH_OPENED);
+    //defaVideoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
+    if( funcLetUserSelectFile( &defaVideoPath, "Select HORIZONTAL Settings", this ) != _OK )
     {
         return (void)false;
     }
@@ -44,9 +44,9 @@ void formMergeSlideCalibrations::on_pbVertical_clicked()
     //Define Video Origin
     //--------------------------------
     QString defaVideoPath;
-    defaVideoPath.append(_PATH_LOCAL_SYNC_FOLDERS);
-    defaVideoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
-    if( funcLetUserSelectFile( &defaVideoPath ) != _OK )
+    defaVideoPath.append(_PATH_LAST_PATH_OPENED);
+    //defaVideoPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
+    if( funcLetUserSelectFile( &defaVideoPath, "Select VERTICAL Settings", this ) != _OK )
     {
         return (void)false;
     }
@@ -85,14 +85,23 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
                             &slideCalibration
                          );
 
-    //--------------------------------
+    //----------------------------------------------
     //Load Affine Transformation
-    //--------------------------------
+    //----------------------------------------------
     QTransform T;
     if( funcReadAffineTransXML( ui->txtAffineTrans->text().trimmed(), &T ) != _OK )
     {
         funcShowMsgERROR_Timeout("Reading Affine Transformation");
         return (void)false;
+    }
+
+    //----------------------------------------------
+    //Load Sensitivities If was Selected
+    //----------------------------------------------
+    structSlideSensitivities slideSensitivities;
+    if( !ui->txtHorPath->text().trimmed().isEmpty() )
+    {        
+        funcReadSensitivities( ui->txtSensitivities->text().trimmed(), &slideSensitivities );
     }
 
     //---------------------------------------
@@ -121,6 +130,7 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
             funcSaveSlideCalibration(
                                         &fullPathName,
                                         &slideCalibration,
+                                        &slideSensitivities,
                                         &T
                                     ) != _OK
     ){
@@ -133,9 +143,65 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
 }
 
 int formMergeSlideCalibrations
+    ::funcReadSensitivities(
+                                const QString &filePath,
+                                structSlideSensitivities* slideSensitivities
+){
+    QFile *xmlFile = new QFile( filePath );
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError()) {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        if(token == QXmlStreamReader::StartDocument) {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="ralphSR" )
+                slideSensitivities->ralphSR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="ralphSG" )
+                slideSensitivities->ralphSG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="ralphSB" )
+                slideSensitivities->ralphSB.append( xmlReader->readElementText().trimmed() );
+
+            if( xmlReader->name()=="wSR" )
+                slideSensitivities->wSR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="wSG" )
+                slideSensitivities->wSG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="wSB" )
+                slideSensitivities->wSB.append( xmlReader->readElementText().trimmed() );
+
+            if( xmlReader->name()=="originalSR" )
+                slideSensitivities->originalSR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="originalSG" )
+                slideSensitivities->originalSG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="originalSB" )
+                slideSensitivities->originalSB.append( xmlReader->readElementText().trimmed() );
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    slideSensitivities->filled = 1;
+
+    return _OK;
+}
+
+int formMergeSlideCalibrations
     ::funcSaveSlideCalibration(
                                     QString* pathDestine,
                                     structSlideCalibration* slideCalibration,
+                                    structSlideSensitivities* slideSensitivities,
                                     QTransform *T
 ){
 
@@ -169,6 +235,12 @@ int formMergeSlideCalibrations
                 << "Tm11"       << "Tm12"       << "Tm13"
                 << "Tm21"       << "Tm22"       << "Tm23"
                 << "Tm31"       << "Tm32"       << "Tm33" ;
+    if( slideSensitivities->filled )
+    {
+        lstFixtures << "ralphSR"        << "ralphSG"        << "ralphSB"
+                    << "wSR"            << "wSG"            << "wSB"
+                    << "originalSR"     << "originalSG"     << "originalSB";
+    }
 
     //-----------------------------------
     //Fill Values
@@ -200,6 +272,19 @@ int formMergeSlideCalibrations
                 << QString::number(T->m32())
                 << QString::number(T->m33());
 
+    if( slideSensitivities->filled )
+    {
+        lstValues   << slideSensitivities->ralphSR
+                    << slideSensitivities->ralphSG
+                    << slideSensitivities->ralphSB
+                    << slideSensitivities->wSR
+                    << slideSensitivities->wSG
+                    << slideSensitivities->wSB
+                    << slideSensitivities->originalSR
+                    << slideSensitivities->originalSG
+                    << slideSensitivities->originalSB;
+    }
+
     //-----------------------------------
     //Save Slide Calibration File
     //-----------------------------------
@@ -217,12 +302,25 @@ void formMergeSlideCalibrations::on_pbAffineTrans_clicked()
     //--------------------------------
     //Define Transformation Origin
     //--------------------------------
-    QString defaPath;
-    defaPath.append(_PATH_LOCAL_SYNC_FOLDERS);
-    defaPath.append(_PATH_LOCAL_FOLDER_VIDEOS);
-    if( funcLetUserSelectFile( &defaPath ) != _OK )
+    QString defaPath;//_PATH_CALIB_LAST_OPEN
+    defaPath.append(_PATH_LAST_PATH_OPENED);
+    if( funcLetUserSelectFile( &defaPath, "Select TRANSFORMATION Settings", this ) != _OK )
     {
         return (void)false;
     }
     ui->txtAffineTrans->setText(defaPath);
+}
+
+void formMergeSlideCalibrations::on_pbSensitivities_clicked()
+{
+    //--------------------------------
+    //Define Transformation Origin
+    //--------------------------------
+    QString defaPath;
+    defaPath.append(_PATH_LAST_PATH_OPENED);
+    if( funcLetUserSelectFile( &defaPath, "Select SENSITIVITIES Settings", this ) != _OK )
+    {
+        return (void)false;
+    }
+    ui->txtSensitivities->setText(defaPath);
 }

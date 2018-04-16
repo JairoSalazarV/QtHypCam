@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>841</width>
-    <height>299</height>
+    <height>316</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -95,7 +95,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>243</y>
+     <y>273</y>
      <width>161</width>
      <height>28</height>
     </rect>
@@ -108,7 +108,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>195</y>
+     <y>225</y>
      <width>161</width>
      <height>28</height>
     </rect>
@@ -118,7 +118,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>200</y>
+     <y>230</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -131,7 +131,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>155</y>
+     <y>185</y>
      <width>121</width>
      <height>20</height>
     </rect>
@@ -144,7 +144,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>150</y>
+     <y>180</y>
      <width>161</width>
      <height>29</height>
     </rect>
@@ -195,6 +195,45 @@
     </rect>
    </property>
   </widget>
+  <widget class="QPushButton" name="pbSensitivities">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>140</y>
+     <width>41</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="labelHor_6">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>145</y>
+     <width>121</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Sensitivities</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="txtSensitivities">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>140</y>
+     <width>631</width>
+     <height>28</height>
+    </rect>
+   </property>
+  </widget>
   <zorder>pbMergeCalibration</zorder>
   <zorder>pbHorizontal</zorder>
   <zorder>labelHor</zorder>
@@ -209,6 +248,9 @@
   <zorder>labelHor_5</zorder>
   <zorder>pbAffineTrans</zorder>
   <zorder>txtAffineTrans</zorder>
+  <zorder>pbSensitivities</zorder>
+  <zorder>labelHor_6</zorder>
+  <zorder>txtSensitivities</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -26,12 +26,19 @@ private slots:
     int funcSaveSlideCalibration(
                                     QString* pathDestine,
                                     structSlideCalibration* slideCalibration,
+                                    structSlideSensitivities* slideSensitivities,
                                     QTransform* T
                                 );
+    int funcReadSensitivities(
+                                const QString &filePath,
+                                structSlideSensitivities* slideSensitivities
+                             );
 
 
 
     void on_pbAffineTrans_clicked();
+
+    void on_pbSensitivities_clicked();
 
 private:
     Ui::formMergeSlideCalibrations *ui;

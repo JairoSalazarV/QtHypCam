@@ -88,6 +88,7 @@
 
     int fileIsValid(QString fileContain);
 
+    QString readFileParam( const QString &filePath, const QString &pathDefault, int* OK );
     int readFileParam(QString fileName, QString *tmpFileContain);
     QString readFileParam(QString fileName);    
 
@@ -223,7 +224,11 @@
                                 const QString &defaultLastPath,
                                 QWidget* parent=Q_NULLPTR
                              );
-    int funcLetUserSelectFile(QString* filePath, const QString &title="Select file...");
+    int funcLetUserSelectFile(
+                                QString* filePath,
+                                const QString &title="Select file...",
+                                QWidget* parent=Q_NULLPTR
+                             );
 
     int funcLetUserDefineFile(
                                 QString* filePath,

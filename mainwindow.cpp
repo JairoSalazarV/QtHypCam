@@ -10893,8 +10893,8 @@ void MainWindow::on_actionCamera_Sensitivities_triggered()
         return (void)false;
     }
     //Get Spectral Resolution
-    float specRes, specMin;
-    specMin = slideCalibration.originWave;
+    float specRes;//, specMin;
+    //specMin = slideCalibration.originWave;
     specRes = (slideCalibration.maxWave - slideCalibration.originWave) /
               (float)globalEditImg->width();
     //funcShowMsg("specRes",QString::number(specRes));
@@ -10912,21 +10912,28 @@ void MainWindow::on_actionCamera_Sensitivities_triggered()
     int x, y;
     W = globalEditImg->width();
     H = globalEditImg->height();
-    int     sensR[W];
-    int     sensG[W];
-    int     sensB[W];
-    int     halog[W];
+    float sensR[W];
+    float sensG[W];
+    float sensB[W];
+    float halog[W];
 
-    int     backSensR[W];
-    int     backSensG[W];
-    int     backSensB[W];
+    float backSensR[W];
+    float backSensG[W];
+    float backSensB[W];
 
-    int tmpR, tmpG, tmpB;
+    float wR[W];
+    float wG[W];
+    float wB[W];
+
+    float tmpR, tmpG, tmpB;
+    float maxR, maxG, maxB, maxH;
     QColor tmpColor;
+    int specPos;
 
     //------------------------------------------
-    //Acumulate values sensed
+    //AVERAGE SENSED VALUE
     //------------------------------------------
+    maxR = 0;   maxG = 0;   maxB = 0;    maxH = 0;
     for( x=0; x<W; x++ )
     {
         //......................................
@@ -10938,217 +10945,408 @@ void MainWindow::on_actionCamera_Sensitivities_triggered()
         for( y=0; y<H; y++ )
         {
             tmpColor = globalEditImg->pixelColor(x,y);
-            tmpR    += tmpColor.red();
-            tmpG    += tmpColor.green();
-            tmpB    += tmpColor.blue();
+            tmpR    += (float)tmpColor.red();
+            tmpG    += (float)tmpColor.green();
+            tmpB    += (float)tmpColor.blue();
         }
-        sensR[x]     = round( (float)tmpR / (float)H );
-        sensG[x]     = round( (float)tmpG / (float)H );
-        sensB[x]     = round( (float)tmpB / (float)H );
+        sensR[x]     = tmpR / (float)H;
+        sensG[x]     = tmpG / (float)H;
+        sensB[x]     = tmpB / (float)H;
+
+        //......................................
+        //Get Halogen Value
+        //......................................
+        specPos      = floor( slideCalibration.originWave + ( x * specRes ) );
+        halog[x]     = halogenFunction.at(specPos);
+
+        //......................................
+        //Calc Maximums
+        //......................................
+        maxR = (sensR[x]>maxR)?sensR[x]:maxR;
+        maxG = (sensG[x]>maxG)?sensG[x]:maxG;
+        maxB = (sensB[x]>maxB)?sensB[x]:maxB;
+        maxH = (halog[x]>maxH)?halog[x]:maxH;
+    }
+    //------------------------------------------
+    //CUSTOM
+    //------------------------------------------
+    if( 1 )
+    {
+        //Delete Red Noise
+        int n = 100;
+        float tmpVal = sensR[n];
+        for( x=0; x<n; x++ )
+        {
+            sensR[x]    = tmpVal;
+        }
+
+        //Fix nose added by HypCam
+        sensR[0]        = sensR[1];
+        sensG[0]        = sensG[1];
+        sensB[0]        = sensB[1];
+
+        sensR[W-1]      = sensR[W-2];
+        sensG[W-1]      = sensG[W-2];
+        sensB[W-1]      = sensB[W-2];
 
     }
 
     //------------------------------------------
-    //Offset Correction
+    //NORMALIZE SENSITIVITIES
     //------------------------------------------
-    sensR[0] = sensR[1];    sensR[W-1] = sensR[W-2];
-    sensG[0] = sensG[1];    sensG[W-1] = sensG[W-2];
-    sensB[0] = sensB[1];    sensB[W-1] = sensB[W-2];
-    //Backup
-    backSensR[0] = sensR[0];
-    backSensG[0] = sensG[0];
-    backSensB[0] = sensB[0];
+    for( x=0; x<W; x++ )
+    {
+        sensR[x]    = sensR[x] / maxR;
+        sensG[x]    = sensG[x] / maxG;
+        sensB[x]    = sensB[x] / maxB;
+
+        halog[x]    = halog[x] / maxH;
+    }
 
     //------------------------------------------
-    //Calculate Sensitivities
+    //BACKUP BEFOR APPLY RALPH's PROPOSAL
     //------------------------------------------
-    int maxR, maxG, maxB, maxPos;
-    int maxMax;
-    maxR    = 0;
-    maxG    = 0;
-    maxB    = 0;
-    maxPos  = 0;
-    maxMax  = 0;
-    for( x=1; x<W; x++ )
+    for( x=0; x<W; x++ )
     {
-        //Backup
         backSensR[x] = sensR[x];
         backSensG[x] = sensG[x];
         backSensB[x] = sensB[x];
 
-
-        maxR = (sensR[x]>maxR)?sensR[x]:maxR;
-        maxG = (sensG[x]>maxG)?sensG[x]:maxG;
-        maxB = (sensB[x]>maxB)?sensB[x]:maxB;
-
-        if( maxMax < maxR )
-        {
-            maxMax  = maxR;
-            maxPos  = x;
-        }
-        if( maxMax < maxG )
-        {
-            maxMax  = maxG;
-            maxPos  = x;
-        }
-        if( maxMax < maxB )
-        {
-            maxMax  = maxB;
-            maxPos  = x;
-        }
-
-
-
+        wR[x]        = sensR[x] / (sensR[x]+sensG[x]+sensB[x]) ;
+        wG[x]        = sensG[x] / (sensR[x]+sensG[x]+sensB[x]) ;
+        wB[x]        = sensB[x] / (sensR[x]+sensG[x]+sensB[x]) ;
     }
 
     //------------------------------------------
-    //Get Maximum Radiance
+    //Apply Ralph's Proposed Method to Calc
+    //Sensor Sensitivities
     //------------------------------------------
-    float maxWaveRef;
-    maxWaveRef = 0;
-    for( x=floor(specMin); x<ceil(slideCalibration.maxWave); x++ )
-    {
-        maxWaveRef = ( maxWaveRef < halogenFunction.at(x) )?halogenFunction.at(x):maxWaveRef;
-    }
-
-    //------------------------------------------
-    //Apply Sensor Sensitivities
-    //------------------------------------------
-    float percInduced, percMeasured;
-    float maxHalogSens;
-    int moreSensWave, specPos;
-    int maxScaled;
-    moreSensWave = round( specMin + ((float)maxPos*specRes) );
-    maxHalogSens = halogenFunction.at(moreSensWave);
-    maxScaled = 0;
+    maxR = 0;   maxG = 0;   maxB = 0;
     for( x=0; x<W; x++ )
     {
-        //Calc Wavelength
-        specPos         = floor( slideCalibration.originWave + ( x * specRes ) );
-        halog[x]        = round(255.0*halogenFunction.at(specPos));
-
-        //Induced
-        percInduced     = halogenFunction.at(specPos) / maxHalogSens;
-
-        //Red Measure
-        percMeasured    = (float)sensR[x] / (float)maxR;
-        sensR[x]        = round( (float)maxR*(percMeasured / percInduced) );
-        maxScaled       = (maxScaled<sensR[x])?sensR[x]:maxScaled;
-
-        //Green Measure
-        percMeasured    = (float)sensG[x] / (float)maxG;
-        sensG[x]        = round( (float)maxG*(percMeasured / percInduced) );
-        maxScaled       = (maxScaled<sensG[x])?sensG[x]:maxScaled;
-
-        //Blue Measure
-        percMeasured    = (float)sensB[x] / (float)maxB;
-        sensB[x]        = round( (float)maxB*(percMeasured / percInduced) );
-        maxScaled       = (maxScaled<sensB[x])?sensB[x]:maxScaled;
-
-        //funcShowMsg(
-        //                "x - sensR[x] - sensG[x] - sensB[x] - maxScaled",
-        //                QString::number(x)+"-"+
-        //                QString::number(sensR[x])+"-"+
-        //                QString::number(sensG[x])+"-"+
-        //                QString::number(sensB[x])+"-"+
-        //                QString::number(maxScaled)
-        //            );
-        //funcShowMsg(
-        //                "x - specPos - percInduced - percMeasured - facMult",
-        //                QString::number(x)+"-"+
-        //                QString::number(specPos)+"-"+
-        //                QString::number(percInduced)+"-"+
-        //                QString::number(percMeasured)+"-"+
-        //                QString::number(facMultR[x])
-        //            );
+        sensR[x] = sensR[x] / halog[x];
+        sensG[x] = sensG[x] / halog[x];
+        sensB[x] = sensB[x] / halog[x];
+        maxR     = (sensR[x]>maxR)?sensR[x]:maxR;
+        maxG     = (sensG[x]>maxG)?sensG[x]:maxG;
+        maxB     = (sensB[x]>maxB)?sensB[x]:maxB;
     }
 
     //------------------------------------------
-    //Normalize Sensor Sensitivities
+    //NORMALIZE FINAL SENSITIVITIES
     //------------------------------------------
     for( x=0; x<W; x++ )
     {
-        sensR[x] = round( 255.0 * ((float)sensR[x] / (float)maxScaled) );
-        sensG[x] = round( 255.0 * ((float)sensG[x] / (float)maxScaled) );
-        sensB[x] = round( 255.0 * ((float)sensB[x] / (float)maxScaled) );
-        //funcShowMsg(
-        //                "x -> [R,G,B] back[R,G,B]",
-        //                QString::number(x)+"-["+
-        //                QString::number(sensR[x])+","+
-        //                QString::number(sensG[x])+","+
-        //                QString::number(sensB[x])+"] ["+
-        //                QString::number(backSensR[x])+","+
-        //                QString::number(backSensG[x])+","+
-        //                QString::number(backSensB[x])+"]"
-        //            );
+        sensR[x] = sensR[x] / maxR;
+        sensG[x] = sensG[x] / maxG;
+        sensB[x] = sensB[x] / maxB;
     }
 
     //------------------------------------------
-    //Concatenate Normalize Sensor Sensitivities
+    //Concatenate Sensitivities Vectors
     //------------------------------------------
-    QString outputR;
-    QString outputG;
-    QString outputB;
+    QString SR, SG, SB;
+    QString wSR, wSG, wSB;
+    QString backSR, backSG, backSB;
+    QString halogNorm;
 
-    QString outputBackR;
-    QString outputBackG;
-    QString outputBackB;
+    SR.append(QString::number(sensR[0]));
+    SG.append(QString::number(sensG[0]));
+    SB.append(QString::number(sensB[0]));
 
-    QString outputHalogen;
+    wSR.append(QString::number(wR[0]));
+    wSG.append(QString::number(wG[0]));
+    wSB.append(QString::number(wB[0]));
 
-    outputR.append(QString::number(sensR[0]));
-    outputG.append(QString::number(sensG[0]));
-    outputB.append(QString::number(sensB[0]));
-
-    outputBackR.append(QString::number(backSensR[0]));
-    outputBackG.append(QString::number(backSensG[0]));
-    outputBackB.append(QString::number(backSensB[0]));
-
-    outputHalogen.append(QString::number(halog[0]));
+    backSR.append(QString::number(backSensR[0]));
+    backSG.append(QString::number(backSensG[0]));
+    backSB.append(QString::number(backSensB[0]));
+    halogNorm.append(QString::number(halog[0]));
 
     for( x=1; x<W; x++ )
     {
-        outputR.append(",");
-        outputG.append(",");
-        outputB.append(",");
+        SR.append( "," + QString::number(sensR[x]) );
+        SG.append( "," + QString::number(sensG[x]) );
+        SB.append( "," + QString::number(sensB[x]) );
 
-        outputBackR.append(",");
-        outputBackG.append(",");
-        outputBackB.append(",");
+        wSR.append( "," + QString::number(wR[x]) );
+        wSG.append( "," + QString::number(wG[x]) );
+        wSB.append( "," + QString::number(wB[x]) );
 
-        outputHalogen.append(",");
+        backSR.append( "," + QString::number(backSensR[x]) );
+        backSG.append( "," + QString::number(backSensG[x]) );
+        backSB.append( "," + QString::number(backSensB[x]) );
 
-        outputR.append(QString::number(sensR[x]));
-        outputG.append(QString::number(sensG[x]));
-        outputB.append(QString::number(sensB[x]));
-
-        outputBackR.append(QString::number(backSensR[x]));
-        outputBackG.append(QString::number(backSensG[x]));
-        outputBackB.append(QString::number(backSensB[x]));
-
-        outputHalogen.append(QString::number(halog[x]));
+        halogNorm.append( "," + QString::number(halog[x]) );
     }
 
     //------------------------------------------
-    //Save Sensitivities
+    //Save Sensitivities File
     //------------------------------------------
-    QList<QString> lstFixtures;
-    QList<QString> lstValues;
+    //Prepare Output File
+    QList<QString> fixtures;
+    QList<QString> values;
 
-    lstFixtures << "redSens" << "greenSens" << "blueSens";
-    lstFixtures << "vecR" << "vecG" << "vecB" << "vecHalog";
-    lstFixtures << "backVecR" << "backVecG" << "backVecB";
+    fixtures << "ralphSR"       << "ralphSG"        << "ralphSB";
+    fixtures << "wSR"           << "wSG"            << "wSB";
+    fixtures << "originalSR"    << "originalSG"     << "originalSB";
+    fixtures << "halogNorm";
 
-    lstValues << outputR << outputG << outputB;
-    lstValues << "R=[" + outputR + "];";
-    lstValues << "G=[" + outputG + "];";
-    lstValues << "B=[" + outputB + "];";
-    lstValues << "halog=[" + outputHalogen + "];";
+    values << SR        << SG       << SB;
+    values << wSR       << wSG      << wSB;
+    values << backSR    << backSG   << backSB;
+    values << halogNorm;
 
-    lstValues << "backR=[" + outputBackR + "];";
-    lstValues << "backG=[" + outputBackG + "];";
-    lstValues << "backB=[" + outputBackB + "];";
+    //Save File
+    //funcSaveXML(_PATH_SLIDE_RGB_SENSITIVITIES,&fixtures,&values,true);
 
-    funcSaveXML( _PATH_SLIDE_RGB_SENSITIVITIES, &lstFixtures, &lstValues, true );
+}
 
+void MainWindow::on_actionCalc_Sensitivities_triggered()
+{
+    //------------------------------------------
+    //Read Slide Calibration
+    //------------------------------------------
+
+    //Get Default Slide Calibration Path
+    QString defaCalibPath;
+    defaCalibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    if( defaCalibPath.isEmpty() )
+    {
+        funcShowMsg("Alert!","Please, Set Default Slide Calibration");
+        return (void)false;
+    }
+    //Read Default Calibration Path
+    structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( defaCalibPath, &slideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
+        return (void)false;
+    }
+    //Get Spectral Resolution
+    float specRes;//, specMin;
+    //specMin = slideCalibration.originWave;
+    specRes = (slideCalibration.maxWave - slideCalibration.originWave) /
+              (float)globalEditImg->width();
+    //funcShowMsg("specRes",QString::number(specRes));
+
+    //------------------------------------------
+    //Get halogen function
+    //------------------------------------------
+    QList<double> halogenFunction;
+    halogenFunction = getNormedFunction( _PATH_HALOGEN_FUNCTION );//[0,3500]nm | Real [0,1] | 1=null
+
+    //------------------------------------------
+    //Prepare Variables
+    //------------------------------------------
+    int W, H;
+    int x, y;
+    W = globalEditImg->width();
+    H = globalEditImg->height();
+    float sensR[W];
+    float sensG[W];
+    float sensB[W];
+    float halog[W];
+
+    float backSensR[W];
+    float backSensG[W];
+    float backSensB[W];
+
+    float wR[W];
+    float wG[W];
+    float wB[W];
+
+    float tmpR, tmpG, tmpB;
+    float maxR, maxG, maxB, maxH;
+    QColor tmpColor;
+    int specPos;
+
+    //------------------------------------------
+    //AVERAGE SENSED VALUE
+    //------------------------------------------
+    maxR = 0;   maxG = 0;   maxB = 0;    maxH = 0;
+    for( x=0; x<W; x++ )
+    {
+        //......................................
+        //Calc Sesitivities
+        //......................................
+        tmpR = 0;
+        tmpG = 0;
+        tmpB = 0;
+        for( y=0; y<H; y++ )
+        {
+            tmpColor = globalEditImg->pixelColor(x,y);
+            tmpR    += (float)tmpColor.red();
+            tmpG    += (float)tmpColor.green();
+            tmpB    += (float)tmpColor.blue();
+        }
+        sensR[x]     = tmpR / (float)H;
+        sensG[x]     = tmpG / (float)H;
+        sensB[x]     = tmpB / (float)H;
+
+        //......................................
+        //Get Halogen Value
+        //......................................
+        specPos      = floor( slideCalibration.originWave + ( x * specRes ) );
+        halog[x]     = halogenFunction.at(specPos);
+
+        //......................................
+        //Calc Maximums
+        //......................................
+        maxR = (sensR[x]>maxR)?sensR[x]:maxR;
+        maxG = (sensG[x]>maxG)?sensG[x]:maxG;
+        maxB = (sensB[x]>maxB)?sensB[x]:maxB;
+        maxH = (halog[x]>maxH)?halog[x]:maxH;
+    }
+    //------------------------------------------
+    //CUSTOM
+    //------------------------------------------
+    if( 1 )
+    {
+        //Delete Red Noise
+        int n = 100;
+        float tmpVal = sensR[n];
+        for( x=0; x<n; x++ )
+        {
+            sensR[x]    = tmpVal;
+        }
+
+        //Fix nose added by HypCam
+        sensR[0]        = sensR[1];
+        sensG[0]        = sensG[1];
+        sensB[0]        = sensB[1];
+
+        sensR[W-1]      = sensR[W-2];
+        sensG[W-1]      = sensG[W-2];
+        sensB[W-1]      = sensB[W-2];
+
+    }
+
+    //------------------------------------------
+    //NORMALIZE SENSITIVITIES
+    //------------------------------------------
+    for( x=0; x<W; x++ )
+    {
+        sensR[x]    = sensR[x] / maxR;
+        sensG[x]    = sensG[x] / maxG;
+        sensB[x]    = sensB[x] / maxB;
+
+        halog[x]    = halog[x] / maxH;
+    }
+
+    //------------------------------------------
+    //BACKUP BEFOR APPLY RALPH's PROPOSAL
+    //------------------------------------------
+    for( x=0; x<W; x++ )
+    {
+        backSensR[x] = sensR[x];
+        backSensG[x] = sensG[x];
+        backSensB[x] = sensB[x];
+
+        wR[x]        = sensR[x] / (sensR[x]+sensG[x]+sensB[x]) ;
+        wG[x]        = sensG[x] / (sensR[x]+sensG[x]+sensB[x]) ;
+        wB[x]        = sensB[x] / (sensR[x]+sensG[x]+sensB[x]) ;
+    }
+
+    //------------------------------------------
+    //Apply Ralph's Proposed Method to Calc
+    //Sensor Sensitivities
+    //------------------------------------------
+    maxR = 0;   maxG = 0;   maxB = 0;
+    for( x=0; x<W; x++ )
+    {
+        sensR[x] = sensR[x] / halog[x];
+        sensG[x] = sensG[x] / halog[x];
+        sensB[x] = sensB[x] / halog[x];
+        maxR     = (sensR[x]>maxR)?sensR[x]:maxR;
+        maxG     = (sensG[x]>maxG)?sensG[x]:maxG;
+        maxB     = (sensB[x]>maxB)?sensB[x]:maxB;
+    }
+
+    //------------------------------------------
+    //NORMALIZE FINAL SENSITIVITIES
+    //------------------------------------------
+    for( x=0; x<W; x++ )
+    {
+        sensR[x] = sensR[x] / maxR;
+        sensG[x] = sensG[x] / maxG;
+        sensB[x] = sensB[x] / maxB;
+    }
+
+    //------------------------------------------
+    //Concatenate Sensitivities Vectors
+    //------------------------------------------
+    QString SR, SG, SB;
+    QString wSR, wSG, wSB;
+    QString backSR, backSG, backSB;
+    QString halogNorm;
+
+    SR.append(QString::number(sensR[0]));
+    SG.append(QString::number(sensG[0]));
+    SB.append(QString::number(sensB[0]));
+
+    wSR.append(QString::number(wR[0]));
+    wSG.append(QString::number(wG[0]));
+    wSB.append(QString::number(wB[0]));
+
+    backSR.append(QString::number(backSensR[0]));
+    backSG.append(QString::number(backSensG[0]));
+    backSB.append(QString::number(backSensB[0]));
+    halogNorm.append(QString::number(halog[0]));
+
+    for( x=1; x<W; x++ )
+    {
+        SR.append( "," + QString::number(sensR[x]) );
+        SG.append( "," + QString::number(sensG[x]) );
+        SB.append( "," + QString::number(sensB[x]) );
+
+        wSR.append( "," + QString::number(wR[x]) );
+        wSG.append( "," + QString::number(wG[x]) );
+        wSB.append( "," + QString::number(wB[x]) );
+
+        backSR.append( "," + QString::number(backSensR[x]) );
+        backSG.append( "," + QString::number(backSensG[x]) );
+        backSB.append( "," + QString::number(backSensB[x]) );
+
+        halogNorm.append( "," + QString::number(halog[x]) );
+    }
+
+    //------------------------------------------
+    //Get Output Filename
+    //------------------------------------------
+    QString fileName;
+    //Get Last Calib Open
+    if(
+            funcLetUserDefineFile(
+                                    &fileName,
+                                    "Define Sensitivities Output File",
+                                    ".xml",
+                                    new QString( _PATH_CALIB_LAST_OPEN ),
+                                    new QString( _PATH_DEFA_CALIB ),
+                                    this
+                                 ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Reading Last Cal Path Opened");
+        return (void)false;
+    }
+
+    //------------------------------------------
+    //Save Sensitivities File
+    //------------------------------------------
+    //Prepare Output File
+    QList<QString> fixtures;
+    QList<QString> values;
+
+    fixtures << "ralphSR"       << "ralphSG"        << "ralphSB";
+    fixtures << "wSR"           << "wSG"            << "wSB";
+    fixtures << "originalSR"    << "originalSG"     << "originalSB";
+    fixtures << "halogNorm";
+
+    values << SR        << SG       << SB;
+    values << wSR       << wSG      << wSB;
+    values << backSR    << backSG   << backSB;
+    values << halogNorm;
+
+    //Save File
+    funcSaveXML( fileName, &fixtures, &values, true );
 }

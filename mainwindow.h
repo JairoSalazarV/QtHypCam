@@ -657,6 +657,8 @@ private slots:
 
     void on_actionCamera_Sensitivities_triggered();
 
+    void on_actionCalc_Sensitivities_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

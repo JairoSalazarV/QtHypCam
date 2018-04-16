@@ -608,6 +608,32 @@ int fileIsValid(QString fileContain)
     return 1;
 }
 
+QString readFileParam( const QString &filePath, const QString &pathDefault, int* OK )
+{
+    *OK = _ERROR;
+    QString fileContain;
+    fileContain.clear();
+    if( fileExists(filePath) )
+    {
+        fileContain = readAllFile(filePath);
+        if( fileIsValid(fileContain) )
+        {
+            fileContain = fileContain.trimmed();
+            fileContain.replace("\n","");
+        }
+        else
+        {
+            fileContain = pathDefault;
+        }
+    }else
+    {
+        saveFile(filePath,pathDefault);
+        *OK = _FAILURE;
+    }
+    *OK = _OK;
+    return fileContain;
+}
+
 
 int readFileParam(QString fileName, QString* tmpFileContain)
 {
@@ -2469,8 +2495,11 @@ int funcLetUserSelectFile(
     return _OK;
 }
 
-int funcLetUserSelectFile(QString* filePath, const QString &title)
-{
+int funcLetUserSelectFile(
+                            QString* filePath,
+                            const QString &title,
+                            QWidget* parent
+){
     QString lastPath = readFileParam(_PATH_LAST_PATH_OPENED);
     if( lastPath.isEmpty() )//First time using this parameter
     {
@@ -2481,7 +2510,7 @@ int funcLetUserSelectFile(QString* filePath, const QString &title)
     //..
 
     *filePath = QFileDialog::getOpenFileName(
-                                                Q_NULLPTR,
+                                                parent,
                                                 title,
                                                 lastPath,
                                                 "(*.*);;"
@@ -2917,6 +2946,51 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
                 m32 = xmlReader->readElementText().toDouble(0);
             if( xmlReader->name()=="Tm33" )
                 m33 = xmlReader->readElementText().toDouble(0);
+            if( xmlReader->name()=="ralphSR" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.ralphSR.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="ralphSG" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.ralphSG.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="ralphSB" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.ralphSB.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="wSR" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.wSR.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="wSG" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.wSG.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="wSB" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.wSB.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="originalSR" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.originalSR.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="originalSG" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.originalSG.append(xmlReader->readElementText().trimmed());
+            }
+            if( xmlReader->name()=="originalSB" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                slideCalibration->sensitivities.originalSB.append(xmlReader->readElementText().trimmed());
+            }
         }
     }
     if(xmlReader->hasError()) {
@@ -3292,7 +3366,7 @@ QList<double> getNormedFunction( QString fileName )
     irradiation.removeAt(0);
     for(i=0;i<irradiation.count();i++)
     {
-        function.append(irradiation.at(i).toDouble(0) / max );
+        function.append((irradiation.at(i).toDouble(0) / max)*0.75 );
         //printf("%.4f,",function.at(i));
     }
     return function;
