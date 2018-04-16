@@ -271,6 +271,8 @@
 
     int scaleLen( int len, int canvasLen, int originalLen );
 
+    int funcCSVToFloat(const QString &CSV, QList<float>* lst );
+
     float funcApplyLR(
                         const float &coordinate,
                         const linearRegresion &LR,

@@ -9993,6 +9993,9 @@ void MainWindow::on_actionPlot_over_Real_triggered()
         funcShowMsgERROR_Timeout("Reading Slide Calibration File");
         return (void)false;
     }
+    //funcShowMsg("Fill",QString::number(slideCalibration.sensitivities.filled),this);
+    //funcShowMsg("origR[0]",QString::number( slideCalibration.sensitivities.originalSR.at(0) ),this);
+    //return (void)false;
 
     //**********************************************
     //Draw Over Real Image

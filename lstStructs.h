@@ -237,7 +237,7 @@
         float b;
     }structHorizontalCalibration;
 
-    typedef struct structSlideSensitivities
+    typedef struct structSlideStrSens
     {
         int     filled=0;
         QString ralphSR;
@@ -249,6 +249,20 @@
         QString originalSR;
         QString originalSG;
         QString originalSB;
+    }structSlideStrSens;
+
+    typedef struct structSlideSensitivities
+    {
+        int          filled=0;
+        QList<float> ralphSR;
+        QList<float> ralphSG;
+        QList<float> ralphSB;
+        QList<float> wSR;
+        QList<float> wSG;
+        QList<float> wSB;
+        QList<float> originalSR;
+        QList<float> originalSG;
+        QList<float> originalSB;
     }structSlideSensitivities;
 
     typedef struct structSlideCalibration{

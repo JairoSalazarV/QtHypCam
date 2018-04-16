@@ -26,12 +26,12 @@ private slots:
     int funcSaveSlideCalibration(
                                     QString* pathDestine,
                                     structSlideCalibration* slideCalibration,
-                                    structSlideSensitivities* slideSensitivities,
+                                    structSlideStrSens* slideStrSens,
                                     QTransform* T
                                 );
     int funcReadSensitivities(
                                 const QString &filePath,
-                                structSlideSensitivities* slideSensitivities
+                                structSlideStrSens* slideStrSens
                              );
 
 

@@ -98,7 +98,7 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
     //----------------------------------------------
     //Load Sensitivities If was Selected
     //----------------------------------------------
-    structSlideSensitivities slideSensitivities;
+    structSlideStrSens slideSensitivities;
     if( !ui->txtHorPath->text().trimmed().isEmpty() )
     {        
         funcReadSensitivities( ui->txtSensitivities->text().trimmed(), &slideSensitivities );
@@ -145,7 +145,7 @@ void formMergeSlideCalibrations::on_pbMergeCalibration_clicked()
 int formMergeSlideCalibrations
     ::funcReadSensitivities(
                                 const QString &filePath,
-                                structSlideSensitivities* slideSensitivities
+                                structSlideStrSens* slideStrSens
 ){
     QFile *xmlFile = new QFile( filePath );
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -164,25 +164,25 @@ int formMergeSlideCalibrations
         if(token == QXmlStreamReader::StartElement)
         {
             if( xmlReader->name()=="ralphSR" )
-                slideSensitivities->ralphSR.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->ralphSR.append( xmlReader->readElementText().trimmed() );
             if( xmlReader->name()=="ralphSG" )
-                slideSensitivities->ralphSG.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->ralphSG.append( xmlReader->readElementText().trimmed() );
             if( xmlReader->name()=="ralphSB" )
-                slideSensitivities->ralphSB.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->ralphSB.append( xmlReader->readElementText().trimmed() );
 
             if( xmlReader->name()=="wSR" )
-                slideSensitivities->wSR.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->wSR.append( xmlReader->readElementText().trimmed() );
             if( xmlReader->name()=="wSG" )
-                slideSensitivities->wSG.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->wSG.append( xmlReader->readElementText().trimmed() );
             if( xmlReader->name()=="wSB" )
-                slideSensitivities->wSB.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->wSB.append( xmlReader->readElementText().trimmed() );
 
             if( xmlReader->name()=="originalSR" )
-                slideSensitivities->originalSR.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->originalSR.append( xmlReader->readElementText().trimmed() );
             if( xmlReader->name()=="originalSG" )
-                slideSensitivities->originalSG.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->originalSG.append( xmlReader->readElementText().trimmed() );
             if( xmlReader->name()=="originalSB" )
-                slideSensitivities->originalSB.append( xmlReader->readElementText().trimmed() );
+                slideStrSens->originalSB.append( xmlReader->readElementText().trimmed() );
         }
     }
     if(xmlReader->hasError()) {
@@ -192,7 +192,7 @@ int formMergeSlideCalibrations
     xmlReader->clear();
     xmlFile->close();
 
-    slideSensitivities->filled = 1;
+    slideStrSens->filled = 1;
 
     return _OK;
 }
@@ -201,7 +201,7 @@ int formMergeSlideCalibrations
     ::funcSaveSlideCalibration(
                                     QString* pathDestine,
                                     structSlideCalibration* slideCalibration,
-                                    structSlideSensitivities* slideSensitivities,
+                                    structSlideStrSens *slideStrSens,
                                     QTransform *T
 ){
 
@@ -235,7 +235,7 @@ int formMergeSlideCalibrations
                 << "Tm11"       << "Tm12"       << "Tm13"
                 << "Tm21"       << "Tm22"       << "Tm23"
                 << "Tm31"       << "Tm32"       << "Tm33" ;
-    if( slideSensitivities->filled )
+    if( slideStrSens->filled )
     {
         lstFixtures << "ralphSR"        << "ralphSG"        << "ralphSB"
                     << "wSR"            << "wSG"            << "wSB"
@@ -272,17 +272,17 @@ int formMergeSlideCalibrations
                 << QString::number(T->m32())
                 << QString::number(T->m33());
 
-    if( slideSensitivities->filled )
+    if( slideStrSens->filled )
     {
-        lstValues   << slideSensitivities->ralphSR
-                    << slideSensitivities->ralphSG
-                    << slideSensitivities->ralphSB
-                    << slideSensitivities->wSR
-                    << slideSensitivities->wSG
-                    << slideSensitivities->wSB
-                    << slideSensitivities->originalSR
-                    << slideSensitivities->originalSG
-                    << slideSensitivities->originalSB;
+        lstValues   << slideStrSens->ralphSR
+                    << slideStrSens->ralphSG
+                    << slideStrSens->ralphSB
+                    << slideStrSens->wSR
+                    << slideStrSens->wSG
+                    << slideStrSens->wSB
+                    << slideStrSens->originalSR
+                    << slideStrSens->originalSG
+                    << slideStrSens->originalSB;
     }
 
     //-----------------------------------
