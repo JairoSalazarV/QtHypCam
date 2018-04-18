@@ -119,10 +119,12 @@ QImage formBuildSlideHypeCubePreview
     //Calculate Spectral Location
     //------------------------------------------------------
     int frameNotOverlapPos, frameOverlapPos, maxPos;
+    int wavePos;
     float internWavelen;
     maxPos              = imgW-slideW-1;
     internWavelen       = wavelength - mainSlideCalibration.originWave;
     frameNotOverlapPos  = round( funcApplyLR(internWavelen,mainSlideCalibration.wave2DistLR,false) );
+    wavePos             = round( funcApplyLR(internWavelen,mainSlideCalibration.wave2DistLR,false) );
     frameNotOverlapPos  = frameNotOverlapPos - round((float)slideW/2.0);
     frameNotOverlapPos  = (frameNotOverlapPos<0)?0:frameNotOverlapPos;//Minimum position
     frameNotOverlapPos  = (frameNotOverlapPos<maxPos)?frameNotOverlapPos:maxPos;
@@ -172,7 +174,14 @@ QImage formBuildSlideHypeCubePreview
         destinePoint.setX(layerTmpPos);
         destinePoint.setY(0);
         //Copy Slide
-        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyAverage );
+        funcDemoiseAndCopyImageSubareas(
+                                            originRect,
+                                            destinePoint,
+                                            lstImgs.at(idImg),
+                                            &mainTmpLayerImg,
+                                            wavePos,
+                                            mainSlideCalibration.sensitivities
+                                       );
         layerTmpPos += overlapW;        
 
         //..................................................
@@ -187,7 +196,14 @@ QImage formBuildSlideHypeCubePreview
         destinePoint.setX(layerTmpPos);
         destinePoint.setY(0);
         //Copy Slide
-        funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(idImg), &mainTmpLayerImg, copyMax );
+        funcDemoiseAndCopyImageSubareas(
+                                            originRect,
+                                            destinePoint,
+                                            lstImgs.at(idImg),
+                                            &mainTmpLayerImg,
+                                            wavePos,
+                                            mainSlideCalibration.sensitivities
+                                       );
         layerTmpPos += (notOverlapW - overlapW);
     }
 
@@ -309,6 +325,35 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     }
 
     //------------------------------------------------------
+    //Get Max Sensitivities
+    //------------------------------------------------------
+    int i;
+    float tmpMaxSR  = 0;
+    float tmpMaxSG  = 0;
+    float tmpMaxSB  = 0;
+    float tmpMaxMax = 0;
+    float tmpVal;
+    for( i=0; i<mainSlideCalibration.sensitivities.originalSR.size(); i++ )
+    {
+        //Red
+        tmpVal      = mainSlideCalibration.sensitivities.originalSR.at(i);
+        tmpMaxSR    = (tmpVal > tmpMaxSR)?tmpVal:tmpMaxSR;
+        //Green
+        tmpVal      = mainSlideCalibration.sensitivities.originalSG.at(i);
+        tmpMaxSG    = (tmpVal > tmpMaxSG)?tmpVal:tmpMaxSG;
+        //Blue
+        tmpVal      = mainSlideCalibration.sensitivities.originalSB.at(i);
+        tmpMaxSB    = (tmpVal > tmpMaxSB)?tmpVal:tmpMaxSB;
+    }
+    //maxMax
+    tmpMaxMax   = (tmpMaxSR>=tmpMaxSG)?tmpMaxSR:(tmpMaxSG>=tmpMaxSB)?tmpMaxSG:tmpMaxSB;
+    //Save
+    mainSlideCalibration.sensitivities.maximumColors.maxSR   = tmpMaxSR;
+    mainSlideCalibration.sensitivities.maximumColors.maxSG   = tmpMaxSG;
+    mainSlideCalibration.sensitivities.maximumColors.maxSB   = tmpMaxSB;
+    mainSlideCalibration.sensitivities.maximumColors.maxMaxS = tmpMaxMax;
+
+    //------------------------------------------------------
     //Get Layer
     //------------------------------------------------------
     layerBackup = funcGetImageAtWavelength( ui->spinBoxWavelen->value(), mainSlideCalibration );
@@ -371,6 +416,12 @@ int formBuildSlideHypeCubePreview::funcCopyImageSubareas(
             //..................
             //Set Pixel
             //..................
+            //specDemoised
+            if( type == copySpecDemoised )
+            {
+                originColor = origImg.pixelColor(originX,originY);
+                destineImg->setPixelColor(QPoint(destineX,destineY),originColor);
+            }
             //Override
             if( type == copyOverride )
             {
@@ -406,6 +457,100 @@ int formBuildSlideHypeCubePreview::funcCopyImageSubareas(
                 //std::cout << "D -> R: " << destineColor.red() << " G: " << destineColor.green() << " B: " << destineColor.blue() << std::endl;
                 //std::cout << "A -> R: " << tmpColor.red() << " G: " << tmpColor.green() << " B: " << tmpColor.blue() << std::endl;
             }
+        }
+    }
+
+
+    return _OK;
+}
+
+int formBuildSlideHypeCubePreview
+    ::funcDemoiseAndCopyImageSubareas(
+                                            const QRect &originRect,
+                                            const QPoint &destinePoint,
+                                            const QImage &origImg,
+                                            QImage* destineImg,
+                                            const int &wavePos,
+                                            const structSlideSensitivities &slideSens
+){
+    //type[ 0:override | 1:Average | 2: maxVal | 3:minVal ]
+
+    int x, y;
+    int originX, originY;
+    int destineX, destineY;
+    int maxColorID = 0;
+    //float maxColorVal = 0.0;
+    float rVal, gVal, bVal;
+    float wS = 1;
+
+    //--------------------------------------------------
+    //Define the Sensor to Use
+    //--------------------------------------------------
+    rVal        = slideSens.originalSR.at(wavePos);
+    gVal        = slideSens.originalSG.at(wavePos);
+    bVal        = slideSens.originalSB.at(wavePos);
+    if( (rVal >= gVal) && (rVal >= bVal) )
+    {
+        maxColorID  = _RED;
+        //maxColorVal = rVal;
+        wS          = slideSens.maximumColors.maxMaxS - rVal;
+        //std::cout << slideSens.maximumColors.maxMaxS << " / " << rVal << std::endl;
+    }else if( (gVal >= rVal) && (gVal >= bVal) )
+    {
+        maxColorID  = _GREEN;
+        //maxColorVal = gVal;
+        wS          = slideSens.maximumColors.maxMaxS - gVal;
+        //std::cout << slideSens.maximumColors.maxMaxS << " / " << gVal << std::endl;
+    }else if( (bVal >= rVal) && (bVal >= gVal) )
+    {
+        maxColorID  = _BLUE;
+        //maxColorVal = bVal;
+        wS          = slideSens.maximumColors.maxMaxS - bVal;
+        //std::cout << slideSens.maximumColors.maxMaxS << " / " << bVal << std::endl;
+    }
+    //wS = 1 + (wS * 1.2);//Arbitrariamente :D
+    wS = 1 + (wS * (1.0+1.0-slideSens.maximumColors.maxMaxS) );//Arbitrariamente :D
+    //std::cout << "wS5 " << wS << std::endl;
+
+    //--------------------------------------------------
+    //Denoise Pixel Color
+    //--------------------------------------------------
+    float tmpColor;
+    QColor originColor;
+    for(x=0; x<originRect.width(); x++)
+    {
+        for(y=0; y<originRect.height(); y++)
+        {
+            //Calc Coordinates
+            originX         = originRect.x()   + x;
+            originY         = originRect.y()   + y;
+            destineX        = destinePoint.x() + x;
+            destineY        = destinePoint.y() + y;
+            //Get Pixel
+            originColor     = origImg.pixelColor(originX,originY);
+            //Spectral Denoising
+            tmpColor = ( maxColorID == _RED )?(float)originColor.red():( maxColorID == _GREEN )?(float)originColor.green():(float)originColor.blue();
+            //std::cout << tmpColor << " / " << "(255*" << maxColorVal << ")*255 = ";
+            //tmpColor = (tmpColor / (255.0*maxColorVal))*255.0;
+            //std::cout << " " << tmpColor << " " << std::endl;
+            //tmpColor = (tmpColor > 255.0)?255.0:tmpColor;
+            tmpColor = tmpColor * wS;
+            tmpColor = (tmpColor>255.0)?255.0:tmpColor;
+            //std::cout << " wS: " << wS << std::endl;
+            //exit(0);
+            //Set Color
+            originColor.setRed(0);
+            originColor.setGreen(0);
+            originColor.setBlue(0);
+            if( maxColorID == _RED )originColor.setRed(round(tmpColor));
+            if( maxColorID == _GREEN )originColor.setGreen(round(tmpColor));
+            if( maxColorID == _BLUE )originColor.setBlue(round(tmpColor));
+            //std::cout << "R: " << originColor.red()
+            //          << " G: " << originColor.green()
+            //          << " B: " << originColor.blue()
+            //          << std::endl;
+            //Save Color
+            destineImg->setPixelColor(QPoint(destineX,destineY),originColor);
         }
     }
 

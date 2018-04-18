@@ -251,6 +251,14 @@
         QString originalSB;
     }structSlideStrSens;
 
+    typedef struct structMaximumColors
+    {
+        float   maxSR=0;
+        float   maxSG=0;
+        float   maxSB=0;
+        float   maxMaxS=0;
+    }structMaximumColors;
+
     typedef struct structSlideSensitivities
     {
         int          filled=0;
@@ -263,6 +271,7 @@
         QList<float> originalSR;
         QList<float> originalSG;
         QList<float> originalSB;
+        structMaximumColors maximumColors;
     }structSlideSensitivities;
 
     typedef struct structSlideCalibration{

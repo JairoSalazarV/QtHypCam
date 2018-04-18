@@ -80,6 +80,7 @@
     #define _PATH_SLIDE_FLUORESCENT                 "./settings/Calib/slideFluorescent.hypcam"
     #define _PATH_SLIDE_HALOGEN_SENSITIVITIES       "./settings/Calib/slideHalogenSensitivities.hypcam"
     #define _PATH_SLIDE_MAX_WAVELENGTH              "./settings/Calib/slideMaxWavelength.hypcam"
+    #define _PATH_SLIDE_MIN_WAVELENGTH              "./settings/Calib/slideMinWavelength.hypcam"
 
     #define _PATH_DEFA_CALIB                "./settings/Calib/"
     #define _PATH_CALIB_LAST_OPEN           "./settings/Calib/lastCalibPathOpen.hypcam"

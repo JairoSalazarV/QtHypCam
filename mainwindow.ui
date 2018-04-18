@@ -1441,6 +1441,7 @@ QSlider::handle:horizontal {
      <addaction name="actionDiffraction_Origin"/>
      <addaction name="actionSlide_Calibration_File"/>
      <addaction name="actionSlide_Max_Wavelength"/>
+     <addaction name="actionSlide_Min_Wavelength"/>
      <addaction name="actionSlide_HypCube_Building"/>
     </widget>
     <addaction name="actionNDVI_Algorithm"/>
@@ -2394,6 +2395,11 @@ QSlider::handle:horizontal {
   <action name="actionCalc_Sensitivities">
    <property name="text">
     <string>Calc Sensitivities</string>
+   </property>
+  </action>
+  <action name="actionSlide_Min_Wavelength">
+   <property name="text">
+    <string>Slide Min Wavelength</string>
    </property>
   </action>
  </widget>

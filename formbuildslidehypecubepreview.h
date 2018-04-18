@@ -61,10 +61,11 @@ public:
 
 
     enum copyType{
-        copyOverride,
-        copyAverage,
-        copyMin,
-        copyMax
+                    copyOverride,
+                    copyAverage,
+                    copyMin,
+                    copyMax,
+                    copySpecDemoised,
     };
 
 private slots:
@@ -85,6 +86,15 @@ private slots:
                                 QImage* destineImg,
                                 int type=copyOverride
                              );
+
+    int funcDemoiseAndCopyImageSubareas(
+                                            const QRect &originRect,
+                                            const QPoint &destinePoint,
+                                            const QImage &origImg,
+                                            QImage* destineImg,
+                                            const int &wavePos,
+                                            const structSlideSensitivities &slideSens
+                                        );
 
     int funcReloadExportSettings();
 

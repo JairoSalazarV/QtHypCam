@@ -10700,6 +10700,15 @@ void MainWindow::on_actionBuild_HypCube_triggered()
         funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
         return (void)false;
     }
+    //std::cout << "m11: " << slideCalibration.translation.m11() << std::endl;
+    //std::cout << "m12: " << slideCalibration.translation.m12() << std::endl;
+    //std::cout << "m13: " << slideCalibration.translation.m13() << std::endl;
+    //std::cout << "m21: " << slideCalibration.translation.m21() << std::endl;
+    //std::cout << "m22: " << slideCalibration.translation.m22() << std::endl;
+    //std::cout << "m23: " << slideCalibration.translation.m23() << std::endl;
+    //std::cout << "m31: " << slideCalibration.translation.m31() << std::endl;
+    //std::cout << "m32: " << slideCalibration.translation.m32() << std::endl;
+    //std::cout << "m33: " << slideCalibration.translation.m33() << std::endl;
 
     //--------------------------------------------
     //Define Max Wavelength
@@ -11352,4 +11361,37 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
 
     //Save File
     funcSaveXML( fileName, &fixtures, &values, true );
+}
+
+void MainWindow::on_actionSlide_Min_Wavelength_triggered()
+{
+    //-----------------------------------------
+    //Get Last Min Wavelength
+    //-----------------------------------------
+    float lastMinWave;
+    lastMinWave = readAllFile(_PATH_SLIDE_MIN_WAVELENGTH).trimmed().toFloat(0);
+    lastMinWave = ( lastMinWave <= 0.0 )?_RASP_CAM_MIN_WAVELENGTH:lastMinWave;
+
+    //-----------------------------------------
+    //Get Min Wavelength
+    //-----------------------------------------
+    QString minWavelen;
+    minWavelen = funcGetParam("Min Wavelength",QString::number(lastMinWave));
+    if( minWavelen.isEmpty() )
+    {
+        funcShowMsgERROR_Timeout("Reading Min Wavelength");
+        return (void)false;
+    }
+
+    //-----------------------------------------
+    //Save Max Wavelength
+    //-----------------------------------------
+    if( saveFile(_PATH_SLIDE_MIN_WAVELENGTH,minWavelen) == true )
+    {
+        funcShowMsgSUCCESS_Timeout("File Save Successfully");
+    }
+    else
+    {
+        funcShowMsgERROR_Timeout("Saving Min Wavelength");
+    }
 }

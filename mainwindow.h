@@ -659,6 +659,8 @@ private slots:
 
     void on_actionCalc_Sensitivities_triggered();
 
+    void on_actionSlide_Min_Wavelength_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
