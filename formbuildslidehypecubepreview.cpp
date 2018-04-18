@@ -333,16 +333,16 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     float tmpMaxSB  = 0;
     float tmpMaxMax = 0;
     float tmpVal;
-    for( i=0; i<mainSlideCalibration.sensitivities.originalSR.size(); i++ )
+    for( i=0; i<mainSlideCalibration.sensitivities.originalR.size(); i++ )
     {
         //Red
-        tmpVal      = mainSlideCalibration.sensitivities.originalSR.at(i);
+        tmpVal      = mainSlideCalibration.sensitivities.originalR.at(i);
         tmpMaxSR    = (tmpVal > tmpMaxSR)?tmpVal:tmpMaxSR;
         //Green
-        tmpVal      = mainSlideCalibration.sensitivities.originalSG.at(i);
+        tmpVal      = mainSlideCalibration.sensitivities.originalG.at(i);
         tmpMaxSG    = (tmpVal > tmpMaxSG)?tmpVal:tmpMaxSG;
         //Blue
-        tmpVal      = mainSlideCalibration.sensitivities.originalSB.at(i);
+        tmpVal      = mainSlideCalibration.sensitivities.originalB.at(i);
         tmpMaxSB    = (tmpVal > tmpMaxSB)?tmpVal:tmpMaxSB;
     }
     //maxMax
@@ -486,9 +486,9 @@ int formBuildSlideHypeCubePreview
     //--------------------------------------------------
     //Define the Sensor to Use
     //--------------------------------------------------
-    rVal        = slideSens.originalSR.at(wavePos);
-    gVal        = slideSens.originalSG.at(wavePos);
-    bVal        = slideSens.originalSB.at(wavePos);
+    rVal        = slideSens.originalR.at(wavePos);
+    gVal        = slideSens.originalG.at(wavePos);
+    bVal        = slideSens.originalB.at(wavePos);
     if( (rVal >= gVal) && (rVal >= bVal) )
     {
         maxColorID  = _RED;
@@ -1077,12 +1077,12 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
     // Ralf Pag. 6
     // Spectral Resolution = (x_ir - x_ib) / (lambda_r - lambda_b)
     //------------------------------------------------------
-    float maxWavelen, minWavelen, specRes, specW;
-    int imgW;
+    float maxWavelen, minWavelen, specRes;//, specW;
+    //int imgW;
     maxWavelen  = mainSlideCalibration.maxWave;
     minWavelen  = mainSlideCalibration.originWave;
-    imgW        = lstImgs.at(0).width();
-    specW       = maxWavelen - minWavelen;
+    //imgW        = lstImgs.at(0).width();
+    //specW       = maxWavelen - minWavelen;
     //specRes     = (float)imgW / specW;
     specRes     = mainExportSettings.spectralResolution;
     //std::cout << "maxWavelen: " << maxWavelen << std::endl;

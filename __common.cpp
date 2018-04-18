@@ -2946,60 +2946,95 @@ int funcReadSlideCalib( const QString &filePath, structSlideCalibration* slideCa
                 m32 = xmlReader->readElementText().toDouble(0);
             if( xmlReader->name()=="Tm33" )
                 m33 = xmlReader->readElementText().toDouble(0);
-            if( xmlReader->name()=="ralphSR" )
+            //-------------------------------------------------------------------
+            if( xmlReader->name()=="originalR" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.ralphSR );
+                                &slideCalibration->sensitivities.originalR );
             }
-            if( xmlReader->name()=="ralphSG" )
+            if( xmlReader->name()=="originalG" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.ralphSG );
+                                &slideCalibration->sensitivities.originalG );
             }
-            if( xmlReader->name()=="ralphSB" )
+            if( xmlReader->name()=="originalB" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.ralphSB );
+                                &slideCalibration->sensitivities.originalB );
             }
-            if( xmlReader->name()=="wSR" )
+            if( xmlReader->name()=="originalH" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.wSR );
+                                &slideCalibration->sensitivities.originalH );
             }
-            if( xmlReader->name()=="wSG" )
+            //-------------------------------------------------------------------
+            if( xmlReader->name()=="normedOrigR" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.wSG );
+                                &slideCalibration->sensitivities.normedOrigR );
             }
-            if( xmlReader->name()=="wSB" )
+            if( xmlReader->name()=="normedOrigG" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.wSB );
+                                &slideCalibration->sensitivities.normedOrigG );
             }
-            if( xmlReader->name()=="originalSR" )
+            if( xmlReader->name()=="normedOrigB" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.originalSR );
+                                &slideCalibration->sensitivities.normedOrigB );
             }
-            if( xmlReader->name()=="originalSG" )
+            //-------------------------------------------------------------------
+            if( xmlReader->name()=="normedRalfR" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.originalSG );
+                                &slideCalibration->sensitivities.normedRalfR );
             }
-            if( xmlReader->name()=="originalSB" )
+            if( xmlReader->name()=="normedRalfG" )
             {
                 slideCalibration->sensitivities.filled = 1;
                 funcCSVToFloat( xmlReader->readElementText().trimmed(),
-                                &slideCalibration->sensitivities.originalSB );
+                                &slideCalibration->sensitivities.normedRalfG );
             }
+            if( xmlReader->name()=="normedRalfB" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                funcCSVToFloat( xmlReader->readElementText().trimmed(),
+                                &slideCalibration->sensitivities.normedRalfB );
+            }
+            if( xmlReader->name()=="normedRalfH" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                funcCSVToFloat( xmlReader->readElementText().trimmed(),
+                                &slideCalibration->sensitivities.normedRalfH );
+            }
+            //-------------------------------------------------------------------
+            if( xmlReader->name()=="wR" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                funcCSVToFloat( xmlReader->readElementText().trimmed(),
+                                &slideCalibration->sensitivities.wR );
+            }
+            if( xmlReader->name()=="wG" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                funcCSVToFloat( xmlReader->readElementText().trimmed(),
+                                &slideCalibration->sensitivities.wG );
+            }
+            if( xmlReader->name()=="wB" )
+            {
+                slideCalibration->sensitivities.filled = 1;
+                funcCSVToFloat( xmlReader->readElementText().trimmed(),
+                                &slideCalibration->sensitivities.wB );
+            }
+            //-------------------------------------------------------------------
         }
     }
     if(xmlReader->hasError()) {

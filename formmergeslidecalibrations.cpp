@@ -163,26 +163,38 @@ int formMergeSlideCalibrations
         //If token is StartElement - read it
         if(token == QXmlStreamReader::StartElement)
         {
-            if( xmlReader->name()=="ralphSR" )
-                slideStrSens->ralphSR.append( xmlReader->readElementText().trimmed() );
-            if( xmlReader->name()=="ralphSG" )
-                slideStrSens->ralphSG.append( xmlReader->readElementText().trimmed() );
-            if( xmlReader->name()=="ralphSB" )
-                slideStrSens->ralphSB.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedOrigR" )
+                slideStrSens->normedOrigR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedOrigG" )
+                slideStrSens->normedOrigG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedOrigB" )
+                slideStrSens->normedOrigB.append( xmlReader->readElementText().trimmed() );
 
-            if( xmlReader->name()=="wSR" )
-                slideStrSens->wSR.append( xmlReader->readElementText().trimmed() );
-            if( xmlReader->name()=="wSG" )
-                slideStrSens->wSG.append( xmlReader->readElementText().trimmed() );
-            if( xmlReader->name()=="wSB" )
-                slideStrSens->wSB.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedRalfR" )
+                slideStrSens->normedRalfR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedRalfG" )
+                slideStrSens->normedRalfG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedRalfB" )
+                slideStrSens->normedRalfB.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="normedRalfH" )
+                slideStrSens->normedRalfH.append( xmlReader->readElementText().trimmed() );
 
-            if( xmlReader->name()=="originalSR" )
-                slideStrSens->originalSR.append( xmlReader->readElementText().trimmed() );
-            if( xmlReader->name()=="originalSG" )
-                slideStrSens->originalSG.append( xmlReader->readElementText().trimmed() );
-            if( xmlReader->name()=="originalSB" )
-                slideStrSens->originalSB.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="originalR" )
+                slideStrSens->originalR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="originalG" )
+                slideStrSens->originalG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="originalB" )
+                slideStrSens->originalB.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="originalH" )
+                slideStrSens->originalH.append( xmlReader->readElementText().trimmed() );
+
+            if( xmlReader->name()=="wR" )
+                slideStrSens->wR.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="wG" )
+                slideStrSens->wG.append( xmlReader->readElementText().trimmed() );
+            if( xmlReader->name()=="wB" )
+                slideStrSens->wB.append( xmlReader->readElementText().trimmed() );
+
         }
     }
     if(xmlReader->hasError()) {
@@ -235,12 +247,6 @@ int formMergeSlideCalibrations
                 << "Tm11"       << "Tm12"       << "Tm13"
                 << "Tm21"       << "Tm22"       << "Tm23"
                 << "Tm31"       << "Tm32"       << "Tm33" ;
-    if( slideStrSens->filled )
-    {
-        lstFixtures << "ralphSR"        << "ralphSG"        << "ralphSB"
-                    << "wSR"            << "wSG"            << "wSB"
-                    << "originalSR"     << "originalSG"     << "originalSB";
-    }
 
     //-----------------------------------
     //Fill Values
@@ -274,15 +280,24 @@ int formMergeSlideCalibrations
 
     if( slideStrSens->filled )
     {
-        lstValues   << slideStrSens->ralphSR
-                    << slideStrSens->ralphSG
-                    << slideStrSens->ralphSB
-                    << slideStrSens->wSR
-                    << slideStrSens->wSG
-                    << slideStrSens->wSB
-                    << slideStrSens->originalSR
-                    << slideStrSens->originalSG
-                    << slideStrSens->originalSB;
+        lstFixtures << "normedOrigR"    << "normedOrigG"    << "normedOrigB"
+                    << "normedRalfR"    << "normedRalfG"    << "normedRalfB"    << "normedRalfH"
+                    << "originalR"      << "originalG"      << "originalB"      << "originalH"
+                    << "wR"             << "wG"             << "wB";
+        lstValues   << slideStrSens->normedOrigR
+                    << slideStrSens->normedOrigG
+                    << slideStrSens->normedOrigB
+                    << slideStrSens->normedRalfR
+                    << slideStrSens->normedRalfG
+                    << slideStrSens->normedRalfB
+                    << slideStrSens->normedRalfH
+                    << slideStrSens->originalR
+                    << slideStrSens->originalG
+                    << slideStrSens->originalB
+                    << slideStrSens->originalH
+                    << slideStrSens->wR
+                    << slideStrSens->wG
+                    << slideStrSens->wB;
     }
 
     //-----------------------------------

@@ -11143,7 +11143,7 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
     //funcShowMsg("specRes",QString::number(specRes));
 
     //------------------------------------------
-    //Get halogen function
+    //Get Halogen Function
     //------------------------------------------
     QList<double> halogenFunction;
     halogenFunction = getNormedFunction( _PATH_HALOGEN_FUNCTION );//[0,3500]nm | Real [0,1] | 1=null
@@ -11155,28 +11155,39 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
     int x, y;
     W = globalEditImg->width();
     H = globalEditImg->height();
-    float sensR[W];
-    float sensG[W];
-    float sensB[W];
-    float halog[W];
 
-    float backSensR[W];
-    float backSensG[W];
-    float backSensB[W];
+    float originalR[W];
+    float originalG[W];
+    float originalB[W];
+    float originalH[W];
+
+    float ralfR[W];
+    float ralfG[W];
+    float ralfB[W];
+
+    float normedOrigR[W];
+    float normedOrigG[W];
+    float normedOrigB[W];
+    float normedOrigH[W];
+
+    float normedRalfR[W];
+    float normedRalfG[W];
+    float normedRalfB[W];
+    float normedRalfH[W];
 
     float wR[W];
     float wG[W];
     float wB[W];
 
     float tmpR, tmpG, tmpB;
-    float maxR, maxG, maxB, maxH;
+    float maxR, maxG, maxB, maxH, maxMax;
     QColor tmpColor;
     int specPos;
 
     //------------------------------------------
     //AVERAGE SENSED VALUE
     //------------------------------------------
-    maxR = 0;   maxG = 0;   maxB = 0;    maxH = 0;
+    maxR = 0;   maxG = 0;   maxB = 0;    maxH = 0;   maxMax = 0;
     for( x=0; x<W; x++ )
     {
         //......................................
@@ -11192,46 +11203,48 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
             tmpG    += (float)tmpColor.green();
             tmpB    += (float)tmpColor.blue();
         }
-        sensR[x]     = tmpR / (float)H;
-        sensG[x]     = tmpG / (float)H;
-        sensB[x]     = tmpB / (float)H;
+        originalR[x]    = tmpR / (float)H;
+        originalG[x]    = tmpG / (float)H;
+        originalB[x]    = tmpB / (float)H;
 
         //......................................
         //Get Halogen Value
         //......................................
         specPos      = floor( slideCalibration.originWave + ( x * specRes ) );
-        halog[x]     = halogenFunction.at(specPos);
+        originalH[x] = halogenFunction.at(specPos);
 
         //......................................
         //Calc Maximums
         //......................................
-        maxR = (sensR[x]>maxR)?sensR[x]:maxR;
-        maxG = (sensG[x]>maxG)?sensG[x]:maxG;
-        maxB = (sensB[x]>maxB)?sensB[x]:maxB;
-        maxH = (halog[x]>maxH)?halog[x]:maxH;
+        maxR = (originalR[x]>maxR)?originalR[x]:maxR;
+        maxG = (originalG[x]>maxG)?originalG[x]:maxG;
+        maxB = (originalB[x]>maxB)?originalB[x]:maxB;
+        maxH = (originalH[x]>maxH)?originalH[x]:maxH;
     }
+    maxMax = (maxR>maxG)?maxR:maxG;
+    maxMax = (maxMax>maxB)?maxMax:maxB;
+
     //------------------------------------------
     //CUSTOM
     //------------------------------------------
     if( 1 )
     {
         //Delete Red Noise
-        int n = 100;
-        float tmpVal = sensR[n];
+        int n = round(0.26 * (float)W);//Arbitrary
+        float tmpVal = 0.0;
         for( x=0; x<n; x++ )
         {
-            sensR[x]    = tmpVal;
+            originalR[x]    = tmpVal;
         }
 
         //Fix nose added by HypCam
-        sensR[0]        = sensR[1];
-        sensG[0]        = sensG[1];
-        sensB[0]        = sensB[1];
+        originalR[0]    = originalR[1];
+        originalG[0]    = originalG[1];
+        originalB[0]    = originalB[1];
 
-        sensR[W-1]      = sensR[W-2];
-        sensG[W-1]      = sensG[W-2];
-        sensB[W-1]      = sensB[W-2];
-
+        originalR[W-1]  = originalR[W-2];
+        originalG[W-1]  = originalG[W-2];
+        originalB[W-1]  = originalB[W-2];
     }
 
     //------------------------------------------
@@ -11239,88 +11252,112 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
     //------------------------------------------
     for( x=0; x<W; x++ )
     {
-        sensR[x]    = sensR[x] / maxR;
-        sensG[x]    = sensG[x] / maxG;
-        sensB[x]    = sensB[x] / maxB;
-
-        halog[x]    = halog[x] / maxH;
+        normedOrigR[x]  = originalR[x] / maxMax;
+        normedOrigG[x]  = originalG[x] / maxMax;
+        normedOrigB[x]  = originalB[x] / maxMax;
+        normedOrigH[x]  = originalH[x] / maxH;
     }
 
     //------------------------------------------
-    //BACKUP BEFOR APPLY RALPH's PROPOSAL
+    //CALC SENSOR WEIGHTS
     //------------------------------------------
     for( x=0; x<W; x++ )
     {
-        backSensR[x] = sensR[x];
-        backSensG[x] = sensG[x];
-        backSensB[x] = sensB[x];
-
-        wR[x]        = sensR[x] / (sensR[x]+sensG[x]+sensB[x]) ;
-        wG[x]        = sensG[x] / (sensR[x]+sensG[x]+sensB[x]) ;
-        wB[x]        = sensB[x] / (sensR[x]+sensG[x]+sensB[x]) ;
+        wR[x]        = originalR[x] / (originalR[x]+originalG[x]+originalB[x]);
+        wG[x]        = originalG[x] / (originalR[x]+originalG[x]+originalB[x]);
+        wB[x]        = originalB[x] / (originalR[x]+originalG[x]+originalB[x]);
     }
 
     //------------------------------------------
     //Apply Ralph's Proposed Method to Calc
     //Sensor Sensitivities
     //------------------------------------------
+    float aux = maxMax;
     maxR = 0;   maxG = 0;   maxB = 0;
     for( x=0; x<W; x++ )
     {
-        sensR[x] = sensR[x] / halog[x];
-        sensG[x] = sensG[x] / halog[x];
-        sensB[x] = sensB[x] / halog[x];
-        maxR     = (sensR[x]>maxR)?sensR[x]:maxR;
-        maxG     = (sensG[x]>maxG)?sensG[x]:maxG;
-        maxB     = (sensB[x]>maxB)?sensB[x]:maxB;
+        ralfR[x] = normedOrigR[x] / normedOrigH[x];
+        ralfG[x] = normedOrigG[x] / normedOrigH[x];
+        ralfB[x] = normedOrigB[x] / normedOrigH[x];
+        maxR     = (ralfR[x]>maxR)?ralfR[x]:maxR;
+        maxG     = (ralfG[x]>maxG)?ralfG[x]:maxG;
+        maxB     = (ralfB[x]>maxB)?ralfB[x]:maxB;
     }
+    maxMax = (maxR>maxG)?maxR:maxG;
+    maxMax = (maxMax>maxB)?maxMax:maxB;
+    //maxMax = (maxMax>aux)?maxMax:aux;
 
     //------------------------------------------
-    //NORMALIZE FINAL SENSITIVITIES
+    //NORMALIZE RALF SENSITIVITIES
     //------------------------------------------
     for( x=0; x<W; x++ )
     {
-        sensR[x] = sensR[x] / maxR;
-        sensG[x] = sensG[x] / maxG;
-        sensB[x] = sensB[x] / maxB;
+        normedRalfR[x]  = ralfR[x] / maxMax;
+        normedRalfG[x]  = ralfG[x] / maxMax;
+        normedRalfB[x]  = ralfB[x] / maxMax;
+        normedRalfH[x]  = normedOrigH[x] / maxMax;
+
+        normedOrigR[x]  = normedOrigR[x] / maxMax;
+        normedOrigG[x]  = normedOrigG[x] / maxMax;
+        normedOrigB[x]  = normedOrigB[x] / maxMax;
     }
 
     //------------------------------------------
     //Concatenate Sensitivities Vectors
     //------------------------------------------
-    QString SR, SG, SB;
-    QString wSR, wSG, wSB;
-    QString backSR, backSG, backSB;
-    QString halogNorm;
+    QString strOriginalR, strOriginalG, strOriginalB, strOriginalH;
+    QString strRalfR, strRalfG, strRalfB;
+    QString strNormedOrigR, strNormedOrigG, strNormedOrigB, strNormedOrigH;
+    QString strNormedRalfR, strNormedRalfG, strNormedRalfB, strNormedRalfH;
+    QString strWR, strWG, strWB;
 
-    SR.append(QString::number(sensR[0]));
-    SG.append(QString::number(sensG[0]));
-    SB.append(QString::number(sensB[0]));
+    strOriginalR.append(QString::number(originalR[0]));
+    strOriginalG.append(QString::number(originalG[0]));
+    strOriginalB.append(QString::number(originalB[0]));
+    strOriginalH.append(QString::number(originalH[0]));
 
-    wSR.append(QString::number(wR[0]));
-    wSG.append(QString::number(wG[0]));
-    wSB.append(QString::number(wB[0]));
+    strRalfR.append(QString::number(ralfR[0]));
+    strRalfG.append(QString::number(ralfG[0]));
+    strRalfB.append(QString::number(ralfB[0]));
 
-    backSR.append(QString::number(backSensR[0]));
-    backSG.append(QString::number(backSensG[0]));
-    backSB.append(QString::number(backSensB[0]));
-    halogNorm.append(QString::number(halog[0]));
+    strNormedOrigR.append(QString::number(normedOrigR[0]));
+    strNormedOrigG.append(QString::number(normedOrigG[0]));
+    strNormedOrigB.append(QString::number(normedOrigB[0]));
+    strNormedOrigH.append(QString::number(normedOrigH[0]));
+
+    strNormedRalfR.append(QString::number(normedRalfR[0]));
+    strNormedRalfG.append(QString::number(normedRalfG[0]));
+    strNormedRalfB.append(QString::number(normedRalfB[0]));
+    strNormedRalfH.append(QString::number(normedRalfH[0]));
+
+    strWR.append(QString::number(wR[0]));
+    strWG.append(QString::number(wG[0]));
+    strWB.append(QString::number(wB[0]));
 
     for( x=1; x<W; x++ )
     {
-        SR.append( "," + QString::number(sensR[x]) );
-        SG.append( "," + QString::number(sensG[x]) );
-        SB.append( "," + QString::number(sensB[x]) );
+        strOriginalR.append( "," + QString::number(originalR[x]) );
+        strOriginalG.append( "," + QString::number(originalG[x]) );
+        strOriginalB.append( "," + QString::number(originalB[x]) );
+        strOriginalH.append( "," + QString::number(originalH[x]) );
 
-        wSR.append( "," + QString::number(wR[x]) );
-        wSG.append( "," + QString::number(wG[x]) );
-        wSB.append( "," + QString::number(wB[x]) );
+        strRalfR.append( "," + QString::number(ralfR[x]) );
+        strRalfG.append( "," + QString::number(ralfG[x]) );
+        strRalfB.append( "," + QString::number(ralfB[x]) );
 
-        backSR.append( "," + QString::number(backSensR[x]) );
-        backSG.append( "," + QString::number(backSensG[x]) );
-        backSB.append( "," + QString::number(backSensB[x]) );
+        strNormedOrigR.append( "," + QString::number(normedOrigR[x]) );
+        strNormedOrigG.append( "," + QString::number(normedOrigG[x]) );
+        strNormedOrigB.append( "," + QString::number(normedOrigB[x]) );
+        strNormedOrigH.append( "," + QString::number(normedOrigH[x]) );
 
-        halogNorm.append( "," + QString::number(halog[x]) );
+        strNormedRalfR.append( "," + QString::number(normedRalfR[x]) );
+        strNormedRalfG.append( "," + QString::number(normedRalfG[x]) );
+        strNormedRalfB.append( "," + QString::number(normedRalfB[x]) );
+        strNormedRalfH.append( "," + QString::number(normedRalfH[x]) );
+
+        strWR.append( "," + QString::number(wR[x]) );
+        strWG.append( "," + QString::number(wG[x]) );
+        strWB.append( "," + QString::number(wB[x]) );
     }
 
     //------------------------------------------
@@ -11343,21 +11380,57 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
     }
 
     //------------------------------------------
+    //Export to Octave
+    //------------------------------------------
+    QString forOctave;
+    forOctave.append( "\noriginalR=["+ strOriginalR +"];\n" );
+    forOctave.append( "originalG=["+ strOriginalG +"];\n" );
+    forOctave.append( "originalB=["+ strOriginalB +"];\n" );
+    forOctave.append( "originalH=["+ strOriginalH +"];\n" );
+
+    forOctave.append( "ralfR=["+ strRalfR +"];\n" );
+    forOctave.append( "ralfG=["+ strRalfG +"];\n" );
+    forOctave.append( "ralfB=["+ strRalfB +"];\n" );
+
+    forOctave.append( "normedOrigR=["+ strNormedOrigR +"];\n" );
+    forOctave.append( "normedOrigG=["+ strNormedOrigG +"];\n" );
+    forOctave.append( "normedOrigB=["+ strNormedOrigB +"];\n" );
+    forOctave.append( "normedOrigH=["+ strNormedOrigH +"];\n" );
+
+    forOctave.append( "normedRalfR=["+ strNormedRalfR +"];\n" );
+    forOctave.append( "normedRalfG=["+ strNormedRalfG +"];\n" );
+    forOctave.append( "normedRalfB=["+ strNormedRalfB +"];\n" );
+    forOctave.append( "normedRalfH=["+ strNormedRalfH +"];\n" );
+
+    forOctave.append( "wR=["+ strWR +"];\n" );
+    forOctave.append( "wG=["+ strWG +"];\n" );
+    forOctave.append( "wB=["+ strWB +"];\n" );
+
+    //------------------------------------------
     //Save Sensitivities File
     //------------------------------------------
     //Prepare Output File
     QList<QString> fixtures;
     QList<QString> values;
 
-    fixtures << "ralphSR"       << "ralphSG"        << "ralphSB";
-    fixtures << "wSR"           << "wSG"            << "wSB";
-    fixtures << "originalSR"    << "originalSG"     << "originalSB";
-    fixtures << "halogNorm";
+    fixtures << "originalR"     << "originalG"      << "originalB"      << "originalH";
+    fixtures << "ralfR"         << "ralfG"          << "ralfB";
+    fixtures << "normedOrigR"   << "normedOrigG"    << "normedOrigB"    << "normedOrigH";
+    fixtures << "normedRalfR"   << "normedRalfG"    << "normedRalfB"    << "normedRalfH";
+    fixtures << "wR"            << "wG"             << "wB";
 
-    values << SR        << SG       << SB;
-    values << wSR       << wSG      << wSB;
-    values << backSR    << backSG   << backSB;
-    values << halogNorm;
+    values << strOriginalR      << strOriginalG     << strOriginalB     << strOriginalH;
+    values << strRalfR          << strRalfG         << strRalfB;
+    values << strNormedOrigR    << strNormedOrigG   << strNormedOrigB   << strNormedOrigH;
+    values << strNormedRalfR    << strNormedRalfG   << strNormedRalfB   << strNormedRalfH;
+    values << strWR             << strWG            << strWB;
+
+    //If you want to plot
+    if( 0 )
+    {
+        fixtures << "octave";
+        values << forOctave;
+    }
 
     //Save File
     funcSaveXML( fileName, &fixtures, &values, true );

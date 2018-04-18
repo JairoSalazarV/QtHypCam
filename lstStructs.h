@@ -240,15 +240,23 @@
     typedef struct structSlideStrSens
     {
         int     filled=0;
-        QString ralphSR;
-        QString ralphSG;
-        QString ralphSB;
-        QString wSR;
-        QString wSG;
-        QString wSB;
-        QString originalSR;
-        QString originalSG;
-        QString originalSB;
+        QString normedOrigR;
+        QString normedOrigG;
+        QString normedOrigB;
+
+        QString normedRalfR;
+        QString normedRalfG;
+        QString normedRalfB;
+        QString normedRalfH;
+
+        QString originalR;
+        QString originalG;
+        QString originalB;
+        QString originalH;
+
+        QString wR;
+        QString wG;
+        QString wB;
     }structSlideStrSens;
 
     typedef struct structMaximumColors
@@ -262,16 +270,27 @@
     typedef struct structSlideSensitivities
     {
         int          filled=0;
-        QList<float> ralphSR;
-        QList<float> ralphSG;
-        QList<float> ralphSB;
-        QList<float> wSR;
-        QList<float> wSG;
-        QList<float> wSB;
-        QList<float> originalSR;
-        QList<float> originalSG;
-        QList<float> originalSB;
+
+        QList<float> normedOrigR;
+        QList<float> normedOrigG;
+        QList<float> normedOrigB;
+
+        QList<float> normedRalfR;
+        QList<float> normedRalfG;
+        QList<float> normedRalfB;
+        QList<float> normedRalfH;
+
+        QList<float> originalR;
+        QList<float> originalG;
+        QList<float> originalB;
+        QList<float> originalH;
+
+        QList<float> wR;
+        QList<float> wG;
+        QList<float> wB;
+
         structMaximumColors maximumColors;
+
     }structSlideSensitivities;
 
     typedef struct structSlideCalibration{
