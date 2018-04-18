@@ -18,7 +18,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     QString fileToOpen;
 
-    if(0)
+    if(1)//VERTICAL
     {
         fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/408nm.xml";
         funcAddRowToTable(&fileToOpen);
@@ -147,6 +147,7 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //--------------------------------------
     //Obtain Lower(Wavelength) Vertical Line
     //--------------------------------------
+    /*
     structLine lowerVerLine;
     QString lowerBoundLinePath;
     //get filepath
@@ -167,16 +168,22 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     {
         funcShowMsgERROR_Timeout("Reading Line from XML");
         return (void)false;
-    }
-    //Obtain the Smallest Wavelength
-    float dist2FirstLine, smallestWaveLen;
-    dist2FirstLine  = (float)(lstLines.at(0).x1 - lowerVerLine.x1);
-    smallestWaveLen = funcApplyLR( dist2FirstLine, dist2WaveLR, false );
-    lowerVerLine.wavelength = lstLines.at(0).wavelength - smallestWaveLen;
-    //std::cout << " smallestWaveLen: "           << smallestWaveLen       << std::endl;
-    //std::cout << "dist2FirstLine: "             << dist2FirstLine           << std::endl;
-    //std::cout << "lowerVerLine.wavelength: "    << lowerVerLine.wavelength  << std::endl;
+    }*/
 
+    //Read Min Wavelength
+    float smallestWaveLen   = readAllFile(_PATH_SLIDE_MIN_WAVELENGTH).trimmed().toFloat(0);
+    smallestWaveLen         = ( smallestWaveLen < _RASP_CAM_MIN_WAVELENGTH )?_RASP_CAM_MIN_WAVELENGTH:smallestWaveLen;
+    smallestWaveLen         = lstLines.at(0).wavelength - smallestWaveLen;
+
+    //Obtain the Smallest Wavelength
+    float tmpDist;
+    int firstLineX1, firstLineX2;
+    tmpDist     = funcApplyLR( smallestWaveLen, wave2DistLR, false );
+    firstLineX1 = round((float)lstLines.at(0).x1 - tmpDist);
+    //std::cout << " firstLineX1: "       << firstLineX1       << std::endl;
+    //std::cout << "smallestWaveLen: "    << smallestWaveLen   << std::endl;
+
+    //std::cout << "lowerVerLine.wavelength: "    << lowerVerLine.wavelength  << std::endl;
     //std::cout << "Orig P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
     //std::cout << "Orig P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
 
@@ -204,7 +211,7 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
         tmpXDifference += lstLines.at(i).x2 - lstLines.at(i).x1;
     }
     tmpXDifference  = round( (float)tmpXDifference / (float)numLines );
-    lowerVerLine.x1 = lowerVerLine.x2 - tmpXDifference;
+    firstLineX2     = firstLineX1 - tmpXDifference;
 
     //std::cout << "Mod P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
     //std::cout << "Mod P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
@@ -214,10 +221,10 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //--------------------------------------
     double X[2];
     double Y[2];
-    X[0]    = (double)lowerVerLine.y1;
-    Y[0]    = (double)lowerVerLine.x1;
-    X[1]    = (double)lowerVerLine.y2;
-    Y[1]    = (double)lowerVerLine.x2;
+    X[0]    = (double)lstLines.at(0).y1;
+    Y[0]    = (double)firstLineX1;
+    X[1]    = (double)lstLines.at(0).y2;
+    Y[1]    = (double)firstLineX2;
     //std::cout << "Mod P1: " << X[0] << ", " << Y[0] << std::endl;
     //std::cout << "Mod P2: " << X[1] << ", " << Y[1] << std::endl;
     linearRegresion vertLR = funcLinearRegression(X,Y,2);
@@ -226,6 +233,18 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //--------------------------------------
     //Save Vertical Calibration File
     //--------------------------------------
+
+    //Obtain Lower(Wavelength) Vertical Line
+    structLine lowerVerLine;
+    lowerVerLine.originalW  = lstLines.at(0).originalW;
+    lowerVerLine.originalH  = lstLines.at(0).originalH;
+    lowerVerLine.x1         = firstLineX1;
+    lowerVerLine.y1         = lstLines.at(0).y1;
+    lowerVerLine.x2         = firstLineX2;
+    lowerVerLine.y2         = lstLines.at(0).y2;
+    lowerVerLine.wavelength = lstLines.at(0).wavelength - smallestWaveLen;
+
+    //Save file
     if( funcSaveVerticalCalibrationFile(
                                             &lowerVerLine,
                                             &dist2WaveLR,
