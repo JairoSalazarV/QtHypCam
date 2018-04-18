@@ -1469,7 +1469,6 @@ QSlider::handle:horizontal {
        <string>Compute</string>
       </property>
       <addaction name="actionBuld_HypImg"/>
-      <addaction name="actionCamera_Sensitivities"/>
      </widget>
      <addaction name="actionSlideDiffraction"/>
      <addaction name="actionTimelapse"/>
