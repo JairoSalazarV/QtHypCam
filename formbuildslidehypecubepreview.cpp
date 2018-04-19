@@ -153,7 +153,16 @@ QImage formBuildSlideHypeCubePreview
     destinePoint.setX(layerTmpPos);
     destinePoint.setY(0);
     //Copy Slide
-    funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(0), &mainTmpLayerImg );
+    //funcCopyImageSubareas( originRect, destinePoint, lstImgs.at(0), &mainTmpLayerImg );
+    funcDemoiseAndCopyImageSubareas(
+                                        originRect,
+                                        destinePoint,
+                                        lstImgs.at(0),
+                                        &mainTmpLayerImg,
+                                        wavePos,
+                                        mainSlideCalibration.sensitivities,
+                                        copyOverride
+                                   );
     layerTmpPos += notOverlapW;
 
     //------------------------------------------------------
@@ -180,7 +189,8 @@ QImage formBuildSlideHypeCubePreview
                                             lstImgs.at(idImg),
                                             &mainTmpLayerImg,
                                             wavePos,
-                                            mainSlideCalibration.sensitivities
+                                            mainSlideCalibration.sensitivities,
+                                            copyAverage
                                        );
         layerTmpPos += overlapW;        
 
@@ -202,7 +212,8 @@ QImage formBuildSlideHypeCubePreview
                                             lstImgs.at(idImg),
                                             &mainTmpLayerImg,
                                             wavePos,
-                                            mainSlideCalibration.sensitivities
+                                            mainSlideCalibration.sensitivities,
+                                            copyOverride
                                        );
         layerTmpPos += (notOverlapW - overlapW);
     }
@@ -479,7 +490,8 @@ int formBuildSlideHypeCubePreview
                                             const QImage &origImg,
                                             QImage* destineImg,
                                             const int &wavePos,
-                                            const structSlideSensitivities &slideSens
+                                            const structSlideSensitivities &slideSens,
+                                            int type
 ){
     //type[ 0:override | 1:Average | 2: maxVal | 3:minVal ]
 
@@ -539,7 +551,7 @@ int formBuildSlideHypeCubePreview
     //          << " maxMax: " << slideSens.maximumColors.maxMaxS
     //          << std::endl;
     //exit(0);
-    std::cout << "x: " << tmpX << " wS15: " << wS << std::endl;
+    //std::cout << "x: " << tmpX << " wS15: " << wS << std::endl;
     //exit(0);
 
     //--------------------------------------------------
@@ -547,6 +559,7 @@ int formBuildSlideHypeCubePreview
     //--------------------------------------------------
     float tmpColor;
     QColor originColor;
+    QColor destineColor;
     for(x=0; x<originRect.width(); x++)
     {
         for(y=0; y<originRect.height(); y++)
@@ -556,43 +569,62 @@ int formBuildSlideHypeCubePreview
             originY         = originRect.y()   + y;
             destineX        = destinePoint.x() + x;
             destineY        = destinePoint.y() + y;
+
             //Get Pixel
             originColor     = origImg.pixelColor(originX,originY);
+
             //Spectral Denoising
-            //tmpColor = ( maxColorID == _RED )?(float)originColor.red():( maxColorID == _GREEN )?(float)originColor.green():(float)originColor.blue();
-            //tmpColor = tmpColor * wS;
-            //tmpColor = (tmpColor>255.0)?255.0:tmpColor;
-
-            //tmpColor    = originColor.red()     +
-            //              originColor.green()   +
-            //              originColor.blue();
-            //tmpColor    = (tmpColor>255)?255:tmpColor;
-
             tmpColor    = ((float)originColor.red() * slideSens.wR.at(wavePos))    +
                           ((float)originColor.green() * slideSens.wG.at(wavePos))  +
                           ((float)originColor.blue() * slideSens.wB.at(wavePos));
             tmpColor    = tmpColor * wS;
             tmpColor    = (tmpColor>255)?255:tmpColor;
 
-
-            //std::cout << "R: " << (float)originColor.red() << " * " << slideSens.wR.at(wavePos) << std::endl;
-            //std::cout << "G: " << (float)originColor.green() << " * " << slideSens.wG.at(wavePos) << std::endl;
-            //std::cout << "B: " << (float)originColor.blue() << " * " << slideSens.wB.at(wavePos) << std::endl;
-            //std::cout << "tmpColor: " << tmpColor << " wavePos: " << wavePos << std::endl;
-
+            //-----------------------------------------------
             //Set Color
+            //-----------------------------------------------
             originColor.setRed(0);
             originColor.setGreen(0);
             originColor.setBlue(0);
-            if( maxColorID == _RED )originColor.setRed(round(tmpColor));
-            if( maxColorID == _GREEN )originColor.setGreen(round(tmpColor));
-            if( maxColorID == _BLUE )originColor.setBlue(round(tmpColor));
-            //std::cout << "R: " << originColor.red()
-            //          << " G: " << originColor.green()
-            //          << " B: " << originColor.blue()
-            //          << std::endl;
+            if( type == copyMax )
+            {
+                //Not Implemented
+            }
+            if( type == copyMin )
+            {
+                //Not Implemented
+            }
+            if( type == copyAverage )
+            {
+                destineColor = destineImg->pixelColor(QPoint(destineX,destineY));
+                if( maxColorID == _RED )
+                {
+                    tmpColor    = ( tmpColor + destineColor.red() ) * 0.5;
+                    originColor.setRed( round(tmpColor) );
+                }
+                if( maxColorID == _GREEN )
+                {
+                    tmpColor    = ( tmpColor + destineColor.green() ) * 0.5;
+                    originColor.setGreen( round(tmpColor) );
+                }
+                if( maxColorID == _BLUE )
+                {
+                    tmpColor    = ( tmpColor + destineColor.blue() ) * 0.5;
+                    originColor.setBlue( round(tmpColor) );
+                }
+            }
+
+            if( type == copyOverride )
+            {
+                if( maxColorID == _RED )    originColor.setRed( round(tmpColor) );
+                if( maxColorID == _GREEN )  originColor.setGreen( round(tmpColor) );
+                if( maxColorID == _BLUE )   originColor.setBlue( round(tmpColor) );
+            }
+
+
             //Save Color
             destineImg->setPixelColor(QPoint(destineX,destineY),originColor);
+
         }
     }
 

@@ -93,7 +93,8 @@ private slots:
                                             const QImage &origImg,
                                             QImage* destineImg,
                                             const int &wavePos,
-                                            const structSlideSensitivities &slideSens
+                                            const structSlideSensitivities &slideSens,
+                                            int type=copyOverride
                                         );
 
     int funcReloadExportSettings();
