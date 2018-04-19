@@ -488,42 +488,59 @@ int formBuildSlideHypeCubePreview
     int destineX, destineY;
     int maxColorID = 0;
     //float maxColorVal = 0.0;
-    float rVal, gVal, bVal;
+    float wR, wG, wB;
     float wS = 1;
+    float tmpX;
 
     //--------------------------------------------------
     //Define the Sensor to Use
     //--------------------------------------------------
-    rVal        = slideSens.originalR.at(wavePos)/255.0;
-    gVal        = slideSens.originalG.at(wavePos)/255.0;
-    bVal        = slideSens.originalB.at(wavePos)/255.0;
-    if( (rVal >= gVal) && (rVal >= bVal) )
+    wR  = slideSens.normedRalfR.at(wavePos);
+    wG  = slideSens.normedRalfG.at(wavePos);
+    wB  = slideSens.normedRalfB.at(wavePos);
+
+    if( (wR >= wG) && (wR >= wB) )
     {
         maxColorID  = _RED;
-        //maxColorVal = rVal;
-        wS          = slideSens.maximumColors.maxMaxS - rVal;
-        //std::cout << slideSens.maximumColors.maxMaxS << " / " << rVal << std::endl;
-    }else if( (gVal >= rVal) && (gVal >= bVal) )
+        tmpX        = (1.0 - wR);
+        tmpX        = (tmpX<1.0)?tmpX:0;
+        wS          = (pow(tmpX,4)*16.03168)    +
+                      (pow(tmpX,3)*-18.27273)   +
+                      (pow(tmpX,2)*6.73246)     +
+                      (tmpX*-0.11645)           +
+                      1;
+
+    }else if( (wG >= wR) && (wG >= wB) )
     {
         maxColorID  = _GREEN;
-        //maxColorVal = gVal;
-        wS          = slideSens.maximumColors.maxMaxS - gVal;
-        //std::cout << slideSens.maximumColors.maxMaxS << " / " << gVal << std::endl;
-    }else if( (bVal >= rVal) && (bVal >= gVal) )
+        tmpX        = (1.0 - wG);
+        tmpX        = (tmpX<1.0)?tmpX:0;
+        wS          = (pow(tmpX,4)*16.03168)    +
+                      (pow(tmpX,3)*-18.27273)   +
+                      (pow(tmpX,2)*6.73246)     +
+                      (tmpX*-0.11645)           +
+                      1;
+    }else if( (wB >= wR) && (wB >= wG) )
     {
         maxColorID  = _BLUE;
-        //maxColorVal = bVal;
-        wS          = slideSens.maximumColors.maxMaxS - bVal;
-        //std::cout << slideSens.maximumColors.maxMaxS << " / " << bVal << std::endl;
+        tmpX        = (1.0 - wB);
+        tmpX        = (tmpX<1.0)?tmpX:0;
+        wS          = (pow(tmpX,4)*16.03168)    +
+                      (pow(tmpX,3)*-18.27273)   +
+                      (pow(tmpX,2)*6.73246)     +
+                      (tmpX*-0.11645)           +
+                      1;
     }
+    wS = (wS<1.0)?1.0:wS;
     //wS = 1 + (wS * 1.2);//Arbitrariamente :D
     //std::cout << "wS6 " << wS << std::endl;
-    wS = 1 + (wS * (1.0+1.0-slideSens.maximumColors.maxMaxS) );//Arbitrariamente :D
+    //wS = 1 + wS + (1-slideSens.maximumColors.maxMaxS);//Arbitrariamente :D
     //std::cout << "wS7 " << wS
     //          << " maxMax: " << slideSens.maximumColors.maxMaxS
     //          << std::endl;
     //exit(0);
-    //std::cout << "wS7 " << wS << std::endl;
+    std::cout << "x: " << tmpX << " wS15: " << wS << std::endl;
+    //exit(0);
 
     //--------------------------------------------------
     //Denoise Pixel Color
@@ -554,7 +571,9 @@ int formBuildSlideHypeCubePreview
             tmpColor    = ((float)originColor.red() * slideSens.wR.at(wavePos))    +
                           ((float)originColor.green() * slideSens.wG.at(wavePos))  +
                           ((float)originColor.blue() * slideSens.wB.at(wavePos));
+            tmpColor    = tmpColor * wS;
             tmpColor    = (tmpColor>255)?255:tmpColor;
+
 
             //std::cout << "R: " << (float)originColor.red() << " * " << slideSens.wR.at(wavePos) << std::endl;
             //std::cout << "G: " << (float)originColor.green() << " * " << slideSens.wG.at(wavePos) << std::endl;
