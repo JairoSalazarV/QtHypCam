@@ -11232,9 +11232,12 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
         //Delete Red Noise
         int n = round(0.26 * (float)W);//Arbitrary
         float tmpVal = 0.0;
-        for( x=0; x<n; x++ )
+        if( 1 )
         {
-            originalR[x]    = tmpVal;
+            for( x=0; x<n; x++ )
+            {
+                originalR[x]    = tmpVal;
+            }
         }
 
         //Fix nose added by HypCam
@@ -11426,7 +11429,7 @@ void MainWindow::on_actionCalc_Sensitivities_triggered()
     values << strWR             << strWG            << strWB;
 
     //If you want to plot
-    if( 0 )
+    if( 1 )
     {
         fixtures << "octave";
         values << forOctave;
