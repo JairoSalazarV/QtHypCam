@@ -318,11 +318,13 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     //------------------------------------------------------
     QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
     structSlideCalibration mainSlideCalibration;
+    //std::cout << "calibPath: " << calibPath.toStdString() << std::endl;
     if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
     {
         funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath,this);
         return (void)false;
     }
+    //exit(0);
 
     //------------------------------------------------------
     //Get Max Sensitivities
@@ -336,13 +338,13 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     for( i=0; i<mainSlideCalibration.sensitivities.originalR.size(); i++ )
     {
         //Red
-        tmpVal      = mainSlideCalibration.sensitivities.originalR.at(i);
+        tmpVal      = mainSlideCalibration.sensitivities.normedRalfR.at(i);
         tmpMaxSR    = (tmpVal > tmpMaxSR)?tmpVal:tmpMaxSR;
         //Green
-        tmpVal      = mainSlideCalibration.sensitivities.originalG.at(i);
+        tmpVal      = mainSlideCalibration.sensitivities.normedRalfG.at(i);
         tmpMaxSG    = (tmpVal > tmpMaxSG)?tmpVal:tmpMaxSG;
         //Blue
-        tmpVal      = mainSlideCalibration.sensitivities.originalB.at(i);
+        tmpVal      = mainSlideCalibration.sensitivities.normedRalfB.at(i);
         tmpMaxSB    = (tmpVal > tmpMaxSB)?tmpVal:tmpMaxSB;
     }
     //maxMax
@@ -352,11 +354,17 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     mainSlideCalibration.sensitivities.maximumColors.maxSG   = tmpMaxSG;
     mainSlideCalibration.sensitivities.maximumColors.maxSB   = tmpMaxSB;
     mainSlideCalibration.sensitivities.maximumColors.maxMaxS = tmpMaxMax;
+    //std::cout << "tmpMaxSR: " << tmpMaxSR << " tmpMaxSG: "  << tmpMaxSG
+    //          << "tmpMaxSB: " << tmpMaxSB << " tmpMaxMax: " << tmpMaxMax;
+    //exit(0);
 
     //------------------------------------------------------
     //Get Layer
     //------------------------------------------------------
-    layerBackup = funcGetImageAtWavelength( ui->spinBoxWavelen->value(), mainSlideCalibration );
+    layerBackup = funcGetImageAtWavelength(
+                                                ui->spinBoxWavelen->value(),
+                                                mainSlideCalibration
+                                           );
     displayImageFullScreen( layerBackup );
 
     //------------------------------------------------------
@@ -486,9 +494,9 @@ int formBuildSlideHypeCubePreview
     //--------------------------------------------------
     //Define the Sensor to Use
     //--------------------------------------------------
-    rVal        = slideSens.originalR.at(wavePos);
-    gVal        = slideSens.originalG.at(wavePos);
-    bVal        = slideSens.originalB.at(wavePos);
+    rVal        = slideSens.originalR.at(wavePos)/255.0;
+    gVal        = slideSens.originalG.at(wavePos)/255.0;
+    bVal        = slideSens.originalB.at(wavePos)/255.0;
     if( (rVal >= gVal) && (rVal >= bVal) )
     {
         maxColorID  = _RED;
@@ -509,8 +517,13 @@ int formBuildSlideHypeCubePreview
         //std::cout << slideSens.maximumColors.maxMaxS << " / " << bVal << std::endl;
     }
     //wS = 1 + (wS * 1.2);//Arbitrariamente :D
+    //std::cout << "wS6 " << wS << std::endl;
     wS = 1 + (wS * (1.0+1.0-slideSens.maximumColors.maxMaxS) );//Arbitrariamente :D
-    //std::cout << "wS5 " << wS << std::endl;
+    //std::cout << "wS7 " << wS
+    //          << " maxMax: " << slideSens.maximumColors.maxMaxS
+    //          << std::endl;
+    //exit(0);
+    //std::cout << "wS7 " << wS << std::endl;
 
     //--------------------------------------------------
     //Denoise Pixel Color
@@ -529,15 +542,25 @@ int formBuildSlideHypeCubePreview
             //Get Pixel
             originColor     = origImg.pixelColor(originX,originY);
             //Spectral Denoising
-            tmpColor = ( maxColorID == _RED )?(float)originColor.red():( maxColorID == _GREEN )?(float)originColor.green():(float)originColor.blue();
-            //std::cout << tmpColor << " / " << "(255*" << maxColorVal << ")*255 = ";
-            //tmpColor = (tmpColor / (255.0*maxColorVal))*255.0;
-            //std::cout << " " << tmpColor << " " << std::endl;
-            //tmpColor = (tmpColor > 255.0)?255.0:tmpColor;
-            tmpColor = tmpColor * wS;
-            tmpColor = (tmpColor>255.0)?255.0:tmpColor;
-            //std::cout << " wS: " << wS << std::endl;
-            //exit(0);
+            //tmpColor = ( maxColorID == _RED )?(float)originColor.red():( maxColorID == _GREEN )?(float)originColor.green():(float)originColor.blue();
+            //tmpColor = tmpColor * wS;
+            //tmpColor = (tmpColor>255.0)?255.0:tmpColor;
+
+            //tmpColor    = originColor.red()     +
+            //              originColor.green()   +
+            //              originColor.blue();
+            //tmpColor    = (tmpColor>255)?255:tmpColor;
+
+            tmpColor    = ((float)originColor.red() * slideSens.wR.at(wavePos))    +
+                          ((float)originColor.green() * slideSens.wG.at(wavePos))  +
+                          ((float)originColor.blue() * slideSens.wB.at(wavePos));
+            tmpColor    = (tmpColor>255)?255:tmpColor;
+
+            //std::cout << "R: " << (float)originColor.red() << " * " << slideSens.wR.at(wavePos) << std::endl;
+            //std::cout << "G: " << (float)originColor.green() << " * " << slideSens.wG.at(wavePos) << std::endl;
+            //std::cout << "B: " << (float)originColor.blue() << " * " << slideSens.wB.at(wavePos) << std::endl;
+            //std::cout << "tmpColor: " << tmpColor << " wavePos: " << wavePos << std::endl;
+
             //Set Color
             originColor.setRed(0);
             originColor.setGreen(0);
