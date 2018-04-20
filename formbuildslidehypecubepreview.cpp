@@ -264,10 +264,12 @@ int formBuildSlideHypeCubePreview
     int layerW, layerH;
     int slideW, slideH, imgW, imgH, numFrames;
     int overlapW, notOverlapW;
+    float specW, specRes;
     imgW        = lstImgs.at(0).width();
     imgH        = lstImgs.at(0).height();
     numFrames   = lstImgs.size();
     slideW      = mainExportSettings.spatialResolution;
+    specRes     = mainExportSettings.spectralResolution;
     slideH      = lstImgs.at(0).height();
     overlapW    = ceil( (float)slideW * (mainExportSettings.spatialOverlap/100.0));
     notOverlapW = slideW - overlapW;
@@ -279,20 +281,9 @@ int formBuildSlideHypeCubePreview
     // Ralf Pag. 6
     // Spectral Resolution = (x_ir - x_ib) / (lambda_r - lambda_b)
     //------------------------------------------------------
-    float specRes, specW;
-    specW   = mainSlideCalibration.maxWave - mainSlideCalibration.originWave;
-    if( mainExportSettings.spectralResolution == 0.0 )
-    {
-        int imgW;
-        imgW        = lstImgs.at(0).width();
-        specRes     = (float)imgW / specW;
-    }
-    else
-    {
-        specRes     = mainExportSettings.spectralResolution;
-    }
     int L;
-    L = floor(specW / specRes);
+    specW   = mainExportSettings.expMaxWave - mainExportSettings.expMinWave;
+    L       = floor(specW / specRes);
 
     //------------------------------------------------------
     //Fill Parameters
@@ -308,6 +299,7 @@ int formBuildSlideHypeCubePreview
     slidecHypCubeSize->notOverlapW      = notOverlapW;
     slidecHypCubeSize->specW            = specW;
     slidecHypCubeSize->specResolution   = specRes;
+    slidecHypCubeSize->minSpecRes       = mainExportSettings.expMinWave;
 
     //------------------------------------------------------
     //Return Layer Image Created
@@ -1219,7 +1211,6 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
         return (void)false;
     }
 
-
     //------------------------------------------------------
     //Reload Export Settings
     //------------------------------------------------------
@@ -1276,6 +1267,8 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
         std::cout << "notOverlapW: " << slideHypcubeSize.notOverlapW << std::endl;
         std::cout << "specW: " << slideHypcubeSize.specW << std::endl;
         std::cout << "specRes: " << slideHypcubeSize.specResolution << std::endl;
+        std::cout << "minWave: " << slideHypcubeSize.minSpecRes << std::endl;
+        std::cout << "maxWave: " << mainExportSettings.expMaxWave << std::endl;
     }
 
     //======================================================
@@ -1455,7 +1448,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
                 << QString::number(slideHypcubeSize.hypcubeW)
                 << QString::number(slideHypcubeSize.hypcubeH)
                 << QString::number(slideHypcubeSize.hypcubeL)
-                << QString::number(mainSlideCalibration.originWave)
+                << QString::number(slideHypcubeSize.minSpecRes)
                 << QString::number(slideHypcubeSize.specResolution)
                 << "nanometers"
                 << "DIM(x,y,[bands 1,2,...,L])"
@@ -1531,7 +1524,7 @@ void formBuildSlideHypeCubePreview
     maxOverlapImgPos    = slideHypcubeSize->imgW - slideHypcubeSize->slideW;
     for( i=0; i<slideHypcubeSize->hypcubeL; i++ ){
         //Save Wavelength
-        slideHypcubeSize->lstWavelengths[i]  = mainSlideCalibration.originWave +
+        slideHypcubeSize->lstWavelengths[i]  = slideHypcubeSize->minSpecRes +
                                                ( i * slideHypcubeSize->specResolution );
         //Overlap Initial Position
         internWavelen       = slideHypcubeSize->lstWavelengths[i] - mainSlideCalibration.originWave;

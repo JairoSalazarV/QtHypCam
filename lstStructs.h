@@ -567,6 +567,7 @@
         int notOverlapW;
         float specW;
         float specResolution;
+        float minSpecRes;
         float* lstWavelengths;
         int* lstOverlapPos;
         int* lstNotOverlapPos;
