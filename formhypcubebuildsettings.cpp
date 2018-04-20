@@ -8,21 +8,58 @@ formHypcubeBuildSettings::formHypcubeBuildSettings(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    //Refresh Last Settings
-    if( fileExists( _PATH_SLIDE_EXPORTING_HYPCUBE ) )
+
+    //------------------------------------------------------
+    //Set Exportation Settings
+    //------------------------------------------------------
+    //Load Slide Calibration Settings Set as Default
+    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();    
+    //Calc Spectral Resolution    
+    structSlideCalibration mainSlideCalibration;
+    if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
     {
-        structExportHypcubeSettings hypcubeSettings;
-        if( funcReadSettings(&hypcubeSettings) == _OK )
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath,this);
+    }
+    else
+    {
+        float specRes;
+        specRes = ((float)mainSlideCalibration.imgW /
+                  (float)( mainSlideCalibration.maxWave - mainSlideCalibration.originWave ));
+        //std::cout << "specRes: " << specRes << std::endl;
+        ui->spinboxSpectralResolution->setMinimum( specRes );
+
+        //std::cout << "SR2: " << round((float)mainSlideCalibration.imgW/3.0) << std::endl;
+        ui->spinboxSpatialResolution->setMaximum( round((float)mainSlideCalibration.imgW/3.0) );
+
+        ui->spinboxExpMinWave->setMinimum( mainSlideCalibration.originWave );
+        ui->spinboxExpMinWave->setMaximum( mainSlideCalibration.maxWave );
+
+        ui->spinboxExpMaxWave->setMinimum( mainSlideCalibration.originWave );
+        ui->spinboxExpMaxWave->setMaximum( mainSlideCalibration.maxWave );
+
+        //------------------------------------------------------
+        //Set Range Parameters
+        //------------------------------------------------------
+        //Refresh Last Settings
+        if( fileExists( _PATH_SLIDE_EXPORTING_HYPCUBE ) )
         {
-            ui->spinboxSpectralResolution->setValue(hypcubeSettings.spectralResolution);
-            ui->spinboxSpatialResolution->setValue(hypcubeSettings.spatialResolution);
-            ui->spinboxSpatialOverlap->setValue(hypcubeSettings.spatialOverlap);
-            if( hypcubeSettings.flip == 1 )
-                ui->cbFlip->setChecked(true);
-            else
-                ui->cbFlip->setChecked(false);
+            structExportHypcubeSettings hypcubeSettings;
+            if( funcReadSettings(&hypcubeSettings) == _OK )
+            {
+                ui->spinboxSpectralResolution->setValue(hypcubeSettings.spectralResolution);
+                ui->spinboxSpatialResolution->setValue(hypcubeSettings.spatialResolution);
+                ui->spinboxSpatialOverlap->setValue(hypcubeSettings.spatialOverlap);
+                if( hypcubeSettings.flip == 1 )
+                    ui->cbFlip->setChecked(true);
+                else
+                    ui->cbFlip->setChecked(false);
+
+                ui->spinboxExpMinWave->setValue( hypcubeSettings.expMinWave );
+                ui->spinboxExpMaxWave->setValue( hypcubeSettings.expMaxWave );
+            }
         }
     }
+
 }
 
 formHypcubeBuildSettings::~formHypcubeBuildSettings()
@@ -40,14 +77,17 @@ void formHypcubeBuildSettings::on_pbSave_clicked()
     lstFixtures.clear();
     lstValues.clear();
     lstFixtures << "spectralResolution" << "spatialResolution"
-                << "spatialOverlap" << "flip";
+                << "spatialOverlap"     << "flip"
+                << "expMinWave"         << "expMaxWave";
     lstValues << QString::number(ui->spinboxSpectralResolution->value())
               << QString::number(ui->spinboxSpatialResolution->value())
-              << QString::number(ui->spinboxSpatialOverlap->value()) ;
+              << QString::number(ui->spinboxSpatialOverlap->value());
     if( ui->cbFlip->isChecked() )
         lstValues << "1";
     else
         lstValues << "0";
+    lstValues << QString::number( ui->spinboxExpMinWave->value() )
+              << QString::number( ui->spinboxExpMaxWave->value() );
 
     //----------------------------------------------
     //Save XML
@@ -96,6 +136,10 @@ int formHypcubeBuildSettings::funcReadSettings(structExportHypcubeSettings* hypc
                 hypcubeSettings->spatialOverlap = xmlReader->readElementText().toFloat(0);
             if( xmlReader->name()=="flip" )
                 hypcubeSettings->flip = xmlReader->readElementText().toInt(0);
+            if( xmlReader->name()=="expMinWave" )
+                hypcubeSettings->expMinWave = xmlReader->readElementText().toFloat(0);
+            if( xmlReader->name()=="expMaxWave" )
+                hypcubeSettings->expMaxWave = xmlReader->readElementText().toFloat(0);
         }
     }
     if(xmlReader->hasError())

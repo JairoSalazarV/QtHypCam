@@ -10852,28 +10852,8 @@ void MainWindow::on_actionBuild_HypCube_triggered()
 
 void MainWindow::on_actionBuild_HypCube_2_triggered()
 {
-    //-----------------------------------------------
-    //Get Lst Images From Folder
-    //-----------------------------------------------
-    QString tmpFramesPath;
-    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
-    tmpFramesPath.append("tmp/");
-    QList<QImage> lstImgs;
-    QList<QFileInfo> lstImagePaths;
-    progBarUpdateLabel("Putting Images into Memory...",0);
-    funcGetImagesFromFolder( tmpFramesPath, &lstImgs, &lstImagePaths, ui->progBar );
-    progBarUpdateLabel("",0);
-    //Update Image Displayed
-    int middlePos = round( (float)lstImgs.size()*0.5 );
-    QImage middelImg( lstImagePaths.at(middlePos).absoluteFilePath().trimmed() );
-    updateDisplayImage( &middelImg );
-
-    //-----------------------------------------------
-    //Get Lst Images From Folder
-    //-----------------------------------------------
-
-
-
+    formBuildSlideHypeCubePreview slideHypeCubePreview;
+    slideHypeCubePreview.exportSlideHypCube();
 }
 
 void MainWindow::on_actionSlide_HypCube_Building_triggered()

@@ -1201,6 +1201,11 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
 
 void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
 {
+    exportSlideHypCube();
+}
+
+void formBuildSlideHypeCubePreview::exportSlideHypCube()
+{
     //======================================================
     //PREPARE VARIABLES AND ENVIROMENT
     //======================================================

@@ -545,6 +545,8 @@
         int   spatialResolution;
         float spatialOverlap;
         int   flip;
+        float expMinWave;
+        float expMaxWave;
     }structExportHypcubeSettings;
 
     typedef struct structVerticalCalibrationSettings

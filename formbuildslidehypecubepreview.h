@@ -68,6 +68,8 @@ public:
                     copySpecDemoised,
     };
 
+    void exportSlideHypCube();
+
 private slots:
     void on_pbApply_clicked();
 
@@ -116,6 +118,8 @@ private slots:
     void on_pbExportImages_clicked();
 
     void on_pbExportCube_clicked();
+
+
 
 private:
     Ui::formBuildSlideHypeCubePreview *ui;

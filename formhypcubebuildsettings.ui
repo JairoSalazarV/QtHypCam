@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>369</width>
-    <height>222</height>
+    <height>357</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>180</y>
+     <y>296</y>
      <width>331</width>
      <height>28</height>
     </rect>
@@ -116,8 +116,75 @@
      <height>29</height>
     </rect>
    </property>
+   <property name="minimum">
+    <number>1</number>
+   </property>
    <property name="value">
     <number>3</number>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="spinboxExpMinWave">
+   <property name="geometry">
+    <rect>
+     <x>208</x>
+     <y>176</y>
+     <width>141</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <double>50.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>20000.000000000000000</double>
+   </property>
+   <property name="value">
+    <double>400.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>180</y>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Minimum Wavelength</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="spinboxExpMaxWave">
+   <property name="geometry">
+    <rect>
+     <x>208</x>
+     <y>216</y>
+     <width>141</width>
+     <height>29</height>
+    </rect>
+   </property>
+   <property name="minimum">
+    <double>50.000000000000000</double>
+   </property>
+   <property name="maximum">
+    <double>20000.000000000000000</double>
+   </property>
+   <property name="value">
+    <double>920.000000000000000</double>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>220</y>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Maximum Wavelength</string>
    </property>
   </widget>
  </widget>
