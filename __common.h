@@ -327,12 +327,12 @@
 
     QList<double> getNormedFunction( QString fileName );
 
-    int funcGetSpectrallyDenoisedPixel(
-                                            const QColor &originColor,
-                                            const int &wavePos,
-                                            const float &wS,
-                                            const structSlideSensitivities &slideSens
-                                       );
+    //int funcGetSpectrallyDenoisedPixel(
+    //                                        const QColor &originColor,
+    //                                        const int &wavePos,
+    //                                        const float &wS,
+    //                                        const structSlideSensitivities &slideSens
+    //                                   );
 
     int funcSlideDenoiseDefineSensorToUse(
                                             strDenoisedColorSelected* denColSel,

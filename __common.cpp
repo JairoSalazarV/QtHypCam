@@ -3446,6 +3446,7 @@ QList<double> getNormedFunction( QString fileName )
     return function;
 }
 
+/*
 int funcGetSpectrallyDenoisedPixel(
                                     const QColor &originColor,
                                     const int &wavePos,
@@ -3464,7 +3465,7 @@ int funcGetSpectrallyDenoisedPixel(
     //Return Color
     return round(tmpColor);
 
-}
+}*/
 
 int funcSlideDenoiseDefineSensorToUse(
                                         strDenoisedColorSelected* denColSel,
@@ -3495,12 +3496,22 @@ int funcSlideDenoiseDefineSensorToUse(
         tmpX                = (1.0 - wB);
         tmpX                = (tmpX<1.0)?tmpX:0;
     }
-    denColSel->wS       = (pow(tmpX,4)*16.03168)    +
-                          (pow(tmpX,3)*-18.27273)   +
-                          (pow(tmpX,2)*6.73246)     +
-                          (tmpX*-0.11645)           +
+
+    //denColSel->wS       = (pow(tmpX,4)*16.03168)    +
+    //                      (pow(tmpX,3)*-18.27273)   +
+    //                      (pow(tmpX,2)*6.73246)     +
+    //                      (tmpX*-0.11645)           +
+    //                      1;
+    denColSel->wS       = (pow(tmpX,3)*3.86029)     +
+                          (pow(tmpX,2)*-3.05151)    +
+                          (tmpX*1.31828)            +
                           1;
-    denColSel->wS = (denColSel->wS<1.0)?1.0:denColSel->wS;
+
+
+    denColSel->wS = (denColSel->wS<1.71)?1.71:denColSel->wS;
+
+    //std::cout << "denColSel->wS: " << denColSel->wS << std::endl;
+
     return _OK;
 }
 

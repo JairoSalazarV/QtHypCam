@@ -464,7 +464,7 @@ int formBuildSlideHypeCubePreview
     //wG  = slideSens.normedRalfG.at(wavePos);
     //wB  = slideSens.normedRalfB.at(wavePos);
     funcSlideDenoiseDefineSensorToUse( &denColSel, wavePos, slideSens );
-
+    //std::cout << "denColSel.wS: " << denColSel.wS << std::endl;
 
     //wS = 1 + (wS * 1.2);//Arbitrariamente :D
     //std::cout << "wS6 " << wS << std::endl;
@@ -496,12 +496,14 @@ int formBuildSlideHypeCubePreview
             originColor     = origImg.pixelColor(originX,originY);
 
             //Spectral Denoising
-            tmpColor = funcGetSpectrallyDenoisedPixel(
+            tmpColor        = round(
+                                        funcPixelToQE(
                                                         originColor,
                                                         wavePos,
-                                                        denColSel.wS,
-                                                        slideSens
-                                                     );
+                                                        slideSens,
+                                                        denColSel.wS
+                                                     )
+                                   );
 
             //-----------------------------------------------
             //Set Color
@@ -1287,7 +1289,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     //------------------------------------------------------
     //Show the Result
     //------------------------------------------------------
-    if( 1 )
+    if( 0 )
     {
         for(i=0; i<slideHypcubeSize.hypcubeL; i+=1)
         {
@@ -1332,7 +1334,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     binPos  = 0;
     u_int8_t* serialHypCube = (u_int8_t*)malloc(binLen*sizeof(u_int8_t));
     //Serialize Slide Hypercube
-    for(x=0; x<slideHypcubeSize.hypcubeW; x++)
+    for(x=slideHypcubeSize.hypcubeW-1; x>=0; x--)
     {
         for(y=0; y<slideHypcubeSize.hypcubeH; y++)
         {
@@ -1398,7 +1400,6 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     funcSaveXML(outFilename,&lstFixtures,&lstValues,false);
     //Notify Success
     funcShowMsgSUCCESS_Timeout("Slide Hypercube Saved Successfully",this);
-
 
     //------------------------------------------------------
     //Free Memory
