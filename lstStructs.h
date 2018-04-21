@@ -574,7 +574,10 @@
         int* lstDestineInitX;
     }structSlideHypCubeSize;
 
-
+    typedef struct strDenoisedColorSelected{
+        int     colorID;
+        float   wS=1.0;
+    }strDenoisedColorSelected;
 
 
 

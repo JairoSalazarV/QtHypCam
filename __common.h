@@ -317,10 +317,33 @@
                                     QProgressBar* progBar = Q_NULLPTR
                                );
 
-    float funcPixelToQE( const QColor &tmpPixColor );
+    float funcPixelToQE(
+                            const QColor &originPixColor,
+                            const int &wavePos,
+                            const structSlideSensitivities &slideSens,
+                            const float &wS
+                       );
 
 
     QList<double> getNormedFunction( QString fileName );
+
+    int funcGetSpectrallyDenoisedPixel(
+                                            const QColor &originColor,
+                                            const int &wavePos,
+                                            const float &wS,
+                                            const structSlideSensitivities &slideSens
+                                       );
+
+    int funcSlideDenoiseDefineSensorToUse(
+                                            strDenoisedColorSelected* denColSel,
+                                            const int &wavePos,
+                                            const structSlideSensitivities &slideSens
+                                         );
+
+    void funcGetMaximumSensitivities(
+                                        structSlideCalibration* mainSlideCalibration,
+                                        QWidget *parent=Q_NULLPTR
+                                    );
 
 
 #endif // __COMMON_H

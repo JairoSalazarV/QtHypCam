@@ -3403,9 +3403,27 @@ int funcGetImagesFromFolder(
 }
 
 
-float funcPixelToQE(const QColor &tmpPixColor)
-{
-    return (float)pixelMaxValue(tmpPixColor);
+float funcPixelToQE(
+                        const QColor &originPixColor,
+                        const int &wavePos,
+                        const structSlideSensitivities &slideSens,
+                        const float &wS
+){
+    //--------------------------------------------------
+    //Denoise Pixel Color
+    //--------------------------------------------------
+
+    //Spectral Denoising
+    float originQE;
+    originQE    = ((float)originPixColor.red() * slideSens.wR.at(wavePos))    +
+                  ((float)originPixColor.green() * slideSens.wG.at(wavePos))  +
+                  ((float)originPixColor.blue() * slideSens.wB.at(wavePos));
+    //std::cout << "originQE: " << originQE << " wS: " << wS << std::endl;
+    originQE    = originQE * wS;
+    originQE    = (originQE>255.0)?255.0:originQE;
+
+    return originQE;
+
 }
 
 
@@ -3426,4 +3444,107 @@ QList<double> getNormedFunction( QString fileName )
         //printf("%.4f,",function.at(i));
     }
     return function;
+}
+
+int funcGetSpectrallyDenoisedPixel(
+                                    const QColor &originColor,
+                                    const int &wavePos,
+                                    const float &wS,
+                                    const structSlideSensitivities &slideSens
+){
+
+    //Spectral Denoising
+    float tmpColor;
+    tmpColor    = ((float)originColor.red() * slideSens.wR.at(wavePos))    +
+                  ((float)originColor.green() * slideSens.wG.at(wavePos))  +
+                  ((float)originColor.blue() * slideSens.wB.at(wavePos));
+    tmpColor    = tmpColor * wS;
+    tmpColor    = (tmpColor>255.0)?255.0:tmpColor;
+
+    //Return Color
+    return round(tmpColor);
+
+}
+
+int funcSlideDenoiseDefineSensorToUse(
+                                        strDenoisedColorSelected* denColSel,
+                                        const int &wavePos,
+                                        const structSlideSensitivities &slideSens
+){
+
+    denColSel->colorID  = _BLUE;
+    denColSel->wS       = 1.0;
+
+    float wR    = slideSens.normedRalfR.at(wavePos);
+    float wG    = slideSens.normedRalfG.at(wavePos);
+    float wB    = slideSens.normedRalfB.at(wavePos);
+    float tmpX  = 0;
+    if( (wR >= wG) && (wR >= wB) )
+    {
+        denColSel->colorID    = _RED;
+        tmpX                = (1.0 - wR);
+        tmpX                = (tmpX<1.0)?tmpX:0;
+    }else if( (wG >= wR) && (wG >= wB) )
+    {
+        denColSel->colorID  = _GREEN;
+        tmpX                = (1.0 - wG);
+        tmpX                = (tmpX<1.0)?tmpX:0;
+    }else if( (wB >= wR) && (wB >= wG) )
+    {
+        denColSel->colorID  = _BLUE;
+        tmpX                = (1.0 - wB);
+        tmpX                = (tmpX<1.0)?tmpX:0;
+    }
+    denColSel->wS       = (pow(tmpX,4)*16.03168)    +
+                          (pow(tmpX,3)*-18.27273)   +
+                          (pow(tmpX,2)*6.73246)     +
+                          (tmpX*-0.11645)           +
+                          1;
+    denColSel->wS = (denColSel->wS<1.0)?1.0:denColSel->wS;
+    return _OK;
+}
+
+void funcGetMaximumSensitivities(
+                                    structSlideCalibration* mainSlideCalibration,
+                                    QWidget* parent
+){
+    //------------------------------------------------------
+    //Load Slide Calibration Settings Set as Default
+    //------------------------------------------------------
+    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
+    if( funcReadSlideCalib( calibPath, mainSlideCalibration ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath,parent);
+        return (void)false;
+    }
+
+    //------------------------------------------------------
+    //Get Max Sensitivities
+    //------------------------------------------------------
+    int i;
+    float tmpMaxSR  = 0;
+    float tmpMaxSG  = 0;
+    float tmpMaxSB  = 0;
+    float tmpMaxMax = 0;
+    float tmpVal;
+    for( i=0; i<mainSlideCalibration->sensitivities.originalR.size(); i++ )
+    {
+        //Red
+        tmpVal      = mainSlideCalibration->sensitivities.normedRalfR.at(i);
+        tmpMaxSR    = (tmpVal > tmpMaxSR)?tmpVal:tmpMaxSR;
+        //Green
+        tmpVal      = mainSlideCalibration->sensitivities.normedRalfG.at(i);
+        tmpMaxSG    = (tmpVal > tmpMaxSG)?tmpVal:tmpMaxSG;
+        //Blue
+        tmpVal      = mainSlideCalibration->sensitivities.normedRalfB.at(i);
+        tmpMaxSB    = (tmpVal > tmpMaxSB)?tmpVal:tmpMaxSB;
+    }
+    //maxMax
+    tmpMaxMax   = (tmpMaxSR>=tmpMaxSG)?tmpMaxSR:(tmpMaxSG>=tmpMaxSB)?tmpMaxSG:tmpMaxSB;
+    //Save
+    mainSlideCalibration->sensitivities.maximumColors.maxSR   = tmpMaxSR;
+    mainSlideCalibration->sensitivities.maximumColors.maxSG   = tmpMaxSG;
+    mainSlideCalibration->sensitivities.maximumColors.maxSB   = tmpMaxSB;
+    mainSlideCalibration->sensitivities.maximumColors.maxMaxS = tmpMaxMax;
+
 }

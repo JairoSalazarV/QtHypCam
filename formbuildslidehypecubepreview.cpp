@@ -236,7 +236,6 @@ QImage formBuildSlideHypeCubePreview
 
 int formBuildSlideHypeCubePreview
         ::funcCalcHypercubeSize(
-                                    const structSlideCalibration &mainSlideCalibration,
                                     structSlideHypCubeSize* slidecHypCubeSize
 ){
     //Memset
@@ -317,49 +316,10 @@ void formBuildSlideHypeCubePreview::on_pbApply_clicked()
     funcReloadExportSettings();
 
     //------------------------------------------------------
-    //Load Slide Calibration Settings Set as Default
+    //Calc Maximum Sensitivities
     //------------------------------------------------------
-    QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
     structSlideCalibration mainSlideCalibration;
-    //std::cout << "calibPath: " << calibPath.toStdString() << std::endl;
-    if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath,this);
-        return (void)false;
-    }
-    //exit(0);
-
-    //------------------------------------------------------
-    //Get Max Sensitivities
-    //------------------------------------------------------
-    int i;
-    float tmpMaxSR  = 0;
-    float tmpMaxSG  = 0;
-    float tmpMaxSB  = 0;
-    float tmpMaxMax = 0;
-    float tmpVal;
-    for( i=0; i<mainSlideCalibration.sensitivities.originalR.size(); i++ )
-    {
-        //Red
-        tmpVal      = mainSlideCalibration.sensitivities.normedRalfR.at(i);
-        tmpMaxSR    = (tmpVal > tmpMaxSR)?tmpVal:tmpMaxSR;
-        //Green
-        tmpVal      = mainSlideCalibration.sensitivities.normedRalfG.at(i);
-        tmpMaxSG    = (tmpVal > tmpMaxSG)?tmpVal:tmpMaxSG;
-        //Blue
-        tmpVal      = mainSlideCalibration.sensitivities.normedRalfB.at(i);
-        tmpMaxSB    = (tmpVal > tmpMaxSB)?tmpVal:tmpMaxSB;
-    }
-    //maxMax
-    tmpMaxMax   = (tmpMaxSR>=tmpMaxSG)?tmpMaxSR:(tmpMaxSG>=tmpMaxSB)?tmpMaxSG:tmpMaxSB;
-    //Save
-    mainSlideCalibration.sensitivities.maximumColors.maxSR   = tmpMaxSR;
-    mainSlideCalibration.sensitivities.maximumColors.maxSG   = tmpMaxSG;
-    mainSlideCalibration.sensitivities.maximumColors.maxSB   = tmpMaxSB;
-    mainSlideCalibration.sensitivities.maximumColors.maxMaxS = tmpMaxMax;
-    //std::cout << "tmpMaxSR: " << tmpMaxSR << " tmpMaxSG: "  << tmpMaxSG
-    //          << "tmpMaxSB: " << tmpMaxSB << " tmpMaxMax: " << tmpMaxMax;
-    //exit(0);
+    funcGetMaximumSensitivities( &mainSlideCalibration, this );
 
     //------------------------------------------------------
     //Get Layer
@@ -490,52 +450,22 @@ int formBuildSlideHypeCubePreview
     int x, y;
     int originX, originY;
     int destineX, destineY;
-    int maxColorID = 0;
+    //int maxColorID = 0;
     //float maxColorVal = 0.0;
-    float wR, wG, wB;
-    float wS = 1;
-    float tmpX;
+    //float wR, wG, wB;
+    //float wS = 1;
+    //float tmpX;
+    strDenoisedColorSelected denColSel;
 
     //--------------------------------------------------
     //Define the Sensor to Use
-    //--------------------------------------------------
-    wR  = slideSens.normedRalfR.at(wavePos);
-    wG  = slideSens.normedRalfG.at(wavePos);
-    wB  = slideSens.normedRalfB.at(wavePos);
+    //--------------------------------------------------    
+    //wR  = slideSens.normedRalfR.at(wavePos);
+    //wG  = slideSens.normedRalfG.at(wavePos);
+    //wB  = slideSens.normedRalfB.at(wavePos);
+    funcSlideDenoiseDefineSensorToUse( &denColSel, wavePos, slideSens );
 
-    if( (wR >= wG) && (wR >= wB) )
-    {
-        maxColorID  = _RED;
-        tmpX        = (1.0 - wR);
-        tmpX        = (tmpX<1.0)?tmpX:0;
-        wS          = (pow(tmpX,4)*16.03168)    +
-                      (pow(tmpX,3)*-18.27273)   +
-                      (pow(tmpX,2)*6.73246)     +
-                      (tmpX*-0.11645)           +
-                      1;
 
-    }else if( (wG >= wR) && (wG >= wB) )
-    {
-        maxColorID  = _GREEN;
-        tmpX        = (1.0 - wG);
-        tmpX        = (tmpX<1.0)?tmpX:0;
-        wS          = (pow(tmpX,4)*16.03168)    +
-                      (pow(tmpX,3)*-18.27273)   +
-                      (pow(tmpX,2)*6.73246)     +
-                      (tmpX*-0.11645)           +
-                      1;
-    }else if( (wB >= wR) && (wB >= wG) )
-    {
-        maxColorID  = _BLUE;
-        tmpX        = (1.0 - wB);
-        tmpX        = (tmpX<1.0)?tmpX:0;
-        wS          = (pow(tmpX,4)*16.03168)    +
-                      (pow(tmpX,3)*-18.27273)   +
-                      (pow(tmpX,2)*6.73246)     +
-                      (tmpX*-0.11645)           +
-                      1;
-    }
-    wS = (wS<1.0)?1.0:wS;
     //wS = 1 + (wS * 1.2);//Arbitrariamente :D
     //std::cout << "wS6 " << wS << std::endl;
     //wS = 1 + wS + (1-slideSens.maximumColors.maxMaxS);//Arbitrariamente :D
@@ -549,7 +479,7 @@ int formBuildSlideHypeCubePreview
     //--------------------------------------------------
     //Denoise Pixel Color
     //--------------------------------------------------
-    float tmpColor;
+    int tmpColor;
     QColor originColor;
     QColor destineColor;
     for(x=0; x<originRect.width(); x++)
@@ -566,11 +496,12 @@ int formBuildSlideHypeCubePreview
             originColor     = origImg.pixelColor(originX,originY);
 
             //Spectral Denoising
-            tmpColor    = ((float)originColor.red() * slideSens.wR.at(wavePos))    +
-                          ((float)originColor.green() * slideSens.wG.at(wavePos))  +
-                          ((float)originColor.blue() * slideSens.wB.at(wavePos));
-            tmpColor    = tmpColor * wS;
-            tmpColor    = (tmpColor>255)?255:tmpColor;
+            tmpColor = funcGetSpectrallyDenoisedPixel(
+                                                        originColor,
+                                                        wavePos,
+                                                        denColSel.wS,
+                                                        slideSens
+                                                     );
 
             //-----------------------------------------------
             //Set Color
@@ -589,28 +520,28 @@ int formBuildSlideHypeCubePreview
             if( type == copyAverage )
             {
                 destineColor = destineImg->pixelColor(QPoint(destineX,destineY));
-                if( maxColorID == _RED )
+                if( denColSel.colorID == _RED )
                 {
                     tmpColor    = ( tmpColor + destineColor.red() ) * 0.5;
-                    originColor.setRed( round(tmpColor) );
+                    originColor.setRed( tmpColor );
                 }
-                if( maxColorID == _GREEN )
+                if( denColSel.colorID == _GREEN )
                 {
                     tmpColor    = ( tmpColor + destineColor.green() ) * 0.5;
-                    originColor.setGreen( round(tmpColor) );
+                    originColor.setGreen( tmpColor );
                 }
-                if( maxColorID == _BLUE )
+                if( denColSel.colorID == _BLUE )
                 {
                     tmpColor    = ( tmpColor + destineColor.blue() ) * 0.5;
-                    originColor.setBlue( round(tmpColor) );
+                    originColor.setBlue( tmpColor );
                 }
             }
 
             if( type == copyOverride )
             {
-                if( maxColorID == _RED )    originColor.setRed( round(tmpColor) );
-                if( maxColorID == _GREEN )  originColor.setGreen( round(tmpColor) );
-                if( maxColorID == _BLUE )   originColor.setBlue( round(tmpColor) );
+                if( denColSel.colorID == _RED )    originColor.setRed( tmpColor );
+                if( denColSel.colorID == _GREEN )  originColor.setGreen( tmpColor );
+                if( denColSel.colorID == _BLUE )   originColor.setBlue( tmpColor );
             }
 
 
@@ -1228,6 +1159,11 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     }
 
     //------------------------------------------------------
+    //Calc Maximum Sensitivities
+    //------------------------------------------------------
+    funcGetMaximumSensitivities( &mainSlideCalibration, this );
+
+    //------------------------------------------------------
     //Load Imagery
     //------------------------------------------------------
     if( lstImgs.size() == 0 )
@@ -1247,7 +1183,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     //Get Hypercube Size
     //------------------------------------------------------    
     structSlideHypCubeSize slideHypcubeSize;
-    funcCalcHypercubeSize( mainSlideCalibration, &slideHypcubeSize );
+    funcCalcHypercubeSize( &slideHypcubeSize );
     //Reserve Memory
     slideHypcubeSize.lstWavelengths     = (float*)malloc(slideHypcubeSize.hypcubeL*sizeof(float));
     slideHypcubeSize.lstOverlapPos      = (int*)malloc(slideHypcubeSize.hypcubeL*sizeof(int));
@@ -1333,7 +1269,8 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
                                         slideHypCube,
                                         idImg,
                                         (QImage*)&lstImgs.at(idImg),
-                                        slideHypcubeSize
+                                        slideHypcubeSize,
+                                        mainSlideCalibration
                                    );
         //Update Progress Bar
         tmpProgress = round( ((float)idImg / (float)lstImgs.size()) * 100.0 );
@@ -1350,9 +1287,9 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     //------------------------------------------------------
     //Show the Result
     //------------------------------------------------------
-    if( 0 )
+    if( 1 )
     {
-        for(i=0; i<slideHypcubeSize.hypcubeL; i+=5)
+        for(i=0; i<slideHypcubeSize.hypcubeL; i+=1)
         {
             QImage layer = funcGetLayerFromHypCube( slideHypCube, slideHypcubeSize, i );
             displayImageFullScreen(layer);
@@ -1387,7 +1324,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     //------------------------------------------------------
     //Save Slide Hypcube
     //------------------------------------------------------
-    int x, y;
+    int x, y, l;
     int binLen, binPos;
     binLen  = slideHypcubeSize.hypcubeW *
               slideHypcubeSize.hypcubeH *
@@ -1399,12 +1336,11 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     {
         for(y=0; y<slideHypcubeSize.hypcubeH; y++)
         {
-            memcpy(
-                        &serialHypCube[binPos],
-                        &slideHypCube[x][y],
-                        slideHypcubeSize.hypcubeL * sizeof(u_int8_t)
-                  );
-            binPos += slideHypcubeSize.hypcubeL;
+            for(l=0; l<slideHypcubeSize.hypcubeL; l++)
+            {
+                serialHypCube[binPos] = slideHypCube[x][y][l];
+                binPos++;
+            }
         }
     }
     //Create Output Filename
@@ -1487,7 +1423,11 @@ QImage formBuildSlideHypeCubePreview
                                     const int idLayer
                                  )
 {
-    QImage tmpLayer( slideHypcubeSize.hypcubeW, slideHypcubeSize.hypcubeH, QImage::Format_RGB32 );
+    QImage tmpLayer(
+                        slideHypcubeSize.hypcubeW,
+                        slideHypcubeSize.hypcubeH,
+                        QImage::Format_RGB32
+                   );
     tmpLayer.fill(Qt::GlobalColor::black);
 
     int x,y;
@@ -1550,13 +1490,17 @@ void formBuildSlideHypeCubePreview
 
 int formBuildSlideHypeCubePreview
     ::funcSlideSpectralImageUnzip(
-                                    u_int8_t*** slideHypCube,
-                                    int idImg,
-                                    QImage* tmpImg,
-                                    const structSlideHypCubeSize &slideHypcubeSize
+                                      u_int8_t*** slideHypCube,
+                                      int idImg,
+                                      QImage* tmpImg,
+                                      const structSlideHypCubeSize &slideHypcubeSize,
+                                      const structSlideCalibration &mainSlideCalibration
 ){
 
-    //displayImageFullScreen(*tmpImg);
+    //----------------------------------------------
+    //Reload Exporting Settings
+    //----------------------------------------------
+    funcReloadExportSettings();
 
     //----------------------------------------------
     //For Each Layer
@@ -1567,11 +1511,40 @@ int formBuildSlideHypeCubePreview
     int tmpType;
     QRect tmpOriginRect;
     int tmpDestineX;
+    int wavePos;
+    float internWavelen;
+
+    strDenoisedColorSelected denColSel;
 
     overlapW    = slideHypcubeSize.overlapW;
     nonOverlapW = slideHypcubeSize.notOverlapW;
     for( l=0; l<slideHypcubeSize.hypcubeL; l++ )
     {
+        //.............................................
+        // Calc Wavelength Position
+        //.............................................
+        internWavelen   = mainExportSettings.expMinWave +
+                          ( l * mainExportSettings.spectralResolution );
+        internWavelen   = internWavelen - mainSlideCalibration.originWave;
+        wavePos         = round(
+                                    funcApplyLR(
+                                                    internWavelen,
+                                                    mainSlideCalibration.wave2DistLR,
+                                                    false
+                                                )
+                                );
+
+        //.............................................
+        // Calc wS used to offset the sensor
+        // capabitities
+        //.............................................
+        funcSlideDenoiseDefineSensorToUse(
+                                            &denColSel,
+                                            wavePos,
+                                            mainSlideCalibration.sensitivities
+                                          );
+
+
         //.............................................
         //Calc Position
         //.............................................
@@ -1593,20 +1566,14 @@ int formBuildSlideHypeCubePreview
         funcCopyDiffToSlideHypCube(
                                         slideHypCube,
                                         tmpImg,
-                                        &tmpOriginRect,
+                                        tmpOriginRect,
                                         tmpDestineX,
                                         l,
+                                        wavePos,
+                                        mainSlideCalibration.sensitivities,
+                                        denColSel.wS,
                                         tmpType
                                   );
-        /*
-        std::cout << "l: " << l << std::endl;
-        std::cout << "x: " << tmpOriginRect.x() << std::endl;
-        std::cout << "y: " << tmpOriginRect.y() << std::endl;
-        std::cout << "W: " << tmpOriginRect.width() << std::endl;
-        std::cout << "H: " << tmpOriginRect.height() << std::endl;
-        std::cout << "tmpDestineX: " << tmpDestineX << std::endl;*/
-
-        //std::cout << "A) l: " << l << " W: " << tmpOriginRect.width() << " tmpDestineX: " << tmpDestineX << std::endl;
 
         //.............................................
         //NonOverlap
@@ -1618,8 +1585,17 @@ int formBuildSlideHypeCubePreview
         tmpOriginRect.setHeight( tmpImg->height() );
         //Destine into the HypCube
         tmpDestineX += overlapW;
-        funcCopyDiffToSlideHypCube( slideHypCube, tmpImg, &tmpOriginRect, tmpDestineX, l, copyMax );
-        //std::cout << "B) l: " << l << " W: " << tmpOriginRect.width() << " tmpDestineX: " << tmpDestineX << std::endl;
+        funcCopyDiffToSlideHypCube(
+                                        slideHypCube,
+                                        tmpImg,
+                                        tmpOriginRect,
+                                        tmpDestineX,
+                                        l,
+                                        wavePos,
+                                        mainSlideCalibration.sensitivities,
+                                        denColSel.wS,
+                                        copyMax
+                                  );
     }
     return _OK;
 }
@@ -1628,25 +1604,27 @@ int formBuildSlideHypeCubePreview
     ::funcCopyDiffToSlideHypCube(
                                     u_int8_t*** slideHypCube,
                                     QImage* tmpImg,
-                                    QRect* originRect,
-                                    int destineX,
-                                    int destineZ,
-                                    int type
-
+                                    const QRect &originRect,
+                                    const int &destineX,
+                                    const int &destineZ,
+                                    const int &wavePos,
+                                    const structSlideSensitivities &slideSens,
+                                    const float &wS,
+                                    const int &type
 ){
 
     int x, y;
     float tmpQE;
     u_int8_t tmpLastQE;
     QColor tmpColor;
-    for( x=0; x<originRect->width(); x++ )
+    for( x=0; x<originRect.width(); x++ )
     {
-        for( y=0; y<originRect->height(); y++ )
+        for( y=0; y<originRect.height(); y++ )
         {
             //Get the color
-            tmpColor    = tmpImg->pixelColor(originRect->x()+x,y);
+            tmpColor    = tmpImg->pixelColor(originRect.x()+x,y);
             tmpLastQE   = slideHypCube[destineX+x][y][destineZ];
-            tmpQE       = funcPixelToQE( tmpColor );
+            tmpQE       = funcPixelToQE( tmpColor, wavePos, slideSens, wS );
             //Evaluate and apply copy type
             if( type == copyAverage )
             {

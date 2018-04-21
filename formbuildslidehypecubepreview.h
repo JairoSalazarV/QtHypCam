@@ -27,16 +27,18 @@ public:
                                         const float &wavelength,
                                         const structSlideCalibration &mainSlideCalibration
                                    );
-    int funcCalcHypercubeSize(
-                                    const structSlideCalibration &mainSlideCalibration,
-                                    structSlideHypCubeSize* slidecHypCubeSize
-                             );
+    //int funcCalcHypercubeSize(
+    //                                const structSlideCalibration &mainSlideCalibration,
+    //                                structSlideHypCubeSize* slidecHypCubeSize
+    //                         );
+    int funcCalcHypercubeSize( structSlideHypCubeSize* slidecHypCubeSize );
 
     int funcSlideSpectralImageUnzip(
                                         u_int8_t*** slideHypCube,
                                         int idImg,
                                         QImage* tmpImg,
-                                        const structSlideHypCubeSize &slideHypcubeSize
+                                        const structSlideHypCubeSize &slideHypcubeSize,
+                                        const structSlideCalibration &mainSlideCalibration
                                    );
 
     void funcCalcLstWaveAndPositions(
@@ -53,10 +55,13 @@ public:
     int funcCopyDiffToSlideHypCube(
                                         u_int8_t*** slideHypCube,
                                         QImage* tmpImg,
-                                        QRect* originRect,
-                                        int destineX,
-                                        int destineZ,
-                                        int type
+                                        const QRect &originRect,
+                                        const int &destineX,
+                                        const int &destineZ,
+                                        const int &wavePos,
+                                        const structSlideSensitivities &slideSens,
+                                        const float &wS,
+                                        const int &type=copyOverride
                                    );
 
 
