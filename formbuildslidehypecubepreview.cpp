@@ -1334,14 +1334,31 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     binPos  = 0;
     u_int8_t* serialHypCube = (u_int8_t*)malloc(binLen*sizeof(u_int8_t));
     //Serialize Slide Hypercube
-    for(x=slideHypcubeSize.hypcubeW-1; x>=0; x--)
+    if( mainExportSettings.flip )
     {
-        for(y=0; y<slideHypcubeSize.hypcubeH; y++)
+        for(x=slideHypcubeSize.hypcubeW-1; x>=0; x--)
         {
-            for(l=0; l<slideHypcubeSize.hypcubeL; l++)
+            for(y=0; y<slideHypcubeSize.hypcubeH; y++)
             {
-                serialHypCube[binPos] = slideHypCube[x][y][l];
-                binPos++;
+                for(l=0; l<slideHypcubeSize.hypcubeL; l++)
+                {
+                    serialHypCube[binPos] = slideHypCube[x][y][l];
+                    binPos++;
+                }
+            }
+        }
+    }
+    else
+    {
+        for(x=0; x<slideHypcubeSize.hypcubeW; x++)
+        {
+            for(y=0; y<slideHypcubeSize.hypcubeH; y++)
+            {
+                for(l=0; l<slideHypcubeSize.hypcubeL; l++)
+                {
+                    serialHypCube[binPos] = slideHypCube[x][y][l];
+                    binPos++;
+                }
             }
         }
     }
@@ -1357,7 +1374,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
                                     binLen
                                   ) != _OK
     ){
-        funcShowMsgERROR_Timeout("Saving Hypercube into HDD");
+        funcShowMsgERROR_Timeout("Saving Hypercube into HDD",this);
     }
 
     //------------------------------------------------------
@@ -1414,6 +1431,57 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     }
     delete[] slideHypCube;
     std::cout << "Released HypCube Memory" << std::endl;
+
+
+    /*
+    clear all; close all; clc;
+
+    %========================================================
+    %Prepare for XML reading
+    %========================================================
+    javaaddpath ("/usr/share/java/xercesImpl.jar");
+    javaaddpath ("/usr/share/java/xml-apis.jar");
+    pkg load io;
+
+    %========================================================
+    %Get Cube Data
+    %========================================================
+    path        = "/home/jairo/Documentos/DESARROLLOS/build-HypCam-Desktop_Qt_5_8_0_GCC_64bit-Release/tmpImages/frames/testHypCube/";
+    fileName    = [path "slideHypcube.hypercube"]
+    parser = javaObject('org.apache.xerces.parsers.DOMParser');
+    parser.parse([path "info.xml"]); % it seems that cd in octave are taken into account
+    xDoc        = parser.getDocument;
+    elem        = xDoc.getElementsByTagName('hypcubeW').item(0);
+    W           = str2num(elem.getFirstChild.getTextContent);
+    elem        = xDoc.getElementsByTagName('hypcubeH').item(0);
+    H           = str2num(elem.getFirstChild.getTextContent);
+    elem        = xDoc.getElementsByTagName('hypcubeL').item(0);
+    L           = str2num(elem.getFirstChild.getTextContent);
+    elem        = xDoc.getElementsByTagName('initWavelength').item(0);
+    cubeSpecIni = elem.getFirstChild.getTextContent;
+    elem        = xDoc.getElementsByTagName('spectralResolution').item(0);
+    cubeSpecRes = elem.getFirstChild.getTextContent;
+
+    %========================================================
+    %Get HypCube
+    %========================================================
+    N           = W*H*L;
+    img         = fopen(fileName,"r","ieee-le");
+    lineImg     = fread(fileName,N,"uint8");
+    fclose(img);
+    X           = reshape( lineImg, [L H W] );
+
+    %========================================================
+    %Display Imagery
+    %========================================================
+    if 1
+      for l=1:1:L
+        figure(l);
+        imshow( squeeze( X(l,:,:) )/255.0 );
+      end
+    end
+    */
+
 
 }
 
