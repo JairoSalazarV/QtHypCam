@@ -1126,23 +1126,31 @@ void formBuildSlideHypeCubePreview::on_pbExportImages_clicked()
 
 void formBuildSlideHypeCubePreview::on_pbExportCube_clicked()
 {
-    exportSlideHypCube();
-}
-
-void formBuildSlideHypeCubePreview::exportSlideHypCube()
-{
-    //======================================================
-    //PREPARE VARIABLES AND ENVIROMENT
-    //======================================================
-
-    //------------------------------------------------------
-    //Define Output Dir
-    //------------------------------------------------------
+    //Select Dir
     QString destineDir;
     if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
     {
         return (void)false;
     }
+    //Export
+    exportSlideHypCube(
+                            &destineDir,
+                            ui->progBar,
+                            ui->labelProgBar,
+                            this
+                      );
+}
+
+void formBuildSlideHypeCubePreview
+     ::exportSlideHypCube(
+                            QString* destineDir,
+                            QProgressBar* progBar,
+                            QLabel* labelProgBar,
+                            QWidget* parent
+){
+    //======================================================
+    //PREPARE VARIABLES AND ENVIROMENT
+    //======================================================
 
     //------------------------------------------------------
     //Reload Export Settings
@@ -1156,14 +1164,14 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     structSlideCalibration mainSlideCalibration;
     if( funcReadSlideCalib( calibPath, &mainSlideCalibration ) != _OK )
     {
-        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath);
+        funcShowMsgERROR_Timeout("Reading Slide Calibration File: "+calibPath,parent);
         return (void)false;
     }
 
     //------------------------------------------------------
     //Calc Maximum Sensitivities
     //------------------------------------------------------
-    funcGetMaximumSensitivities( &mainSlideCalibration, this );
+    funcGetMaximumSensitivities( &mainSlideCalibration, parent );
 
     //------------------------------------------------------
     //Load Imagery
@@ -1171,14 +1179,14 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     if( lstImgs.size() == 0 )
     {
         //Get Lst Images From Folder
-        ui->labelProgBar->setText("Putting Images into Memory...");
+        labelProgBar->setText("Putting Images into Memory...");
         funcGetImagesFromFolder(
                                     ui->txtFolder->text().trimmed(),
                                     &lstImgs,
                                     &lstImagePaths,
-                                    ui->progBar
+                                    progBar
                                 );
-        ui->labelProgBar->setText("");
+        labelProgBar->setText("");
     }
 
     //------------------------------------------------------
@@ -1260,10 +1268,10 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
 
     //Update Progress Bar
     mouseCursorWait();
-    ui->progBar->setVisible(true);
-    ui->progBar->setValue(0);
-    ui->progBar->update();
-    ui->labelProgBar->setText("Building Slide Hypercube...");
+    progBar->setVisible(true);
+    progBar->setValue(0);
+    progBar->update();
+    labelProgBar->setText("Building Slide Hypercube...");
     int tmpProgress = 0;
     for( idImg=0; idImg<lstImgs.size(); idImg++ )
     {
@@ -1276,14 +1284,14 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
                                    );
         //Update Progress Bar
         tmpProgress = round( ((float)idImg / (float)lstImgs.size()) * 100.0 );
-        ui->progBar->setValue(tmpProgress);
-        ui->progBar->update();
+        progBar->setValue(tmpProgress);
+        progBar->update();
     }
     //Update Progress Bar
-    ui->progBar->setVisible(false);
-    ui->progBar->setValue(0);
-    ui->progBar->update();
-    ui->labelProgBar->setText("");
+    progBar->setVisible(false);
+    progBar->setValue(0);
+    progBar->update();
+    labelProgBar->setText("");
     mouseCursorReset();
 
     //------------------------------------------------------
@@ -1374,7 +1382,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
                                     binLen
                                   ) != _OK
     ){
-        funcShowMsgERROR_Timeout("Saving Hypercube into HDD",this);
+        funcShowMsgERROR_Timeout("Saving Hypercube into HDD",parent);
     }
 
     //------------------------------------------------------
@@ -1416,7 +1424,7 @@ void formBuildSlideHypeCubePreview::exportSlideHypCube()
     outFilename.append("info.xml");
     funcSaveXML(outFilename,&lstFixtures,&lstValues,false);
     //Notify Success
-    funcShowMsgSUCCESS_Timeout("Slide Hypercube Saved Successfully",this);
+    funcShowMsgSUCCESS_Timeout("Slide Hypercube Saved Successfully",parent);
 
     //------------------------------------------------------
     //Free Memory

@@ -9183,6 +9183,8 @@ void MainWindow::funcMainCall_GetSnapshot()
 
 void MainWindow::on_actionFull_Video_triggered()
 {
+    //Record a video and extracts frames
+
     bool ok;
 
     //-----------------------------------------------------
@@ -9240,7 +9242,7 @@ void MainWindow::on_actionFull_Video_triggered()
     //-----------------------------------------------------
     // Update mainImage from Frames
     //-----------------------------------------------------
-    funcUpdateImageFromFolder(tmpFramesPath);
+    //funcUpdateImageFromFolder(tmpFramesPath);
 
 
 
@@ -9725,6 +9727,19 @@ void MainWindow::on_actionOrigin_triggered()
 
 void MainWindow::on_actionBuld_HypImg_triggered()
 {
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
     //--------------------------------
     //Read Calibrations
     //--------------------------------
@@ -9801,9 +9816,9 @@ void MainWindow::on_actionBuld_HypImg_triggered()
     ui->progBar->update();
     QtDelay(10);
 
-    //********************************
+    //============================================================
     //Build Slide Hyperspectral Image
-    //********************************
+    //============================================================
     int x, y, z;
     int hypX    = lstFrames.size();
     int hypY    = slideCalibration.originH;
@@ -9950,6 +9965,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
 
     //Reset Progress Bar
     funcResetStatusBar();
+    */
 
 
 
@@ -10574,6 +10590,13 @@ void MainWindow::on_actionRestore_Original_triggered()
 
 void MainWindow::on_actionExtract_frames_2_triggered()
 {
+
+    funcExtractFramesFromH264();
+
+}
+
+int MainWindow::funcExtractFramesFromH264(bool updateImage)
+{
     //-----------------------------------------------
     //Read Video Source
     //-----------------------------------------------
@@ -10581,13 +10604,13 @@ void MainWindow::on_actionExtract_frames_2_triggered()
     if(
             funcLetUserSelectFile(
                                     &videoPath,
-                                    "Select Video...",
+                                    "Select Video Source...",
                                     _PATH_LAST_VIDEO_OPENED,
                                     "./tmpImages/",
                                     this
                                  ) != _OK
     ){
-        return (void)false;
+        return _FAILURE;
     }
 
     //-----------------------------------------------
@@ -10620,17 +10643,22 @@ void MainWindow::on_actionExtract_frames_2_triggered()
     if( !funcExecuteCommand(locFrameExtrComm) )
     {
         funcShowMsg("ERROR","Extracting Frames from Video");
+        progBarUpdateLabel("",0);
+        return _FAILURE;
     }
     progBarUpdateLabel("",0);
 
     //-----------------------------------------------------
     // Update mainImage from Frames
     //-----------------------------------------------------
-    funcUpdateImageFromFolder(tmpFramesPath);
+    if( updateImage==true )
+    {
+        funcUpdateImageFromFolder(tmpFramesPath);
+    }
 
     funcResetStatusBar();
 
-
+    return _OK;
 }
 
 
@@ -10682,6 +10710,22 @@ void MainWindow::on_actionSlide_Max_Wavelength_triggered()
 
 void MainWindow::on_actionBuild_HypCube_triggered()
 {
+    QList<QImage> lstTransImages;
+    structSlideCalibration slideCalibration;
+    funcOpticalCorrection(
+                              &lstTransImages,
+                              &slideCalibration,
+                              false,
+                              false
+                         );
+}
+
+void MainWindow::funcOpticalCorrection(
+                                            QList<QImage>* lstTransImages,
+                                            structSlideCalibration* slideCalibration,
+                                            bool tryToSave,
+                                            bool refreshImage
+){
     //--------------------------------------------
     //Read Slide Calibration
     //--------------------------------------------
@@ -10694,21 +10738,12 @@ void MainWindow::on_actionBuild_HypCube_triggered()
         return (void)false;
     }
     //Read Default Calibration Path
-    structSlideCalibration slideCalibration;
-    if( funcReadSlideCalib( defaCalibPath, &slideCalibration ) != _OK )
+    //structSlideCalibration slideCalibration;
+    if( funcReadSlideCalib( defaCalibPath, slideCalibration ) != _OK )
     {
         funcShowMsgERROR_Timeout("Reading Default Slide Calibration File");
         return (void)false;
     }
-    //std::cout << "m11: " << slideCalibration.translation.m11() << std::endl;
-    //std::cout << "m12: " << slideCalibration.translation.m12() << std::endl;
-    //std::cout << "m13: " << slideCalibration.translation.m13() << std::endl;
-    //std::cout << "m21: " << slideCalibration.translation.m21() << std::endl;
-    //std::cout << "m22: " << slideCalibration.translation.m22() << std::endl;
-    //std::cout << "m23: " << slideCalibration.translation.m23() << std::endl;
-    //std::cout << "m31: " << slideCalibration.translation.m31() << std::endl;
-    //std::cout << "m32: " << slideCalibration.translation.m32() << std::endl;
-    //std::cout << "m33: " << slideCalibration.translation.m33() << std::endl;
 
     //--------------------------------------------
     //Define Max Wavelength
@@ -10725,12 +10760,12 @@ void MainWindow::on_actionBuild_HypCube_triggered()
     //--------------------------------------------
     QPoint P1, P2;
     int distPixFromLower;
-    maxWavelen = maxWavelen - slideCalibration.originWave;
-    distPixFromLower = round( funcApplyLR(maxWavelen,slideCalibration.wave2DistLR,true) );
-    P1.setX( slideCalibration.originX );
-    P1.setY( slideCalibration.originY );
-    P2.setX( slideCalibration.originX + distPixFromLower );
-    P2.setY( slideCalibration.originY + slideCalibration.originH );
+    maxWavelen = maxWavelen - slideCalibration->originWave;
+    distPixFromLower = round( funcApplyLR(maxWavelen,slideCalibration->wave2DistLR,true) );
+    P1.setX( slideCalibration->originX );
+    P1.setY( slideCalibration->originY );
+    P2.setX( slideCalibration->originX + distPixFromLower );
+    P2.setY( slideCalibration->originY + slideCalibration->originH );
     std::cout << "(" << P1.x() << ", " << P1.y() << ") to (" << P2.x() << ", " << P2.y() << ")" << std::endl;
 
     //--------------------------------------------
@@ -10787,14 +10822,15 @@ void MainWindow::on_actionBuild_HypCube_triggered()
     //Get into Memory Transformed Frames
     //-------------------------------------------------
     lstFrames = funcListFilesInDir( tmpFramesPath );
-    QList<QImage> lstTransImages;
+    //QList<QImage> lstTransImages;
+    lstTransImages->clear();
     for( i=0; i<lstFrames.size(); i++ )
     {
         //std::cout << "MOD-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
         tmpImg  = QImage( lstFrames.at(i).absoluteFilePath() );
-        tmpImg  = tmpImg.transformed( slideCalibration.translation );
+        tmpImg  = tmpImg.transformed( slideCalibration->translation );
         tmpImg  = tmpImg.copy(subImgRec);
-        lstTransImages.append( tmpImg );
+        lstTransImages->append( tmpImg );
         //Update Progress Bar
         progVal = round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 );
         ui->progBar->setValue(progVal);
@@ -10804,38 +10840,44 @@ void MainWindow::on_actionBuild_HypCube_triggered()
     //-------------------------------------------------
     //Update Image Displayed
     //-------------------------------------------------
-    int pos;
-    tmpImg = lstTransImages.at(pos);
-    pos = round( (float)lstTransImages.size() * 0.5 );
-    updateDisplayImage( &tmpImg );
+    if( refreshImage == true )
+    {
+        int pos;
+        tmpImg = lstTransImages->at(pos);
+        pos = round( (float)lstTransImages->size() * 0.5 );
+        updateDisplayImage( &tmpImg );
+    }
 
     //--------------------------------------------
     //Save Transformed Images From Memory
     //--------------------------------------------
     //Ask to the User
-    if( funcShowMsgYesNo("Alert!","Save Frames into HDD",this) == 0 )
+    if( tryToSave == true )
     {
-        //Reset Progress Bar
-        ui->progBar->setValue(0);
-        ui->progBar->setVisible(false);
-        ui->progBar->update();
-        progBarUpdateLabel("",0);
-        return (void)true;
-    }
+        if( funcShowMsgYesNo("Alert!","Save Frames into HDD",this) == 0 )
+        {
+            //Reset Progress Bar
+            ui->progBar->setValue(0);
+            ui->progBar->setVisible(false);
+            ui->progBar->update();
+            progBarUpdateLabel("",0);
+            return (void)true;
+        }
 
-    //Hide Progress Bar
-    progVal = 0;
-    ui->progBar->setValue(progVal);
-    ui->progBar->update();
-    progBarUpdateLabel("Saving Transformed Images Into HDD",0);
-    for( i=0; i<lstTransImages.size(); i++ )
-    {
-        //Save Image Into HDD
-        lstTransImages.at(i).save( lstFrames.at(i).absoluteFilePath() );
-        //Update Progress Bar
-        progVal = round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 );
+        //Hide Progress Bar
+        progVal = 0;
         ui->progBar->setValue(progVal);
         ui->progBar->update();
+        progBarUpdateLabel("Saving Transformed Images Into HDD",0);
+        for( i=0; i<lstTransImages->size(); i++ )
+        {
+            //Save Image Into HDD
+            lstTransImages->at(i).save( lstFrames.at(i).absoluteFilePath() );
+            //Update Progress Bar
+            progVal = round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 );
+            ui->progBar->setValue(progVal);
+            ui->progBar->update();
+        }
     }
 
     //Reset Progress Bar
@@ -10843,17 +10885,27 @@ void MainWindow::on_actionBuild_HypCube_triggered()
     ui->progBar->setVisible(false);
     ui->progBar->update();
     progBarUpdateLabel("",0);
-
-    //Notify Success
-    funcShowMsgSUCCESS_Timeout("Optical Correction Complete Successfully");
-
-
+    if( tryToSave == true )
+    {
+        //Notify Success
+        funcShowMsgSUCCESS_Timeout("Optical Correction Complete Successfully",this);
+    }
 }
 
 void MainWindow::on_actionBuild_HypCube_2_triggered()
 {
     formBuildSlideHypeCubePreview slideHypeCubePreview;
-    slideHypeCubePreview.exportSlideHypCube();
+    QString destineDir;
+    if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
+    {
+        return (void)false;
+    }
+    slideHypeCubePreview.exportSlideHypCube(
+                                                &destineDir,
+                                                ui->progBar,
+                                                ui->labelProgBar,
+                                                this
+                                           );
 }
 
 void MainWindow::on_actionSlide_HypCube_Building_triggered()
@@ -11451,3 +11503,61 @@ void MainWindow::on_actionSlide_Min_Wavelength_triggered()
         funcShowMsgERROR_Timeout("Saving Min Wavelength");
     }
 }
+
+void MainWindow::on_actionHypCube_From_H264_triggered()
+{
+    //==============================================
+    //Define Output Dir
+    //==============================================
+    QString destineDir;
+    if( funcLetUserSelectDirectory(_PATH_LAST_SLIDE_HYPCUBE_EXPORTED,&destineDir) != _OK )
+    {
+        std::cout << "ERROR: Selecting Directory..." << std::endl;
+        return (void)false;
+    }
+
+    //==============================================
+    //Extract Video Frames From H264
+    //==============================================
+    if( funcExtractFramesFromH264( false ) != _OK )
+    {
+        std::cout << "ERROR: Extracting frames..." << std::endl;
+        return (void)false;
+    }
+
+    //==============================================
+    //Apply Optical Correction
+    //==============================================
+    QList<QImage> lstTransImages;
+    structSlideCalibration slideCalibration;
+    funcOpticalCorrection(
+                              &lstTransImages,
+                              &slideCalibration,
+                              false,
+                              false
+                          );
+    std::cout << "Optical Correction Applied" << std::endl;
+
+    //==============================================
+    //Export Hypercube
+    //==============================================
+    formBuildSlideHypeCubePreview slideHypeCubePreview(this);
+    slideHypeCubePreview.hide();
+    slideHypeCubePreview.exportSlideHypCube(
+                                                &destineDir,
+                                                ui->progBar,
+                                                ui->labelProgBar,
+                                                this
+                                            );
+    std::cout << "Cube Exported" << std::endl;
+
+}
+
+
+
+
+
+
+
+
+

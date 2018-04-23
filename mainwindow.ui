@@ -1572,6 +1572,7 @@ QSlider::handle:horizontal {
       <addaction name="actionBuild_HypCube_2"/>
      </widget>
      <addaction name="menuStep_by_Step"/>
+     <addaction name="actionHypCube_From_H264"/>
     </widget>
     <addaction name="menuSlide_2"/>
    </widget>
@@ -2139,8 +2140,12 @@ QSlider::handle:horizontal {
    </property>
   </action>
   <action name="actionSlide_Build_Hypercube">
+   <property name="icon">
+    <iconset resource="lstImgs.qrc">
+     <normaloff>:/new/icons/imagenInte/fitt.png</normaloff>:/new/icons/imagenInte/fitt.png</iconset>
+   </property>
    <property name="text">
-    <string>Slide Build Hypercube</string>
+    <string>HypImg Simulator</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+B</string>
@@ -2399,6 +2404,11 @@ QSlider::handle:horizontal {
   <action name="actionSlide_Min_Wavelength">
    <property name="text">
     <string>Slide Min Wavelength</string>
+   </property>
+  </action>
+  <action name="actionHypCube_From_H264">
+   <property name="text">
+    <string>HypCube From H264</string>
    </property>
   </action>
  </widget>

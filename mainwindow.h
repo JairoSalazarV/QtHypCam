@@ -647,11 +647,20 @@ private slots:
 
     void on_actionExtract_frames_2_triggered();
 
+    int funcExtractFramesFromH264( bool updateImage=true );
+
     void on_actionSlide_Max_Wavelength_triggered();
 
     void on_actionBuild_HypCube_triggered();
 
     void on_actionBuild_HypCube_2_triggered();
+
+    void funcOpticalCorrection(
+                                    QList<QImage>* lstTransImages,
+                                    structSlideCalibration *slideCalibration,
+                                    bool tryToSave=true,
+                                    bool refreshImage=true
+                              );
 
     void on_actionSlide_HypCube_Building_triggered();
 
@@ -660,6 +669,8 @@ private slots:
     void on_actionCalc_Sensitivities_triggered();
 
     void on_actionSlide_Min_Wavelength_triggered();
+
+    void on_actionHypCube_From_H264_triggered();
 
 private:
     Ui::MainWindow *ui;

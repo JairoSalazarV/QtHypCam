@@ -73,7 +73,12 @@ public:
                     copySpecDemoised,
     };
 
-    void exportSlideHypCube();
+    void exportSlideHypCube(
+                                QString* destineDir,
+                                QProgressBar* progBar,
+                                QLabel* labelProgBar,
+                                QWidget* parent
+                           );
 
 private slots:
     void on_pbApply_clicked();
