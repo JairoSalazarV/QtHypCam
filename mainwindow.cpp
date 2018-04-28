@@ -9775,6 +9775,7 @@ void MainWindow::on_actionBuld_HypImg_triggered()
     QString tmpFramesPath;
     tmpFramesPath.append(_PATH_VIDEO_FRAMES);
     tmpFramesPath.append("tmp/");
+<<<<<<< HEAD
     if( 1 )
     {
         funcClearDirFolder( tmpFramesPath );
@@ -9798,8 +9799,30 @@ void MainWindow::on_actionBuld_HypImg_triggered()
             progBarUpdateLabel("",0);
             return (void)false;
         }
+=======
+    funcClearDirFolder( tmpFramesPath );
+    //Extract Frames from Local Video
+    QString locFrameExtrComm;
+    locFrameExtrComm.append("ffmpeg -framerate ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -r ");
+    locFrameExtrComm.append(QString::number(_VIDEO_FRAME_RATE));
+    locFrameExtrComm.append(" -i ");
+    locFrameExtrComm.append(videoPath);
+    locFrameExtrComm.append(" ");
+    locFrameExtrComm.append(tmpFramesPath);
+    locFrameExtrComm.append("%d");
+    locFrameExtrComm.append(_FRAME_EXTENSION);
+    qDebug() << locFrameExtrComm;
+    progBarUpdateLabel("Extracting Frames from Video",0);
+    if( funcExecuteCommand(locFrameExtrComm) != _OK )
+    {
+        funcShowMsg("ERROR","Extracting Frames from Video");
+>>>>>>> refs/heads/master
         progBarUpdateLabel("",0);
+        return (void)false;
     }
+    progBarUpdateLabel("",0);
 
     //--------------------------------
     //List Files in Folder
@@ -9961,14 +9984,12 @@ void MainWindow::on_actionBuld_HypImg_triggered()
     }
     free(HypImg);
 
-
-
     //Reset Progress Bar
     funcResetStatusBar();
     */
 
-
-
+    //Finish
+    funcShowMsgSUCCESS_Timeout("Hyperspectral Image Exported Successfully");
 
 }
 
