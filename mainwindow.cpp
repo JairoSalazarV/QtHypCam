@@ -3621,17 +3621,17 @@ void MainWindow::applyThreshol2Scene(QString threshold){
     int value = threshold.toInt(0);
     //Apply threshold to the image
     //..
-    QImage *imgThre = new QImage(auxQstring);
-    funcImgThreshold( value, imgThre );
-    imgThre->save(_PATH_DISPLAY_IMAGE);
-    //Rotate image if requested
+    funcImgThreshold( value, globalEditImg );
+    updateDisplayImage(globalEditImg);
+    //imgThre->save(_PATH_DISPLAY_IMAGE);
+    //Rotate image if requestedbac
     //..
-    if(globaIsRotated){
-        float rotAngle = getLastAngle();
-        QImage imgRot = funcRotateImage(_PATH_DISPLAY_IMAGE, rotAngle);
-        imgRot.save(_PATH_DISPLAY_IMAGE);
-        qDebug() << "Rotate: " << rotAngle;
-    }
+    //if(globaIsRotated){
+    //    float rotAngle = getLastAngle();
+    //    QImage imgRot = funcRotateImage(_PATH_DISPLAY_IMAGE, rotAngle);
+    //    imgRot.save(_PATH_DISPLAY_IMAGE);
+    //    qDebug() << "Rotate: " << rotAngle;
+    //}
     //Update canvas
     //..
     //reloadImage2Display();
@@ -10715,8 +10715,8 @@ void MainWindow::on_actionBuild_HypCube_triggered()
     funcOpticalCorrection(
                               &lstTransImages,
                               &slideCalibration,
-                              false,
-                              false
+                              true,
+                              true
                          );
 }
 
