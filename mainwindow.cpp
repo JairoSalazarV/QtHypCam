@@ -11558,12 +11558,16 @@ void MainWindow::on_actionHypCube_From_H264_triggered()
                               false
                           );
     std::cout << "Optical Correction Applied" << std::endl;
+    std::cout << "NumImgs: "<< lstTransImages.size() << std::endl;
+    std::cout << " imgW: " << lstTransImages.at(0).width()
+              << " imgH: " << lstTransImages.at(0).height() << std::endl;
 
     //==============================================
     //Export Hypercube
     //==============================================
     formBuildSlideHypeCubePreview slideHypeCubePreview(this);
     slideHypeCubePreview.hide();
+    slideHypeCubePreview.lstImgs = lstTransImages;
     slideHypeCubePreview.exportSlideHypCube(
                                                 &destineDir,
                                                 ui->progBar,

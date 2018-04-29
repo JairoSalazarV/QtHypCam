@@ -15,11 +15,12 @@ class formBuildSlideHypeCubePreview : public QDialog
     Q_OBJECT
 
     QImage layerBackup;
-    QList<QImage> lstImgs;
     QList<QFileInfo> lstImagePaths;
     structExportHypcubeSettings mainExportSettings;    
 
 public:
+
+    QList<QImage> lstImgs;
     explicit formBuildSlideHypeCubePreview(QWidget *parent = 0);
     ~formBuildSlideHypeCubePreview();
 
