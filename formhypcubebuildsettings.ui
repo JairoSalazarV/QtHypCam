@@ -31,12 +31,12 @@
     <rect>
      <x>210</x>
      <y>140</y>
-     <width>51</width>
+     <width>151</width>
      <height>26</height>
     </rect>
    </property>
    <property name="text">
-    <string>Flip</string>
+    <string>Horizontal Flip</string>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="spinboxSpectralResolution">

@@ -10864,8 +10864,8 @@ void MainWindow::funcOpticalCorrection(
     if( refreshImage == true )
     {
         int pos;
-        tmpImg = lstTransImages->at(pos);
         pos = round( (float)lstTransImages->size() * 0.5 );
+        tmpImg = lstTransImages->at(pos);
         updateDisplayImage( &tmpImg );
     }
 
