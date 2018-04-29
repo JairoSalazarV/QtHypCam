@@ -588,7 +588,7 @@
         <item>
          <widget class="QCheckBox" name="cbFlipped">
           <property name="text">
-           <string>Flip</string>
+           <string>Vertical Flip</string>
           </property>
          </widget>
         </item>
