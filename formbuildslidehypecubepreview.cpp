@@ -1332,8 +1332,22 @@ void formBuildSlideHypeCubePreview
     }*/
 
     //------------------------------------------------------
+    //Discard unsensed spaces
+    //------------------------------------------------------
+    int initX   = lstImgs.at(0).width() - slideHypcubeSize.slideW;
+    int finalX  = slideHypcubeSize.hypcubeW - lstImgs.at(0).width() + slideHypcubeSize.slideW;
+    int cubeW   = slideHypcubeSize.hypcubeW -
+                  (2*lstImgs.at(0).width()) +
+                  (2*slideHypcubeSize.slideW);
+
+    //------------------------------------------------------
     //Save Slide Hypcube
     //------------------------------------------------------
+
+
+
+
+
     int x, y, l;
     int binLen, binPos;
     binLen  = slideHypcubeSize.hypcubeW *
@@ -1344,7 +1358,7 @@ void formBuildSlideHypeCubePreview
     //Serialize Slide Hypercube
     if( mainExportSettings.flip )
     {
-        for(x=slideHypcubeSize.hypcubeW-1; x>=0; x--)
+        for(x=finalX-1; x>=initX; x--)
         {
             for(y=0; y<slideHypcubeSize.hypcubeH; y++)
             {
@@ -1358,7 +1372,7 @@ void formBuildSlideHypeCubePreview
     }
     else
     {
-        for(x=0; x<slideHypcubeSize.hypcubeW; x++)
+        for(x=0; x<finalX; x++)
         {
             for(y=0; y<slideHypcubeSize.hypcubeH; y++)
             {
@@ -1408,7 +1422,8 @@ void formBuildSlideHypeCubePreview
                 << "GPL-GNU No Warranty"
                 << QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss")
                 << "Raw Data"
-                << QString::number(slideHypcubeSize.hypcubeW)
+                //<< QString::number(slideHypcubeSize.hypcubeW)//cubeW
+                << QString::number(cubeW)
                 << QString::number(slideHypcubeSize.hypcubeH)
                 << QString::number(slideHypcubeSize.hypcubeL)
                 << QString::number(slideHypcubeSize.minSpecRes)
