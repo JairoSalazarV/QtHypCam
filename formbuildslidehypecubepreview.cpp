@@ -1414,7 +1414,7 @@ void formBuildSlideHypeCubePreview
                 << QString::number(slideHypcubeSize.minSpecRes)
                 << QString::number(slideHypcubeSize.specResolution)
                 << "nanometers"
-                << "DIM(x,y,[bands 1,2,...,L])"
+                << "DIM(bands 1,2,...,L)"
                 << "u_int8_t"
                 << "Left"
                 << "Up";

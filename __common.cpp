@@ -3559,3 +3559,25 @@ void funcGetMaximumSensitivities(
     mainSlideCalibration->sensitivities.maximumColors.maxMaxS = tmpMaxMax;
 
 }
+
+
+void func_DirExistOrCreateIt( const QList<QString> &lstFolders , QWidget* parent )
+{
+    for( int i=0; i<lstFolders.size(); i++ )
+    {
+        if( !QDir( lstFolders.at(i) ).exists() )
+        {
+            QDir().mkdir( lstFolders.at(i) );
+            funcShowMsg_Timeout(
+                                    "Creating Folder",
+                                    lstFolders.at(i).trimmed(),
+                                    QMessageBox::Warning,
+                                    parent
+                               );
+        }
+    }
+}
+
+
+
+

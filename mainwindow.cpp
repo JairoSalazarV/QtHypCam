@@ -205,17 +205,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
-    /*
-    int a[]     = {4,2,-1,3,-2,-6,-5,4,5};
-    int b[]     = {-4,1,3,7,4,-2,-8,-2,1};
-    int n       = 9;
-    float* c    = vectorCrossCorrelation(a,b,9,0.4);
-    int shift   = c[0]-n;
-    qDebug() << "shift: " << shift;
-    exit(0);
-    */
+    QList<QString> lstFolders;
 
-
+    lstFolders << "./SYNC" << "./tmpImages" << "./tmpImages/frames"
+               << "./tmpImages/frames/tmp";
+    func_DirExistOrCreateIt( lstFolders, this );
 
 
 

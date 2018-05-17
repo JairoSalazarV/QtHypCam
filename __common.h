@@ -345,5 +345,7 @@
                                         QWidget *parent=Q_NULLPTR
                                     );
 
+    void func_DirExistOrCreateIt( const QList<QString> &lstFolders, QWidget* parent=Q_NULLPTR );
+
 
 #endif // __COMMON_H

@@ -6,11 +6,11 @@
 
 QT  += core gui
 QT  += serialport
-QT  += multimedia
+#QT  += multimedia
 QT  += multimediawidgets
 
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+#greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = HypCam
 TEMPLATE = app
@@ -115,11 +115,21 @@ RESOURCES += \
 
 INCLUDEPATH += /usr/local/include/opencv
 INCLUDEPATH += /usr/local/include/opencv2
+#INCLUDEPATH += /usr/lib/x86_64-linux-gnu/
 #INCLUDEPATH += /usr/local/include/opencv2/videoio/
 
 #LIBS += -L/usr/local/lib
 LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
 LIBS += -lpthread
+
+#LIBS += -L /usr/lib/x86_64-linux-gnu/ -l libQt5Multimedia.so.5
+#LIBS += -libQt5Multimedia.so.5
+
+CONFIG  += release
+
+QMAKE_LFLAGS = -no-pie
+
+QMAKE_LFLAGS += -Wl,-rpath,"'$$ORIGIN'"
 
 #CONFIG += console
 
