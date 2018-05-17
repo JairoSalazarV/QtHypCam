@@ -3502,13 +3502,21 @@ int funcSlideDenoiseDefineSensorToUse(
     //                      (pow(tmpX,2)*6.73246)     +
     //                      (tmpX*-0.11645)           +
     //                      1;
-    denColSel->wS       = (pow(tmpX,3)*3.86029)     +
-                          (pow(tmpX,2)*-3.05151)    +
-                          (tmpX*1.31828)            +
-                          1;
+
+    if(tmpX>0.2)
+    {
+        denColSel->wS       = (pow(tmpX,3)*3.86029)     +
+                              (pow(tmpX,2)*-3.05151)    +
+                              (tmpX*1.31828)            +
+                              1;
+    }
+    else
+    {
+        denColSel->wS       = 1.0;
+    }
 
 
-    denColSel->wS = (denColSel->wS<1.71)?1.71:denColSel->wS;
+    //denColSel->wS           = (denColSel->wS<1.71)?1.71:denColSel->wS;
 
     //std::cout << "denColSel->wS: " << denColSel->wS << std::endl;
 
