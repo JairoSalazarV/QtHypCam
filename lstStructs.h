@@ -579,6 +579,14 @@
         float   wS=1.0;
     }strDenoisedColorSelected;
 
+    typedef struct strCubeParameters{
+        int   W;
+        int   H;
+        int   L;
+        float initWavelength;
+        float spectralRes;
+    }strCubeParameters;
+
 
 
 

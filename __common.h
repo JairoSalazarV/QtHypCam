@@ -300,7 +300,7 @@
                         const structSlideCalibration &slideCalibration
                      );
 
-    int funcLetUserSelectDirectory(const QString &originDir, QString *Dir);
+    int funcLetUserSelectDirectory(const QString &pathToLastFilenameParam, QString *pathDirContainer);
 
     int funcGetTranslation( QTransform* tmpTrans, QWidget *parent=Q_NULLPTR );
 
@@ -347,5 +347,12 @@
 
     void func_DirExistOrCreateIt( const QList<QString> &lstFolders, QWidget* parent=Q_NULLPTR );
 
+    int readHypCubeParameters( const QString &cubePath, strCubeParameters* cubeParam );
+
+    int readXMLIntoList(
+                            const QString &xmlPath,
+                            const QList<QString> &lstParameters,
+                            QList<QString>* lstValues
+                       );
 
 #endif // __COMMON_H

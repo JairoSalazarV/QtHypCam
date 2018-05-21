@@ -672,6 +672,8 @@ private slots:
 
     void on_actionHypCube_From_H264_triggered();
 
+    void on_actionCube_Analysis_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

@@ -3206,18 +3206,23 @@ int funcGetQEArea(
     return _OK;
 }
 
-int funcLetUserSelectDirectory( const QString &originDir, QString* Dir  )
-{
-    QString originPath = readAllFile(originDir.trimmed()).trimmed();
+int funcLetUserSelectDirectory(
+                                    const QString &pathToLastFilenameParam,
+                                    QString* pathDirContainer
+){
+    //pathToLastFilenameParam: File path containing the last dirpath selected
+    //pathDirContainer: Used to return the new dirpath selected
+
+    QString originPath = readAllFile(pathToLastFilenameParam.trimmed()).trimmed();
 
     //Get Directory
-    if( funcShowSelDir(originPath, Dir) != _OK )
+    if( funcShowSelDir(originPath, pathDirContainer) != _OK )
     {
         return _ERROR;
     }
 
     //Update Original Path
-    saveFile(originDir,*Dir);
+    saveFile(pathToLastFilenameParam,*pathDirContainer);
 
     return _OK;
 }
@@ -3586,6 +3591,89 @@ void func_DirExistOrCreateIt( const QList<QString> &lstFolders , QWidget* parent
     }
 }
 
+
+int readHypCubeParameters( const QString &cubePath, strCubeParameters* cubeParam )
+{
+    //---------------------------------------------------
+    //Prepare Parameters of Interest
+    //---------------------------------------------------
+    QList<QString> lstParameters;
+    QList<QString> lstValues;
+    lstParameters   << "hypcubeW"          << "hypcubeH"               << "hypcubeL"
+                    << "initWavelength"    << "spectralResolution";
+
+    //---------------------------------------------------
+    //Read Cube Parameters
+    //---------------------------------------------------
+    if( readXMLIntoList( cubePath, lstParameters, &lstValues ) != _OK )
+    {
+        return _ERROR;
+    }
+
+    //---------------------------------------------------
+    //Fill Parameters
+    //---------------------------------------------------
+    int i = 0;
+    cubeParam->W                = lstValues.at(i++).toInt(0);
+    cubeParam->H                = lstValues.at(i++).toInt(0);
+    cubeParam->L                = lstValues.at(i++).toInt(0);
+    cubeParam->initWavelength   = lstValues.at(i++).toFloat(0);
+    cubeParam->spectralRes      = lstValues.at(i++).toFloat(0);
+
+
+    return _OK;
+}
+
+int readXMLIntoList(
+                        const QString &xmlPath,
+                        const QList<QString> &lstParameters,
+                        QList<QString>* lstValues
+){
+    //---------------------------------------------------
+    //Read File XML
+    //---------------------------------------------------
+    QFile *xmlFile = new QFile(xmlPath+"info.xml");
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening "+xmlPath);
+        return _ERROR;
+    }
+    QXmlStreamReader* xmlReader = new QXmlStreamReader(xmlFile);
+
+    //---------------------------------------------------
+    //Read Fields
+    //---------------------------------------------------
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( lstParameters.indexOf(xmlReader->name().toString()) != -1 )
+            {
+                lstValues->append( xmlReader->readElementText() );
+            }
+        }
+    }
+    if(xmlReader->hasError())
+    {
+        xmlReader->clear();
+        xmlFile->close();
+        funcShowMsg(xmlPath+" Parse Error",xmlReader->errorString());
+        return _FAILURE;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    return _OK;
+}
 
 
 

@@ -252,6 +252,7 @@
         <file>imagenInte/startVideo.png</file>
         <file>imagenInte/lineOpen.png</file>
         <file>imagenInte/bezierLine.png</file>
+        <file>imagenInte/plotSignature.svg</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

@@ -152,6 +152,8 @@
 #include <QTransform>
 #include <formhypcubebuildsettings.h>
 
+#include <formcubeanalysis.h>
+
 structSettings *lstSettings = (structSettings*)malloc(sizeof(structSettings));
 
 structCamSelected *camSelected = (structCamSelected*)malloc(sizeof(structCamSelected));
@@ -11572,11 +11574,49 @@ void MainWindow::on_actionHypCube_From_H264_triggered()
 
 }
 
+void MainWindow::on_actionCube_Analysis_triggered()
+{
+    //-------------------------------------------------
+    //Get cube location
+    //-------------------------------------------------
+    QString dirPath;
+    if( funcLetUserSelectDirectory( _PATH_LAST_LOCAL_FOLDER, &dirPath ) != _OK )
+    {
+        return (void)_FAILURE;
+    }
+
+    //-------------------------------------------------
+    //Read Hypercube Parameters
+    //-------------------------------------------------
+    strCubeParameters cubeParam;
+    if( readHypCubeParameters( dirPath, &cubeParam ) != _OK )
+    {
+        funcShowMsgERROR("Reading Hypercube Parameters", this);
+        return (void)_ERROR;
+    }
+
+    //-------------------------------------------------
+    //Put Cube into Memory
+    //-------------------------------------------------
+    std::cout << "W: " << cubeParam.W << std::endl;
+    std::cout << "H: " << cubeParam.H << std::endl;
+    std::cout << "L: " << cubeParam.L << std::endl;
+    std::cout << "initWave: " << cubeParam.initWavelength << std::endl;
+    std::cout << "specRes: " << cubeParam.spectralRes << std::endl;
+
+    //-------------------------------------------------
+    //Prepare GV
+    //-------------------------------------------------
+    GraphicsView* tmpGV = new GraphicsView(this);
+    tmpGV->setWindowTitle( "Cube Analysis" );
 
 
 
 
+    //formCubeAnalysis* tmpForm = new formCubeAnalysis(this);
+    //tmpForm->setModal(true);
+    //tmpForm->setSizePolicy( QSizePolicy::Fixed, QSizePolicy::Fixed );
+    //tmpForm->showMaximized();
 
-
-
-
+    tmpGV->showMaximized();
+}
