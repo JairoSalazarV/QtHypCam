@@ -4,14 +4,8 @@
 #include <QGraphicsView>
 #include <QMouseEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QVBoxLayout>
 
-typedef struct strCubeParameters{
-    int   W;
-    int   H;
-    int   L;
-    float initWavelength;
-    float spectralRes;
-}strCubeParameters;
 
 class GraphicsView : public QGraphicsView
 {
@@ -27,20 +21,7 @@ class GraphicsView : public QGraphicsView
         explicit GraphicsView(QObject *parent = 0);
         ~GraphicsView(){};
 
-        strCubeParameters cubeParam;
-        u_int8_t*** HypCube;
-        QList<QImage> lstCubeThumbs;
-        QString dirPath;
-        int cubeStatus = cubeEmpty;
-
-
         QAction *showContextMenuLine(QPoint pos);
-
-        int loadHypercube();
-
-        int displayInternCubeThumb( int l=0 );
-
-        QImage slideImgFromCube( const int &l );
 
         int originalW;
 

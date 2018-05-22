@@ -2,6 +2,12 @@
 #include "ui_formhypercubeanalysis.h"
 
 #include <QVBoxLayout>
+#include <QMainWindow>
+#include <QGraphicsLineItem>
+#include <QPen>
+
+
+QWidget *parentHypercubeAnalysis;
 
 formHypercubeAnalysis::formHypercubeAnalysis(QWidget *parent) :
     QDialog(parent),
@@ -18,6 +24,10 @@ formHypercubeAnalysis::formHypercubeAnalysis(QWidget *parent) :
                 this,
                 SLOT(updateSignature(QMouseEvent*))
            );
+
+
+    parentHypercubeAnalysis = qobject_cast<QMainWindow*>(parent);
+
 }
 
 formHypercubeAnalysis::~formHypercubeAnalysis()
@@ -25,20 +35,45 @@ formHypercubeAnalysis::~formHypercubeAnalysis()
     delete ui;
 }
 
+/*
+void formHypercubeAnalysis::refreshGVGeometry()
+{
+    //Calc Coordinates Sizes
+    int tmpW, tmpH, frameW, frameH;
+    QRect screenRes = screenResolution(parentHypercubeAnalysis);
+    frameW  = 30;
+    frameH  = 80;
+    tmpW    = screenRes.width() - frameW;
+    tmpH    = round( ((float)screenRes.height() - frameH) * 0.4 );
+
+    //Modify Geometries
+    mainGV->setFixedSize(tmpW,mainGV->height());
+    plotGV->setFixedSize(tmpW,tmpH);
+
+    mainGV->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    mainGV->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    plotGV->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+    plotGV->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
+
+    std::cout << "refreshGVGeometry" << std::endl;
+}*/
+
 void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
 {
     int cubeX, cubeY;
     cubeX = round( ((float)e->x() / (float)mainGV->width() ) * (float)mainGV->cubeParam.W );
     cubeY = round( ((float)e->y() / (float)mainGV->height()) * (float)mainGV->cubeParam.H );
-    //std::cout << "coor(" << e->x() << ", " << e->y() << ")"
-    //          << " cube(" << cubeX  << ", " << cubeY  << ")" << std::endl;
+    std::cout << "coor(" << e->x() << ", " << e->y() << ")"
+              << " cube(" << cubeX  << ", " << cubeY  << ")" << std::endl;
+
 
 }
+
 
 void formHypercubeAnalysis::on_slideTmpImg_valueChanged(const int &value)
 {
     updateLabel(value);
-    mainGV->displayInternCubeThumb( value );
+    //mainGV->displayInternCubeThumb( value );
 }
 
 void formHypercubeAnalysis::updateLabel(const int &value)
@@ -93,12 +128,16 @@ void formHypercubeAnalysis::on_pbLoadCube_clicked()
     //Load Hypercube
     //------------------------------------------------
 
-    connect( mainGV, SIGNAL(signalProgBarValue(int,QString)), this, SLOT(updateProgressBar(int,QString)) );
+    connect(
+                mainGV,
+                SIGNAL(signalProgBarValue(int,QString)),
+                this,
+                SLOT(updateProgressBar(int,QString))
+           );
 
     //Load Hypercube
-    if( mainGV->loadHypercube() != _OK )
+    if( mainGV->loadHypercube(this) != _OK )
     {
-        //funcShowMsgERROR("Loading Hypercube");
         return (void)false;
     }
     ui->slideTmpImg->setMaximum( mainGV->cubeParam.L-1 );
@@ -106,10 +145,17 @@ void formHypercubeAnalysis::on_pbLoadCube_clicked()
     updateProgressBar(101,"");
 
     //Show Thumbnail
-    QVBoxLayout* layout = new QVBoxLayout();
-    layout->addWidget(mainGV);
-    this->setLayout(layout);
-    mainGV->displayInternCubeThumb();
+    QImage tmpImg = mainGV->slideImgFromCube(5);
+    QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(tmpImg));
+    QGraphicsScene tmpScene;
+    ui->gvImg->setScene(&tmpScene);
+    ui->gvImg->scene()->addItem(item);
+    //ui->gvImg->setGeometry(QRect(10,50,tmpImg.width(),tmpImg.height()));
+    //ui->gvImg->show();
+    ui->gvImg->setMouseTracking(true);
+
+
+
 
 }
 
@@ -135,3 +181,10 @@ void formHypercubeAnalysis::updateProgressBar(int value, QString label)
         }
     }
 }
+
+void formHypercubeAnalysis::resizeEvent( QResizeEvent * event )
+{
+    event = event;
+    std::cout << "ResizeEvent" << std::endl;
+}
+

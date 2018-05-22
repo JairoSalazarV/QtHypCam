@@ -581,7 +581,13 @@
 
 
 
-
+    typedef struct strCubeParameters{
+        int   W;
+        int   H;
+        int   L;
+        float initWavelength;
+        float spectralRes;
+    }strCubeParameters;
 
 
 

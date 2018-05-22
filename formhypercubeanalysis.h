@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <__common.h>
+#include <slideHypcube.h>
 
 namespace Ui {
 class formHypercubeAnalysis;
@@ -12,7 +13,8 @@ class formHypercubeAnalysis : public QDialog
 {
     Q_OBJECT
 
-    GraphicsView* mainGV = new GraphicsView(this);
+    slideHypcube* mainGV = new slideHypcube(this);
+    slideHypcube* plotGV = new slideHypcube(this);
 
 public:
     explicit formHypercubeAnalysis(QWidget *parent = 0);
@@ -20,8 +22,6 @@ public:
 
 private slots:
     void on_slideTmpImg_valueChanged(const int &value);
-
-    void updateLabel(const int &value);
 
     void on_pbCubeToImg_clicked();
 
@@ -31,8 +31,16 @@ private slots:
 
     void updateSignature(QMouseEvent* e);
 
+    void updateLabel(const int &value);
+
+protected:
+  void resizeEvent ( QResizeEvent * event );
+
 private:
     Ui::formHypercubeAnalysis *ui;
+
+
+
 };
 
 #endif // FORMHYPERCUBEANALYSIS_H
