@@ -13,8 +13,10 @@ class formHypercubeAnalysis : public QDialog
 {
     Q_OBJECT
 
-    slideHypcube* mainGV = new slideHypcube(this);
-    slideHypcube* plotGV = new slideHypcube(this);
+    slideHypcube* slideHypCube = new slideHypcube(this);
+
+    GraphicsView* gvImg     = new GraphicsView(this);
+    QGraphicsView* gvPlot   = new QGraphicsView(this);
 
 public:
     explicit formHypercubeAnalysis(QWidget *parent = 0);
@@ -30,6 +32,10 @@ private slots:
     void updateProgressBar(int value, QString label);
 
     void updateSignature(QMouseEvent* e);
+
+    void drawnAxis();
+
+    void updateSlidePicture(const int &l);
 
     void updateLabel(const int &value);
 

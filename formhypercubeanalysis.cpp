@@ -6,27 +6,24 @@
 #include <QGraphicsLineItem>
 #include <QPen>
 
+#include <QFormLayout>
+#include <formslideplotsettings.h>
+
+
 
 QWidget *parentHypercubeAnalysis;
 
 formHypercubeAnalysis::formHypercubeAnalysis(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::formHypercubeAnalysis)
-{
+{    
     ui->setupUi(this);
 
     ui->progressBar->setVisible(false);
 
-
-    connect(
-                mainGV,
-                SIGNAL(signalMouseMove(QMouseEvent*)),
-                this,
-                SLOT(updateSignature(QMouseEvent*))
-           );
-
-
     parentHypercubeAnalysis = qobject_cast<QMainWindow*>(parent);
+
+    ui->slideTmpImg->setEnabled(false);
 
 }
 
@@ -61,11 +58,22 @@ void formHypercubeAnalysis::refreshGVGeometry()
 void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
 {
     int cubeX, cubeY;
-    cubeX = round( ((float)e->x() / (float)mainGV->width() ) * (float)mainGV->cubeParam.W );
-    cubeY = round( ((float)e->y() / (float)mainGV->height()) * (float)mainGV->cubeParam.H );
-    std::cout << "coor(" << e->x() << ", " << e->y() << ")"
-              << " cube(" << cubeX  << ", " << cubeY  << ")" << std::endl;
+    cubeX = round( ((float)e->x() / (float)slideHypCube->width() ) * (float)slideHypCube->cubeParam.W );
+    cubeY = round( ((float)e->y() / (float)slideHypCube->height()) * (float)slideHypCube->cubeParam.H );
+    //std::cout << "coor(" << e->x() << ", " << e->y() << ")"
+    //          << " cube(" << cubeX  << ", " << cubeY  << ")" << std::endl;
 
+
+}
+
+void formHypercubeAnalysis::drawnAxis()
+{
+    int frameW = 40;
+    int frameH = 25;
+    //X-Axix
+    gvPlot->scene()->addLine( 0, gvPlot->height()-frameH, gvPlot->width(), gvPlot->height()-frameH, QPen(QBrush(Qt::white),2.0) );
+    //Y-Axis
+    gvPlot->scene()->addLine( frameW, 0, frameW, gvPlot->height(), QPen(QBrush(Qt::white),2.0) );
 
 }
 
@@ -73,53 +81,29 @@ void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
 void formHypercubeAnalysis::on_slideTmpImg_valueChanged(const int &value)
 {
     updateLabel(value);
-    //mainGV->displayInternCubeThumb( value );
+    updateSlidePicture(value);
+}
+
+void formHypercubeAnalysis::updateSlidePicture(const int &l)
+{
+    gvImg->scene()->clear();
+    gvImg->scene()->addPixmap(QPixmap::fromImage(slideHypCube->lstCubeThumbs.at(l)));
+    gvImg->update();
+    QtDelay(15);
 }
 
 void formHypercubeAnalysis::updateLabel(const int &value)
 {
     float tmpWavelen;
-    tmpWavelen = mainGV->cubeParam.initWavelength + ( mainGV->cubeParam.spectralRes * value);
+    tmpWavelen = slideHypCube->cubeParam.initWavelength + ( slideHypCube->cubeParam.spectralRes * value);
     ui->labelImgNumber->setText( "Wavelength: " + QString::number(tmpWavelen) + " nm" );
 }
 
 void formHypercubeAnalysis::on_pbCubeToImg_clicked()
 {
-    //-------------------------------------------------
-    //Sel Dir
-    //-------------------------------------------------
-    QString dirPath;
-    if( funcLetUserSelectDirectory(_PATH_LAST_PATH_OPENED,&dirPath) != _OK )
-    {
-        return (void)false;
-    }
-
-    //-------------------------------------------------
-    //Create Thumbs Images From Hypcube
-    //-------------------------------------------------
-    if( mainGV->lstCubeThumbs.size() == 0 )
-    {
-        int l;
-        for( l=0; l<mainGV->cubeParam.L; l++ )
-        {
-            mainGV->lstCubeThumbs.append( mainGV->slideImgFromCube(l) );
-        }
-
-        for( l=0; l<mainGV->cubeParam.L; l++ )
-        {
-             mainGV->lstCubeThumbs.at(l).save( dirPath + QString::number(l) + ".png" );
-        }
-    }
-
-    /*
-    QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(thumbImg));
-    this->scene()->addItem( item );
-    item->setPos(0,0);
-    this->setFixedSize( thumbImg.width(), thumbImg.height() );
-    this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    return _OK;
-    */
+    formSlidePlotSettings* tmpForm = new formSlidePlotSettings(this);
+    tmpForm->setModal(true);
+    tmpForm->show();
 }
 
 void formHypercubeAnalysis::on_pbLoadCube_clicked()
@@ -129,32 +113,74 @@ void formHypercubeAnalysis::on_pbLoadCube_clicked()
     //------------------------------------------------
 
     connect(
-                mainGV,
+                slideHypCube,
                 SIGNAL(signalProgBarValue(int,QString)),
                 this,
                 SLOT(updateProgressBar(int,QString))
            );
 
     //Load Hypercube
-    if( mainGV->loadHypercube(this) != _OK )
+    if( slideHypCube->loadHypercube(this) != _OK )
     {
         return (void)false;
     }
-    ui->slideTmpImg->setMaximum( mainGV->cubeParam.L-1 );
+    ui->slideTmpImg->setMaximum( slideHypCube->cubeParam.L-1 );
     ui->slideTmpImg->setMinimum( 0 );
     updateProgressBar(101,"");
+    updateLabel(0);
 
-    //Show Thumbnail
-    QImage tmpImg = mainGV->slideImgFromCube(5);
-    QGraphicsPixmapItem* item = new QGraphicsPixmapItem(QPixmap::fromImage(tmpImg));
-    QGraphicsScene tmpScene;
-    ui->gvImg->setScene(&tmpScene);
-    ui->gvImg->scene()->addItem(item);
-    //ui->gvImg->setGeometry(QRect(10,50,tmpImg.width(),tmpImg.height()));
-    //ui->gvImg->show();
-    ui->gvImg->setMouseTracking(true);
+    //---------------------------------------------------------
+    //Create Layout and Set Image into GV
+    //---------------------------------------------------------
+    int frameH = 125;
+    //Add to layout
+    QFormLayout* tmpLayout = new QFormLayout(this);
+    tmpLayout->addWidget(gvImg);
+    this->setLayout(tmpLayout);
+    //Put Image into GV
+    QImage tmpImg = slideHypCube->slideImgFromCube();
+    QGraphicsScene* imgScene = new QGraphicsScene(this);
+    gvImg->setScene(imgScene);
+    gvImg->scene()->addPixmap(QPixmap::fromImage(tmpImg));
+    gvImg->setGeometry(QRect(0,0,tmpImg.width(),tmpImg.height()));
+    gvImg->setMouseTracking(true);
+    gvImg->setVisible(true);
+    gvImg->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    gvImg->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    gvImg->move(10,frameH);
 
+    //---------------------------------------------------------
+    //Create Layout and Set Image into GV
+    //---------------------------------------------------------
+    int frameH2 = 30;
+    //Add to layout
+    QRect screenRes = screenResolution(parentHypercubeAnalysis);
+    QFormLayout* tmpLayout2 = new QFormLayout(this);
+    tmpLayout2->addWidget(gvPlot);
+    this->setLayout(tmpLayout2);
+    QGraphicsScene* imgScene2 = new QGraphicsScene(this);
+    gvPlot->setScene(imgScene2);
+    gvPlot->scene()->setBackgroundBrush(QBrush(QColor(45,45,45)));
+    gvPlot->setGeometry(QRect(0,0,tmpImg.width(),round(screenRes.height()*0.45)));
+    gvPlot->setMouseTracking(true);
+    gvPlot->setVisible(true);
+    gvPlot->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    gvPlot->setHorizontalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOff);
+    gvPlot->move(10,frameH+frameH2+tmpImg.height());
 
+    ui->slideTmpImg->setEnabled(true);
+    drawnAxis();
+
+    //---------------------------------------------------------
+    //Connect
+    //---------------------------------------------------------
+    connect(
+                gvImg,
+                SIGNAL(signalMouseMove(QMouseEvent*)),
+                this,
+                SLOT(updateSignature(QMouseEvent*))
+           );
+    //std::cout << "t2" << std::endl;
 
 
 }

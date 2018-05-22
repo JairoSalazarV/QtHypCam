@@ -35,7 +35,7 @@ class slideHypcube : public QDialog
 
         int loadHypercube(QWidget* parent);
 
-        QImage slideImgFromCube( const int &l );
+        QImage slideImgFromCube( const int &l=0 );
 
 
     signals:      

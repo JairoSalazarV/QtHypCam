@@ -33,7 +33,7 @@
     #define _PATH_CALIB_RESPONSES           "./settings/Calib/responses/"
 
     #define _PATH_CALIB_LR                  "./settings/Calib/LR.hypcam"
-    #define _PATH_SLIDE_CALIB_LR            "./settings/Calib/slideLR.hypcam"
+    #define _PATH_SLIDE_CALIB_LR            "./settings/Calib/slideLR.hypcam"    
     #define _PATH_CALIB_LR_TMP_ORIGIN       "./settings/Calib/diffractionOrigin.hypcam"
     #define _PATH_SLIDE_ACTUAL_CALIB_PATH   "./settings/Calib/actualSlideCalibrarion.hypcam"
 
@@ -122,7 +122,8 @@
     #define _PATH_SLIDE_TMP_FOLDER          "./tmpImages/tmpSlide/"
     #define _PATH_CALIBRATION_FILE          "./XML/hypcalib.xml"
     #define _PATH_SLIDE_CALIB_PATH          "./XML/slideCalibration/"
-    #define _PATH_SLIDE_EXPORTING_HYPCUBE   "./XML/slideExportingHypcube.xml"    
+    #define _PATH_SLIDE_EXPORTING_HYPCUBE   "./XML/slideExportingHypcube.xml"
+    #define _PATH_SLIDE_PLOT_SETTINGS       "./XML/slidePlotSettings.xml"
 
 
     #define _PATH_TMP_HYPCUBES              "./tmpHypCubes/"

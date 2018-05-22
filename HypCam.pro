@@ -50,7 +50,8 @@ SOURCES += main.cpp\
     formmerge3grayintoargb.cpp \
     formhypcubebuildsettings.cpp \
     formhypercubeanalysis.cpp \
-    slideHypcube.cpp
+    slideHypcube.cpp \
+    formslideplotsettings.cpp
 
 HEADERS  += mainwindow.h \
     __common.h \
@@ -91,7 +92,8 @@ HEADERS  += mainwindow.h \
     formmerge3grayintoargb.h \
     formhypcubebuildsettings.h \
     formhypercubeanalysis.h \
-    slideHypcube.h
+    slideHypcube.h \
+    formslideplotsettings.h
 
 FORMS    += mainwindow.ui \
     selcolor.ui \
@@ -113,7 +115,8 @@ FORMS    += mainwindow.ui \
     formmergeslidecalibrations.ui \
     formmerge3grayintoargb.ui \
     formhypcubebuildsettings.ui \
-    formhypercubeanalysis.ui
+    formhypercubeanalysis.ui \
+    formslideplotsettings.ui
 
 RESOURCES += \
     lstImgs.qrc
