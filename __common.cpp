@@ -1,4 +1,4 @@
-#include "__common.h"
+#include <__common.h>
 
 #include <QMessageBox>
 #include <QFile>
@@ -3632,7 +3632,7 @@ int readXMLIntoList(
     //---------------------------------------------------
     //Read File XML
     //---------------------------------------------------
-    QFile *xmlFile = new QFile(xmlPath+"info.xml");
+    QFile *xmlFile = new QFile(xmlPath);
     if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         funcShowMsg("ERROR","Opening "+xmlPath);

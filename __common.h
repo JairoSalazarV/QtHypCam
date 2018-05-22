@@ -26,6 +26,7 @@
 
     #include <QProgressBar>
 
+
     QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib );
 
     double funcDet2x2(double **M);
