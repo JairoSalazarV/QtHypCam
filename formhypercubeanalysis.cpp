@@ -418,4 +418,15 @@ void formHypercubeAnalysis::on_pbReset_clicked()
     ui->slideTmpImg->setValue(0);
     lstRemarkedPix.clear();
     gvPlot->scene()->clear();
+    QMouseEvent eve(
+                        QEvent::MouseMove,
+                        QPoint(
+                                    round((float)gvImg->width()*0.5),
+                                    round((float)gvImg->height()*0.5)
+                              ),
+                        Qt::NoButton,
+                        Qt::NoButton,
+                        Qt::NoModifier
+                   );
+    updateSignature(&eve);
 }
