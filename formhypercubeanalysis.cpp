@@ -155,7 +155,7 @@ void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
     //-------------------------------
     //Calc Wave to Pixel Ratio
     //-------------------------------
-    float waveToPixeRatio = range / (float)xRealArea;
+    float waveToPixeRatio = (float)xRealArea / range;
 
     //msg("Updating");
 
@@ -176,14 +176,14 @@ void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
     {
         //Actual Point
         tmpWave     = initWave + (specRes*l);
-        xPos1       = round( (float)waveToPixeRatio * tmpWave );
+        xPos1       = plotSettings.XFrame + round( (float)waveToPixeRatio * tmpWave );
         tmpVal      = (float)slideHypCube->HypCube[cubeX][cubeY][l];
         if( tmpVal > 0 )yPos1 = round(( tmpVal / 255.0) * (float)yRealArea * 0.98);
         else yPos1 = 0;
         yPos1       = yRealArea - yPos1;
         //Next Point
         tmpWave     = initWave + (specRes*(l+1));
-        xPos2       = round( (float)waveToPixeRatio * tmpWave );
+        xPos2       = plotSettings.XFrame + round( (float)waveToPixeRatio * tmpWave );
         tmpVal      = (float)slideHypCube->HypCube[cubeX][cubeY][l+1];
         if(tmpVal>0)yPos2 = round((tmpVal / 255.0) * (float)yRealArea * 0.98);
         else yPos2  = 0;
