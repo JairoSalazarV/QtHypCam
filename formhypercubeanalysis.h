@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <__common.h>
 #include <slideHypcube.h>
+#include <lstStructs.h>
+#include <QGraphicsRectItem>
 
 namespace Ui {
 class formHypercubeAnalysis;
@@ -13,6 +15,10 @@ class formHypercubeAnalysis : public QDialog
 {
     Q_OBJECT
 
+    //QGraphicsRectItem* tmpRect = new QGraphicsRectItem();
+
+    QList<strlstRemarkedPix> lstRemarkedPix;
+
     strSlidePlotSettings plotSettings;
 
     slideHypcube* slideHypCube = new slideHypcube(this);
@@ -20,6 +26,7 @@ class formHypercubeAnalysis : public QDialog
     GraphicsView* gvImg     = new GraphicsView(this);
     QGraphicsView* gvPlot   = new QGraphicsView(this);
     QList<int> lstXAxis;
+
 
 public:
     explicit formHypercubeAnalysis(QWidget *parent = 0);
@@ -36,11 +43,15 @@ private slots:
 
     void updateSignature(QMouseEvent* e);
 
-    //float drawnAxis();
+    void addRemarkedPixel(QMouseEvent*);
 
     void updateSlidePicture(const int &l);
 
     void updateLabel(const int &value);
+
+    void plotPixel(const strlstRemarkedPix &remarkedPix, const int &boundArea);
+
+    void on_pbReset_clicked();
 
 protected:
   //void resizeEvent ( QResizeEvent * event );

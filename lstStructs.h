@@ -599,7 +599,14 @@
     }strSlidePlotSettings;
 
 
-
+    typedef struct strlstRemarkedPix{
+        int x;
+        int y;
+        int thumbX;
+        int thumbY;
+        QColor color;
+        float waveToPixeRatio;
+    }strlstRemarkedPix;
 
 
 

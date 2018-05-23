@@ -14,7 +14,8 @@ GraphicsView::GraphicsView(QObject *parent) : QGraphicsView(){
     //setSceneRect(0, 0, 200, 200); // override your sizeGS() call
     //mousePos.reserve(exMaxPolygonSize);
     //canvasView->setMouseTracking(true);
-    //canvasView->setRenderHints( QPainter::Antialiasing );
+    //canvasView->setRenderHints( QPainter::Antialiasing );    
+
     parent      = parent;
     originalW   = 0;
     originalH   = 0;
@@ -57,6 +58,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *e)
 
             if( request->text()=="Slide Display Wavelength" )
                 funcDisplayWavelength(e);
+
+            if( request->text()=="Slide Remark Pixel" )
+                emit signalPixeleSelected(e);
 
             if( request->text()=="Display Wavelength" )
                 funcDiffractionDisplayWavelength(e);
@@ -470,6 +474,7 @@ QAction *GraphicsView::showContextMenuLine(QPoint pos){
     xmenu->addSeparator();
     QMenu* submenuSlide = xmenu->addMenu( "Slide" );
     submenuSlide->addAction( "Slide Display Wavelength" );
+    submenuSlide->addAction( "Slide Remark Pixel" );
 
     //..........................................
     //Diffraction

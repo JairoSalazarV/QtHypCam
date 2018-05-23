@@ -70,6 +70,8 @@ class GraphicsView : public QGraphicsView
 
         void signalProgBarValue( int value, QString label );
 
+        void signalPixeleSelected(QMouseEvent *e);
+
 };
 
 

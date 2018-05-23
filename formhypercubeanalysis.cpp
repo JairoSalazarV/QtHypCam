@@ -23,11 +23,35 @@ formHypercubeAnalysis::formHypercubeAnalysis(QWidget *parent) :
 
     ui->slideTmpImg->setEnabled(false);
 
+    connect(
+                gvImg,
+                SIGNAL(signalPixeleSelected(QMouseEvent*)),
+                this,
+                SLOT(addRemarkedPixel(QMouseEvent*))
+           );
+
 }
 
 formHypercubeAnalysis::~formHypercubeAnalysis()
 {
     delete ui;
+}
+
+void formHypercubeAnalysis::addRemarkedPixel(QMouseEvent* e)
+{
+    //Calc Real Pixel Coordinates
+    int cubeX, cubeY;
+    cubeX = round( ((float)e->x() / (float)gvPlot->width()  ) * (float)slideHypCube->cubeParam.W );
+    cubeY = round( ((float)e->y() / (float)gvPlot->height() ) * (float)slideHypCube->cubeParam.H );
+    //Save Pixel
+    strlstRemarkedPix remarkedPix;
+    QString newColor    = funcGetParam("Color","#0F0");
+    remarkedPix.x       = cubeX;
+    remarkedPix.y       = cubeY;
+    remarkedPix.thumbX  = e->x();
+    remarkedPix.thumbY  = e->y();
+    remarkedPix.color   = QColor(newColor.trimmed());
+    lstRemarkedPix.append(remarkedPix);
 }
 
 /*
@@ -81,12 +105,19 @@ void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
     int yRealArea = H-frameH;
     int xRealArea = W-frameW;
     QPen tmpPen = QPen(QBrush(Qt::white),2.0);
-    gvPlot->scene()->clear();
+    //gvImg->scene()->removeItem(tmpRect);
+    gvPlot->scene()->clear();            
     //X-Axix
     gvPlot->scene()->addLine( 0, yRealArea, W, yRealArea, tmpPen );
     //Y-Axis
     gvPlot->scene()->addLine( frameW, 0, frameW, H, tmpPen );
 
+    //-----------------------------------------------------------
+    //Refresh Thumb Image
+    //-----------------------------------------------------------
+    //gvImg->scene()->clear();
+    //updateLabel(ui->slideTmpImg->value());
+    //updateSlidePicture(ui->slideTmpImg->value());
 
     //=================================================================
     //DRAW AXIS
@@ -162,123 +193,74 @@ void formHypercubeAnalysis::updateSignature(QMouseEvent* e)
 
     //=================================================================
     //=================================================================
+    //Plot Actual Pixel
+    strlstRemarkedPix tmpPix;
+    tmpPix.x                = cubeX;
+    tmpPix.y                = cubeY;
+    tmpPix.thumbX           = e->x();
+    tmpPix.thumbY           = e->y();
+    tmpPix.color            = Qt::white;
+    tmpPix.waveToPixeRatio  = waveToPixeRatio;
+    plotPixel( tmpPix, yRealArea );
 
+    //Plot Lst Remarked Pixel
+    for(i=0; i<lstRemarkedPix.size(); i++)
+    {
+        tmpPix                  = lstRemarkedPix.at(i);
+        tmpPix.waveToPixeRatio  = waveToPixeRatio;
+        plotPixel( tmpPix, yRealArea );
+    }
+
+}
+
+void formHypercubeAnalysis::plotPixel(const strlstRemarkedPix &remarkedPix, const int &boundArea)
+{
+    //-----------------------------------------------------------
+    //Plot Spectral Signature
+    //-----------------------------------------------------------
     int l;
     float initWave  = slideHypCube->cubeParam.initWavelength;
     float specRes   = slideHypCube->cubeParam.spectralRes;
     float tmpWave;
     int xPos1, yPos1, xPos2, yPos2;
     QPen tmpPenSig;
-    tmpPenSig.setBrush(QBrush(Qt::white));
+    tmpPenSig.setBrush(QBrush(remarkedPix.color));
     tmpPenSig.setWidth(1);
     float tmpVal;
     for(l=0; l<slideHypCube->cubeParam.L-1; l++)
     {
         //Actual Point
         tmpWave     = initWave + (specRes*l);
-        xPos1       = plotSettings.XFrame + round( (float)waveToPixeRatio * tmpWave );
-        tmpVal      = (float)slideHypCube->HypCube[cubeX][cubeY][l];
-        if( tmpVal > 0 )yPos1 = round(( tmpVal / 255.0) * (float)yRealArea * 0.98);
+        xPos1       = plotSettings.XFrame + round( remarkedPix.waveToPixeRatio * tmpWave );
+        tmpVal      = (float)slideHypCube->HypCube[remarkedPix.x][remarkedPix.y][l];
+        if( tmpVal > 0 )yPos1 = round(( tmpVal / 255.0) * (float)boundArea);
         else yPos1 = 0;
-        yPos1       = yRealArea - yPos1;
+        yPos1       = boundArea - yPos1;
         //Next Point
         tmpWave     = initWave + (specRes*(l+1));
-        xPos2       = plotSettings.XFrame + round( (float)waveToPixeRatio * tmpWave );
-        tmpVal      = (float)slideHypCube->HypCube[cubeX][cubeY][l+1];
-        if(tmpVal>0)yPos2 = round((tmpVal / 255.0) * (float)yRealArea * 0.98);
+        xPos2       = plotSettings.XFrame + round( remarkedPix.waveToPixeRatio * tmpWave );
+        tmpVal      = (float)slideHypCube->HypCube[remarkedPix.x][remarkedPix.y][l+1];
+        if(tmpVal>0)yPos2 = round((tmpVal / 255.0) * (float)boundArea);
         else yPos2  = 0;
-        yPos2       = yRealArea - yPos2;
+        yPos2       = boundArea - yPos2;
         //Add Line
         gvPlot->scene()->addLine(xPos1,yPos1,xPos2,yPos2,tmpPenSig);
     }
 
-}
-
-/*
-float formHypercubeAnalysis::drawnAxis()
-{        
-    int frameW = plotSettings.XFrame;
-    int frameH = plotSettings.YFrame;
-    int W = gvPlot->width();
-    int H = gvPlot->height();
-    int yRealArea = H-frameH;
-    int xRealArea = W-frameW;
-    QPen tmpPen = QPen(QBrush(Qt::white),2.0);
-    //X-Axix
-    gvPlot->scene()->addLine( 0, yRealArea, W, yRealArea, tmpPen );
-    //Y-Axis
-    gvPlot->scene()->addLine( frameW, 0, frameW, H, tmpPen );
-
-    //-------------------------------
-    //Read Settings
-    //-------------------------------    
-    float minWave   = plotSettings.minWave;
-    float maxWave   = plotSettings.maxWave;
-
-    //-------------------------------
-    //Y-Bars
-    //-------------------------------
-    //Prepare font
-    QFont font;
-    font.setPixelSize(14);
-    font.setBold(false);
-    font.setFamily("Times");
-    QPen penTxt(Qt::white,1.5);
-    //Prepare coordinates
-    int x1, y1, x2, y2;
-    int yBarW = 7;
-    int yStep = round((float)yRealArea / (plotSettings.YStep+0.3));//Each 20
-    int numYSteps = ceil( 100.0 / plotSettings.YStep );
-    int i;
-    for( i=1; i<=numYSteps; i++ )
-    {
-        //Line
-        x1 = frameW - yBarW;
-        y1 = H - frameH - (i*yStep);
-        x2 = frameW + yBarW;
-        y2 = y1;
-        gvPlot->scene()->addLine( x1, y1, x2, y2, tmpPen );
-        //Text
-        QGraphicsSimpleTextItem* tmpTxt = new QGraphicsSimpleTextItem(QString::number(i*plotSettings.YStep));
-        tmpTxt->setPos(x2-40,y2-10);
-        tmpTxt->setFont(font);
-        tmpTxt->setPen(penTxt);
-        gvPlot->scene()->addItem(tmpTxt);
-    }
-
-    //-------------------------------
-    //X-Bars
-    //-------------------------------
-    int xH          = 7;
-    float xStep     = plotSettings.XStep;
-    float range     = maxWave - minWave;
-    int numSteps    = ceil( range / xStep );
-    int xPixStep    = (float)xRealArea / (float)numSteps;
-    for( i=1; i<numSteps; i++ )
-    {
-        //Line
-        x1  = frameW + (i*xPixStep);
-        y1  = H - frameH - xH;
-        x2  = x1;
-        y2  = H - frameH + xH;
-        gvPlot->scene()->addLine( x1, y1, x2, y2, tmpPen );
-        //Text
-        QGraphicsSimpleTextItem* tmpTxt = new QGraphicsSimpleTextItem(QString::number(i*xStep)+" nm");
-        tmpTxt->setPos(x1-10,y1+15);
-        tmpTxt->setFont(font);
-        tmpTxt->setPen(penTxt);
-        gvPlot->scene()->addItem(tmpTxt);
-    }
-
-    //-------------------------------
-    //Calc Wave to Pixel Ratio
-    //-------------------------------
-    float waveToPixRatio = range / (float)xRealArea;
-    return waveToPixRatio;
+    //-----------------------------------------------------------
+    //Plot Mouse Position
+    //-----------------------------------------------------------
+    /*
+    int recW = 5;
+    gvImg->scene()->addRect(
+                                remarkedPix.thumbX-recW,
+                                remarkedPix.thumbY-recW,
+                                (recW*2),
+                                (recW*2),
+                                QPen(remarkedPix.color)
+                            );*/
 
 }
-*/
-
 
 void formHypercubeAnalysis::on_slideTmpImg_valueChanged(const int &value)
 {
@@ -287,7 +269,7 @@ void formHypercubeAnalysis::on_slideTmpImg_valueChanged(const int &value)
 }
 
 void formHypercubeAnalysis::updateSlidePicture(const int &l)
-{
+{    
     gvImg->scene()->clear();
     gvImg->scene()->addPixmap(QPixmap::fromImage(slideHypCube->lstCubeThumbs.at(l)));
     gvImg->update();
@@ -313,7 +295,6 @@ void formHypercubeAnalysis::on_pbLoadCube_clicked()
     //------------------------------------------------
     //Load Hypercube
     //------------------------------------------------
-
     connect(
                 slideHypCube,
                 SIGNAL(signalProgBarValue(int,QString)),
@@ -431,3 +412,10 @@ void formHypercubeAnalysis::resizeEvent( QResizeEvent * event )
     std::cout << "ResizeEvent" << std::endl;
 }*/
 
+
+void formHypercubeAnalysis::on_pbReset_clicked()
+{
+    ui->slideTmpImg->setValue(0);
+    lstRemarkedPix.clear();
+    gvPlot->scene()->clear();
+}

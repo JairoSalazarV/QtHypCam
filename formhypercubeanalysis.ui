@@ -45,8 +45,8 @@
   <widget class="QPushButton" name="pbLoadCube">
    <property name="geometry">
     <rect>
-     <x>100</x>
-     <y>12</y>
+     <x>210</x>
+     <y>13</y>
      <width>84</width>
      <height>28</height>
     </rect>
@@ -92,6 +92,19 @@
    </property>
    <property name="text">
     <string/>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pbReset">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>12</y>
+     <width>84</width>
+     <height>28</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reset</string>
    </property>
   </widget>
  </widget>
