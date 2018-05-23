@@ -589,6 +589,15 @@
         float spectralRes;
     }strCubeParameters;
 
+    typedef struct strSlidePlotSettings{
+        float minWave;
+        float maxWave;
+        float XFrame;
+        float YFrame;
+        float XStep;
+        float YStep;
+    }strSlidePlotSettings;
+
 
 
 

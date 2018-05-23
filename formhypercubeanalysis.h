@@ -13,10 +13,13 @@ class formHypercubeAnalysis : public QDialog
 {
     Q_OBJECT
 
+    strSlidePlotSettings plotSettings;
+
     slideHypcube* slideHypCube = new slideHypcube(this);
 
     GraphicsView* gvImg     = new GraphicsView(this);
     QGraphicsView* gvPlot   = new QGraphicsView(this);
+    QList<int> lstXAxis;
 
 public:
     explicit formHypercubeAnalysis(QWidget *parent = 0);
@@ -33,14 +36,14 @@ private slots:
 
     void updateSignature(QMouseEvent* e);
 
-    void drawnAxis();
+    //float drawnAxis();
 
     void updateSlidePicture(const int &l);
 
     void updateLabel(const int &value);
 
 protected:
-  void resizeEvent ( QResizeEvent * event );
+  //void resizeEvent ( QResizeEvent * event );
 
 private:
     Ui::formHypercubeAnalysis *ui;

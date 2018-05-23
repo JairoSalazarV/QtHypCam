@@ -355,5 +355,6 @@
                             const QList<QString> &lstParameters,
                             QList<QString>* lstValues
                        );
+    void msg( std::string msg );
 
 #endif // __COMMON_H

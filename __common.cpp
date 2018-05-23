@@ -3675,5 +3675,8 @@ int readXMLIntoList(
     return _OK;
 }
 
-
+void msg( std::string msg )
+{
+    std::cout << msg << std::endl;
+}
 
