@@ -18,7 +18,7 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     QString fileToOpen;
 
-    if(1)//VERTICAL
+    if(0)//VERTICAL
     {
         fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/408nm.xml";
         funcAddRowToTable(&fileToOpen);
