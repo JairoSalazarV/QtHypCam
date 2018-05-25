@@ -9401,7 +9401,7 @@ void MainWindow::on_openLine_triggered()
     //Let the user select the file
     //---------------------------------------
     QString fileOrigin;
-    if( funcLetUserSelectFile(&fileOrigin) != _OK )
+    if( funcLetUserSelectFile(&fileOrigin,"Select Line...",this) != _OK )
     {
         return (void)false;
     }
@@ -9493,7 +9493,7 @@ void MainWindow::on_actionPlot_Calculated_Line_triggered()
     //---------------------------------------
     //Get filename
     QString fileName;
-    if( funcLetUserSelectFile(&fileName,"Select Horizontal Calibration...") != _OK )
+    if( funcLetUserSelectFile(&fileName,"Select Horizontal Calibration...",this) != _OK )
     {
         funcShowMsgERROR_Timeout("Getting File from User");
         return (void)false;
@@ -9527,7 +9527,7 @@ void MainWindow::on_actionPlot_Upper_Line_Rotation_triggered()
     //---------------------------------------
     //Get filename
     QString fileName;
-    if( funcLetUserSelectFile(&fileName) != _OK )
+    if( funcLetUserSelectFile(&fileName,"Esta es",this) != _OK )
     {
         funcShowMsgERROR_Timeout("Getting File from User");
         return (void)false;
@@ -9670,7 +9670,7 @@ void MainWindow::on_actionOrigin_triggered()
     //---------------------------------------
     //Get filename
     QString fileName;
-    if( funcLetUserSelectFile(&fileName, "Select Horizontal Calibration") != _OK )
+    if( funcLetUserSelectFile(&fileName, "Select Horizontal Calibration",this) != _OK )
     {
         funcShowMsgERROR_Timeout("Getting Horizontal Calibration");
         return (void)false;
@@ -9683,7 +9683,7 @@ void MainWindow::on_actionOrigin_triggered()
     //Get Vertical Calibration
     //---------------------------------------
     //Get filename
-    if( funcLetUserSelectFile(&fileName,"Select Vertical Calibration") != _OK )
+    if( funcLetUserSelectFile(&fileName,"Select Vertical Calibration",this) != _OK )
     {
         funcShowMsgERROR_Timeout("Getting Vertical Calibration");
         return (void)false;
@@ -9697,20 +9697,44 @@ void MainWindow::on_actionOrigin_triggered()
     //---------------------------------------
     float horA, horB, horY;
     float verA, verB, verX;
+    int H;
     //Prefill Coordinates
     horA  = tmpHorizontalCal.a;
     horB  = tmpHorizontalCal.b;
     verA  = tmpVertCal.vertLR.a;
     verB  = tmpVertCal.vertLR.b;
-    horY  = round( (tmpVertCal.x2 * horB) + horA );
-    verX  = round( (verB * horY) + verA );
+    H     = tmpVertCal.imgH;
+
+    //Found the lowest error between the Vertical lower bound
+    //and the Y-value calculated using Horizontal LR
+    int vertX, vertY, horizY, tmpError, minError;
+    QPoint origin;
+    minError = H;
+    for( vertY=0; vertY<H; vertY++ )
+    {
+        vertX       = round( ( vertY * verB ) + verA );
+        horizY      = round( ( vertX * horB ) + horA );
+        tmpError    = horizY - vertY;
+        if( tmpError>=0 && tmpError<minError )
+        {
+            minError = tmpError;
+            origin.setX( vertX );
+            origin.setY( horizY );
+        }
+        if( tmpError < 0 )
+        {
+            break;
+        }
+    }
+    std::cout << "oX: " << origin.x() << " oY: " << origin.y() << std::endl;
+
 
     //---------------------------------------
     //Add Big Point
     //---------------------------------------
     float x, y;
-    x   = verX;
-    y   = horY;
+    x   = origin.x();
+    y   = origin.y();
     x   = round( ((float)x/(float)tmpHorizontalCal.imgW) * (float)canvasCalib->width() );
     y   = round( ((float)y/(float)tmpHorizontalCal.imgH) * (float)canvasCalib->height() );
     //std::cout << x << "," << y << std::endl;
@@ -10013,7 +10037,7 @@ void MainWindow::on_actionPlot_over_Real_triggered()
     //Let the user select Slide Calibration File
     //----------------------------------------------
     QString calibPath;
-    if( funcLetUserSelectFile(&calibPath,"Select Slide Calibration File...") != _OK )
+    if( funcLetUserSelectFile(&calibPath,"Select Slide Calibration File...",this) != _OK )
     {
         return (void)false;
     }
@@ -10189,7 +10213,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     //----------------------------------------------
     //QString calibPath("./XML/slideCalibration/slideCam_002.xml");
     QString calibPath;
-    if( funcLetUserSelectFile(&calibPath,"Select Slide Calibration File...") != _OK )
+    if( funcLetUserSelectFile(&calibPath,"Select Slide Calibration File...",this) != _OK )
     {
         return (void)false;
     }
@@ -10293,7 +10317,7 @@ void MainWindow::on_actionSlide_Calibration_File_triggered()
     //Select Slide Calibration Origin
     //---------------------------------------
     QString slideFile;
-    if( funcLetUserSelectFile(&slideFile,"Select Slide Calibration File...") != _OK )
+    if( funcLetUserSelectFile(&slideFile,"Select Slide Calibration File...",this) != _OK )
     {
         return (void)false;
     }
@@ -11586,5 +11610,44 @@ void MainWindow::on_actionCube_Analysis_triggered()
     tmpForm->showMaximized();
     //GraphicsView* mainGV = new GraphicsView(this);
     //mainGV->displayHypercubeAnalysisScenary();
+
+}
+
+void MainWindow::on_actionApply_Affine_Transformation_triggered()
+{
+    //----------------------------------------------
+    //Load Affine Transformation
+    //----------------------------------------------
+
+    // Select Affine Transformation File
+    QString transFilename;
+    if( funcLetUserSelectFile(&transFilename,"Select Affine Transformation...",this) != _OK )
+    {
+        return (void)false;
+    }
+
+    QTransform T;
+    if( funcReadAffineTransXML( transFilename.trimmed(), &T ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Affine Transformation");
+        return (void)false;
+    }
+
+    //-------------------------------------
+    //Apply Transformation
+    //-------------------------------------
+    *globalEditImg  = globalEditImg->transformed(T);
+
+    //-------------------------------------
+    //Display Image Transformed
+    //-------------------------------------
+
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
+
+    std::cout << "Finished successfully" << std::endl;
 
 }

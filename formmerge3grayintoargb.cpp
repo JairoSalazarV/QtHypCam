@@ -17,7 +17,7 @@ formMerge3GrayIntoARgb::~formMerge3GrayIntoARgb()
 void formMerge3GrayIntoARgb::on_pbRed_clicked()
 {
     QString defaVideoPath;
-    if( funcLetUserSelectFile( &defaVideoPath, "Select Red Source" ) != _OK )
+    if( funcLetUserSelectFile( &defaVideoPath, "Select Red Source", this ) != _OK )
     {
         funcShowMsgERROR_Timeout("Select Red Image Source");
         return (void)false;
@@ -28,7 +28,7 @@ void formMerge3GrayIntoARgb::on_pbRed_clicked()
 void formMerge3GrayIntoARgb::on_pbGreen_clicked()
 {
     QString defaVideoPath;
-    if( funcLetUserSelectFile( &defaVideoPath, "Select Green Source" ) != _OK )
+    if( funcLetUserSelectFile( &defaVideoPath, "Select Green Source", this ) != _OK )
     {
         funcShowMsgERROR_Timeout("Select Green Image Source");
         return (void)false;
@@ -39,7 +39,7 @@ void formMerge3GrayIntoARgb::on_pbGreen_clicked()
 void formMerge3GrayIntoARgb::on_pbBlue_clicked()
 {
     QString defaVideoPath;
-    if( funcLetUserSelectFile( &defaVideoPath, "Select Blue Source" ) != _OK )
+    if( funcLetUserSelectFile( &defaVideoPath, "Select Blue Source", this ) != _OK )
     {
         funcShowMsgERROR_Timeout("Select Vlue Image Source");
         return (void)false;

@@ -674,6 +674,8 @@ private slots:
 
     void on_actionCube_Analysis_triggered();
 
+    void on_actionApply_Affine_Transformation_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

@@ -1540,15 +1540,16 @@ QSlider::handle:horizontal {
      </property>
      <addaction name="actionApply_Rotation"/>
      <addaction name="actionApply_Transformation"/>
+     <addaction name="actionApply_Affine_Transformation"/>
     </widget>
     <addaction name="actionLinear_Regression"/>
     <addaction name="separator"/>
     <addaction name="actionSlide_Linear_Regression"/>
+    <addaction name="actionMerge_Calibration"/>
     <addaction name="actionCalc_Sensitivities"/>
     <addaction name="separator"/>
     <addaction name="menuPlot"/>
     <addaction name="separator"/>
-    <addaction name="actionMerge_Calibration"/>
     <addaction name="actionPlot_over_Real"/>
     <addaction name="actionPlot_Line_at_Wavelength"/>
     <addaction name="separator"/>
@@ -2419,6 +2420,11 @@ QSlider::handle:horizontal {
    </property>
    <property name="text">
     <string>Cube Analysis</string>
+   </property>
+  </action>
+  <action name="actionApply_Affine_Transformation">
+   <property name="text">
+    <string>Apply Affine Transformation</string>
    </property>
   </action>
  </widget>
