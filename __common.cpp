@@ -35,6 +35,7 @@
 #include <QTimer>
 
 #include <QIODevice>
+#include <QWidget>
 
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )

@@ -10765,13 +10765,14 @@ void MainWindow::funcOpticalCorrection(
 
     //--------------------------------------------
     //Define Max Wavelength
-    //--------------------------------------------
+    //--------------------------------------------    
     double maxWavelen;
-    maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
-    if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
-    {
-        maxWavelen = _RASP_CAM_MAX_WAVELENGTH;
-    }
+    maxWavelen = slideCalibration->maxWave;
+    //maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
+    //if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
+    //{
+    //    maxWavelen = _RASP_CAM_MAX_WAVELENGTH;
+    //}
 
     //--------------------------------------------
     //Define Flat Plane

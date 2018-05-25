@@ -29,14 +29,14 @@
   <widget class="QLabel" name="labelHor">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>14</x>
      <y>25</y>
      <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Horizontal</string>
+    <string>Horizontal (*)</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="txtHorPath">
@@ -55,14 +55,14 @@
   <widget class="QLabel" name="labelHor_2">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>14</x>
      <y>65</y>
      <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Vertical</string>
+    <string>Vertical (*)</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="txtVertPath">
@@ -117,27 +117,27 @@
   <widget class="QLabel" name="labelHor_3">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>14</x>
      <y>230</y>
      <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Camera ID</string>
+    <string>Camera ID (*)</string>
    </property>
   </widget>
   <widget class="QLabel" name="labelHor_4">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>14</x>
      <y>185</y>
      <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Origin H</string>
+    <string>Origin H (*)</string>
    </property>
   </widget>
   <widget class="QSpinBox" name="spinBoxOriginH">
@@ -159,14 +159,14 @@
   <widget class="QLabel" name="labelHor_5">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>14</x>
      <y>105</y>
      <width>121</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
-    <string>Transformation</string>
+    <string>Transformation (*)</string>
    </property>
   </widget>
   <widget class="QPushButton" name="pbAffineTrans">
@@ -211,7 +211,7 @@
   <widget class="QLabel" name="labelHor_6">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>14</x>
      <y>145</y>
      <width>121</width>
      <height>20</height>

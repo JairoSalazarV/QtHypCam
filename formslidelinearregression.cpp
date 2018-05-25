@@ -58,7 +58,7 @@ void formSlideLinearRegression::on_pbSelectFile_clicked()
     //Let the user select the file
     //---------------------------------------
     QString fileOrigin;
-    if( funcLetUserSelectFile(&fileOrigin) != _OK )
+    if( funcLetUserSelectFile(&fileOrigin,"Select a line...",this) != _OK )
     {
         return (void)false;
     }
@@ -311,7 +311,8 @@ int formSlideLinearRegression
                                     "Select Half-Calibration File",
                                     ".xml",
                                     new QString(_PATH_LAST_PATH_OPENED),
-                                    new QString("./XML/lines/")
+                                    new QString("./XML/lines/"),
+                                    this
                                  ) != _OK
     ){
         funcShowMsgERROR_Timeout("Defining Filename from User");
@@ -380,10 +381,10 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
     //--------------------------------------
     double X[2];
     double Y[2];
-    X[0]    = (double)lstLines.at(0).x1;
-    Y[0]    = (double)lstLines.at(0).y1;
-    X[1]    = (double)lstLines.at(0).x2;
-    Y[1]    = (double)lstLines.at(0).y2;
+    X[0]    = (double)lstLines.at(1).x1;
+    Y[0]    = (double)lstLines.at(1).y1;
+    X[1]    = (double)lstLines.at(1).x2;
+    Y[1]    = (double)lstLines.at(1).y2;
     linearRegresion horizLR = funcLinearRegression(X,Y,2);
 
     //--------------------------------------
@@ -397,16 +398,17 @@ void formSlideLinearRegression::on_pbGenHorRegression_clicked()
                                     "Select Half-Calibration File...",
                                     ".xml",
                                     new QString(_PATH_LAST_PATH_OPENED),
-                                    new QString("./XML/lines/")
+                                    new QString("./XML/lines/"),
+                                    this
                                  ) != _OK
     ){
         funcShowMsgERROR_Timeout("Defining Filename from User");
         return (void)false;
     }
     //main Weight
-    int bigH = (lstLines.at(1).y2-lstLines.at(0).y2);
-    int imgW = lstLines.at(0).originalW;
-    int imgH = lstLines.at(0).originalH;
+    int bigH = (lstLines.at(0).y2-lstLines.at(1).y2);
+    int imgW = lstLines.at(1).originalW;
+    int imgH = lstLines.at(1).originalH;
     //Save Line
     QList<QString> lstFixtures;
     QList<QString> lstValues;
