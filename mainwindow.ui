@@ -1570,6 +1570,7 @@ QSlider::handle:horizontal {
        <string>Step by Step</string>
       </property>
       <addaction name="actionExtract_frames_2"/>
+      <addaction name="actionExtract_ROI"/>
       <addaction name="actionBuild_HypCube"/>
       <addaction name="actionBuild_HypCube_2"/>
      </widget>
@@ -2431,6 +2432,11 @@ QSlider::handle:horizontal {
   <action name="actionApply_Optical_Correction">
    <property name="text">
     <string>Apply Optical Correction</string>
+   </property>
+  </action>
+  <action name="actionExtract_ROI">
+   <property name="text">
+    <string>Extract ROI</string>
    </property>
   </action>
  </widget>

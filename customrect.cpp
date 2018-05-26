@@ -30,6 +30,7 @@ QAction *customRect::showContMenuLine(QPoint pos){
     xmenu->addAction( "Scale" );
     xmenu->addAction( "Analize" );
     xmenu->addAction( "Properties" );
+    xmenu->addAction( "Save" );
 
     xmenu->addSeparator();
     QMenu* submenu2 = xmenu->addMenu( "Calculate" );
@@ -156,6 +157,24 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             anaRes->setModal(true);
             anaRes->exec();
         }
+        if(a->text()=="Save"){
+
+            //Take fileName
+            QString fileName;
+            if(
+                    funcLetUserDefineFile(
+                                            &fileName,
+                                            "Define output fileName",
+                                            ".xml",
+                                            new QString(_PATH_LAST_PATH_OPENED),
+                                            new QString("./XML/")
+                                         ) == _OK
+            ){
+
+                //Call the centroid
+                saveSquareAs(fileName);
+            }
+        }
         if(a->text()=="Red centroid"){
             //Call the centroid
             //..
@@ -204,6 +223,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
             //..
             saveSquareAs(_PATH_REGION_OF_INTERES2);
         }
+
         if(a->text()=="Slide"){
             //Call the centroid
             //..

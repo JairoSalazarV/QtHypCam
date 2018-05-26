@@ -11739,3 +11739,78 @@ void MainWindow::on_actionApply_Optical_Correction_triggered()
 
 
 }
+
+void MainWindow::on_actionExtract_ROI_triggered()
+{
+    QString rect;
+    if( funcLetUserSelectFile(&rect,"Select ROI",this) != _OK )
+    {
+        return (void)false;
+    }
+
+    mouseCursorWait();
+    //--------------------------------------------
+    //Get List of Files in Default Directory
+    //--------------------------------------------
+    //Get Files from Dir
+    QString tmpFramesPath;
+    tmpFramesPath.append(_PATH_VIDEO_FRAMES);
+    tmpFramesPath.append("tmp/");
+    //List All Files in Directory
+    QList<QFileInfo> lstFrames = funcListFilesInDir( tmpFramesPath );
+    std::cout << "numFrames: " << lstFrames.size() << std::endl;
+    //Read first Image
+    QImage firstImg( lstFrames.at(0).absoluteFilePath() );
+
+    //--------------------------------------------
+    //Obtaining square aperture params
+    //--------------------------------------------
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( rect, tmpSqAperture ) )
+    {
+        funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
+        return (void)false;
+    }
+    int x, y, w, h;
+    x = round(((float)tmpSqAperture->rectX / (float)tmpSqAperture->canvasW) * (float)firstImg.width());
+    y = round(((float)tmpSqAperture->rectY / (float)tmpSqAperture->canvasH) * (float)firstImg.height());
+    w = round(((float)tmpSqAperture->rectW / (float)tmpSqAperture->canvasW) * (float)firstImg.width());
+    h = round(((float)tmpSqAperture->rectH / (float)tmpSqAperture->canvasH) * (float)firstImg.height());
+
+    //--------------------------------------------
+    //Save ROIS
+    //--------------------------------------------
+    int i;
+    ui->progBar->setVisible(true);
+    ui->labelProgBar->setVisible(true);
+    ui->labelProgBar->setText("Extracting ROI...");
+    for(i=0; i<lstFrames.size(); i++)
+    {
+        QImage tmpImg( lstFrames.at(i).absoluteFilePath() );
+        tmpImg = tmpImg.copy( x, y, w, h );
+        tmpImg.save( lstFrames.at(i).absoluteFilePath() );
+
+        //Update Progress Bar
+        ui->progBar->setValue(round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 ));
+        ui->progBar->update();
+        QtDelay(1);
+    }
+
+    ui->labelProgBar->setText("");
+    ui->progBar->setVisible(false);
+    ui->progBar->setValue(0);
+    ui->progBar->update();
+    mouseCursorReset();
+    QtDelay(1);
+
+    //-------------------------------------------------
+    //Update Image Displayed
+    //-------------------------------------------------
+    int pos;
+    pos = round( (float)lstFrames.size() * 0.5 );
+    QImage tmpImg(lstFrames.at(pos).absoluteFilePath());
+    *globalEditImg = tmpImg;
+    *globalBackEditImg = tmpImg;
+    updateDisplayImage( &tmpImg );
+
+}

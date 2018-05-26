@@ -678,6 +678,8 @@ private slots:
 
     void on_actionApply_Optical_Correction_triggered();
 
+    void on_actionExtract_ROI_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;
