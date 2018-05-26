@@ -616,10 +616,10 @@ private slots:
 
     void on_actionPlot_Upper_Line_Rotation_triggered();
 
-    int funcReadVerticalCalibration(
-                                        QString* filePath,
-                                        structVerticalCalibration* vertCal
-                                   );
+    //int funcReadVerticalCalibration(
+    //                                    QString* filePath,
+    //                                    structVerticalCalibration* vertCal
+    //                               );
 
     int funcReadHorizCalibration(QString *filePath, structHorizontalCalibration *horizCalib);
 
@@ -675,6 +675,8 @@ private slots:
     void on_actionCube_Analysis_triggered();
 
     void on_actionApply_Affine_Transformation_triggered();
+
+    void on_actionApply_Optical_Correction_triggered();
 
 private:
     Ui::MainWindow *ui;

@@ -225,7 +225,11 @@
         int y1;
         int x2;
         int y2;
+        float minWave;
+        float maxWave;
         linearRegresion wavelengthLR;
+        linearRegresion wave2DistLR;
+        linearRegresion dist2WaveLR;
         linearRegresion vertLR;
     }structVerticalCalibration;
 

@@ -3681,3 +3681,113 @@ void msg( std::string msg )
     std::cout << msg << std::endl;
 }
 
+QPoint originFromCalibration(
+                                const structHorizontalCalibration &tmpHorizlCal,
+                                const structVerticalCalibration &tmpVertCal
+){
+    QPoint origin;
+    float horA, horB;
+    float verA, verB;
+    int H;
+    //Prefill Coordinates
+    horA  = tmpHorizlCal.a;
+    horB  = tmpHorizlCal.b;
+    verA  = tmpVertCal.vertLR.a;
+    verB  = tmpVertCal.vertLR.b;
+    H     = tmpVertCal.imgH;
+
+    //Found the lowest error between the Vertical lower bound
+    //and the Y-value calculated using Horizontal LR
+    int vertX, vertY, horizY, tmpError, minError;
+    minError = H;
+    for( vertY=0; vertY<H; vertY++ )
+    {
+        vertX       = round( ( vertY * verB ) + verA );
+        horizY      = round( ( vertX * horB ) + horA );
+        tmpError    = horizY - vertY;
+        if( tmpError>=0 && tmpError<minError )
+        {
+            minError = tmpError;
+            origin.setX( vertX );
+            origin.setY( horizY );
+        }
+        if( tmpError < 0 )
+        {
+            break;
+        }
+    }
+    return origin;
+}
+
+int funcReadVerticalCalibration(
+                                        QString* filePath,
+                                        structVerticalCalibration* vertCal
+){
+    //---------------------------------------
+    //Extract XML
+    //---------------------------------------
+    QFile *xmlFile = new QFile(*filePath);
+    if (!xmlFile->open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        funcShowMsg("ERROR","Opening: "+*filePath);
+        return _ERROR;
+    }
+    QXmlStreamReader *xmlReader = new QXmlStreamReader(xmlFile);
+
+
+    //Parse the XML until we reach end of it
+    while(!xmlReader->atEnd() && !xmlReader->hasError())
+    {
+        // Read next element
+        QXmlStreamReader::TokenType token = xmlReader->readNext();
+        //If token is just StartDocument - go to next
+        if(token == QXmlStreamReader::StartDocument)
+        {
+            continue;
+        }
+        //If token is StartElement - read it
+        if(token == QXmlStreamReader::StartElement)
+        {
+            if( xmlReader->name()=="imgW" )
+                vertCal->imgW = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="imgH" )
+                vertCal->imgH = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="x1" )
+                vertCal->x1 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="y1" )
+                vertCal->y1 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="x2" )
+                vertCal->x2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="y2" )
+                vertCal->y2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="lowerBoundWave" )
+                vertCal->minWave = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="higherBoundWave" )
+                vertCal->maxWave = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wavelengthA" )
+                vertCal->wavelengthLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wavelengthB" )
+                vertCal->wavelengthLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="dist2WaveA" )
+                vertCal->dist2WaveLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="dist2WaveB" )
+                vertCal->dist2WaveLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wave2DistA" )
+                vertCal->wave2DistLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wave2DistB" )
+                vertCal->wave2DistLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="vertA" )
+                vertCal->vertLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="vertB" )
+                vertCal->vertLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+        }
+    }
+    if(xmlReader->hasError()) {
+        funcShowMsg("Parse Error",xmlReader->errorString());
+        return _ERROR;
+    }
+    xmlReader->clear();
+    xmlFile->close();
+
+    return _OK;
+}

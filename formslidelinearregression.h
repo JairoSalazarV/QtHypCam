@@ -39,7 +39,11 @@ private slots:
 
     void funcTableToList(QList<structLine>* lstLines);
 
+    int funcUpdateVerticalCalibrationFile(structVerticalCalibration* vertCalibSettings);
+
     void on_pbGenAffinTrans_clicked();
+
+    void on_pbUpdateVerticalLR_clicked();
 
 private:
     Ui::formSlideLinearRegression *ui;

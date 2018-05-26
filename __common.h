@@ -355,6 +355,17 @@
                             const QList<QString> &lstParameters,
                             QList<QString>* lstValues
                        );
+
     void msg( std::string msg );
+
+    QPoint originFromCalibration(
+                                    const structHorizontalCalibration &tmpHorizlCal,
+                                    const structVerticalCalibration &tmpVertCal
+    );
+
+    int funcReadVerticalCalibration(
+                                            QString* filePath,
+                                            structVerticalCalibration* vertCal
+    );
 
 #endif // __COMMON_H

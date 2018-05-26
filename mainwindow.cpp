@@ -9527,7 +9527,7 @@ void MainWindow::on_actionPlot_Upper_Line_Rotation_triggered()
     //---------------------------------------
     //Get filename
     QString fileName;
-    if( funcLetUserSelectFile(&fileName,"Esta es",this) != _OK )
+    if( funcLetUserSelectFile(&fileName,"Select Vertical Calibration",this) != _OK )
     {
         funcShowMsgERROR_Timeout("Getting File from User");
         return (void)false;
@@ -9553,6 +9553,7 @@ void MainWindow::on_actionPlot_Upper_Line_Rotation_triggered()
 
 }
 
+/*
 int MainWindow::funcReadVerticalCalibration(
                                                 QString* filePath,
                                                 structVerticalCalibration* vertCal
@@ -9594,10 +9595,22 @@ int MainWindow::funcReadVerticalCalibration(
                 vertCal->x2 = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="y2" )
                 vertCal->y2 = xmlReader->readElementText().trimmed().toInt(0);
+            if( xmlReader->name()=="lowerBoundWave" )
+                vertCal->minWave = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="higherBoundWave" )
+                vertCal->maxWave = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="wavelengthA" )
                 vertCal->wavelengthLR.a = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="wavelengthB" )
                 vertCal->wavelengthLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="dist2WaveA" )
+                vertCal->dist2WaveLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="dist2WaveB" )
+                vertCal->dist2WaveLR.b = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wave2DistA" )
+                vertCal->wave2DistLR.a = xmlReader->readElementText().trimmed().toFloat(0);
+            if( xmlReader->name()=="wave2DistB" )
+                vertCal->wave2DistLR.b = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="vertA" )
                 vertCal->vertLR.a = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="vertB" )
@@ -9612,7 +9625,7 @@ int MainWindow::funcReadVerticalCalibration(
     xmlFile->close();
 
     return _OK;
-}
+}*/
 
 int MainWindow::funcReadHorizCalibration(QString* filePath, structHorizontalCalibration* horizCalib)
 {
@@ -9676,8 +9689,8 @@ void MainWindow::on_actionOrigin_triggered()
         return (void)false;
     }
     //Get Line parameters from .XML
-    structHorizontalCalibration tmpHorizontalCal;
-    funcReadHorizCalibration(&fileName,&tmpHorizontalCal);
+    structHorizontalCalibration tmpHorizCal;
+    funcReadHorizCalibration(&fileName,&tmpHorizCal);
 
     //---------------------------------------
     //Get Vertical Calibration
@@ -9695,37 +9708,7 @@ void MainWindow::on_actionOrigin_triggered()
     //---------------------------------------
     //Calc Origin
     //---------------------------------------
-    float horA, horB, horY;
-    float verA, verB, verX;
-    int H;
-    //Prefill Coordinates
-    horA  = tmpHorizontalCal.a;
-    horB  = tmpHorizontalCal.b;
-    verA  = tmpVertCal.vertLR.a;
-    verB  = tmpVertCal.vertLR.b;
-    H     = tmpVertCal.imgH;
-
-    //Found the lowest error between the Vertical lower bound
-    //and the Y-value calculated using Horizontal LR
-    int vertX, vertY, horizY, tmpError, minError;
-    QPoint origin;
-    minError = H;
-    for( vertY=0; vertY<H; vertY++ )
-    {
-        vertX       = round( ( vertY * verB ) + verA );
-        horizY      = round( ( vertX * horB ) + horA );
-        tmpError    = horizY - vertY;
-        if( tmpError>=0 && tmpError<minError )
-        {
-            minError = tmpError;
-            origin.setX( vertX );
-            origin.setY( horizY );
-        }
-        if( tmpError < 0 )
-        {
-            break;
-        }
-    }
+    QPoint origin = originFromCalibration( tmpHorizCal, tmpVertCal );
     std::cout << "oX: " << origin.x() << " oY: " << origin.y() << std::endl;
 
 
@@ -9735,8 +9718,8 @@ void MainWindow::on_actionOrigin_triggered()
     float x, y;
     x   = origin.x();
     y   = origin.y();
-    x   = round( ((float)x/(float)tmpHorizontalCal.imgW) * (float)canvasCalib->width() );
-    y   = round( ((float)y/(float)tmpHorizontalCal.imgH) * (float)canvasCalib->height() );
+    x   = round( ((float)x/(float)tmpHorizCal.imgW) * (float)canvasCalib->width() );
+    y   = round( ((float)y/(float)tmpHorizCal.imgH) * (float)canvasCalib->height() );
     //std::cout << x << "," << y << std::endl;
     double rad = 10.0;
     QGraphicsEllipseItem* item = new QGraphicsEllipseItem(x-(rad/2.0), y-(rad/2.0), rad, rad );
@@ -10792,6 +10775,8 @@ void MainWindow::funcOpticalCorrection(
     //--------------------------------------------    
     double maxWavelen;
     maxWavelen = slideCalibration->maxWave;
+    std::cout << "maxWavelen: " << maxWavelen << std::endl;
+    //exit(0);
     //maxWavelen = readAllFile(_PATH_SLIDE_MAX_WAVELENGTH).trimmed().toDouble(0);
     //if( maxWavelen < _RASP_CAM_MIN_WAVELENGTH || maxWavelen > _RASP_CAM_MAX_WAVELENGTH )
     //{
@@ -10851,13 +10836,16 @@ void MainWindow::funcOpticalCorrection(
     int i, progVal;
     progVal = 0;
     //Remove Stabilization Frames
-    for( i=0; i<numStabFrames; i++ )
+    if(0)
     {
-        //std::cout << "DEL-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
-        if( funcDeleteFile(lstFrames.at(i).absoluteFilePath()) != _OK )
+        for( i=0; i<numStabFrames; i++ )
         {
-            funcShowMsgERROR("Deleting: "+lstFrames.at(i).absoluteFilePath());
-            break;
+            //std::cout << "DEL-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
+            if( funcDeleteFile(lstFrames.at(i).absoluteFilePath()) != _OK )
+            {
+                funcShowMsgERROR("Deleting: "+lstFrames.at(i).absoluteFilePath());
+                break;
+            }
         }
     }
 
@@ -10868,16 +10856,22 @@ void MainWindow::funcOpticalCorrection(
     //QList<QImage> lstTransImages;
     lstTransImages->clear();
     for( i=0; i<lstFrames.size(); i++ )
+    //for( i=0; i<1; i++ )
     {
         //std::cout << "MOD-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
+        //std::cout << "m11: " << slideCalibration->translation.m11() << std::endl;
         tmpImg  = QImage( lstFrames.at(i).absoluteFilePath() );
+        //displayImageFullScreen(tmpImg);
         tmpImg  = tmpImg.transformed( slideCalibration->translation );
+        //displayImageFullScreen(tmpImg);
         tmpImg  = tmpImg.copy(subImgRec);
+        //displayImageFullScreen(tmpImg);
         lstTransImages->append( tmpImg );
         //Update Progress Bar
         progVal = round( ( (float)(i) / (float)lstFrames.size() ) * 100.0 );
         ui->progBar->setValue(progVal);
         ui->progBar->update();
+
     }
 
     //-------------------------------------------------
@@ -11618,14 +11612,13 @@ void MainWindow::on_actionApply_Affine_Transformation_triggered()
     //----------------------------------------------
     //Load Affine Transformation
     //----------------------------------------------
-
     // Select Affine Transformation File
     QString transFilename;
     if( funcLetUserSelectFile(&transFilename,"Select Affine Transformation...",this) != _OK )
     {
         return (void)false;
     }
-
+    //Read Affine Transformation
     QTransform T;
     if( funcReadAffineTransXML( transFilename.trimmed(), &T ) != _OK )
     {
@@ -11649,5 +11642,100 @@ void MainWindow::on_actionApply_Affine_Transformation_triggered()
     updateImageCanvasEdit(globalEditImg);
 
     std::cout << "Finished successfully" << std::endl;
+
+}
+
+void MainWindow::on_actionApply_Optical_Correction_triggered()
+{
+
+    //---------------------------------------
+    //Get Horizontal Calibration
+    //---------------------------------------
+    //Get filename
+    QString fileName;
+    if( funcLetUserSelectFile(&fileName, "Select Horizontal Calibration",this) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting Horizontal Calibration");
+        return (void)false;
+    }
+    //Get Line parameters from .XML
+    structHorizontalCalibration tmpHorizCal;
+    funcReadHorizCalibration(&fileName,&tmpHorizCal);
+
+    //---------------------------------------
+    //Get Vertical Calibration
+    //---------------------------------------
+    //Get filename
+    if( funcLetUserSelectFile(&fileName,"Select Vertical Calibration",this) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting Vertical Calibration");
+        return (void)false;
+    }
+    //Get Calibration Parameters from .XML
+    structVerticalCalibration tmpVertCal;
+    funcReadVerticalCalibration(&fileName,&tmpVertCal);
+
+    //----------------------------------------------
+    //Load Affine Transformation
+    //----------------------------------------------
+    // Select Affine Transformation File
+    QString transFilename;
+    if( funcLetUserSelectFile(&transFilename,"Select Affine Transformation...",this) != _OK )
+    {
+        return (void)false;
+    }
+    //Read Affine Transformation
+    QTransform T;
+    if( funcReadAffineTransXML( transFilename.trimmed(), &T ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Reading Affine Transformation");
+        return (void)false;
+    }
+
+    //-------------------------------------
+    //Get Subimage
+    //-------------------------------------
+    //Calc Origin
+    QPoint originP = originFromCalibration( tmpHorizCal, tmpVertCal );
+    //Defina Region of Interest
+    QPoint P1, P2;
+    int distPixFromLower;
+    float maxWavelen  = tmpVertCal.maxWave;
+    maxWavelen  = maxWavelen - tmpVertCal.minWave;
+    distPixFromLower = round( funcApplyLR(maxWavelen,tmpVertCal.wave2DistLR,true) );
+    P1.setX( originP.x() );
+    P1.setY( originP.y() );
+    P2.setX( originP.x() + distPixFromLower );
+    P2.setY( originP.y() + tmpHorizCal.H );
+    std::cout << "distPixFromLower: " << distPixFromLower << std::endl;
+    //std::cout << "a: " << tmpVertCal.wavelengthLR.a << " b: " << tmpVertCal.wavelengthLR.b << std::endl;
+    std::cout << "(" << P1.x() << ", " << P1.y() << ") to (" << P2.x() << ", " << P2.y() << ")" << std::endl;
+    //Define Subimage Rect
+    QRect subImgRec;
+    subImgRec.setX( P1.x() );
+    subImgRec.setY( P1.y() );
+    subImgRec.setWidth( P2.x() - P1.x() );
+    subImgRec.setHeight( P2.y() - P1.y() );
+
+    //-------------------------------------
+    //Extract Region of Interest
+    //-------------------------------------
+    *globalEditImg  = globalEditImg->transformed( T );
+    *globalEditImg  = globalEditImg->copy( subImgRec );
+
+    //-------------------------------------
+    //Display Image Transformed
+    //-------------------------------------
+
+    //Update Image Preview
+    updatePreviewImage(globalEditImg);
+
+    //Update Edit View
+    updateImageCanvasEdit(globalEditImg);
+
+    std::cout << "Finished successfully" << std::endl;
+
+
+
 
 }

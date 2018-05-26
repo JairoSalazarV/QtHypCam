@@ -1541,6 +1541,7 @@ QSlider::handle:horizontal {
      <addaction name="actionApply_Rotation"/>
      <addaction name="actionApply_Transformation"/>
      <addaction name="actionApply_Affine_Transformation"/>
+     <addaction name="actionApply_Optical_Correction"/>
     </widget>
     <addaction name="actionLinear_Regression"/>
     <addaction name="separator"/>
@@ -2425,6 +2426,11 @@ QSlider::handle:horizontal {
   <action name="actionApply_Affine_Transformation">
    <property name="text">
     <string>Apply Affine Transformation</string>
+   </property>
+  </action>
+  <action name="actionApply_Optical_Correction">
+   <property name="text">
+    <string>Apply Optical Correction</string>
    </property>
   </action>
  </widget>

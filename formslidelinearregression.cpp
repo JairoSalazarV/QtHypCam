@@ -294,6 +294,66 @@ void formSlideLinearRegression::funcTableToList(QList<structLine>* lstLines)
 }
 
 int formSlideLinearRegression
+    ::funcUpdateVerticalCalibrationFile(
+        structVerticalCalibration* vertCalibSettings
+){
+
+    //------------------------------------
+    //Get Output Filename from User
+    //------------------------------------
+    QString filenamePath;
+    if(
+            funcLetUserDefineFile(
+                                    &filenamePath,
+                                    "Select Half-Calibration File",
+                                    ".xml",
+                                    new QString(_PATH_LAST_PATH_OPENED),
+                                    new QString("./XML/lines/"),
+                                    this
+                                 ) != _OK
+    ){
+        funcShowMsgERROR_Timeout("Defining Filename from User");
+        return _ERROR;
+    }
+
+    //------------------------------------
+    //Prepare .XML contain
+    //------------------------------------
+    QList<QString> lstFixtures;
+    QList<QString> lstValues;
+    lstFixtures << "imgW"           << "imgH"
+                << "lowerBoundX1"   << "lowerBoundY1"
+                << "lowerBoundX2"   << "lowerBoundY2"
+                << "lowerBoundWave" << "higherBoundWave"
+                << "dist2WaveA"     << "dist2WaveB"
+                << "wave2DistA"     << "wave2DistB"
+                << "vertA"          << "vertB";
+    lstValues   << QString::number(vertCalibSettings->imgW);
+    lstValues   << QString::number(vertCalibSettings->imgH);
+    lstValues   << QString::number(vertCalibSettings->x1);
+    lstValues   << QString::number(vertCalibSettings->y1);
+    lstValues   << QString::number(vertCalibSettings->x2);
+    lstValues   << QString::number(vertCalibSettings->y2);
+    lstValues   << QString::number(vertCalibSettings->minWave);
+    lstValues   << QString::number(vertCalibSettings->maxWave);
+    lstValues   << QString::number(vertCalibSettings->dist2WaveLR.a);
+    lstValues   << QString::number(vertCalibSettings->dist2WaveLR.b);
+    lstValues   << QString::number(vertCalibSettings->wave2DistLR.a);
+    lstValues   << QString::number(vertCalibSettings->wave2DistLR.b);
+    lstValues   << QString::number(vertCalibSettings->vertLR.a);
+    lstValues   << QString::number(vertCalibSettings->vertLR.b);
+
+    //------------------------------------
+    //Save .XML file
+    //------------------------------------
+    if( funcSaveXML(filenamePath,&lstFixtures,&lstValues) != _OK )
+    {
+        return _ERROR;
+    }
+    return _OK;
+}
+
+int formSlideLinearRegression
     ::funcSaveVerticalCalibrationFile(
                                         structLine* lowerVerLine,
                                         linearRegresion* dist2WaveLR,
@@ -491,5 +551,101 @@ void formSlideLinearRegression::on_pbGenAffinTrans_clicked()
     {
         funcShowMsgERROR_Timeout("Saving Affine Transformation");
         return (void)false;
+    }
+}
+
+void formSlideLinearRegression::on_pbUpdateVerticalLR_clicked()
+{
+
+    //---------------------------------------
+    //Get Vertical Calibration
+    //---------------------------------------
+    //Get filename
+    QString fileName;
+    if( funcLetUserSelectFile(&fileName,"Select Vertical Calibration",this) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Getting Vertical Calibration");
+        return (void)false;
+    }
+    //Get Calibration Parameters from .XML
+    structVerticalCalibration tmpVertCal;
+    funcReadVerticalCalibration(&fileName,&tmpVertCal);
+
+    //--------------------------------------
+    //This function Assumes that the lower
+    //wavelength is located at the left
+    //and is vertical
+    //--------------------------------------
+    int i, numLines;
+    float newMinWave, newMaxWave;
+
+    //--------------------------------------
+    //Save Lines Into Memory
+    //--------------------------------------
+    numLines = ui->tableLstPoints->rowCount();
+    QList<structLine> lstLines;
+    funcTableToList(&lstLines);
+
+    //--------------------------------------
+    //Obtain NEW Wavelength LR
+    //--------------------------------------
+    double lstX[numLines-1];//Distance in pixels between lines
+    double lstY[numLines-1];//Wavelength
+    float wavePixLen = 0.0;
+    for( i=0; i<numLines-1; i++ )
+    {
+        wavePixLen  = (
+                        (lstLines.at(i+1).x2 - lstLines.at(i).x2) +
+                        (lstLines.at(i+1).x1 - lstLines.at(i).x1)
+                      )/2.0;
+        lstX[i]     = wavePixLen;
+        lstY[i]     = (float)(lstLines.at(i+1).wavelength -
+                              lstLines.at(i).wavelength);
+    }
+    linearRegresion newWave2DistLR, newDist2WaveLR;
+    newDist2WaveLR = funcLinearRegression(lstX,lstY,numLines-1);
+    newWave2DistLR = funcLinearRegression(lstY,lstX,numLines-1);
+
+    //--------------------------------------
+    //Calc New Bounded Wavelengths
+    //--------------------------------------
+    int tmpPixDist;
+    float tmpWaveDist;
+
+    //Calc Distance to Lower Wave
+    tmpPixDist  = round(
+                            ((float)lstLines.at(0).x1 / (float)lstLines.at(0).canvasW) *
+                            lstLines.at(0).originalW
+                       );
+    tmpWaveDist = funcApplyLR( tmpPixDist, newDist2WaveLR, true );
+    newMinWave  = lstLines.at(0).wavelength - tmpWaveDist;
+
+    //Calc Distance to Higher Wave
+    tmpPixDist  = lstLines.at(0).originalW;
+    tmpWaveDist = funcApplyLR( tmpPixDist, newDist2WaveLR, true );
+    newMaxWave  = newMinWave + tmpWaveDist;
+
+    //--------------------------------------
+    //Update Vertical Calibration
+    //--------------------------------------
+    tmpVertCal.minWave          = newMinWave;
+    tmpVertCal.maxWave          = newMaxWave;
+    tmpVertCal.dist2WaveLR.a    = newDist2WaveLR.a;
+    tmpVertCal.dist2WaveLR.b    = newDist2WaveLR.b;
+    tmpVertCal.wave2DistLR.a    = newWave2DistLR.a;
+    tmpVertCal.wave2DistLR.b    = newWave2DistLR.b;
+
+    //--------------------------------------
+    //Save Vertical Calibration File
+    //--------------------------------------
+    //Save file
+    if( funcUpdateVerticalCalibrationFile( &tmpVertCal ) != _OK )
+    {
+        funcShowMsgERROR_Timeout("Updating Vertical Calibration");
+        return (void)false;
+    }
+    else
+    {
+        funcShowMsgSUCCESS_Timeout("Vertical Calibration Updated");
     }
 }
