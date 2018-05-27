@@ -43,7 +43,7 @@ private slots:
 
     void on_pbGenAffinTrans_clicked();
 
-    void on_pbUpdateVerticalLR_clicked();
+    //void on_pbUpdateVerticalLR_clicked();
 
 private:
     Ui::formSlideLinearRegression *ui;

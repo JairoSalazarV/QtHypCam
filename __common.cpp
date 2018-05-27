@@ -3300,6 +3300,10 @@ int funcLines2Translation(
     //Transformation Quads
     QPolygonF originQuad(originPoints);
     QPolygonF destineQuad(destinePoints);
+    //std::cout << "x11: " << originPoints.at(0).x() << " y11: " << originPoints.at(0).y() << std::endl;
+    //std::cout << "x12: " << originPoints.at(1).x() << " y12: " << originPoints.at(1).y() << std::endl;
+    //std::cout << "x21: " << destinePoints.at(0).x() << " y21: " << destinePoints.at(0).y() << std::endl;
+    //std::cout << "x22: " << destinePoints.at(1).x() << " y22: " << destinePoints.at(1).y() << std::endl;
 
     //-------------------------------------
     //Build Transformation

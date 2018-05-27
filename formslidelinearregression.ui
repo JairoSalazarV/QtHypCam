@@ -170,19 +170,6 @@
     <string>Generate Affine Transformation</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pbUpdateVerticalLR">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>420</y>
-     <width>221</width>
-     <height>28</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Update Vertical LR</string>
-   </property>
-  </widget>
  </widget>
  <resources>
   <include location="lstImgs.qrc"/>

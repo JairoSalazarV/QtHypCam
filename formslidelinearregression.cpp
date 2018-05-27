@@ -554,6 +554,7 @@ void formSlideLinearRegression::on_pbGenAffinTrans_clicked()
     }
 }
 
+/*
 void formSlideLinearRegression::on_pbUpdateVerticalLR_clicked()
 {
 
@@ -648,4 +649,4 @@ void formSlideLinearRegression::on_pbUpdateVerticalLR_clicked()
     {
         funcShowMsgSUCCESS_Timeout("Vertical Calibration Updated");
     }
-}
+}*/
