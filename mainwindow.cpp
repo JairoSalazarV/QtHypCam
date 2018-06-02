@@ -10239,6 +10239,7 @@ void MainWindow::on_actionPlot_Line_at_Wavelength_triggered()
     int distPixFromLower;
     wavelength = wavelength - slideCalibration.originWave;
     distPixFromLower = round( funcApplyLR(wavelength,slideCalibration.wave2DistLR,true) );
+    std::cout << "originWave: " << slideCalibration.originWave << "nm" << std::endl;
     std::cout << "distPixFromLower: " << distPixFromLower << "px" << std::endl;
 
     //----------------------------------------------
@@ -10615,9 +10616,9 @@ void MainWindow::on_actionRestore_Original_triggered()
 
 void MainWindow::on_actionExtract_frames_2_triggered()
 {
-
+    mouseCursorWait();
     funcExtractFramesFromH264();
-
+    mouseCursorReset();
 }
 
 int MainWindow::funcExtractFramesFromH264(bool updateImage)
@@ -10850,9 +10851,35 @@ void MainWindow::funcOpticalCorrection(
     }
 
     //-------------------------------------------------
-    //Get into Memory Transformed Frames
+    //GET LIST OF FILES
     //-------------------------------------------------
     lstFrames = funcListFilesInDir( tmpFramesPath );
+
+
+    //-------------------------------------------------
+    //DEFINE ROI
+    //-------------------------------------------------
+    QString rect;
+    if( funcLetUserSelectFile(&rect,"Select ROI",this) != _OK )
+    {
+        return (void)false;
+    }
+    squareAperture *tmpSqAperture = (squareAperture*)malloc(sizeof(squareAperture));
+    if( !funGetSquareXML( rect, tmpSqAperture ) )
+    {
+        funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
+        return (void)false;
+    }
+    QImage firstImg(lstFrames.at(0).absoluteFilePath().trimmed());
+    int xROI, yROI, wROI, hROI;
+    xROI = round(((float)tmpSqAperture->rectX / (float)tmpSqAperture->canvasW) * (float)firstImg.width());
+    yROI = round(((float)tmpSqAperture->rectY / (float)tmpSqAperture->canvasH) * (float)firstImg.height());
+    wROI = round(((float)tmpSqAperture->rectW / (float)tmpSqAperture->canvasW) * (float)firstImg.width());
+    hROI = round(((float)tmpSqAperture->rectH / (float)tmpSqAperture->canvasH) * (float)firstImg.height());
+
+    //-------------------------------------------------
+    //Get into Memory Transformed Frames
+    //-------------------------------------------------    
     //QList<QImage> lstTransImages;
     lstTransImages->clear();
     for( i=0; i<lstFrames.size(); i++ )
@@ -10861,6 +10888,8 @@ void MainWindow::funcOpticalCorrection(
         //std::cout << "MOD-> i: " << i << " Modified: " << lstFrames.at(i).absoluteFilePath().toStdString() << std::endl;
         //std::cout << "m11: " << slideCalibration->translation.m11() << std::endl;
         tmpImg  = QImage( lstFrames.at(i).absoluteFilePath() );
+        //ROI
+        tmpImg  = tmpImg.copy(xROI,yROI,wROI,hROI);
         //displayImageFullScreen(tmpImg);
         tmpImg  = tmpImg.transformed( slideCalibration->translation );
         //displayImageFullScreen(tmpImg);

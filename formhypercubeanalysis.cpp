@@ -319,8 +319,14 @@ void formHypercubeAnalysis::on_pbLoadCube_clicked()
     //Add to layout
     QFormLayout* tmpLayout = new QFormLayout(this);
 
-    QImage tmpImg = slideHypCube->slideImgFromCube();
+    QImage tmpImg = slideHypCube->slideImgFromCube(20);
+    if( 0 )
+    {
+        std::cout << "imgW: " << tmpImg.width() << " imgH: " << tmpImg.height() << std::endl;
+        displayImageFullScreen(tmpImg);
+    }
 
+    //Add a Vertical spacer
     QSpacerItem* spacer = new QSpacerItem(tmpImg.width(), frameH, QSizePolicy::Minimum, QSizePolicy::Expanding);
     tmpLayout->addItem(spacer);
 

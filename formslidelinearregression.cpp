@@ -18,22 +18,23 @@ formSlideLinearRegression::formSlideLinearRegression(QWidget *parent) :
 
     QString fileToOpen;
 
-    if(0)//VERTICAL
+    if(1)//VERTICAL
     {
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/408nm.xml";
+        QString path = "/home/jairo/Documentos/DOTECH/Calibraciones/slideBeta_001/attempt3/XML/lineas/";
+        fileToOpen = path + "408.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/438nm.xml";
+        fileToOpen = path + "438.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/492nm.xml";
+        fileToOpen = path + "490.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/550nm.xml";
+        fileToOpen = path + "548.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/586nm.xml";
+        fileToOpen = path + "585.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/620nm.xml";
+        fileToOpen = path + "615.xml";
         funcAddRowToTable(&fileToOpen);
-        fileToOpen = "./XML/lines/slideV1_002/2ndAttempt/712nm.xml";
-        funcAddRowToTable(&fileToOpen);
+        //fileToOpen = path + "710.xml";
+        //funcAddRowToTable(&fileToOpen);
     }
     if(0)
     {
@@ -139,36 +140,14 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
         lstX[i]     = wavePixLen;
         lstY[i]     = (float)(lstLines.at(i+1).wavelength -
                               lstLines.at(i).wavelength);
+        //std::cout << "i: " << i << " x: " << lstX[i]
+        //                        << " y: " << lstY[i] << std::endl;
     }
     linearRegresion wave2DistLR, dist2WaveLR;
     dist2WaveLR = funcLinearRegression(lstX,lstY,numLines-1);
     wave2DistLR = funcLinearRegression(lstY,lstX,numLines-1);
-
-    //--------------------------------------
-    //Obtain Lower(Wavelength) Vertical Line
-    //--------------------------------------
-    /*
-    structLine lowerVerLine;
-    QString lowerBoundLinePath;
-    //get filepath
-    //if( funcLetUserSelectFile(&lowerBoundLinePath) != _OK )
-    if(
-            funcLetUserSelectFile(
-                                    &lowerBoundLinePath,
-                                    "Select the VERTICAL Lower Bound Line...",
-                                    _PATH_LAST_PATH_OPENED,
-                                    "./XML/lines/"
-                                 ) != _OK
-    ){
-        funcShowMsgERROR_Timeout("Reading Lower Bound Line");
-        return (void)false;
-    }
-    //get lower bound line
-    if( funcReadLineFromXML(&lowerBoundLinePath,&lowerVerLine) != _OK )
-    {
-        funcShowMsgERROR_Timeout("Reading Line from XML");
-        return (void)false;
-    }*/
+    //std::cout << "a: " << wave2DistLR.a << " b: " << wave2DistLR.b << std::endl;
+    //std::cout << "dista: " << dist2WaveLR.a << " distb: " << dist2WaveLR.b << std::endl;
 
     //Read Min Wavelength
     float smallestWaveLen   = readAllFile(_PATH_SLIDE_MIN_WAVELENGTH).trimmed().toFloat(0);
@@ -178,14 +157,10 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //Obtain the Smallest Wavelength
     float tmpDist;
     int firstLineX1, firstLineX2;
-    tmpDist     = funcApplyLR( smallestWaveLen, wave2DistLR, false );
+    tmpDist     = funcApplyLR( smallestWaveLen, wave2DistLR, false );    
     firstLineX1 = round((float)lstLines.at(0).x1 - tmpDist);
     //std::cout << " firstLineX1: "       << firstLineX1       << std::endl;
     //std::cout << "smallestWaveLen: "    << smallestWaveLen   << std::endl;
-
-    //std::cout << "lowerVerLine.wavelength: "    << lowerVerLine.wavelength  << std::endl;
-    //std::cout << "Orig P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
-    //std::cout << "Orig P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
 
     //--------------------------------------
     //Obtain Higher(Wavelength)
@@ -211,7 +186,7 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
         tmpXDifference += lstLines.at(i).x2 - lstLines.at(i).x1;
     }
     tmpXDifference  = round( (float)tmpXDifference / (float)numLines );
-    firstLineX2     = firstLineX1 - tmpXDifference;
+    firstLineX2     = firstLineX1 + tmpXDifference;
 
     //std::cout << "Mod P1: " << lowerVerLine.x1 << ", " << lowerVerLine.y1 << std::endl;
     //std::cout << "Mod P2: " << lowerVerLine.x2 << ", " << lowerVerLine.y2 << std::endl;
@@ -233,7 +208,6 @@ void formSlideLinearRegression::on_pbGenRegression_clicked()
     //--------------------------------------
     //Save Vertical Calibration File
     //--------------------------------------
-
     //Obtain Lower(Wavelength) Vertical Line
     structLine lowerVerLine;
     lowerVerLine.originalW  = lstLines.at(0).originalW;

@@ -16,7 +16,7 @@ int slideHypcube::loadHypercube(QWidget* parent)
     //-------------------------------------------------
     //if( funcLetUserSelectDirectory( _PATH_LAST_LOCAL_FOLDER, &dirPath ) != _OK )
     QString filePath;
-    if( funcLetUserSelectFile( &filePath, "Select Hypercube...", parent ) != _OK )
+    if( funcLetUserSelectFile( &filePath, "Select Hypercube File (use to be .hypercube)...", parent ) != _OK )
     {
         return _FAILURE;
     }
@@ -60,7 +60,7 @@ int slideHypcube::loadHypercube(QWidget* parent)
         }
     }
     //Read Hypercube
-    QString cubeFilename = tmpFileSel.absoluteFilePath();
+    QString cubeFilename = dirPath+"slideHypcube.hypercube";
     std::ifstream binCubeFile;
     binCubeFile.open(
                         cubeFilename.toStdString(),
@@ -70,8 +70,10 @@ int slideHypcube::loadHypercube(QWidget* parent)
     {
         for( y=0; y<cubeParam.H; y++ )
         {
-            binCubeFile.read( (char*)&HypCube[x][y][0], cubeParam.L * sizeof(u_int8_t) );
+            //binCubeFile.read( (std::basic_istream<char>::char_type*)&HypCube[x][y][0], cubeParam.L );
+            binCubeFile.read( (std::basic_istream<char>::char_type*)&HypCube[x][y][0], cubeParam.L );
         }
+        //Update progress bar
         percentage = round( ((float)(x+1) / (float)cubeParam.W) * 100.0 );
         emit signalProgBarValue(percentage,"Loading Hypercube into Memory...");
     }
@@ -147,6 +149,7 @@ QImage slideHypcube::slideImgFromCube( const int &l )
                                                     HypCube[x][y][l]
                                                )
                                 );
+            //std::cout << x << ", " << y << " -> " << HypCube[x][y][l] << std::endl;
         }
     }
 

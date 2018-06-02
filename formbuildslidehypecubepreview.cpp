@@ -1158,7 +1158,7 @@ void formBuildSlideHypeCubePreview
     funcReloadExportSettings();
 
     //------------------------------------------------------
-    //Load Slide Calibration Settings Set as Default
+    //Load Default Slide Calibration Settings
     //------------------------------------------------------
     QString calibPath = readAllFile(_PATH_SLIDE_ACTUAL_CALIB_PATH).trimmed();
     structSlideCalibration mainSlideCalibration;
@@ -1299,7 +1299,7 @@ void formBuildSlideHypeCubePreview
     //------------------------------------------------------
     if( 0 )
     {
-        for(i=0; i<slideHypcubeSize.hypcubeL; i+=1)
+        for(i=0; i<slideHypcubeSize.hypcubeL; i+=15)
         {
             QImage layer = funcGetLayerFromHypCube( slideHypCube, slideHypcubeSize, i );
             displayImageFullScreen(layer);
