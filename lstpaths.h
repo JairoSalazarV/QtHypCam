@@ -112,9 +112,9 @@
 
     #define _PATH_SLIDE_TO_DISPLAY          "./tmpImages/tmpSlide/allSlide.png"
 
-    #define _PATH_SQUARE_APERTURE2          "./XML/squareAperture.xml"
+    #define _PATH_SQUARE_APERTURE           "./XML/squareAperture.xml"
     #define _PATH_SQUARE_USABLE             "./XML/squareUsable.xml"
-    #define _PATH_REGION_OF_INTERES2        "./XML/regionOfInteres.xml"
+    #define _PATH_REGION_OF_INTERES        "./XML/regionOfInteres.xml"
     #define _PATH_SLIDE_APERTURE            "./XML/slideAperture.xml"
     #define _PATH_SLIDE_DIFFRACTION         "./XML/slideDiffraction.xml"
     #define _PATH_VIDEO_SLIDE_DIFFRACTION   "./XML/videoSlideDiffraction.xml"

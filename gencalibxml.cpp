@@ -586,7 +586,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //Region of interes
         //..
         squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_REGION_OF_INTERES2, regOfInteres ) )
+        if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
         {
             funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
             return (void)false;
@@ -600,7 +600,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //Square aperture
         //..
         squareAperture *sqApert = (squareAperture*)malloc(sizeof(squareAperture));
-        if( !funGetSquareXML( _PATH_SQUARE_APERTURE2, sqApert ) )
+        if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
         {
             funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
             return (void)false;
@@ -1076,7 +1076,7 @@ QVector2D genCalibXML::getSqUsableIni(){
     //..
     squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
     //if( !funGetSquareXML( _PATH_SQUARE_USABLE, regOfInteres ) )
-    if( !funGetSquareXML( _PATH_REGION_OF_INTERES2, regOfInteres ) )
+    if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
     {
         funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
         return result;

@@ -80,7 +80,9 @@ public slots:
 
 
 
-private slots:    
+private slots:
+
+    int funcValidateMinimalStatus();
 
     void funcEndRect(QMouseEvent *e, GraphicsView *tmpCanvas);
 

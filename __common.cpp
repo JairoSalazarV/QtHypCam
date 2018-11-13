@@ -37,6 +37,7 @@
 #include <QIODevice>
 #include <QWidget>
 
+#include <cmath>
 
 QPoint *calibPoint( QPoint *point, lstDoubleAxisCalibration *calib )
 {
@@ -1069,15 +1070,15 @@ int func_MergeImages(QImage* source, QImage* destine, QString type)
             }
             if( type == "Maximum" )
             {
-                r = MAX( qRed(source->pixel( x, y )),   qRed(destine->pixel( x, y )) );
-                g = MAX( qGreen(source->pixel( x, y )), qGreen(destine->pixel( x, y )) );
-                b = MAX( qBlue(source->pixel( x, y )),  qBlue(destine->pixel( x, y )) );
+                r = std::max( qRed(source->pixel( x, y )),   qRed(destine->pixel( x, y )) );
+                g = std::max( qGreen(source->pixel( x, y )), qGreen(destine->pixel( x, y )) );
+                b = std::max( qBlue(source->pixel( x, y )),  qBlue(destine->pixel( x, y )) );
             }
             if( type == "Minimum" )
             {
-                r = MIN( qRed(source->pixel( x, y )),   qRed(destine->pixel( x, y )) );
-                g = MIN( qGreen(source->pixel( x, y )), qGreen(destine->pixel( x, y )) );
-                b = MIN( qBlue(source->pixel( x, y )),  qBlue(destine->pixel( x, y )) );
+                r = std::min( qRed(source->pixel( x, y )),   qRed(destine->pixel( x, y )) );
+                g = std::min( qGreen(source->pixel( x, y )), qGreen(destine->pixel( x, y )) );
+                b = std::min( qBlue(source->pixel( x, y )),  qBlue(destine->pixel( x, y )) );
             }
             destine->setPixel( x, y, qRgb(r,g,b) );
         }
@@ -1236,15 +1237,15 @@ int funcShowMsgYesNo( QString title, QString msg, QWidget* parent){
     yesNoMsgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
     switch (yesNoMsgBox.exec()){
         case QMessageBox::Yes: {
-            return 1;
+            return _YES;
             break;
         }
         case QMessageBox::No: {
-            return 0;
+            return _NO;
             break;
         }
     }
-    return -1;
+    return _NOT_ANSWER;
 }
 
 
@@ -1263,11 +1264,13 @@ void funcRGB2XYZ(colSpaceXYZ *spaceXYZ, float Red, float Green, float Blue){
     spaceXYZ->z = spaceXYZ->Z / acum;
 }
 
-
-QImage* IplImage2QImage(IplImage *iplImg){
-    int h = iplImg->height;
-    int w = iplImg->width;
-    int channels = iplImg->nChannels;
+/*
+QImage* IplImage2QImage(QImage* iplImg)
+{
+    int h = iplImg->height();
+    int w = iplImg->width();
+    //int channels = iplImg->nChannels;
+    int channels = 3;
     QImage *qimg = new QImage(w, h, QImage::Format_ARGB32);
     char *data = iplImg->imageData;
     for (int y = 0; y < h; y++, data += iplImg->widthStep){
@@ -1292,7 +1295,7 @@ QImage* IplImage2QImage(IplImage *iplImg){
     }
     return qimg;
 
-}
+}*/
 
 linearRegresion *funcCalcLinReg( float *X ){
     linearRegresion *linReg = (linearRegresion*)malloc(sizeof(linearRegresion));
@@ -3579,21 +3582,27 @@ void funcGetMaximumSensitivities(
 }
 
 
-void func_DirExistOrCreateIt( const QList<QString> &lstFolders , QWidget* parent )
+int func_DirExistOrCreateIt( const QList<QString> &lstFolders , QWidget* parent )
 {
     for( int i=0; i<lstFolders.size(); i++ )
     {
         if( !QDir( lstFolders.at(i) ).exists() )
         {
-            QDir().mkdir( lstFolders.at(i) );
-            funcShowMsg_Timeout(
-                                    "Creating Folder",
-                                    lstFolders.at(i).trimmed(),
-                                    QMessageBox::Warning,
-                                    parent
-                               );
+            QString tmpMsg;
+            tmpMsg.append("Create Folder ");
+            tmpMsg.append(lstFolders.at(i));
+            tmpMsg.append("?");
+            if( funcShowMsgYesNo("Folder not Found",tmpMsg,parent) )
+            {
+                QDir().mkdir( lstFolders.at(i) );
+            }
+            else
+            {
+                return _ERROR;
+            }
         }
     }
+    return _OK;
 }
 
 

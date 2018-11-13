@@ -6,6 +6,8 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QVBoxLayout>
 
+#include <math.h>
+
 
 class GraphicsView : public QGraphicsView
 {

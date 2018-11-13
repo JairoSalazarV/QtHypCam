@@ -14,7 +14,7 @@
     #include <QCoreApplication>
 
     //#include <highgui.h>
-    #include <opencv2/highgui/highgui.hpp>
+    //#include <opencv2/highgui/highgui.hpp>
 
     #include <customQMatrix3x3.h>
 
@@ -95,7 +95,7 @@
 
     bool funGetSquareXML( QString fileName, squareAperture *squareParam );
 
-    QImage* IplImage2QImage(IplImage *iplImg);
+    //QImage* IplImage2QImage(QImage* iplImg);
 
     colorAnalyseResult *funcAnalizeImage(QImage *img );
 
@@ -346,7 +346,7 @@
                                         QWidget *parent=Q_NULLPTR
                                     );
 
-    void func_DirExistOrCreateIt( const QList<QString> &lstFolders, QWidget* parent=Q_NULLPTR );
+    int func_DirExistOrCreateIt( const QList<QString> &lstFolders, QWidget* parent=Q_NULLPTR );
 
     int readHypCubeParameters( const QString &cubePath, strCubeParameters* cubeParam );
 

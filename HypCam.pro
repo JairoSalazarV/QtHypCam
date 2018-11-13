@@ -121,13 +121,15 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     lstImgs.qrc
 
-INCLUDEPATH += /usr/local/include/opencv
-INCLUDEPATH += /usr/local/include/opencv2
+#INCLUDEPATH += /usr/local/include/opencv
+#INCLUDEPATH += /usr/local/include/opencv2
+
 #INCLUDEPATH += /usr/lib/x86_64-linux-gnu/
 #INCLUDEPATH += /usr/local/include/opencv2/videoio/
 
 #LIBS += -L/usr/local/lib
-LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
+
+#LIBS += -lopencv_core -lopencv_imgcodecs -lopencv_highgui -lopencv_imgproc -lopencv_calib3d
 LIBS += -lpthread
 
 #LIBS += -L /usr/lib/x86_64-linux-gnu/ -l libQt5Multimedia.so.5

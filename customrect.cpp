@@ -210,7 +210,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
         if(a->text()=="Square aperture"){
             //Call the centroid
             //..
-            saveSquareAs(_PATH_SQUARE_APERTURE2);
+            saveSquareAs(_PATH_SQUARE_APERTURE);
         }
         if(a->text()=="Square usable"){
             //Define usable area
@@ -221,7 +221,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
         if(a->text()=="Region of interes"){
             //Call the centroid
             //..
-            saveSquareAs(_PATH_REGION_OF_INTERES2);
+            saveSquareAs(_PATH_REGION_OF_INTERES);
         }
 
         if(a->text()=="Slide"){
