@@ -682,6 +682,8 @@ private slots:
 
     void on_actionExtract_ROI_triggered();
 
+    void resizeEvent(QResizeEvent* event);
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

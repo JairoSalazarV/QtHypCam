@@ -214,42 +214,12 @@ MainWindow::MainWindow(QWidget *parent) :
     funcValidateMinimalStatus();
     //=================================================================
     //=================================================================
-
-
-    //ui->actionValidCal->trigger();
-
     funcObtSettings( lstSettings );
-
     progBarThread = new QThread(this);
 
-    /*
-    int algo = 4;
-    int *p;
-    p = &algo;
-    qDebug() << "bool: " << sizeof(bool);
-    qDebug() << "char: " << sizeof(char);
-    qDebug() << "int8: " << sizeof(u_int8_t);
-    qDebug() << "int: " << sizeof(int);
-    qDebug() << "int*: " << sizeof(p);
-    printf("Puntero %p\n",p);
-    printf("Puntero %d\n",p);
-    printf("Puntero %d\n",*p);
-    */
-
-    /*
-    //Fill IP prefix
-    //if(_PRELOAD_IP){
-        char cIP[15];
-        funcObtainIP( cIP );
-        QString qsIP(cIP);
-        QStringList lstIP = qsIP.split('.');
-        qsIP = lstIP.at(0) + "." +lstIP.at(1) + "."+lstIP.at(2) + ".";
-        ui->txtIp->setText(qsIP);
-    //}
-    */
-
-
-    //Initialize global settings
+    //*****************************************************************
+    // Initialize global settings
+    //*****************************************************************
     camSelected->isConnected    = false;
     camSelected->On             = false;
     camSelected->stream         = false;
@@ -259,77 +229,31 @@ MainWindow::MainWindow(QWidget *parent) :
     funcGetRaspParamFromXML( raspcamSettings, _PATH_RASPICAM_SETTINGS );
     funcIniCamParam( raspcamSettings );
 
-
-    //Create Graphic View Widget
+    //*****************************************************************
+    // Create Graphic View Widget
+    //*****************************************************************
     myCanvas = new GraphicsView;
     canvasSpec = new GraphicsView;
     canvasCalib = new GraphicsView;
     canvasAux = new GraphicsView;
-    //QString imgPath = "/media/jairo/56A3-A5C4/DatosAVIRIS/CrearHSI/MyDatasets/Philips/HojasFotoVsHojasBiomasaJun2016/25Id/15.png";
-    //funcPutImageIntoGV( myCanvas, imgPath );
 
     //Initialize points container for free-hand pen tool
     lstBorder = new QList<QPair<int,int>>;
     lstSelPix = new QList<QPair<int,int>>;
     lstPixSelAux = new QList<QPair<int,int>>;
 
-    /*
-    //Connect to image
-    lstBorder = new QList<QPair<int,int>>;
-    lstSelPix = new QList<QPair<int,int>>;
-    connect(
-                myCanvas,
-                SIGNAL( signalMousePressed(QMouseEvent*) ),
-                this,
-                SLOT( funcAddPoint(QMouseEvent*) )
-           );
-    ui->progBar->setVisible(false);
-
-    //Connect to calib double axis
-    connect(
-                canvasCalib,
-                SIGNAL( signalMousePressed(QMouseEvent*) ),
-                this,
-                SLOT( funcBeginRect(QMouseEvent*) )
-           );
-    connect(
-                canvasCalib,
-                SIGNAL( signalMouseReleased(QMouseEvent*) ),
-                this,
-                SLOT( funcCalibMouseRelease(QMouseEvent*) )
-           );
-
-    //Connect to spec
-    connect(
-                canvasSpec,
-                SIGNAL( signalMousePressed(QMouseEvent*) ),
-                this,
-                SLOT( funcBeginRect(QMouseEvent*) )
-           );
-    connect(
-                canvasSpec,
-                SIGNAL( signalMouseReleased(QMouseEvent*) ),
-                this,
-                SLOT( funcSpectMouseRelease(QMouseEvent*) )
-           );
-    */
-
-    //Fill the lastsnapshots path as default
-    //QString lastSnapPath = readAllFile( _PATH_LAST_SNAPPATH );
-    //lastSnapPath.replace("\n","");
-    //ui->txtSnapPath->setText(lastSnapPath);
-
-    //Set layout into spectometer
+    //*****************************************************************
+    // Set layout into spectometer
+    //*****************************************************************
     QFormLayout *layout = new QFormLayout;
     ui->tab_5->setLayout(layout);
 
     if(_USE_CAM)ui->sbSpecUsb->setValue(1);
     else ui->sbSpecUsb->setValue(0);
 
+    //*****************************************************************
     //Enable-Disable buttoms
-    //..
-    //ui->toolBarDraw->setEnabled(false);
-
+    //*****************************************************************
     ui->progBar->setValue(0);
     ui->progBar->setVisible(false);
 
@@ -337,11 +261,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     disableAllToolBars();
 
-    //loadImageIntoCanvasEdit(_PATH_DISPLAY_IMAGE, false);
-
-    //
-    //Try to connect to the last IP
-    //
+    //*****************************************************************
+    // Try to connect to the last IP
+    //*****************************************************************
     QString lastIP = readAllFile( _PATH_LAST_IP );
     lastIP.replace("\n","");
     ui->txtIp->setText(lastIP);
@@ -352,35 +274,21 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->pbConnect->click();
     }
 
-
-    //
+    //*****************************************************************
     // Show Last Preview
-    //
+    //*****************************************************************
     QString lastFileOpen    = readFileParam(_PATH_LAST_USED_IMG_FILENAME);
     globalEditImg           = new QImage(lastFileOpen);
     globalBackEditImg       = new QImage();
     *globalBackEditImg      = *globalEditImg;
-    updateDisplayImage(globalBackEditImg);
 
+    //*****************************************************************
+    // Resize Graphics Tools
+    //*****************************************************************
+    QResizeEvent* emptyEvent = nullptr;
+    this->resizeEvent(emptyEvent);
 
-
-    //
-    //Allocate memory to the hypercube
-    //
-    //funcAllocInteger3DMatrixMemo( 3, 3, 3, tmpbe, true );
-
-    //on_actionSlide_Linear_Regression_triggered();
-
-    /*
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/408nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/438nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/492nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/550nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/586nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/620nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/712nm.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/horizontalLower.xml");
-    funcDrawLineIntoCanvasEdit("./XML/lines/slideV1_002/horizontalUpper.xml");*/
+    //updateDisplayImage(globalBackEditImg);
 
 }
 
@@ -3582,6 +3490,7 @@ void MainWindow::updateImageCanvasEdit(QImage* origImg)
     QLayout *layout = new QVBoxLayout();
     layout->addWidget(canvasCalib);
     layout->setEnabled(false);
+    delete ui->tab_6->layout();
     ui->tab_6->setLayout(layout);
 
     //
@@ -11845,7 +11754,7 @@ void MainWindow::on_actionExtract_ROI_triggered()
     QtDelay(1);
 
     //-------------------------------------------------
-    //Update Image Displayed
+    //Update Displayed Image
     //-------------------------------------------------
     int pos;
     pos = round( (float)lstFrames.size() * 0.5 );
@@ -11853,5 +11762,27 @@ void MainWindow::on_actionExtract_ROI_triggered()
     *globalEditImg = tmpImg;
     *globalBackEditImg = tmpImg;
     updateDisplayImage( &tmpImg );
+
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event)
+{
+   QMainWindow::resizeEvent(event);
+
+   // Resize Area
+   const QRect mainWind = this->geometry();
+   QRect gtGeo;
+   gtGeo.setWidth(mainWind.width()-45);
+   gtGeo.setHeight(mainWind.height()-65);
+   ui->pbExpPixs->setGeometry(gtGeo);
+   ui->pbExpPixs->update();
+
+   // Update Displayed Image
+   //QString lastFileOpen    = readFileParam(_PATH_LAST_USED_IMG_FILENAME);
+   //globalEditImg           = new QImage(lastFileOpen);
+   //globalBackEditImg       = new QImage();
+   //*globalBackEditImg      = *globalEditImg;
+   //updatePreviewImage(globalBackEditImg);
+   updateDisplayImage(globalBackEditImg);
 
 }

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1084</width>
-    <height>698</height>
+    <width>1141</width>
+    <height>769</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -1383,7 +1383,7 @@ QSlider::handle:horizontal {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1084</width>
+     <width>1141</width>
      <height>25</height>
     </rect>
    </property>
