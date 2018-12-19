@@ -79,8 +79,8 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
 
     lstCalibFileNames calibFileNames;
 
-    calibFileNames.source           = genCalibXML_destineDir + "fs.hypcam";
-    calibFileNames.sourceHalogen    = genCalibXML_destineDir + "hs.hypcam";
+    calibFileNames.source           = genCalibXML_destineDir + _PATH_LIMIT_S_FLUORESCENT;
+    calibFileNames.sourceHalogen    = genCalibXML_destineDir + _PATH_LIMIT_S_HALOGEN;
 
     calibFileNames.blueRightDown    = genCalibXML_destineDir + "rdb.hypcam";
     calibFileNames.blueRight        = genCalibXML_destineDir + "rb.hypcam";
@@ -109,10 +109,10 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
     calibFileNames.redLeftDown      = genCalibXML_destineDir + "ldr.hypcam";
     calibFileNames.redDown          = genCalibXML_destineDir + "dr.hypcam";
 
-    calibFileNames.limR             = genCalibXML_destineDir + "rightlimit.hypcam";
-    calibFileNames.limU             = genCalibXML_destineDir + "upperlimit.hypcam";
-    calibFileNames.limL             = genCalibXML_destineDir + "leftlimit.hypcam";
-    calibFileNames.limD             = genCalibXML_destineDir + "lowerlimit.hypcam";
+    calibFileNames.limR             = genCalibXML_destineDir + _PATH_LIMIT_R;
+    calibFileNames.limU             = genCalibXML_destineDir + _PATH_LIMIT_U;
+    calibFileNames.limL             = genCalibXML_destineDir + _PATH_LIMIT_L;
+    calibFileNames.limD             = genCalibXML_destineDir + _PATH_LIMIT_D;
 
     return calibFileNames;
 
@@ -506,6 +506,55 @@ strLimits genCalibXML::getLimitsFromHDD(){
     QString aux;
     strLimits limits;
 
+    QString pathLimit_R = genCalibXML_destineDir + _PATH_LIMIT_R;
+    QString pathLimit_U = genCalibXML_destineDir + _PATH_LIMIT_U;
+    QString pathLimit_L = genCalibXML_destineDir + _PATH_LIMIT_L;
+    QString pathLimit_D = genCalibXML_destineDir + _PATH_LIMIT_D;
+
+    structLine lineLimit_R;
+    structLine lineLimit_U;
+    structLine lineLimit_L;
+    structLine lineLimit_D;
+
+    if( _OK != funcReadLineFromXML(&pathLimit_R, &lineLimit_R) )
+    {
+        funcShowMsgERROR_Timeout("Reading _PATH_LIMIT_R",this);
+    }
+    else if( _OK != funcReadLineFromXML(&pathLimit_U, &lineLimit_U) )
+    {
+        funcShowMsgERROR_Timeout("Reading _PATH_LIMIT_U",this);
+    }
+    else if( _OK != funcReadLineFromXML(&pathLimit_L, &lineLimit_L) )
+    {
+        funcShowMsgERROR_Timeout("Reading _PATH_LIMIT_L",this);
+    }
+    else if( _OK != funcReadLineFromXML(&pathLimit_D, &lineLimit_D) )
+    {
+        funcShowMsgERROR_Timeout("Reading _PATH_LIMIT_D",this);
+    }
+    else
+    {
+        limits.rightInf = lineLimit_R.x1;
+        limits.rightSup = lineLimit_R.x2;
+
+        limits.upInf    = lineLimit_U.y1;
+        limits.upSup    = lineLimit_U.y2;
+
+        limits.leftInf  = lineLimit_L.x1;
+        limits.leftInf  = lineLimit_L.x2;
+
+        limits.downInf  = lineLimit_D.y1;
+        limits.downSup  = lineLimit_D.y2;
+
+        aux = readAllFile(_PATH_LIMIT_S_HALOGEN);
+        limits.sourceX = aux.split(",").at(0).toInt();
+        limits.sourceY = aux.split(",").at(1).toInt();
+
+    }
+
+    return limits;
+
+    /*
     //qDebug() << "Aquí711";
     aux = readAllFile(_PATH_LIMIT_R);
     limits.rightInf = aux.split(",").at(2).toInt(0);
@@ -532,6 +581,7 @@ strLimits genCalibXML::getLimitsFromHDD(){
     limits.sourceY = aux.split(",").at(1).toInt(0);
     //qDebug() << "Aquí716";
     return limits;
+    */
 
 }
 

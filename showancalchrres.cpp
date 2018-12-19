@@ -547,11 +547,24 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         ui->txtQuadFilename->setFocus();
         return (void)NULL;
     }
+
+    //----------------------------------------------------------
+    // Select Destiny Directory
+    //----------------------------------------------------------
+    QString fileName;
+    if( funcLetUserSelectDirectory(_PATH_LAST_PATH_OPENED,&fileName) != _OK )
+    {
+        fileName.clear();
+        fileName.append("./settings/Calib/");
+    }
+    //Update Last Path
+    saveFile(_PATH_LAST_PATH_OPENED,fileName);
+
+
     //Save calibration file
     //..
     //FileName
-    QString fileName;
-    fileName.append("./settings/Calib/");
+    //fileName.append("./settings/Calib/");
     fileName.append(ui->txtQuadFilename->text());
     fileName.append(".hypcam");
     QString coordinates;
@@ -657,10 +670,27 @@ void showAnCalChrRes::on_pbSaveScene_clicked()
         ui->txtQuadFilename->setFocus();
         return (void)NULL;
     }
+
+    //----------------------------------------------------------
+    // Select Destiny Directory
+    //----------------------------------------------------------
+    QString fileName = readAllFile(_PATH_LAST_PATH_OPENED);
+    if( fileName.isEmpty() )
+    {
+        fileName.clear();
+        fileName.append("./settings/Calib/");
+        saveFile(_PATH_LAST_PATH_OPENED,fileName);
+    }
+    fileName.append("images/");
+    if( !QDir( fileName ).exists() )
+    {
+        QDir().mkdir( fileName.trimmed() );
+    }
+
     //FileName
     //..
-    QString fileName;
-    fileName.append("./settings/Calib/images/");
+    //QString fileName;
+    //fileName.append("./settings/Calib/images/");
     fileName.append(ui->txtQuadFilename->text());
     fileName.append(".png");
     //Save

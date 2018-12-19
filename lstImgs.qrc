@@ -130,7 +130,6 @@
         <file>imagenInte/down.png</file>
         <file>imagenInte/down.gif</file>
         <file>imagenInte/document-save.svg</file>
-        <file>imagenInte/document-properties.svg</file>
         <file>imagenInte/document-print-preview.png</file>
         <file>imagenInte/dinerorojo.png</file>
         <file>imagenInte/dineroamarillo.png</file>
@@ -253,6 +252,7 @@
         <file>imagenInte/lineOpen.png</file>
         <file>imagenInte/bezierLine.png</file>
         <file>imagenInte/plotSignature.svg</file>
+        <file>imagenInte/document-properties.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>
