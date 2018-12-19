@@ -506,18 +506,25 @@ strLimits genCalibXML::getLimitsFromHDD(){
     QString aux;
     strLimits limits;
 
+    //qDebug() << "Aquí7.1.1";
+
     QString pathLimit_R = genCalibXML_destineDir + _PATH_LIMIT_R;
     QString pathLimit_U = genCalibXML_destineDir + _PATH_LIMIT_U;
     QString pathLimit_L = genCalibXML_destineDir + _PATH_LIMIT_L;
     QString pathLimit_D = genCalibXML_destineDir + _PATH_LIMIT_D;
+
+    //qDebug() << "Aquí7.1.2 " << pathLimit_R;
 
     structLine lineLimit_R;
     structLine lineLimit_U;
     structLine lineLimit_L;
     structLine lineLimit_D;
 
+    //qDebug() << "Aquí7.1.3";
+
     if( _OK != funcReadLineFromXML(&pathLimit_R, &lineLimit_R) )
     {
+        //qDebug() << "Aquí7.1.3.1";
         funcShowMsgERROR_Timeout("Reading _PATH_LIMIT_R",this);
     }
     else if( _OK != funcReadLineFromXML(&pathLimit_U, &lineLimit_U) )
@@ -534,22 +541,23 @@ strLimits genCalibXML::getLimitsFromHDD(){
     }
     else
     {
+        //qDebug() << "Aquí7.1.3.1-> 1";
         limits.rightInf = lineLimit_R.x1;
         limits.rightSup = lineLimit_R.x2;
-
+        //qDebug() << "Aquí7.1.3.1-> 2";
         limits.upInf    = lineLimit_U.y1;
         limits.upSup    = lineLimit_U.y2;
-
+        //qDebug() << "Aquí7.1.3.1-> 3";
         limits.leftInf  = lineLimit_L.x1;
         limits.leftInf  = lineLimit_L.x2;
-
+        //qDebug() << "Aquí7.1.3.1-> 4";
         limits.downInf  = lineLimit_D.y1;
         limits.downSup  = lineLimit_D.y2;
-
-        aux = readAllFile(_PATH_LIMIT_S_HALOGEN);
+        //qDebug() << "Aquí7.1.3.1-> 5";
+        aux = readAllFile(genCalibXML_destineDir+_PATH_LIMIT_S_HALOGEN);
         limits.sourceX = aux.split(",").at(0).toInt();
         limits.sourceY = aux.split(",").at(1).toInt();
-
+        //qDebug() << "Aquí7.1.3.1-> 6 -> X: " << limits.sourceX << " Y: " << limits.sourceY;
     }
 
     return limits;
@@ -588,9 +596,9 @@ strLimits genCalibXML::getLimitsFromHDD(){
 QVector2D genCalibXML::getWavelengthFrontiers()
 {
     QVector2D fontier;
-    //qDebug() << "Aquí71";
+    qDebug() << "Aquí71";
     strLimits limits = getLimitsFromHDD();
-    //qDebug() << "Aquí72";
+    qDebug() << "Aquí72";
     float waveRight, waveUp, waveLeft, waveDown;
     float waveLimInf, waveLimSup;
     strAllLinReg linRegRes = getAllLR();
@@ -598,7 +606,7 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     //It obtains direction of the final limit
     //..
     //Min
-    //qDebug() << "Aquí73";
+    qDebug() << "Aquí73";
     waveRight   = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.rightInf) );
     waveUp      = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.upInf) );
     waveLeft    = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.leftInf) );
@@ -607,7 +615,7 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     waveLimInf  = (waveLimInf > waveLeft)?waveLimInf:waveLeft;
     waveLimInf  = (waveLimInf > waveDown)?waveLimInf:waveDown;
     //Max
-    //qDebug() << "Aquí74";
+    qDebug() << "Aquí74";
     waveRight   = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.rightSup) );
     waveUp      = linRegRes.deltaVertA + ( linRegRes.deltaVertB * (double)abs(limits.sourceY - limits.upSup) );
     waveLeft    = linRegRes.deltaHorizA + ( linRegRes.deltaHorizB * (double)abs(limits.sourceX - limits.leftSup) );
@@ -615,7 +623,7 @@ QVector2D genCalibXML::getWavelengthFrontiers()
     waveLimSup  = (waveRight < waveUp)?waveRight:waveUp;
     waveLimSup  = (waveLimSup < waveLeft)?waveLimSup:waveLeft;
     waveLimSup  = (waveLimSup < waveDown)?waveLimSup:waveDown;
-    //qDebug() << "Aquí75";
+    qDebug() << "Aquí75";
     //Set and return
     //..
     fontier.setX(waveLimInf);
@@ -694,16 +702,14 @@ void genCalibXML::on_pbGenCal_clicked()
         //Calculates linear regressions
         //..
         strAllLinReg linRegRes = getAllLR();
-
-        //qDebug() << "Aquí7";
         //Obtains limits from HDD
         //..
         QString minWavelength, maxWavelength;
         QVector2D waveLim;
         waveLim = getWavelengthFrontiers();
+        qDebug() << "Aquí7.5";
         minWavelength = QString::number(waveLim.x());
         maxWavelength = QString::number(waveLim.y());
-        //qDebug() << "Aquí8";
         //Square aperture as percentage
         //..
         double xs,ys,ws,hs;
@@ -711,7 +717,7 @@ void genCalibXML::on_pbGenCal_clicked()
         ys = (double)sqApert->rectY / (double)sqApert->canvasH;
         ws = (double)sqApert->rectW / (double)sqApert->canvasW;
         hs = (double)sqApert->rectH / (double)sqApert->canvasH;
-        //qDebug() << "Aquí9";
+        qDebug() << "Aquí9";
         //Calculate MIN num of bands
         //..
         QVector2D spectralResolution;

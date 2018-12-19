@@ -2392,6 +2392,7 @@ void funcGuaranteeExtension(QString* filename, QString extension)
 
 int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
 {
+
     //---------------------------------------
     //Extract XML
     //---------------------------------------
@@ -2422,29 +2423,29 @@ int funcReadLineFromXML(QString* filePath, structLine* tmpLine)
             //if( xmlReader->name()=="canvasH" )
             //    tmpLine->canvasH = xmlReader->readElementText().trimmed().toInt(0);
             if( xmlReader->name()=="imgW" )
-                tmpLine->originalW = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->originalW = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="imgH" )
-                tmpLine->originalH = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->originalH = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="x1" )
-                tmpLine->x1 = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->x1 = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="y1" )
-                tmpLine->y1 = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->y1 = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="x2" )
-                tmpLine->x2 = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->x2 = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="y2" )
-                tmpLine->y2 = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->y2 = xmlReader->readElementText().trimmed().toInt();
             //if( xmlReader->name()=="m" )
             //    tmpLine->m = xmlReader->readElementText().trimmed().toFloat(0);
             if( xmlReader->name()=="colorR" )
-                tmpLine->colorR = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->colorR = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="colorG" )
-                tmpLine->colorG = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->colorG = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="colorB" )
-                tmpLine->colorB = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->colorB = xmlReader->readElementText().trimmed().toInt();
             if( xmlReader->name()=="wavelength" )
-                tmpLine->wavelength = xmlReader->readElementText().trimmed().toFloat(0);
+                tmpLine->wavelength = xmlReader->readElementText().trimmed().toFloat();
             if( xmlReader->name()=="orientation" )
-                tmpLine->oritation = xmlReader->readElementText().trimmed().toInt(0);
+                tmpLine->oritation = xmlReader->readElementText().trimmed().toInt();
         }
     }
     if(xmlReader->hasError()) {
