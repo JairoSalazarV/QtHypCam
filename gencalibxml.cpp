@@ -109,10 +109,10 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
     calibFileNames.redLeftDown      = genCalibXML_destineDir + "ldr.hypcam";
     calibFileNames.redDown          = genCalibXML_destineDir + "dr.hypcam";
 
-    calibFileNames.limR             = genCalibXML_destineDir + "rightlimit.hypcam";
-    calibFileNames.limU             = genCalibXML_destineDir + "upperlimit.hypcam";
-    calibFileNames.limL             = genCalibXML_destineDir + "leftlimit.hypcam";
-    calibFileNames.limD             = genCalibXML_destineDir + "lowerlimit.hypcam";
+    calibFileNames.limR             = genCalibXML_destineDir + _PATH_LIMIT_R;
+    calibFileNames.limU             = genCalibXML_destineDir + _PATH_LIMIT_U;
+    calibFileNames.limL             = genCalibXML_destineDir + _PATH_LIMIT_L;
+    calibFileNames.limD             = genCalibXML_destineDir + _PATH_LIMIT_D;
 
     return calibFileNames;
 
@@ -507,29 +507,29 @@ strLimits genCalibXML::getLimitsFromHDD(){
     strLimits limits;
 
     //qDebug() << "Aquí711";
-    aux = readAllFile(_PATH_LIMIT_R);
-    limits.rightInf = aux.split(",").at(2).toInt(0);
-    limits.rightSup = aux.split(",").at(0).toInt(0);
+    aux = readAllFile(genCalibXML_destineDir + _PATH_LIMIT_R);
+    limits.rightInf = aux.split(",").at(2).toInt();
+    limits.rightSup = aux.split(",").at(0).toInt();
 
     //qDebug() << "Aquí712";
-    aux = readAllFile(_PATH_LIMIT_U);
-    limits.upInf = aux.split(",").at(2).toInt(0);
-    limits.upSup = aux.split(",").at(0).toInt(0);
+    aux = readAllFile(genCalibXML_destineDir + _PATH_LIMIT_U);
+    limits.upInf = aux.split(",").at(2).toInt();
+    limits.upSup = aux.split(",").at(0).toInt();
 
     //qDebug() << "Aquí713";
-    aux = readAllFile(_PATH_LIMIT_L);
-    limits.leftInf = aux.split(",").at(2).toInt(0);
-    limits.leftSup = aux.split(",").at(0).toInt(0);
+    aux = readAllFile(genCalibXML_destineDir + _PATH_LIMIT_L);
+    limits.leftInf = aux.split(",").at(2).toInt();
+    limits.leftSup = aux.split(",").at(0).toInt();
 
     //qDebug() << "Aquí714";
-    aux = readAllFile(_PATH_LIMIT_D);
-    limits.downInf = aux.split(",").at(2).toInt(0);
-    limits.downSup = aux.split(",").at(0).toInt(0);
+    aux = readAllFile(genCalibXML_destineDir + _PATH_LIMIT_D);
+    limits.downInf = aux.split(",").at(2).toInt();
+    limits.downSup = aux.split(",").at(0).toInt();
 
     //qDebug() << "Aquí715";
-    aux = readAllFile(_PATH_LIMIT_S_HALOGEN);
-    limits.sourceX = aux.split(",").at(0).toInt(0);
-    limits.sourceY = aux.split(",").at(1).toInt(0);
+    aux = readAllFile(genCalibXML_destineDir + _PATH_LIMIT_S_HALOGEN);
+    limits.sourceX = aux.split(",").at(0).toInt();
+    limits.sourceY = aux.split(",").at(1).toInt();
     //qDebug() << "Aquí716";
     return limits;
 
