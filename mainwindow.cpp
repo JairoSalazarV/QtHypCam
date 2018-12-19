@@ -3321,7 +3321,16 @@ void MainWindow::on_slide2AxCalThre_sliderReleased()
 
 void MainWindow::on_actionDoubAxisDiff_triggered()
 {
-    genCalibXML *genCalib = new genCalibXML(this);
+    //---------------------------------------------------------
+    // Get Directory
+    //---------------------------------------------------------
+    QString destineDir;
+    if( funcLetUserSelectDirectory(_PATH_LAST_PATH_OPENED,&destineDir) != _OK )
+    {
+        return (void)false;
+    }
+    //Open Form
+    genCalibXML *genCalib = new genCalibXML(this,&destineDir);
     genCalib->setModal(true);
     genCalib->show();
 

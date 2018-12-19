@@ -15,7 +15,7 @@ class genCalibXML : public QDialog
     Q_OBJECT
 
 public:
-    explicit genCalibXML(QWidget *parent = 0);
+    explicit genCalibXML(QWidget *parent = nullptr, QString* destineDir=nullptr);
 
     ~genCalibXML();
 

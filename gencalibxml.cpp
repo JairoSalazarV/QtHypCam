@@ -20,18 +20,19 @@ bool isExportable = false;
 
 MainWindow* genCalibXMLMainWindow;
 
+QString genCalibXML_destineDir;
 
-genCalibXML::genCalibXML(QWidget *parent) :
+genCalibXML::genCalibXML(QWidget *parent, QString *destineDir) :
     QDialog(parent),
     ui(new Ui::genCalibXML)
 {
+    genCalibXMLMainWindow = qobject_cast<MainWindow*>(parent);
+    genCalibXML_destineDir = *destineDir;
+
     ui->setupUi(this);    
     autoLoadCentroids();
 
     disableButtons();
-
-    genCalibXMLMainWindow = qobject_cast<MainWindow*>(parent);
-
 }
 
 genCalibXML::~genCalibXML()
@@ -66,7 +67,7 @@ void genCalibXML::funcGetFilePath(QPushButton *tmpPb){
                                                     "(*.hypcam);;"
                                              );
     if( !auxQstring.trimmed().isEmpty() ){
-        setButton(tmpPb,auxQstring);
+        setButton(tmpPb,auxQstring,false);
     }
 }
 
@@ -78,48 +79,48 @@ lstCalibFileNames genCalibXML::funcFillCalibStruct(){
 
     lstCalibFileNames calibFileNames;
 
-    calibFileNames.source           = "./settings/Calib/source.hypcam";
-    calibFileNames.sourceHalogen    = "./settings/Calib/sourceHalogen.hypcam";
+    calibFileNames.source           = genCalibXML_destineDir + "fs.hypcam";
+    calibFileNames.sourceHalogen    = genCalibXML_destineDir + "hs.hypcam";
 
-    calibFileNames.blueRightDown    = "./settings/Calib/bRD.hypcam";
-    calibFileNames.blueRight        = "./settings/Calib/bR.hypcam";
-    calibFileNames.blueRightUp      = "./settings/Calib/bRU.hypcam";
-    calibFileNames.blueUp           = "./settings/Calib/bU.hypcam";
-    calibFileNames.blueLeftUp       = "./settings/Calib/bLU.hypcam";
-    calibFileNames.blueLeft         = "./settings/Calib/bL.hypcam";
-    calibFileNames.blueLeftDown     = "./settings/Calib/bLD.hypcam";
-    calibFileNames.blueDown         = "./settings/Calib/bD.hypcam";
+    calibFileNames.blueRightDown    = genCalibXML_destineDir + "rdb.hypcam";
+    calibFileNames.blueRight        = genCalibXML_destineDir + "rb.hypcam";
+    calibFileNames.blueRightUp      = genCalibXML_destineDir + "rub.hypcam";
+    calibFileNames.blueUp           = genCalibXML_destineDir + "ub.hypcam";
+    calibFileNames.blueLeftUp       = genCalibXML_destineDir + "lub.hypcam";
+    calibFileNames.blueLeft         = genCalibXML_destineDir + "lb.hypcam";
+    calibFileNames.blueLeftDown     = genCalibXML_destineDir + "ldb.hypcam";
+    calibFileNames.blueDown         = genCalibXML_destineDir + "db.hypcam";
 
-    calibFileNames.greenRightDown   = "./settings/Calib/gRD.hypcam";
-    calibFileNames.greenRight       = "./settings/Calib/gR.hypcam";
-    calibFileNames.greenRightUp     = "./settings/Calib/gRU.hypcam";
-    calibFileNames.greenUp          = "./settings/Calib/gU.hypcam";
-    calibFileNames.greenLeftUp      = "./settings/Calib/gLU.hypcam";
-    calibFileNames.greenLeft        = "./settings/Calib/gL.hypcam";
-    calibFileNames.greenLeftDown    = "./settings/Calib/gLD.hypcam";
-    calibFileNames.greenDown        = "./settings/Calib/gD.hypcam";
+    calibFileNames.greenRightDown   = genCalibXML_destineDir + "rdg.hypcam";
+    calibFileNames.greenRight       = genCalibXML_destineDir + "rg.hypcam";
+    calibFileNames.greenRightUp     = genCalibXML_destineDir + "rug.hypcam";
+    calibFileNames.greenUp          = genCalibXML_destineDir + "ug.hypcam";
+    calibFileNames.greenLeftUp      = genCalibXML_destineDir + "lug.hypcam";
+    calibFileNames.greenLeft        = genCalibXML_destineDir + "lg.hypcam";
+    calibFileNames.greenLeftDown    = genCalibXML_destineDir + "ldg.hypcam";
+    calibFileNames.greenDown        = genCalibXML_destineDir + "dg.hypcam";
 
-    calibFileNames.redRightDown     = "./settings/Calib/rRD.hypcam";
-    calibFileNames.redRight         = "./settings/Calib/rR.hypcam";
-    calibFileNames.redRightUp       = "./settings/Calib/rRU.hypcam";
-    calibFileNames.redUp            = "./settings/Calib/rU.hypcam";
-    calibFileNames.redLeftUp        = "./settings/Calib/rLU.hypcam";
-    calibFileNames.redLeft          = "./settings/Calib/rL.hypcam";
-    calibFileNames.redLeftDown      = "./settings/Calib/rLD.hypcam";
-    calibFileNames.redDown          = "./settings/Calib/rD.hypcam";
+    calibFileNames.redRightDown     = genCalibXML_destineDir + "rdr.hypcam";
+    calibFileNames.redRight         = genCalibXML_destineDir + "rr.hypcam";
+    calibFileNames.redRightUp       = genCalibXML_destineDir + "rur.hypcam";
+    calibFileNames.redUp            = genCalibXML_destineDir + "ur.hypcam";
+    calibFileNames.redLeftUp        = genCalibXML_destineDir + "lur.hypcam";
+    calibFileNames.redLeft          = genCalibXML_destineDir + "lr.hypcam";
+    calibFileNames.redLeftDown      = genCalibXML_destineDir + "ldr.hypcam";
+    calibFileNames.redDown          = genCalibXML_destineDir + "dr.hypcam";
 
-    calibFileNames.limR             = "./settings/Calib/limR.hypcam";
-    calibFileNames.limU             = "./settings/Calib/limU.hypcam";
-    calibFileNames.limL             = "./settings/Calib/limL.hypcam";
-    calibFileNames.limD             = "./settings/Calib/limD.hypcam";
-
+    calibFileNames.limR             = genCalibXML_destineDir + "rightlimit.hypcam";
+    calibFileNames.limU             = genCalibXML_destineDir + "upperlimit.hypcam";
+    calibFileNames.limL             = genCalibXML_destineDir + "leftlimit.hypcam";
+    calibFileNames.limD             = genCalibXML_destineDir + "lowerlimit.hypcam";
 
     return calibFileNames;
 
 }
 
 
-void genCalibXML::autoLoadCentroids(){
+void genCalibXML::autoLoadCentroids()
+{
 
     lstCalibFileNames calibFileNames = funcFillCalibStruct();
     int i,acum;
@@ -178,7 +179,8 @@ void genCalibXML::autoLoadCentroids(){
 
 }
 
-bool genCalibXML::setButton(QPushButton *tmpPb, QString tip, bool doAlert){
+bool genCalibXML::setButton(QPushButton *tmpPb, QString tip, bool doAlert)
+{
     QFile tmpfile(tip);
     if( !tmpfile.exists() ){
         if( doAlert ){
@@ -187,7 +189,8 @@ bool genCalibXML::setButton(QPushButton *tmpPb, QString tip, bool doAlert){
         return false;
     }
     tmpPb->setToolTip(tip);
-    tmpPb->setStyleSheet("width:27px;background-color:#000;color:#FFF;");
+    tmpPb->setStyleSheet("width:27px;background-color:#000;color:white;");
+
     return true;
 }
 
@@ -492,7 +495,8 @@ strAllLinReg genCalibXML::calcAllLinReg(lstCalibFileNames *centroids, int x1, in
     return linRegRes;
 }
 
-strAllLinReg genCalibXML::getAllLR(){
+strAllLinReg genCalibXML::getAllLR()
+{
     lstCalibFileNames calibPoints = fillLstCalibPoints();
     QVector2D sqUsableCorner = getSqUsableIni();
     return calcAllLinReg( &calibPoints, sqUsableCorner.x(), sqUsableCorner.y() );
@@ -1209,7 +1213,8 @@ QVector3D genCalibXML::multipleLinearRegression( customQMatrix4x3 X, QVector4D y
     return B;
 }
 
-lstCalibFileNames genCalibXML::fillLstCalibPoints(){
+lstCalibFileNames genCalibXML::fillLstCalibPoints()
+{
     lstCalibFileNames calibFileNames = funcFillCalibStruct();
     lstCalibFileNames calibPoints;
 
