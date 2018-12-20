@@ -631,7 +631,6 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         coordinates.append(QString::number(globalCalStruct.origImgW));
         coordinates.append(",");
         coordinates.append(QString::number(globalCalStruct.origImgH));
-
     }
 
     //Save
@@ -640,9 +639,9 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     if(saveFile(fileName,coordinates)){
         //Save canvas background path
         saveFile(_PATH_CALBKG,globalRect->parameters.backgroundPath);
-        funcShowMsg(" ","Setting saved successfully");
+        funcShowMsg(" ","Setting Saved Successfully");
     }else{
-        funcShowMsg("ERROR","Saving setting-file");
+        funcShowMsg("ERROR","Saving Setting-file");
     }
 
 }

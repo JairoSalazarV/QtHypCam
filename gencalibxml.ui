@@ -554,9 +554,9 @@ border:0px;</string>
        <string/>
       </property>
       <property name="icon">
-       <iconset>
-        <normalon>:/new/icons/imagenInte/stop.svg</normalon>
-       </iconset>
+       <iconset resource="lstImgs.qrc">
+        <normaloff>:/new/icons/imagenInte/stop.png</normaloff>
+        <normalon>:/new/icons/imagenInte/stop.png</normalon>:/new/icons/imagenInte/stop.png</iconset>
       </property>
      </widget>
     </item>
@@ -663,6 +663,8 @@ border:0px;</string>
    </property>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="lstImgs.qrc"/>
+ </resources>
  <connections/>
 </ui>

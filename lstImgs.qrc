@@ -20,9 +20,7 @@
         <file>imagenInte/system-search.png</file>
         <file>imagenInte/system-lock-screen.png</file>
         <file>imagenInte/sv.png</file>
-        <file>imagenInte/stop.svg</file>
         <file>imagenInte/stock_media-rec.svg</file>
-        <file>imagenInte/stock_home.svg</file>
         <file>imagenInte/software-update-urgent.png</file>
         <file>imagenInte/siguiente.png</file>
         <file>imagenInte/shopping.png</file>
@@ -44,7 +42,6 @@
         <file>imagenInte/productos.gif</file>
         <file>imagenInte/prevlabel.gif</file>
         <file>imagenInte/position.png</file>
-        <file>imagenInte/player_play.svg</file>
         <file>imagenInte/persona.png</file>
         <file>imagenInte/paypal.png</file>
         <file>imagenInte/openProject.png</file>
@@ -54,7 +51,6 @@
         <file>imagenInte/ooo-impress.png</file>
         <file>imagenInte/ok.png</file>
         <file>imagenInte/ok.jpg</file>
-        <file>imagenInte/object-inverse.svg</file>
         <file>imagenInte/object_10.png</file>
         <file>imagenInte/object_03.png</file>
         <file>imagenInte/oba.png</file>
@@ -96,7 +92,6 @@
         <file>imagenInte/h.png</file>
         <file>imagenInte/guardar.gif</file>
         <file>imagenInte/gtk-media-play-ltr.svg</file>
-        <file>imagenInte/gtk-cancel.svg</file>
         <file>imagenInte/go-up.png</file>
         <file>imagenInte/go-top.png</file>
         <file>imagenInte/go-previous.png</file>
@@ -129,8 +124,6 @@
         <file>imagenInte/download-icon.gif</file>
         <file>imagenInte/down.png</file>
         <file>imagenInte/down.gif</file>
-        <file>imagenInte/document-save.svg</file>
-        <file>imagenInte/document-properties.svg</file>
         <file>imagenInte/document-print-preview.png</file>
         <file>imagenInte/dinerorojo.png</file>
         <file>imagenInte/dineroamarillo.png</file>
@@ -142,7 +135,6 @@
         <file>imagenInte/dialog-warning.png</file>
         <file>imagenInte/dialog-ok-apply.png</file>
         <file>imagenInte/dialog-error.png</file>
-        <file>imagenInte/dialog-apply.svg</file>
         <file>imagenInte/device-notifier.png</file>
         <file>imagenInte/delete.gif</file>
         <file>imagenInte/del.png</file>
@@ -166,7 +158,6 @@
         <file>imagenInte/calback.jpg</file>
         <file>imagenInte/cal.png</file>
         <file>imagenInte/cajafuerte.gif</file>
-        <file>imagenInte/button_cancel.svg</file>
         <file>imagenInte/bullet.gif</file>
         <file>imagenInte/btn_save.jpg</file>
         <file>imagenInte/btn_inventarios.png</file>
@@ -182,12 +173,9 @@
         <file>imagenInte/arrobaNaranja.jpg</file>
         <file>imagenInte/appointment-new.svg</file>
         <file>imagenInte/appointment-new.png</file>
-        <file>imagenInte/application-exit.svg</file>
         <file>imagenInte/application-exit.png</file>
         <file>imagenInte/anterior.png</file>
         <file>imagenInte/administrador.png</file>
-        <file>imagenInte/address-book-new2.svg</file>
-        <file>imagenInte/address-book-new.svg</file>
         <file>imagenInte/address-book-new.png</file>
         <file>imagenInte/addProject.png</file>
         <file>imagenInte/add_gris.png</file>
@@ -252,7 +240,9 @@
         <file>imagenInte/startVideo.png</file>
         <file>imagenInte/lineOpen.png</file>
         <file>imagenInte/bezierLine.png</file>
-        <file>imagenInte/plotSignature.svg</file>
+        <file>imagenInte/document-properties.png</file>
+        <file>imagenInte/stock_media-rec.png</file>
+        <file>imagenInte/stop.png</file>
     </qresource>
     <qresource prefix="/">
         <file>imagenInte/rectOn.png</file>

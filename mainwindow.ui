@@ -1986,7 +1986,7 @@ QSlider::handle:horizontal {
   <action name="actionsquareSettings">
    <property name="icon">
     <iconset resource="lstImgs.qrc">
-     <normaloff>:/new/icons/imagenInte/document-properties.svg</normaloff>:/new/icons/imagenInte/document-properties.svg</iconset>
+     <normaloff>:/new/icons/imagenInte/document-properties.png</normaloff>:/new/icons/imagenInte/document-properties.png</iconset>
    </property>
    <property name="text">
     <string>squareSettings</string>

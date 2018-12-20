@@ -581,7 +581,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //lstCalibFileNames calibPoints = fillLstCalibPoints();
         QString newFileCon = "";
 
-        QString sourcePath = readFileParam(_PATH_CALBKG);
+        //QString sourcePath = readFileParam(_PATH_CALBKG);
 
         //Region of interes
         //..
@@ -695,7 +695,7 @@ void genCalibXML::on_pbGenCal_clicked()
 
         newFileCon.append("<calib>\n");
 
-            newFileCon.append("    <bkgPath>"+ sourcePath                                       + "</bkgPath>\n");
+            //newFileCon.append("    <bkgPath>"+ sourcePath                                       + "</bkgPath>\n");
 
             newFileCon.append("    <origin>(0,0)=(left,up)</origin>\n");
 
@@ -756,7 +756,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //Save file
         if( saveFile(_PATH_CALIBRATION_FILE,newFileCon) )
         {
-            funcShowMsg(" ","File saved");
+            funcShowMsg(" ",QString("File saved on ") + _PATH_CALIBRATION_FILE);
         }
         else
         {
