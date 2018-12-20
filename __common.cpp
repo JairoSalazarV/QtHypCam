@@ -702,22 +702,22 @@ bool funGetSquareXML( QString fileName, squareAperture *squareParam ){
         if(token == QXmlStreamReader::StartElement) {
 
             if( xmlReader->name()=="W" )
-                squareParam->canvasW = xmlReader->readElementText().toInt(0);
+                squareParam->canvasW = xmlReader->readElementText().toInt();
 
             if( xmlReader->name()=="H" )
-                squareParam->canvasH = xmlReader->readElementText().toInt(0);
+                squareParam->canvasH = xmlReader->readElementText().toInt();
 
             if( xmlReader->name()=="x" )
-                squareParam->rectX = xmlReader->readElementText().toInt(0);
+                squareParam->rectX = xmlReader->readElementText().toInt();
 
             if( xmlReader->name()=="y" )
-                squareParam->rectY = xmlReader->readElementText().toInt(0);
+                squareParam->rectY = xmlReader->readElementText().toInt();
 
             if( xmlReader->name()=="w" )
-                squareParam->rectW = xmlReader->readElementText().toInt(0);
+                squareParam->rectW = xmlReader->readElementText().toInt();
 
             if( xmlReader->name()=="h" )
-                squareParam->rectH = xmlReader->readElementText().toInt(0);
+                squareParam->rectH = xmlReader->readElementText().toInt();
         }
     }
     if(xmlReader->hasError()) {

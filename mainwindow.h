@@ -684,6 +684,8 @@ private slots:
 
     void resizeEvent(QResizeEvent* event);
 
+    void on_actionApply_Region_of_Interes_triggered();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

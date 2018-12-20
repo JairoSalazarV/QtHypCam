@@ -1577,7 +1577,14 @@ QSlider::handle:horizontal {
      <addaction name="menuStep_by_Step"/>
      <addaction name="actionHypCube_From_H264"/>
     </widget>
+    <widget class="QMenu" name="menuSquare">
+     <property name="title">
+      <string>Square</string>
+     </property>
+     <addaction name="actionApply_Region_of_Interes"/>
+    </widget>
     <addaction name="menuSlide_2"/>
+    <addaction name="menuSquare"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuImage"/>
@@ -2417,7 +2424,7 @@ QSlider::handle:horizontal {
   </action>
   <action name="actionCube_Analysis">
    <property name="icon">
-    <iconset resource="lstImgs.qrc">
+    <iconset>
      <normaloff>:/new/icons/imagenInte/plotSignature.svg</normaloff>:/new/icons/imagenInte/plotSignature.svg</iconset>
    </property>
    <property name="text">
@@ -2437,6 +2444,11 @@ QSlider::handle:horizontal {
   <action name="actionExtract_ROI">
    <property name="text">
     <string>Extract ROI</string>
+   </property>
+  </action>
+  <action name="actionApply_Region_of_Interes">
+   <property name="text">
+    <string>Apply Region of Interes</string>
    </property>
   </action>
  </widget>

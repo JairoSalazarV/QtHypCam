@@ -6151,6 +6151,10 @@ void MainWindow::processFrame(QVideoFrame actualFrame)
 
 int MainWindow::rectangleInPixelsFromSquareXML( QString fileName, squareAperture *rectangle )
 {
+    //Get Camera Resolution
+    int camMP = (ui->radioRes5Mp->isChecked())?5:8;
+    camRes = getCamRes(camMP);
+
     //Get original rectangle properties
     if( !funGetSquareXML( fileName, rectangle ) )
     {
@@ -11785,4 +11789,47 @@ void MainWindow::resizeEvent(QResizeEvent* event)
    //updatePreviewImage(globalBackEditImg);
    updateDisplayImage(globalBackEditImg);
 
+}
+
+void MainWindow::on_actionApply_Region_of_Interes_triggered()
+{
+    QString lastUsedImgFilename = readAllFile(_PATH_LAST_USED_IMG_FILENAME).trimmed();
+    //qDebug() << "_PATH_LAST_USED_IMG_FILENAME: " << lastUsedImgFilename;
+    QImage diffImage(lastUsedImgFilename);
+    if( diffImage.isNull() )
+    {
+        qDebug() << "ERROR: Obtaining _PATH_LAST_USED_IMG_FILENAME";
+        return (void)NULL;
+    }
+    else
+    {
+        //
+        //Crop original image to release the usable area
+        //
+        //Get usable area coordinates
+        squareAperture aperture;
+        if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES, &aperture ) )
+        {
+            funcShowMsg("ERROR","Loading _PATH_REGION_OF_INTERES");
+            return (void)false;
+        }
+
+        //Crop and save
+        //qDebug() << "x: " << aperture.rectX<< "y: " << aperture.rectY << "w: " << aperture.rectW<< "h: " << aperture.rectH;
+
+        diffImage = diffImage.copy(QRect( aperture.rectX, aperture.rectY, aperture.rectW, aperture.rectH ));
+        diffImage.save(_PATH_DISPLAY_IMAGE);
+
+        //Save last image used
+        saveFile(_PATH_LAST_USED_IMG_FILENAME,_PATH_DISPLAY_IMAGE);
+
+        //Load Image Selected
+        globalEditImg       = new QImage(_PATH_DISPLAY_IMAGE);
+        globalBackEditImg   = new QImage(_PATH_DISPLAY_IMAGE);
+
+        //Update Thumb and Edit Canvas
+        updateDisplayImage(globalEditImg);
+
+
+    }
 }
