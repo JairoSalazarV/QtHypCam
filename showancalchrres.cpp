@@ -205,6 +205,10 @@ void showAnCalChrRes::updColSenVert(){
     globalGreenLine = globalTmpLine;
     addLine2CanvasInPos(false,yB,Qt::blue);
     globalBlueLine = globalTmpLine;
+
+    globalRedLine->parameters.orientation   = _HORIZONTAL;
+    globalGreenLine->parameters.orientation = _HORIZONTAL;
+    globalBlueLine->parameters.orientation  = _HORIZONTAL;
     /*
     QPoint p1,p2;
     p1.setY(0);
@@ -334,6 +338,10 @@ void showAnCalChrRes::updColSenHoriz(){
     globalGreenLine = globalTmpLine;
     addLine2CanvasInPos(true,xB,Qt::blue);
     globalBlueLine = globalTmpLine;
+
+    globalRedLine->parameters.orientation   = _VERTICAL;
+    globalGreenLine->parameters.orientation = _VERTICAL;
+    globalBlueLine->parameters.orientation  = _VERTICAL;
     /*
     QPoint p1,p2;
     p1.setX(0);
@@ -436,9 +444,11 @@ void showAnCalChrRes::drawRGBPeakLines(){
 void showAnCalChrRes::drawSensitivities(){
     if(globalRect->parameters.analCentroid==0){//No
         globalIsHoriz = (ui->canvasCroped->width()>ui->canvasCroped->height())?true:false;
-        if(globalIsHoriz){//Horizontal
+        if(globalIsHoriz)
+        {//Horizontal
             updColSenHoriz();
-        }else{//Vertical
+        }else
+        {//Vertical
             updColSenVert();
         }
     }
@@ -539,34 +549,41 @@ void showAnCalChrRes::on_pbCloseThis_clicked()
 
 void showAnCalChrRes::on_pbSaveAnalysis_clicked()
 {
-
+    //--------------------------------------------------------
     //Identify file-name's base
-    //..
+    //--------------------------------------------------------
     if(ui->txtQuadFilename->text().trimmed().isEmpty()){
         funcShowMsg("Lack","Type a file-name");
         ui->txtQuadFilename->setFocus();
         return (void)NULL;
     }
 
-
-
+    //--------------------------------------------------------
     //Save calibration file
-    //..
-    //FileName
+    //--------------------------------------------------------
+    // Get Directory
     QString fileName;
-    fileName.append("./settings/Calib/");
+    if( funcLetUserSelectDirectory(_PATH_LAST_PATH_OPENED,&fileName) != _OK )
+    {
+        return (void)false;
+    }
+
+    //FileName
+    //fileName.append("./settings/Calib/");
     fileName.append(ui->txtQuadFilename->text());
     fileName.append(".hypcam");
     QString coordinates;
 
-    if(globalRect->parameters.analCentroid > 0){//Centroid
+    if(globalRect->parameters.analCentroid > 0)
+    {//Centroid
         int xPos, yPos;
-        xPos = globalCalStruct.X1 + globalVLine->x();
-        yPos = globalCalStruct.Y1 + globalHLine->y();
+        xPos = globalCalStruct.X1 + globalVLine->line().p1().x();
+        yPos = globalCalStruct.Y1 + globalHLine->line().p1().y();
         //yPos = globalCalStruct.origImgH - yPos;
         coordinates.append(QString::number(xPos));
         coordinates.append(",");
         coordinates.append(QString::number(yPos));
+        coordinates.append(",originX-originY");
         //qDebug() << "x: " << globalVLine->x();
         //qDebug() << "y: " << globalHLine->y();
         //qDebug() << "X: " << globalCalStruct.X1;
@@ -577,14 +594,17 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         //qDebug() << "origImgH: " << globalCalStruct.origImgH;
         //qDebug() << "xPos: " << xPos;
         //qDebug() << "yPos: " << yPos;
-    }else{
+    }
+    else
+    {
+        //--------------------------------------------------------
         //Obtain line positions
-        //..
+        //--------------------------------------------------------
         int rPos=0,gPos=0,bPos=0;
         if(globalIsHoriz){
-            rPos = globalCalStruct.X1 + globalRedLine->x();
-            gPos = globalCalStruct.X1 + globalGreenLine->x();
-            bPos = globalCalStruct.X1 + globalBlueLine->x();
+            rPos = globalCalStruct.X1 + globalRedLine->line().p1().x();
+            gPos = globalCalStruct.X1 + globalGreenLine->line().p1().x();
+            bPos = globalCalStruct.X1 + globalBlueLine->line().p1().x();
         }else{
             //rPos = globalCalStruct.Y1 - globalRedLine->y();
             //gPos = globalCalStruct.Y1 - globalGreenLine->y();
@@ -592,9 +612,9 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
             //rPos = ui->canvasCroped->scene()->height() - globalRedLine->y();
             //gPos = ui->canvasCroped->scene()->height() - globalGreenLine->y();
             //bPos = ui->canvasCroped->scene()->height() - globalBlueLine->y();
-            rPos += globalCalStruct.Y1 + globalRedLine->y();
-            gPos += globalCalStruct.Y1 + globalGreenLine->y();
-            bPos += globalCalStruct.Y1 + globalBlueLine->y();
+            rPos += globalCalStruct.Y1 + globalRedLine->line().p1().y();
+            gPos += globalCalStruct.Y1 + globalGreenLine->line().p1().y();
+            bPos += globalCalStruct.Y1 + globalBlueLine->line().p1().y();
 
             /*
             qDebug() << "SceneH: " << ui->canvasCroped->scene()->height();
@@ -625,17 +645,22 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         coordinates.append(QString::number(globalCalStruct.origImgW));
         coordinates.append(",");
         coordinates.append(QString::number(globalCalStruct.origImgH));
+        coordinates.append(",Red-Green-Blue-canvasW-canvasH-origImgW-origImgH");
 
     }
 
+    //--------------------------------------------------------
     //Save
-    //..
+    //--------------------------------------------------------
     //Save coordinates
-    if(saveFile(fileName,coordinates)){
+    if(saveFile(fileName,coordinates))
+    {
         //Save canvas background path
         saveFile(_PATH_CALBKG,globalRect->parameters.backgroundPath);
         funcShowMsg(" ","Setting saved successfully");
-    }else{
+    }
+    else
+    {
         funcShowMsg("ERROR","Saving setting-file");
     }
 
@@ -653,28 +678,41 @@ void showAnCalChrRes::on_pbClearCalib_clicked()
 
 void showAnCalChrRes::on_pbSaveScene_clicked()
 {
+    //--------------------------------------------------------
     //Identify filename
-    //..
+    //--------------------------------------------------------
     if(ui->txtQuadFilename->text().trimmed().isEmpty()){
         funcShowMsg("Lack","Type a file-name");
         ui->txtQuadFilename->setFocus();
         return (void)NULL;
     }
+
+    //--------------------------------------------------------
     //FileName
-    //..
+    //--------------------------------------------------------
+    // Get Directory
     QString fileName;
-    fileName.append("./settings/Calib/images/");
+    if( funcLetUserSelectDirectory(_PATH_LAST_PATH_OPENED,&fileName) != _OK )
+    {
+        return (void)false;
+    }
+    //fileName.append("./settings/Calib/images/");
     fileName.append(ui->txtQuadFilename->text());
     fileName.append(".png");
+
+    //--------------------------------------------------------
     //Save
-    //..
+    //--------------------------------------------------------
     //Remove if exists
     QFile prevImg(fileName);
     if(prevImg.exists()){
         prevImg.remove();
     }
     prevImg.close();
+
+    //--------------------------------------------------------
     //Save Graphicsview's scene
+    //--------------------------------------------------------
     QPixmap pixMap = QPixmap::grabWidget(ui->canvasCroped);
     if(pixMap.save(fileName)){
         funcShowMsg(" ","Image saved successfully");

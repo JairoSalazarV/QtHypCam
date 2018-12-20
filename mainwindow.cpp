@@ -309,6 +309,7 @@ int MainWindow::funcValidateMinimalStatus()
     QList<QString> lstFolders;
     lstFolders << "./SYNC" << "./tmpImages" << "./tmpImages/frames"
                << "./settings" << "./settings/Calib" << "./settings/Calib/images/"
+               << "./settings/Calib/responses/"
                //<< "./XML" << "./XML/camPerfils"
                << "./tmpImages/frames/tmp";
     if( func_DirExistOrCreateIt( lstFolders, this ) == _ERROR )

@@ -577,6 +577,7 @@ void genCalibXML::on_pbGenCal_clicked()
 {
     if( isExportable )
     {
+        //qDebug() << "deb-> 1";
         camRes          = getCamRes( genCalibXMLMainWindow->getCamMP() );
 
 
@@ -587,8 +588,12 @@ void genCalibXML::on_pbGenCal_clicked()
 
         QString sourcePath = readFileParam(_PATH_CALBKG);
 
+        qDebug() << "deb-> 2";
+
+        //----------------------------------------------------
         //Region of interes
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 2";
         squareAperture *regOfInteres = (squareAperture*)malloc(sizeof(squareAperture));
         if( !funGetSquareXML( _PATH_REGION_OF_INTERES, regOfInteres ) )
         {
@@ -601,15 +606,22 @@ void genCalibXML::on_pbGenCal_clicked()
         wB = (double)regOfInteres->rectW / (double)regOfInteres->canvasW;
         hB = (double)regOfInteres->rectH / (double)regOfInteres->canvasH;
 
+        //----------------------------------------------------
         //Square aperture
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 3";
         squareAperture *sqApert = (squareAperture*)malloc(sizeof(squareAperture));
         if( !funGetSquareXML( _PATH_SQUARE_APERTURE, sqApert ) )
         {
             funcShowMsg("ERROR","Loading _PATH_SQUARE_APERTURE");
             return (void)false;
         }
-        //Calculates the position expected in the received image
+
+        //----------------------------------------------------
+        //Calculates the position expected in
+        //the received image
+        //----------------------------------------------------
+        //qDebug() << "deb-> 4";
         qDebug() << "camRes->width: " << camRes->width;
         int auxSqX, auxSqY, auxSqW, auxSqH, auxBigX, auxBigY;
         auxSqX  = round((float)camRes->width  * ((float)sqApert->rectX / (float)sqApert->canvasW));
@@ -622,8 +634,10 @@ void genCalibXML::on_pbGenCal_clicked()
         auxSqX -= auxBigX;
         auxSqY -= auxBigY;
 
+        //----------------------------------------------------
         //Square usable
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 4";
         squareAperture *sqUsable = (squareAperture*)malloc(sizeof(squareAperture));
         //if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
         if( !funGetSquareXML( _PATH_SQUARE_USABLE, sqUsable ) )
@@ -631,7 +645,12 @@ void genCalibXML::on_pbGenCal_clicked()
             funcShowMsg("ERROR","Loading _PATH_SQUARE_USABLE");
             return (void)false;
         }
-        //Calculates the position expected in the received image
+
+        //----------------------------------------------------
+        //Calculates the position expected in the
+        //received image
+        //----------------------------------------------------
+        //qDebug() << "deb-> 5";
         int auxSqUsableX, auxSqUsableY, auxSqUsableW, auxSqUsableH;
         float areaInterW, areaInterH;
         areaInterW = (float)camRes->width * wB;
@@ -641,38 +660,46 @@ void genCalibXML::on_pbGenCal_clicked()
         auxSqUsableW  = round((float)areaInterW * ((float)sqUsable->rectW / (float)sqUsable->canvasW));
         auxSqUsableH  = round((float)areaInterH * ((float)sqUsable->rectH / (float)sqUsable->canvasH));
 
+        //----------------------------------------------------
         //Calculates linear regressions
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 6";
         strAllLinReg linRegRes = getAllLR();
 
-        //qDebug() << "Aquí7";
+        //----------------------------------------------------
         //Obtains limits from HDD
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 7";
         QString minWavelength, maxWavelength;
         QVector2D waveLim;
         waveLim = getWavelengthFrontiers();
         minWavelength = QString::number(waveLim.x());
         maxWavelength = QString::number(waveLim.y());
-        //qDebug() << "Aquí8";
+
+        //----------------------------------------------------
         //Square aperture as percentage
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 8";
         double xs,ys,ws,hs;
         xs = (double)sqApert->rectX / (double)sqApert->canvasW;
         ys = (double)sqApert->rectY / (double)sqApert->canvasH;
         ws = (double)sqApert->rectW / (double)sqApert->canvasW;
         hs = (double)sqApert->rectH / (double)sqApert->canvasH;
-        //qDebug() << "Aquí9";
+
+        //----------------------------------------------------
         //Calculate MIN num of bands
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 9";
         QVector2D spectralResolution;
         spectralResolution = calcSpectralResolution();
         QString maxNumBand, minSpecRes;
         maxNumBand  = QString::number(spectralResolution.x());
         minSpecRes  = QString::number(spectralResolution.y());
 
-        //qDebug() << "Aquí10";
+        //----------------------------------------------------
         //Calculates the sensivities and save into HDD
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 10";
         QString Sr, Sg, Sb;
         lstDoubleAxisCalibration daCalibGenCal;        
         daCalibGenCal.LR = getAllLR();
@@ -684,7 +711,9 @@ void genCalibXML::on_pbGenCal_clicked()
         daCalibGenCal.squareUsableY = auxSqUsableY;
         daCalibGenCal.squareUsableW = auxSqUsableW;
         daCalibGenCal.squareUsableH = auxSqUsableH;
+        //qDebug() << "deb-> 10.4";
         calculateAndSaveSensitivities(&daCalibGenCal);
+        //qDebug() << "deb-> 10.5";
         //Sr = readFileParam( _PATH_RED_SENSITIV );
         //Sg = readFileParam( _PATH_GREEN_SENSITIV );
         //Sb = readFileParam( _PATH_BLUE_SENSITIV );
@@ -692,9 +721,10 @@ void genCalibXML::on_pbGenCal_clicked()
         Sg = readFileParam( _PATH_GREEN_SENS_NORM );
         Sb = readFileParam( _PATH_BLUE_SENS_NORM );
 
-
+        //----------------------------------------------------
         //It creates the XML file
-        //..
+        //----------------------------------------------------
+        //qDebug() << "deb-> 11";
         newFileCon.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n");
 
         newFileCon.append("<calib>\n");
@@ -757,7 +787,10 @@ void genCalibXML::on_pbGenCal_clicked()
 
         QApplication::restoreOverrideCursor();
 
+        //----------------------------------------------------
         //Save file
+        //----------------------------------------------------
+        //qDebug() << "deb-> 12";
         if( saveFile(_PATH_CALIBRATION_FILE,newFileCon) )
         {
             funcShowMsg(" ","File saved");
@@ -770,6 +803,7 @@ void genCalibXML::on_pbGenCal_clicked()
         //-------------------------------------------
         // Clear Wavelengths selected
         //-------------------------------------------
+        //qDebug() << "deb-> 13";
         clearWavelengthChoised();
 
 
@@ -803,6 +837,7 @@ void genCalibXML::clearWavelengthChoised()
 
 void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCalibGenCal)
 {    
+    //qDebug() << "deb-> 10.4.1";
     //It is required offsets because, the calcDiffProj was created to
     //manage coordinates based on square aperture and apply a transformation
     //that moves the centroide's coordinates by applying LR.
@@ -810,19 +845,20 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     offsetX = 0;//2
     offsetY = 0;//5
 
+    //---------------------------------------------------
     //Get source centroide
-    //..
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.2";
     QString sourceHalogen;
     QVector2D origin;
-    sourceHalogen = readFileParam( _PATH_LIMIT_S_HALOGEN );
-    origin.setX( sourceHalogen.split(",").at(0).toInt(0) - daCalibGenCal->squareUsableX - offsetX );
-    origin.setY( sourceHalogen.split(",").at(1).toInt(0) - daCalibGenCal->squareUsableY - offsetY );
+    sourceHalogen = readFileParam( genCalibXML_destineDir + _PATH_LIMIT_S_HALOGEN );
+    origin.setX( sourceHalogen.split(",").at(0).toInt() - daCalibGenCal->squareUsableX - offsetX );
+    origin.setY( sourceHalogen.split(",").at(1).toInt() - daCalibGenCal->squareUsableY - offsetY );
 
-    //qDebug() << "origin.x: " << origin.x();//Appear 73
-    //qDebug() << "origin.y: " << origin.y();//Appear 51
-
+    //---------------------------------------------------
     //Account all sensitivities
-    //..
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.3";
     double actWave;
     strDiffProj diffProj;    
     QImage img( _PATH_DISPLAY_IMAGE );
@@ -835,6 +871,8 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     double sensitiv[3][daCalibGenCal->maxNumBands];
     double sensNorm[3][daCalibGenCal->maxNumBands];
 
+
+    //qDebug() << "deb-> 10.4.4";
     memset(response[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     memset(response[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     memset(response[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
@@ -849,10 +887,11 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     memset(sensNorm[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     memset(sensNorm[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
 
-    //-------------------------------------------------
+    //---------------------------------------------------
     //Response is measured in the diffraction of
     //a halogen spotlight
-    //-------------------------------------------------
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.5";
     range = 3;//Histogram stick height
     for( r=origin.y()-range; r<=origin.y()+range; r++ )
     {
@@ -930,14 +969,17 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
         }
     }
 
+    //---------------------------------------------------
     //Get halogen function
-    //..
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.6";
     QList<double> halogenFunction;
     halogenFunction = getNormedFunction( _PATH_HALOGEN_FUNCTION );
 
-    //-------------------------------------------
+    //---------------------------------------------------
     //It calcultes the average sensitivities
-    //-------------------------------------------
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.7";
     double sensitivityMaxRed, sensitivityMaxGreen, sensitivityMaxBlue;
     sensitivityMaxRed   = 0.0;
     sensitivityMaxGreen = 0.0;
@@ -990,9 +1032,10 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
 
     }
 
-    //-------------------------------------------
+    //---------------------------------------------------
     //Sensitivities Measurements Normed
-    //-------------------------------------------
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.8";
     for(i=0; i<numWaves; i++)
     {
         //.......................................................
@@ -1045,7 +1088,11 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
             halogenIrradiance.append(","+QString::number(halogenFunction.at(idWave+i)));
         }
     }
+
+    //---------------------------------------------------
     //Save backup
+    //---------------------------------------------------
+    //qDebug() << "deb-> 10.4.9";
     saveFile(_PATH_RED_RESPONSE,redResponse);
     saveFile(_PATH_GREEN_RESPONSE,greenResponse);
     saveFile(_PATH_BLUE_RESPONSE,blueResponse);

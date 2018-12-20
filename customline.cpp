@@ -33,7 +33,8 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
     //Obtain user request
     QAction *tmpA = showContMenuLine(event->screenPos());
 
-    if( tmpA!=0 ){
+    if( tmpA!=nullptr )
+    {
         if(tmpA->text()=="Move"){
             this->parameters.movible = true;
         }
@@ -49,7 +50,7 @@ void customLine::mousePressEvent(QGraphicsSceneMouseEvent *event){
         if(tmpA->text()=="Right"){
         }
         if(tmpA->text()=="Set Wavelength"){
-            this->parameters.wavelength = funcGetParam("Wavelegth").trimmed().toFloat(0);
+            this->parameters.wavelength = funcGetParam("Wavelegth").trimmed().toFloat();
             funcShowMsgSUCCESS_Timeout("Wavelength Updated",Q_NULLPTR);
         }
         if(tmpA->text()=="Set Color"){
@@ -167,16 +168,22 @@ QAction *customLine::showContMenuLine(QPoint pos){
 
 
 void customLine::keyPressEvent(QKeyEvent *event){
-    if(this->parameters.movible){
-        switch( event->key() ){
+    if(this->parameters.movible)
+    {
+        switch( event->key() )
+        {
             case Qt::Key_Right:{
+                //funcShowMsg("Title","Llego 2: " + QString::number(this->parameters.orientation));
                 if( this->parameters.orientation == _VERTICAL )
+                {
                     this->setLine(
                                     this->line().x1()+1,
                                     this->line().y1(),
                                     this->line().x2()+1,
                                     this->line().y2()
                                  );
+                    //funcShowMsg("Title","Llego 3");
+                }
                 break;
             }
             case Qt::Key_Left:{

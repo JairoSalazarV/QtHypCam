@@ -140,7 +140,7 @@ void customRect::mousePressEvent(QGraphicsSceneMouseEvent *event){
     this->parameters.scalable = false;
     //Obtain user request
     QAction *a = showContMenuLine(event->screenPos());
-    if( a!=0 ){
+    if( a!=nullptr ){
         if(a->text()=="Move"){
             this->parameters.movible = true;
         }
