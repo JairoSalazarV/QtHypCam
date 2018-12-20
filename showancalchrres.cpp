@@ -205,6 +205,10 @@ void showAnCalChrRes::updColSenVert(){
     globalGreenLine = globalTmpLine;
     addLine2CanvasInPos(false,yB,Qt::blue);
     globalBlueLine = globalTmpLine;
+
+    globalRedLine->parameters.orientation   = _HORIZONTAL;
+    globalGreenLine->parameters.orientation = _HORIZONTAL;
+    globalBlueLine->parameters.orientation  = _HORIZONTAL;
     /*
     QPoint p1,p2;
     p1.setY(0);
@@ -334,6 +338,11 @@ void showAnCalChrRes::updColSenHoriz(){
     globalGreenLine = globalTmpLine;
     addLine2CanvasInPos(true,xB,Qt::blue);
     globalBlueLine = globalTmpLine;
+
+    globalRedLine->parameters.orientation   = _VERTICAL;
+    globalGreenLine->parameters.orientation = _VERTICAL;
+    globalBlueLine->parameters.orientation  = _VERTICAL;
+
     /*
     QPoint p1,p2;
     p1.setX(0);
