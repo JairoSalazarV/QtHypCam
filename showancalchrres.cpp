@@ -593,15 +593,21 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         int rPos=0, gPos=0, bPos=0;
         if(globalIsHoriz)
         {
-            rPos = globalCalStruct.X1 + globalRedLine->line().x1() + globalRedLine->x();
-            gPos = globalCalStruct.X1 + globalGreenLine->line().x1() + globalGreenLine->x();
-            bPos = globalCalStruct.X1 + globalBlueLine->line().x1() + globalBlueLine->x();
+            //rPos = globalCalStruct.X1 + globalRedLine->line().x1() + globalRedLine->x();
+            //gPos = globalCalStruct.X1 + globalGreenLine->line().x1() + globalGreenLine->x();
+            //bPos = globalCalStruct.X1 + globalBlueLine->line().x1() + globalBlueLine->x();
+            rPos = globalCalStruct.X1 + globalRedLine->x();
+            gPos = globalCalStruct.X1 + globalGreenLine->x();
+            bPos = globalCalStruct.X1 + globalBlueLine->x();
         }
         else
         {
-            rPos += globalCalStruct.Y1 + globalRedLine->line().y1() + globalRedLine->y();
-            gPos += globalCalStruct.Y1 + globalGreenLine->line().y1() + globalRedLine->y();
-            bPos += globalCalStruct.Y1 + globalBlueLine->line().y1() + globalRedLine->y();
+            rPos += globalCalStruct.Y1 + globalRedLine->y();
+            gPos += globalCalStruct.Y1 + globalGreenLine->y();
+            bPos += globalCalStruct.Y1 + globalBlueLine->y();
+            //rPos += globalCalStruct.Y1 + globalRedLine->line().y1() + globalRedLine->y();
+            //gPos += globalCalStruct.Y1 + globalGreenLine->line().y1() + globalRedLine->y();
+            //bPos += globalCalStruct.Y1 + globalBlueLine->line().y1() + globalRedLine->y();
         }
 
         //----------------------------------------------------
@@ -620,7 +626,7 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         coordinates.append(QString::number(globalCalStruct.origImgW));
         coordinates.append(",");
         coordinates.append(QString::number(globalCalStruct.origImgH));
-        coordinates.append("Red-Green-Blue-canvasW-canvasH-origImgW-origImgH");
+        coordinates.append(", Red-Green-Blue-canvasW-canvasH-origImgW-origImgH");
     }
 
     //----------------------------------------------------
