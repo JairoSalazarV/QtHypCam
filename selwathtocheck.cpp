@@ -511,9 +511,9 @@ void selWathToCheck::drawAllCalculatedCentoides()
     //---------------------------------------------
     strDiffProj diffProj;
     funcGetCalibration(daCalib);
-    double wavelengthRed    = readFileParam(_PATH_SETTINGS_RED_WAVELEN).toDouble(0);
-    double wavelengthGreen  = readFileParam(_PATH_SETTINGS_GREEN_WAVELEN).toDouble(0);
-    double wavelengthBlue   = readFileParam(_PATH_SETTINGS_BLUE_WAVELEN).toDouble(0);
+    double wavelengthRed    = readFileParam(_PATH_SETTINGS_RED_WAVELEN).toDouble();
+    double wavelengthGreen  = readFileParam(_PATH_SETTINGS_GREEN_WAVELEN).toDouble();
+    double wavelengthBlue   = readFileParam(_PATH_SETTINGS_BLUE_WAVELEN).toDouble();
 
     //---------------------------------------------
     //Get the Fluorescent centroid
@@ -521,14 +521,14 @@ void selWathToCheck::drawAllCalculatedCentoides()
     QString fileContain;
     fileContain = readAllFile(_PATH_LIMIT_S_FLUORESCENT);
     if( fileContain.contains(_ERROR_FILE_NOTEXISTS) || fileContain.contains(_ERROR_FILE) ){
-        qDebug() << fileContain;
+        qDebug() << "ERROR LOADING: _PATH_LIMIT_S_FLUORESCENT" << fileContain;
         return (void)NULL;
     }
     int sourceX, sourceY;
-    sourceX = fileContain.split(",").at(0).toInt(0);
-    sourceY = fileContain.split(",").at(1).toInt(0);
-    sourceX = sourceX - daCalib->squareUsableX;
-    sourceY = sourceY - daCalib->squareUsableY;
+    sourceX = fileContain.split(",").at(0).toInt() - daCalib->squareUsableX;
+    sourceY = fileContain.split(",").at(1).toInt() - daCalib->squareUsableY;
+    //sourceX = sourceX - daCalib->squareUsableX;
+    //sourceY = sourceY - daCalib->squareUsableY;
 
     //---------------------------------------------
     //Draw the Source Centroid
@@ -546,17 +546,17 @@ void selWathToCheck::drawAllCalculatedCentoides()
     //Blue
     diffProj.x          = sourceX;
     diffProj.y          = sourceY;
-    diffProj.wavelength = wavelengthRed;
+    diffProj.wavelength = static_cast<float>(wavelengthRed);
     calcDiffProj( &diffProj, daCalib );
-    drawCentroid(diffProj.rx,diffProj.ry,Qt::blue,&img);
-    drawCentroid(diffProj.ux,diffProj.uy,Qt::blue,&img);
-    drawCentroid(diffProj.lx,diffProj.ly,Qt::blue,&img);
-    drawCentroid(diffProj.dx,diffProj.dy,Qt::blue,&img);
+    drawCentroid(diffProj.rx,diffProj.ry,Qt::red,&img);
+    drawCentroid(diffProj.ux,diffProj.uy,Qt::red,&img);
+    drawCentroid(diffProj.lx,diffProj.ly,Qt::red,&img);
+    drawCentroid(diffProj.dx,diffProj.dy,Qt::red,&img);
 
     //Green
     diffProj.x          = sourceX;
     diffProj.y          = sourceY;
-    diffProj.wavelength = wavelengthGreen;
+    diffProj.wavelength = static_cast<float>(wavelengthGreen);
     calcDiffProj( &diffProj, daCalib );
     drawCentroid(diffProj.rx,diffProj.ry,Qt::green,&img);
     drawCentroid(diffProj.ux,diffProj.uy,Qt::green,&img);
@@ -566,12 +566,12 @@ void selWathToCheck::drawAllCalculatedCentoides()
     //Red
     diffProj.x              = sourceX;
     diffProj.y              = sourceY;
-    diffProj.wavelength    = wavelengthBlue;
+    diffProj.wavelength     = static_cast<float>(wavelengthBlue);
     calcDiffProj( &diffProj, daCalib );
-    drawCentroid(diffProj.rx,diffProj.ry,Qt::red,&img);
-    drawCentroid(diffProj.ux,diffProj.uy,Qt::red,&img);
-    drawCentroid(diffProj.lx,diffProj.ly,Qt::red,&img);
-    drawCentroid(diffProj.dx,diffProj.dy,Qt::red,&img);
+    drawCentroid(diffProj.rx,diffProj.ry,Qt::blue,&img);
+    drawCentroid(diffProj.ux,diffProj.uy,Qt::blue,&img);
+    drawCentroid(diffProj.lx,diffProj.ly,Qt::blue,&img);
+    drawCentroid(diffProj.dx,diffProj.dy,Qt::blue,&img);
 
 
     /*
