@@ -105,7 +105,7 @@ void selWathToCheck::on_pbCentroids_clicked()
         drawLinearRegression(false);
     }
 
-    //Show limits calculated
+    //Show calculated limits
     if( ui->checkBoxLimitsCalculated->isChecked() ){
         //showGV();
         showLimitCalculated();
@@ -420,7 +420,7 @@ void selWathToCheck::drawAllLimits()
 void selWathToCheck::drawLimit(int side){
 
     QString limSource = readAllFile(_PATH_LIMIT_S_HALOGEN);
-    qreal limInf, limSup;
+    qreal limBlue, limRed;
     QString limit;
     switch(side)
     {
@@ -437,37 +437,44 @@ void selWathToCheck::drawLimit(int side){
             limit = readAllFile(_PATH_LIMIT_D);
             break;
     }
-    limInf = limit.split(",").at(2).toInt(0);
-    limSup = limit.split(",").at(0).toInt(0);
-
+    limBlue = limit.split(",").at(2).toInt();//Blue
+    limRed  = limit.split(",").at(0).toInt();//Red
 
     customLine *limInfLine;
     customLine *limSupLine;
-    int len1, len2;
+    int len2Blue, len2Red;
     double wavelenghtInf, wavelenghtSup;
     //strAllLinReg calibLR = tmpGenCal.getAllLR();
     if(side == _RIGHT || side == _LEFT)
     {
-        len1            = fabs((float)limSource.split(",").at(0).toInt(0) - limInf);
-        len2            = fabs((float)limSource.split(",").at(0).toInt(0) - limSup);
-        limInfLine      = new customLine(QPoint(limInf,0),QPoint(limInf,globalGvValCal->scene()->height()),QPen(Qt::blue));
-        limSupLine      = new customLine(QPoint(limSup,0),QPoint(limSup,globalGvValCal->scene()->height()),QPen(Qt::red));
-        wavelenghtInf   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len1);
-        wavelenghtSup   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len2);
+        len2Blue        = fabs((float)limSource.split(",").at(0).toInt() - limBlue); //HalogenX - distanceBlue
+        len2Red         = fabs((float)limSource.split(",").at(0).toInt() - limRed); //HalogenX - distanceRed
+        limInfLine      = new customLine(QPoint(limBlue,0),QPoint(limBlue,globalGvValCal->scene()->height()),QPen(Qt::blue));
+        limSupLine      = new customLine(QPoint(limRed,0),QPoint(limRed,globalGvValCal->scene()->height()),QPen(Qt::red));
+        wavelenghtInf   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len2Blue);
+        wavelenghtSup   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len2Red);
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
         limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
     if(side == _ABOVE || side == _DOWN)
     {
-        len1            = fabs((float)limSource.split(",").at(1).toInt(0) - limInf);
-        len2            = fabs((float)limSource.split(",").at(1).toInt(0) - limSup);
-        limInfLine      = new customLine(QPoint(0,limInf),QPoint(globalGvValCal->scene()->width(),limInf),QPen(Qt::blue));
-        limSupLine      = new customLine(QPoint(0,limSup),QPoint(globalGvValCal->scene()->width(),limSup),QPen(Qt::red));
-        wavelenghtInf   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len1);
-        wavelenghtSup   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len2);
+        len2Blue        = fabs((float)limSource.split(",").at(1).toInt(0) - limBlue); //HalogenX - distanceBlue
+        len2Red         = fabs((float)limSource.split(",").at(1).toInt(0) - limRed); //HalogenX - distanceRed
+        limInfLine      = new customLine(QPoint(0,limBlue),QPoint(globalGvValCal->scene()->width(),limBlue),QPen(Qt::blue));
+        limSupLine      = new customLine(QPoint(0,limRed),QPoint(globalGvValCal->scene()->width(),limRed),QPen(Qt::red));
+        wavelenghtInf   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len2Blue);
+        wavelenghtSup   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len2Red);
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
         limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
     }
+
+    //qDebug() << "side: Right";
+    //qDebug() << "hS_x: " << limSource.split(",").at(0).toInt() << "hS_y: " << limSource.split(",").at(1).toInt() ;
+    //qDebug() << "limBlue: " << limBlue << "limRed: " << limRed;
+    //qDebug() << "len2Blue: " << len2Blue << "len2Red: " << len2Red;
+    //qDebug() << "wavelenghtInf: " << wavelenghtInf << "wavelenghtSup: " << wavelenghtSup;
+    //exit(0);
+
     globalGvValCal->scene()->addItem(limInfLine);
     globalGvValCal->scene()->addItem(limSupLine);
     globalGvValCal->update();

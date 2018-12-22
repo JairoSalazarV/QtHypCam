@@ -513,19 +513,23 @@ void showAnCalChrRes::drawCenter(int x, int y, Qt::GlobalColor color){
 }
 
 void showAnCalChrRes::addLine2CanvasInPos(bool vertical, int pos, Qt::GlobalColor color){
-    if(vertical){
+    if(vertical)
+    {
         qDebug() << "vPos: " << pos;
         QPoint p1(0,0);
         QPoint p2(0,ui->canvasCroped->scene()->height());
         //p1.setX(pos);
         //p2.setX(pos);
-        customLine *tmpLine = new customLine(p1,p2,QPen(color));        
+        customLine *tmpLine = new customLine(p1,p2,QPen(color));
         ui->canvasCroped->scene()->addItem(tmpLine);
         tmpLine->setX(pos);
+        //tmpLine->mapToParent(p1.x(),p1.y(),1,p2.y());
         tmpLine->mapToScene(p1.x(),p1.y(),1,p2.y());
         globalTmpLine = tmpLine;
         tmpLine->refreshTooltip();
-    }else{//Horizontal
+    }
+    else
+    {//Horizontal
         qDebug() << "hPos: " << pos;
         QPoint p1(0,0);
         QPoint p2(ui->canvasCroped->scene()->width(),0);
@@ -535,6 +539,7 @@ void showAnCalChrRes::addLine2CanvasInPos(bool vertical, int pos, Qt::GlobalColo
         ui->canvasCroped->scene()->addItem(tmpLine);
         tmpLine->setY(pos);
         tmpLine->mapToScene(p1.x(),p1.y(),1,p2.y());
+        //tmpLine->mapToParent(p1.x(),p1.y(),1,p2.y());
         globalTmpLine = tmpLine;
         tmpLine->refreshTooltip();
     }
@@ -548,16 +553,18 @@ void showAnCalChrRes::on_pbCloseThis_clicked()
 
 void showAnCalChrRes::on_pbSaveAnalysis_clicked()
 {
-
+    //----------------------------------------------------
     //Identify file-name's base
-    //..
+    //----------------------------------------------------
     if(ui->txtQuadFilename->text().trimmed().isEmpty()){
         funcShowMsg("Lack","Type a file-name");
         ui->txtQuadFilename->setFocus();
         return (void)NULL;
     }
+
+    //----------------------------------------------------
     //Save calibration file
-    //..
+    //----------------------------------------------------
     //FileName
     QString fileName;
     fileName.append("./settings/Calib/");
@@ -565,59 +572,41 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
     fileName.append(".hypcam");
     QString coordinates;
 
-    if(globalRect->parameters.analCentroid > 0){//Centroid
+    if(globalRect->parameters.analCentroid > 0)
+    {
+        //----------------------------------------------------
+        //Centroid
+        //----------------------------------------------------
         int xPos, yPos;
         xPos = globalCalStruct.X1 + globalVLine->x();
         yPos = globalCalStruct.Y1 + globalHLine->y();
-        //yPos = globalCalStruct.origImgH - yPos;
+
         coordinates.append(QString::number(xPos));
         coordinates.append(",");
         coordinates.append(QString::number(yPos));
-        //qDebug() << "x: " << globalVLine->x();
-        //qDebug() << "y: " << globalHLine->y();
-        //qDebug() << "X: " << globalCalStruct.X1;
-        //qDebug() << "Y: " << globalCalStruct.Y1;
-        //qDebug() << "lenW: " << globalCalStruct.lenW;
-        //qDebug() << "lenH: " << globalCalStruct.lenH;
-        //qDebug() << "origImgW: " << globalCalStruct.origImgW;
-        //qDebug() << "origImgH: " << globalCalStruct.origImgH;
-        //qDebug() << "xPos: " << xPos;
-        //qDebug() << "yPos: " << yPos;
-    }else{
+    }
+    else
+    {
+        //----------------------------------------------------
         //Obtain line positions
-        //..
-        int rPos=0,gPos=0,bPos=0;
-        if(globalIsHoriz){
-            rPos = globalCalStruct.X1 + globalRedLine->x();
-            gPos = globalCalStruct.X1 + globalGreenLine->x();
-            bPos = globalCalStruct.X1 + globalBlueLine->x();
-        }else{
-            //rPos = globalCalStruct.Y1 - globalRedLine->y();
-            //gPos = globalCalStruct.Y1 - globalGreenLine->y();
-            //bPos = globalCalStruct.Y1 - globalBlueLine->y();
-            //rPos = ui->canvasCroped->scene()->height() - globalRedLine->y();
-            //gPos = ui->canvasCroped->scene()->height() - globalGreenLine->y();
-            //bPos = ui->canvasCroped->scene()->height() - globalBlueLine->y();
-            rPos += globalCalStruct.Y1 + globalRedLine->y();
-            gPos += globalCalStruct.Y1 + globalGreenLine->y();
-            bPos += globalCalStruct.Y1 + globalBlueLine->y();
-
-            /*
-            qDebug() << "SceneH: " << ui->canvasCroped->scene()->height();
-            qDebug() << "SceneW: " << ui->canvasCroped->scene()->width();
-            qDebug() << "rY: " << globalRedLine->y();
-            qDebug() << "gY: " << globalGreenLine->y();
-            qDebug() << "bY: " << globalBlueLine->y();
-            qDebug() << "Y1: " << globalCalStruct.Y1;
-            qDebug() << "rPos" << rPos;
-            qDebug() << "gPos" << gPos;
-            qDebug() << "bPos" << bPos;
-            */
-
-
+        //----------------------------------------------------
+        int rPos=0, gPos=0, bPos=0;
+        if(globalIsHoriz)
+        {
+            rPos = globalCalStruct.X1 + globalRedLine->line().x1() + globalRedLine->x();
+            gPos = globalCalStruct.X1 + globalGreenLine->line().x1() + globalGreenLine->x();
+            bPos = globalCalStruct.X1 + globalBlueLine->line().x1() + globalBlueLine->x();
         }
+        else
+        {
+            rPos += globalCalStruct.Y1 + globalRedLine->line().y1() + globalRedLine->y();
+            gPos += globalCalStruct.Y1 + globalGreenLine->line().y1() + globalRedLine->y();
+            bPos += globalCalStruct.Y1 + globalBlueLine->line().y1() + globalRedLine->y();
+        }
+
+        //----------------------------------------------------
         //File contain
-        //..
+        //----------------------------------------------------
         coordinates.append(QString::number(rPos));
         coordinates.append(",");
         coordinates.append(QString::number(gPos));
@@ -631,10 +620,12 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         coordinates.append(QString::number(globalCalStruct.origImgW));
         coordinates.append(",");
         coordinates.append(QString::number(globalCalStruct.origImgH));
+        coordinates.append("Red-Green-Blue-canvasW-canvasH-origImgW-origImgH");
     }
 
+    //----------------------------------------------------
     //Save
-    //..
+    //----------------------------------------------------
     //Save coordinates
     if(saveFile(fileName,coordinates)){
         //Save canvas background path

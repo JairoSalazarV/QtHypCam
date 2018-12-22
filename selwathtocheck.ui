@@ -127,7 +127,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Limits defined</string>
+    <string>Defined Limits</string>
    </property>
   </widget>
   <widget class="QCheckBox" name="checkBoxLimitsCalculated">
@@ -140,7 +140,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Limits calculated</string>
+    <string>CalculatedLimits</string>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="douubleSpinWave">
@@ -176,7 +176,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Centroids Calc</string>
+    <string>CalcCentroids</string>
    </property>
   </widget>
  </widget>
