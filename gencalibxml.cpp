@@ -840,22 +840,22 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     numWaves = 0;
     double response[4][daCalibGenCal->maxNumBands];//R,G,B,ACUM,
     //double sensitiv[4][daCalibGenCal->maxNumBands];
-    double sensitiv[3][daCalibGenCal->maxNumBands];
-    double sensNorm[3][daCalibGenCal->maxNumBands];
+    //double sensitiv[3][daCalibGenCal->maxNumBands];
+    //double sensNorm[3][daCalibGenCal->maxNumBands];
 
     memset(response[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     memset(response[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     memset(response[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     memset(response[3],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
 
-    memset(sensitiv[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
-    memset(sensitiv[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
-    memset(sensitiv[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    //memset(sensitiv[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    //memset(sensitiv[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    //memset(sensitiv[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
     //memset(sensitiv[3],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
 
-    memset(sensNorm[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
-    memset(sensNorm[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
-    memset(sensNorm[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    //memset(sensNorm[0],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    //memset(sensNorm[1],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
+    //memset(sensNorm[2],'\0',(daCalibGenCal->maxNumBands*sizeof(double)));
 
     //-------------------------------------------------
     //Response is measured in the diffraction of
@@ -940,17 +940,17 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
 
     //Get halogen function
     //..
-    QList<double> halogenFunction;
-    halogenFunction = getNormedFunction( _PATH_HALOGEN_FUNCTION );
+    //QList<double> halogenFunction;
+    //halogenFunction = getNormedFunction( _PATH_HALOGEN_FUNCTION );
 
     //-------------------------------------------
     //It calcultes the average sensitivities
     //-------------------------------------------
-    double sensitivityMaxRed, sensitivityMaxGreen, sensitivityMaxBlue;
-    sensitivityMaxRed   = 0.0;
-    sensitivityMaxGreen = 0.0;
-    sensitivityMaxBlue  = 0.0;
-    QString sensitivities;
+    //double sensitivityMaxRed, sensitivityMaxGreen, sensitivityMaxBlue;
+    //sensitivityMaxRed   = 0.0;
+    //sensitivityMaxGreen = 0.0;
+    //sensitivityMaxBlue  = 0.0;
+    //QString sensitivities;
     QString redResponse, greenResponse, blueResponse;
     QString redSensivility, greenSensivility, blueSensivility;
     QString redSenNorm, greenSenNorm, blueSenNorm;
@@ -980,12 +980,12 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
         if( response[2][i] > 1.0 ){qDebug() << "Blue Responses exceded";exit(0);}
 
         //Measurement respect to the emmited light
-        sensitiv[0][i]      = response[0][i] / halogenFunction.at(idWave+i);
-        sensitiv[1][i]      = response[1][i] / halogenFunction.at(idWave+i);
-        sensitiv[2][i]      = response[2][i] / halogenFunction.at(idWave+i);
-        sensitivityMaxRed   = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
-        sensitivityMaxGreen = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
-        sensitivityMaxBlue  = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
+        //sensitiv[0][i]      = response[0][i] / halogenFunction.at(idWave+i);
+        //sensitiv[1][i]      = response[1][i] / halogenFunction.at(idWave+i);
+        //sensitiv[2][i]      = response[2][i] / halogenFunction.at(idWave+i);
+        //sensitivityMaxRed   = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
+        //sensitivityMaxGreen = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
+        //sensitivityMaxBlue  = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
         //sensitiv[3][i]      = sensitiv[0][i] + sensitiv[1][i] + sensitiv[2][i];
         //if( sensitiv[0][i] > 1.0 ){qDebug() << "Red Sensitivity exceded";exit(0);}
         //if( sensitiv[1][i] > 1.0 ){qDebug() << "Green Sensitivity exceded";exit(0);}
@@ -1008,12 +1008,12 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
         //.......................................................
 
         //Sensitivity Normalization
-        sensNorm[0][i]      = sensitiv[0][i] / sensitivityMaxRed;
-        sensNorm[1][i]      = sensitiv[1][i] / sensitivityMaxGreen;
-        sensNorm[2][i]      = sensitiv[2][i] / sensitivityMaxBlue;
-        if( sensNorm[0][i] > 1.0 ){qDebug() << "Normalized Red Sensitivity exceded: " << sensNorm[0][i];exit(0);}
-        if( sensNorm[1][i] > 1.0 ){qDebug() << "Normalized Green Sensitivity exceded: " << sensNorm[1][i];exit(0);}
-        if( sensNorm[2][i] > 1.0 ){qDebug() << "Normalized Blue Sensitivity exceded: " << sensNorm[2][i];exit(0);}
+        //ensNorm[0][i]      = sensitiv[0][i] / sensitivityMaxRed;
+        //sensNorm[1][i]      = sensitiv[1][i] / sensitivityMaxGreen;
+        //sensNorm[2][i]      = sensitiv[2][i] / sensitivityMaxBlue;
+        //if( sensNorm[0][i] > 1.0 ){qDebug() << "Normalized Red Sensitivity exceded: " << sensNorm[0][i];exit(0);}
+        //if( sensNorm[1][i] > 1.0 ){qDebug() << "Normalized Green Sensitivity exceded: " << sensNorm[1][i];exit(0);}
+        //if( sensNorm[2][i] > 1.0 ){qDebug() << "Normalized Blue Sensitivity exceded: " << sensNorm[2][i];exit(0);}
 
 
         if(i==0)
@@ -1022,17 +1022,17 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
             greenResponse       = QString::number(response[1][i]);
             blueResponse        = QString::number(response[2][i]);
 
-            redSensivility      = QString::number(sensitiv[0][i]);
-            greenSensivility    = QString::number(sensitiv[1][i]);
-            blueSensivility     = QString::number(sensitiv[2][i]);
+            //redSensivility      = QString::number(sensitiv[0][i]);
+            //greenSensivility    = QString::number(sensitiv[1][i]);
+            //blueSensivility     = QString::number(sensitiv[2][i]);
 
-            sensitivities       = QString::number(sensitiv[0][i]+sensitiv[1][i]+sensitiv[2][i]);
+            //sensitivities       = QString::number(sensitiv[0][i]+sensitiv[1][i]+sensitiv[2][i]);
 
-            redSenNorm          = QString::number(sensNorm[0][i]);
-            greenSenNorm        = QString::number(sensNorm[1][i]);
-            blueSenNorm         = QString::number(sensNorm[2][i]);
+            //redSenNorm          = QString::number(sensNorm[0][i]);
+            //greenSenNorm        = QString::number(sensNorm[1][i]);
+            //blueSenNorm         = QString::number(sensNorm[2][i]);
 
-            halogenIrradiance   = QString::number(halogenFunction.at(idWave+i));
+            //halogenIrradiance   = QString::number(halogenFunction.at(idWave+i));
         }
         else
         {
@@ -1040,17 +1040,17 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
             greenResponse.append(","+QString::number(response[1][i]));
             blueResponse.append(","+QString::number(response[2][i]));
 
-            redSensivility.append(","+QString::number(sensitiv[0][i]));
-            greenSensivility.append(","+QString::number(sensitiv[1][i]));
-            blueSensivility.append(","+QString::number(sensitiv[2][i]));
+            //redSensivility.append(","+QString::number(sensitiv[0][i]));
+            //greenSensivility.append(","+QString::number(sensitiv[1][i]));
+            //blueSensivility.append(","+QString::number(sensitiv[2][i]));
 
-            sensitivities.append(","+QString::number(sensitiv[0][i]+sensitiv[1][i]+sensitiv[2][i]));
+            //sensitivities.append(","+QString::number(sensitiv[0][i]+sensitiv[1][i]+sensitiv[2][i]));
 
-            redSenNorm.append(","+QString::number(sensNorm[0][i]));
-            greenSenNorm.append(","+QString::number(sensNorm[1][i]));
-            blueSenNorm.append(","+QString::number(sensNorm[2][i]));
+            //redSenNorm.append(","+QString::number(sensNorm[0][i]));
+            //greenSenNorm.append(","+QString::number(sensNorm[1][i]));
+            //blueSenNorm.append(","+QString::number(sensNorm[2][i]));
 
-            halogenIrradiance.append(","+QString::number(halogenFunction.at(idWave+i)));
+            //halogenIrradiance.append(","+QString::number(halogenFunction.at(idWave+i)));
         }
     }
     //Save backup
@@ -1062,7 +1062,7 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     saveFile(_PATH_GREEN_SENSITIV,greenSensivility);
     saveFile(_PATH_BLUE_SENSITIV,blueSensivility);
 
-    saveFile(_PATH_RGB_SENSIVILITIES,sensitivities);
+    //saveFile(_PATH_RGB_SENSIVILITIES,sensitivities);
 
     saveFile(_PATH_RED_SENS_NORM,redSenNorm);
     saveFile(_PATH_GREEN_SENS_NORM,greenSenNorm);

@@ -3449,11 +3449,11 @@ QList<double> getNormedFunction( QString fileName )
     irradiation = contain.split(",");
     int i;
     double max;
-    max = irradiation.at(0).toDouble(0);
+    max = irradiation.at(0).toDouble();
     irradiation.removeAt(0);
     for(i=0;i<irradiation.count();i++)
     {
-        function.append((irradiation.at(i).toDouble(0) / max)*0.75 );
+        function.append((irradiation.at(i).toDouble() / max)*0.75 );
         //printf("%.4f,",function.at(i));
     }
     return function;
