@@ -944,7 +944,7 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
     QString redSenNorm, greenSenNorm, blueSenNorm;
     QString halogenIrradiance;
     int i, repeated, idWave;
-    idWave = round(daCalibGenCal->minWavelength);
+    idWave = static_cast<int>(round(daCalibGenCal->minWavelength));
     repeated = (1+(range*2))*(1+(range*2))*4;//(Square sample W) x (Square sample H) x (number of diffractions)
     //qDebug() << "numWaves: " << numWaves << " repeated: " << repeated;
     for(i=0; i<numWaves; i++)
@@ -954,26 +954,26 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
         //-------------------------------------------
 
         //Validata average
-        if( ((double)response[0][i] / (double)repeated) > 255.0 ){qDebug() << "Red Measurement exceded";exit(0);}
-        if( ((double)response[1][i] / (double)repeated) > 255.0 ){qDebug() << "Green Measurement exceded";exit(0);}
-        if( ((double)response[2][i] / (double)repeated) > 255.0 ){qDebug() << "Blue Measurement exceded";exit(0);}
+        if( ((double)response[0][i] / (double)repeated) > 255.0 ){qDebug() << "A) Red Measurement exceded";exit(0);}
+        if( ((double)response[1][i] / (double)repeated) > 255.0 ){qDebug() << "A) Green Measurement exceded";exit(0);}
+        if( ((double)response[2][i] / (double)repeated) > 255.0 ){qDebug() << "A) Blue Measurement exceded";exit(0);}
 
         //Response average
         response[0][i]      = ((double)response[0][i] / (double)repeated) / 255.0;
         response[1][i]      = ((double)response[1][i] / (double)repeated) / 255.0;
         response[2][i]      = ((double)response[2][i] / (double)repeated) / 255.0;
         response[3][i]      = response[0][i] + response[1][i] + response[2][i];
-        if( response[0][i] > 1.0 ){qDebug() << "Red Responses exceded";exit(0);}
-        if( response[1][i] > 1.0 ){qDebug() << "Green Responses exceded";exit(0);}
-        if( response[2][i] > 1.0 ){qDebug() << "Blue Responses exceded";exit(0);}
+        if( response[0][i] > 1.0 ){qDebug() << "B) Red Responses exceded";exit(0);}
+        if( response[1][i] > 1.0 ){qDebug() << "B) Green Responses exceded";exit(0);}
+        if( response[2][i] > 1.0 ){qDebug() << "B) Blue Responses exceded";exit(0);}
 
         //Measurement respect to the emmited light
         sensitiv[0][i]      = response[0][i] / halogenFunction.at(idWave+i);
         sensitiv[1][i]      = response[1][i] / halogenFunction.at(idWave+i);
         sensitiv[2][i]      = response[2][i] / halogenFunction.at(idWave+i);
         sensitivityMaxRed   = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
-        sensitivityMaxGreen = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
-        sensitivityMaxBlue  = (sensitiv[0][i]>sensitivityMaxRed)?sensitiv[0][i]:sensitivityMaxRed;
+        sensitivityMaxGreen = (sensitiv[1][i]>sensitivityMaxGreen)?sensitiv[1][i]:sensitivityMaxGreen;
+        sensitivityMaxBlue  = (sensitiv[2][i]>sensitivityMaxBlue)?sensitiv[2][i]:sensitivityMaxBlue;
         //sensitiv[3][i]      = sensitiv[0][i] + sensitiv[1][i] + sensitiv[2][i];
         //if( sensitiv[0][i] > 1.0 ){qDebug() << "Red Sensitivity exceded";exit(0);}
         //if( sensitiv[1][i] > 1.0 ){qDebug() << "Green Sensitivity exceded";exit(0);}
@@ -996,12 +996,17 @@ void genCalibXML::calculateAndSaveSensitivities(lstDoubleAxisCalibration *daCali
         //.......................................................
 
         //Sensitivity Normalization
+        //qDebug() << "sensitiv[1][i]: " << sensitiv[1][i];
+        //qDebug() << "sensitivityMaxGreen: " << sensitivityMaxGreen;
         sensNorm[0][i]      = sensitiv[0][i] / sensitivityMaxRed;
         sensNorm[1][i]      = sensitiv[1][i] / sensitivityMaxGreen;
         sensNorm[2][i]      = sensitiv[2][i] / sensitivityMaxBlue;
-        if( sensNorm[0][i] > 1.0 ){qDebug() << "Normalized Red Sensitivity exceded: " << sensNorm[0][i];exit(0);}
-        if( sensNorm[1][i] > 1.0 ){qDebug() << "Normalized Green Sensitivity exceded: " << sensNorm[1][i];exit(0);}
-        if( sensNorm[2][i] > 1.0 ){qDebug() << "Normalized Blue Sensitivity exceded: " << sensNorm[2][i];exit(0);}
+
+
+
+        if( sensNorm[0][i] > 1.0 ){qDebug() << "C) Normalized Red Sensitivity exceded: " << sensNorm[0][i];exit(0);}
+        if( sensNorm[1][i] > 1.0 ){qDebug() << "C) Normalized Green Sensitivity exceded: " << sensNorm[1][i];exit(0);}
+        if( sensNorm[2][i] > 1.0 ){qDebug() << "C) Normalized Blue Sensitivity exceded: " << sensNorm[2][i];exit(0);}
 
 
         if(i==0)
