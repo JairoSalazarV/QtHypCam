@@ -420,7 +420,7 @@ void selWathToCheck::drawAllLimits()
 void selWathToCheck::drawLimit(int side){
 
     QString limSource = readAllFile(_PATH_LIMIT_S_HALOGEN);
-    qreal limBlue, limRed;
+    qreal realBluePos, realRedPos;
     QString limit;
     switch(side)
     {
@@ -437,8 +437,8 @@ void selWathToCheck::drawLimit(int side){
             limit = readAllFile(_PATH_LIMIT_D);
             break;
     }
-    limBlue = limit.split(",").at(2).toInt();//Blue
-    limRed  = limit.split(",").at(0).toInt();//Red
+    realBluePos = limit.split(",").at(2).toInt();//Blue
+    realRedPos  = limit.split(",").at(0).toInt();//Red
 
     customLine *limInfLine;
     customLine *limSupLine;
@@ -447,10 +447,10 @@ void selWathToCheck::drawLimit(int side){
     //strAllLinReg calibLR = tmpGenCal.getAllLR();
     if(side == _RIGHT || side == _LEFT)
     {
-        len2Blue        = fabs((float)limSource.split(",").at(0).toInt() - limBlue); //HalogenX - distanceBlue
-        len2Red         = fabs((float)limSource.split(",").at(0).toInt() - limRed); //HalogenX - distanceRed
-        limInfLine      = new customLine(QPoint(limBlue,0),QPoint(limBlue,globalGvValCal->scene()->height()),QPen(Qt::blue));
-        limSupLine      = new customLine(QPoint(limRed,0),QPoint(limRed,globalGvValCal->scene()->height()),QPen(Qt::red));
+        len2Blue        = fabs((float)limSource.split(",").at(0).toInt() - realBluePos); //HalogenX - distanceBlue
+        len2Red         = fabs((float)limSource.split(",").at(0).toInt() - realRedPos);  //HalogenX - distanceRed
+        limInfLine      = new customLine(QPoint(realBluePos,0),QPoint(realBluePos,globalGvValCal->scene()->height()),QPen(Qt::blue));
+        limSupLine      = new customLine(QPoint(realRedPos,0),QPoint(realRedPos,globalGvValCal->scene()->height()),QPen(Qt::red));
         wavelenghtInf   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len2Blue);
         wavelenghtSup   = daCalib->LR.deltaHorizA + (daCalib->LR.deltaHorizB * (double)len2Red);
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
@@ -458,24 +458,27 @@ void selWathToCheck::drawLimit(int side){
     }
     if(side == _ABOVE || side == _DOWN)
     {
-        len2Blue        = fabs((float)limSource.split(",").at(1).toInt() - limBlue); //HalogenX - distanceBlue
-        len2Red         = fabs((float)limSource.split(",").at(1).toInt() - limRed);  //HalogenX - distanceRed
-        limInfLine      = new customLine(QPoint(0,limBlue),QPoint(globalGvValCal->scene()->width(),limBlue),QPen(Qt::blue));
-        limSupLine      = new customLine(QPoint(0,limRed),QPoint(globalGvValCal->scene()->width(),limRed),QPen(Qt::red));
+        int halogenSource_Y;
+        halogenSource_Y = limSource.split(",").at(1).toInt();
+        len2Blue        = fabs((float)halogenSource_Y - realBluePos); //HalogenY - distanceBlue
+        len2Red         = fabs((float)halogenSource_Y - realRedPos);  //HalogenY - distanceRed
+        limInfLine      = new customLine(QPoint(0,realBluePos),QPoint(globalGvValCal->scene()->width(),realBluePos),QPen(Qt::blue));
+        limSupLine      = new customLine(QPoint(0,realRedPos),QPoint(globalGvValCal->scene()->width(),realRedPos),QPen(Qt::red));
         wavelenghtInf   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len2Blue);
         wavelenghtSup   = daCalib->LR.deltaVertA + (daCalib->LR.deltaVertB * (double)len2Red);
         limInfLine->setToolTip(QString::number(wavelenghtInf) + "nm");
         limSupLine->setToolTip(QString::number(wavelenghtSup) + "nm");
 
-        /*
-        qDebug() << "UP";
-        qDebug() << "limBlue: " << limBlue;
-        qDebug() << "limRed: " << limRed;
-        qDebug() << "len2Blue: " << len2Blue;
-        qDebug() << "len2Red: " << len2Red;
-        qDebug() << "limInfLine: " << limInfLine;
-        qDebug() << "limSupLine: " << limSupLine;
-        exit(0);*/
+
+        //qDebug() << "side: " << side;
+        //qDebug() << "halogenSource_Y: " << halogenSource_Y;
+        //qDebug() << "realBluePos: " << realBluePos;
+        //qDebug() << "realRedPos: " << realRedPos;
+        //qDebug() << "len2Blue: " << len2Blue;
+        //qDebug() << "len2Red: " << len2Red;
+        //qDebug() << "limInfLine: " << limInfLine;
+        //qDebug() << "limSupLine: " << limSupLine;
+        //exit(0);
 
 
 
@@ -483,7 +486,7 @@ void selWathToCheck::drawLimit(int side){
 
     //qDebug() << "side: Right";
     //qDebug() << "hS_x: " << limSource.split(",").at(0).toInt() << "hS_y: " << limSource.split(",").at(1).toInt() ;
-    //qDebug() << "limBlue: " << limBlue << "limRed: " << limRed;
+    //qDebug() << "realBluePos: " << realBluePos << "realRedPos: " << realRedPos;
     //qDebug() << "len2Blue: " << len2Blue << "len2Red: " << len2Red;
     //qDebug() << "wavelenghtInf: " << wavelenghtInf << "wavelenghtSup: " << wavelenghtSup;
     //exit(0);
