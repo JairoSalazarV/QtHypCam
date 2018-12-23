@@ -593,21 +593,35 @@ void showAnCalChrRes::on_pbSaveAnalysis_clicked()
         int rPos=0, gPos=0, bPos=0;
         if(globalIsHoriz)
         {
-            //rPos = globalCalStruct.X1 + globalRedLine->line().x1() + globalRedLine->x();
-            //gPos = globalCalStruct.X1 + globalGreenLine->line().x1() + globalGreenLine->x();
-            //bPos = globalCalStruct.X1 + globalBlueLine->line().x1() + globalBlueLine->x();
-            rPos = globalCalStruct.X1 + globalRedLine->x();
-            gPos = globalCalStruct.X1 + globalGreenLine->x();
-            bPos = globalCalStruct.X1 + globalBlueLine->x();
+            rPos = globalCalStruct.X1 + globalRedLine->x()   + globalRedLine->line().x1();   //Rectangle Corner + Initial Position + Movement
+            gPos = globalCalStruct.X1 + globalGreenLine->x() + globalGreenLine->line().x1(); //Rectangle Corner + Initial Position + Movement
+            bPos = globalCalStruct.X1 + globalBlueLine->x()  + globalBlueLine->line().x1();  //Rectangle Corner + Initial Position + Movement
+            //rPos = globalCalStruct.X1 + globalRedLine->x();
+            //gPos = globalCalStruct.X1 + globalGreenLine->x();
+            //bPos = globalCalStruct.X1 + globalBlueLine->x();
         }
         else
         {
-            rPos += globalCalStruct.Y1 + globalRedLine->y();
-            gPos += globalCalStruct.Y1 + globalGreenLine->y();
-            bPos += globalCalStruct.Y1 + globalBlueLine->y();
-            //rPos += globalCalStruct.Y1 + globalRedLine->line().y1() + globalRedLine->y();
-            //gPos += globalCalStruct.Y1 + globalGreenLine->line().y1() + globalRedLine->y();
-            //bPos += globalCalStruct.Y1 + globalBlueLine->line().y1() + globalRedLine->y();
+            rPos += globalCalStruct.Y1 + globalRedLine->y() + globalRedLine->line().y1();     //Rectangle Corner + Initial Position + Movement
+            gPos += globalCalStruct.Y1 + globalGreenLine->y() + globalGreenLine->line().y1(); //Rectangle Corner + Initial Position + Movement
+            bPos += globalCalStruct.Y1 + globalBlueLine->y() + globalBlueLine->line().y1() ;  //Rectangle Corner + Initial Position + Movement
+
+            /*
+            qDebug() << "Vertical";
+
+            qDebug() << "globalCalStruct.Y1: " << globalCalStruct.Y1;
+            qDebug() << "globalRedLine->y(): " << globalRedLine->y();
+            qDebug() << "globalGreenLine->y(): " << globalGreenLine->y();
+            qDebug() << "globalBlueLine->y(): " << globalBlueLine->y();
+
+            qDebug() << "globalRedLine->line().y1(): " << globalRedLine->line().y1();
+            qDebug() << "globalGreenLine->line().y1(): " << globalGreenLine->line().y1();
+            qDebug() << "globalBlueLine->line().y1(): " << globalBlueLine->line().y1();
+
+            qDebug() << "rPos: " << rPos;
+            qDebug() << "gPos: " << gPos;
+            qDebug() << "bPos: " << bPos;*/
+
         }
 
         //----------------------------------------------------
