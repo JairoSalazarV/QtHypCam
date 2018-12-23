@@ -129,7 +129,8 @@
     int funcPrintRectangle(QString title, squareAperture *rectangle);
 
     QList<QFileInfo> funcListFilesInDir(QString Dir, QString Suffix);
-    QList<QFileInfo> funcListFilesInDir(QString Dir);    
+    QList<QFileInfo> funcListFilesInDir(QString Dir);
+    QList<QFileInfo> funcListFilesInDirSortByNumberName(QString Dir);
 
     QList<QFileInfo> funcFilterFilelist(QList<QFileInfo> lstFiles, QString suffix);
 

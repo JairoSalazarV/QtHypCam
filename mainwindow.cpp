@@ -6637,7 +6637,7 @@ void MainWindow::on_pbSelectFolder_clicked()
     //---------------------------------------
     //List files in directory
     //---------------------------------------
-    lstImages = funcListFilesInDir(pathSource);
+    lstImages = funcListFilesInDirSortByNumberName(pathSource);
     if( lstImages.size() == 0 )
     {
         funcShowMsg("ERROR","Invalid directory");

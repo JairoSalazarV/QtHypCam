@@ -1547,8 +1547,6 @@ QList<QFileInfo> funcListFilesInDir(QString Dir)
     //Return lstFiles
     QList<QFileInfo> lstFiles;
     QDir dir(Dir);
-    //dir.setSorting(QDir::Time);
-    //dir.sorting();
     if ( dir.exists() )
     {
         Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::Files, QDir::DirsFirst))
@@ -1557,6 +1555,32 @@ QList<QFileInfo> funcListFilesInDir(QString Dir)
         }
     }
     return lstFiles;
+}
+
+QList<QFileInfo> funcListFilesInDirSortByNumberName(QString Dir)
+{
+    //Dir: Path of interes
+    //Return lstFiles
+    QList<QFileInfo> lstFilesInfo;
+    QList<double> lstFilesNames;
+    QDir dir(Dir);
+    QString tmpFilename;
+    if ( dir.exists() )
+    {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::Files, QDir::DirsFirst))
+        {
+            lstFilesNames.append(info.fileName().replace(".png","").toDouble());
+        }
+    }
+    std::sort(lstFilesNames.begin(), lstFilesNames.end());
+    int i;
+
+    for(i=0;i<lstFilesNames.size();i++)
+    {
+        QFileInfo tmpFileInfo(Dir + "/" + QString::number(lstFilesNames.at(i)) + ".png");
+        lstFilesInfo.append(tmpFileInfo);
+    }
+    return lstFilesInfo;
 }
 
 QList<QFileInfo> funcListFilesInDir(QString Dir, QString Suffix)
