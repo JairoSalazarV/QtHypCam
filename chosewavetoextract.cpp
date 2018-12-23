@@ -35,8 +35,9 @@ void choseWaveToExtract::fillOptions(){
 
 void choseWaveToExtract::refreshOptChoi()
 {
+    //----------------------------------------------
     //Clear tables
-    //..
+    //----------------------------------------------
     while (ui->tableOptions->rowCount() > 0)
     {
         ui->tableOptions->removeRow(0);
@@ -46,24 +47,33 @@ void choseWaveToExtract::refreshOptChoi()
         ui->tableChoises->removeRow(0);
     }
 
+    //----------------------------------------------
     //Fill tables
-    //..
+    //----------------------------------------------
     QString options, choises;
     options = readAllFile(_PATH_WAVE_OPTIONS);
     choises = readAllFile(_PATH_WAVE_CHOISES);
-    QList<QString> lstOptions = options.split(",");
-    QList<QString> lstChoises = choises.split(",");
-    std::sort(lstOptions.begin(), lstOptions.end());
-    std::sort(lstChoises.begin(), lstChoises.end());
+    QList<QString> lstOptions   = options.split(",");
+    QList<QString> lstChoises   = choises.split(",");
+    QList<float> lstOptNumber;
+    QList<float> lstChoisesNumber;
+    int i;
+    for(i=1;i<lstOptions.size();i++)
+        lstOptNumber.append(lstOptions.at(i).toFloat());
+    for(i=1;i<lstChoises.size();i++)
+        lstChoisesNumber.append(lstChoises.at(i).toFloat());
 
-    Q_FOREACH(const QString option, lstOptions)
+    std::sort(lstOptNumber.begin(), lstOptNumber.end());
+    std::sort(lstChoisesNumber.begin(), lstChoisesNumber.end());
+
+    Q_FOREACH(const float option, lstOptNumber)
     {
-        insertRow(option,ui->tableOptions);
+        insertRow(QString::number(option),ui->tableOptions);
     }
 
-    Q_FOREACH(const QString choise, lstChoises)
+    Q_FOREACH(const float choise, lstChoisesNumber)
     {
-        insertRow(choise,ui->tableChoises);
+        insertRow(QString::number(choise),ui->tableChoises);
     }
 }
 
