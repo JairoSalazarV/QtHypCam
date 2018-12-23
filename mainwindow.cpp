@@ -310,7 +310,8 @@ int MainWindow::funcValidateMinimalStatus()
     lstFolders << "./SYNC" << "./tmpImages" << "./tmpImages/frames"
                << "./settings" << "./settings/Calib" << "./settings/Calib/images/"
                //<< "./XML" << "./XML/camPerfils"
-               << "./tmpImages/frames/tmp";
+               << "./tmpImages/frames/tmp"
+               << _PATH_TMP_HYPCUBES;
     if( func_DirExistOrCreateIt( lstFolders, this ) == _ERROR )
     {
         exit(_ERROR);
