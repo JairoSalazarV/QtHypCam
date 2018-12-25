@@ -686,6 +686,8 @@ private slots:
 
     void on_actionApply_Region_of_Interes_triggered();
 
+    void functionTakeComposedSquarePicture();
+
 private:
     Ui::MainWindow *ui;
     //QLabel *status;

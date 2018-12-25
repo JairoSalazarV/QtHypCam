@@ -331,10 +331,11 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
 
     //Diffraction Shuter speed
     shutSpeed = reqImg->raspSett.ShutterSpeedMs;
-    if(
-        (!reqImg->squApert && shutSpeed>0) ||	//Whe is by parts
-        (reqImg->fullFrame  && shutSpeed>0)	//Whe is unique and shutter speed has been setted
-    )
+    //if(
+    //    (!reqImg->squApert && shutSpeed>0) ||	//When is by parts
+    //    (reqImg->fullFrame  && shutSpeed>0)	//When is unique and shutter speed has been setted
+    //)
+    if( !reqImg->squApert && shutSpeed>0)
     {
         ss.str("");
         ss<<shutSpeed;
@@ -393,6 +394,6 @@ std::string *genCommand(strReqImg *reqImg, const std::string& fileName)
         tmpCommand->append(" -vf ");
     }
 
-
+    printf("tmpCommand: %s\n",tmpCommand->c_str());
     return tmpCommand;
 }

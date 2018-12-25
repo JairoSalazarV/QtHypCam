@@ -5012,6 +5012,9 @@ QImage MainWindow::obtainImageFile( std::string fileToObtain, QString txtBar )
             img = QImage(_PATH_IMAGE_RECEIVED);
 
         progBarUpdateLabel("",0);
+        ui->progBar->setVisible(false);
+        ui->progBar->setValue(0);
+        ui->progBar->update();
 
         /*
         const unsigned char* fileReceivedQt = reinterpret_cast<const unsigned char*>(&fileReceived[0]);
@@ -6429,7 +6432,9 @@ int MainWindow::takeRemoteSnapshot( QString fileDestiny, bool squareArea )
 
 void MainWindow::on_pbSnapshotSquare_clicked()
 {
+    functionTakeComposedSquarePicture();
 
+    /*
     mouseCursorWait();
 
     if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
@@ -6517,6 +6522,7 @@ void MainWindow::on_pbSnapshotSquare_clicked()
 
     funcResetStatusBar();
     mouseCursorReset();
+    */
 }
 
 void MainWindow::on_pbSaveImage_clicked()
@@ -7894,6 +7900,9 @@ void MainWindow::on_actionDiffraction_triggered()
 
 void MainWindow::on_actionComposed_triggered()
 {
+
+    functionTakeComposedSquarePicture();
+    /*
     mouseCursorWait();
 
     if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
@@ -7930,44 +7939,44 @@ void MainWindow::on_actionComposed_triggered()
                     //Merge image
                     //-------------------------------------------
 
-                    squareAperture *aperture = (squareAperture*)malloc(sizeof(squareAperture));
+                    squareAperture *aperture        = (squareAperture*)malloc(sizeof(squareAperture));
+                    squareAperture *squareApertArea = (squareAperture*)malloc(sizeof(squareAperture));
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    memset(squareApertArea,'\0',sizeof(squareApertArea));
 
                     //
                     //Crop original image to release the usable area
                     //
-                    //Get usable area coordinates
-                    memset(aperture,'\0',sizeof(squareAperture));
+                    //Get Region of Interest
                     if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES, aperture ) )
                     {
                         funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
                         return (void)false;
                     }
-                    diffImage       = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
-                    apertureImage   = apertureImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
-
-                    //
-                    //Get square aperture coordinates
-                    //
-                    memset(aperture,'\0',sizeof(squareAperture));
-                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, _PATH_REGION_OF_INTERES, aperture ) )
+                    //Get usable area coordinates
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, squareApertArea ) )
                     {
-                        funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
                         return (void)false;
                     }
-                    funcPrintRectangle( "Square Aperture", aperture );
+
 
                     //
                     //Copy square aperture into diffraction image
                     //
-                    for( int y=aperture->rectY; y<=(aperture->rectY+aperture->rectH); y++ )
+                    for( int y=squareApertArea->rectY; y<=(squareApertArea->rectY+squareApertArea->rectH); y++ )
                     {
-                        for( int x=aperture->rectX; x<=(aperture->rectX+aperture->rectW); x++ )
+                        for( int x=squareApertArea->rectX; x<=(squareApertArea->rectX+squareApertArea->rectW); x++ )
                         {
                             diffImage.setPixel( x, y, apertureImage.pixel( x, y ) );
                         }
                     }
 
-
+                    //
+                    //Cut Resultant Image
+                    //
+                    diffImage       = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+                    //apertureImage   = apertureImage.copy(QRect( squareApertArea->rectX, squareApertArea->rectY, squareApertArea->rectW, squareApertArea->rectH ));
 
                     //
                     //Save cropped image
@@ -7979,7 +7988,9 @@ void MainWindow::on_actionComposed_triggered()
         }
     }
 
+    //progBarUpdateLabel("",0);
     mouseCursorReset();
+    */
 }
 
 void MainWindow::on_actionVideo_triggered()
@@ -11845,4 +11856,113 @@ void MainWindow::on_actionApply_Region_of_Interes_triggered()
 
 
     }
+}
+
+void MainWindow::functionTakeComposedSquarePicture()
+{
+    mouseCursorWait();
+
+    if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,false) )
+    {
+        qDebug() << "ERROR: Taking Diffration Area";
+        return (void)NULL;
+    }
+    else
+    {
+        QImage diffImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
+        if( diffImage.isNull() )
+        {
+            qDebug() << "ERROR: Obtaining Diffration Area";
+            return (void)NULL;
+        }
+        else
+        {
+            if( !takeRemoteSnapshot(_PATH_REMOTE_SNAPSHOT,true) )
+            {
+                qDebug() << "ERROR: Taking Aperture Area";
+                return (void)NULL;
+            }
+            else
+            {
+                QImage apertureImage = obtainImageFile( _PATH_REMOTE_SNAPSHOT, "" );
+                if( apertureImage.isNull() )
+                {
+                    qDebug() << "ERROR: Obtaining Aperture Area";
+                    return (void)NULL;
+                }
+                else
+                {
+                    //-------------------------------------------
+                    //Merge image
+                    //-------------------------------------------
+
+                    squareAperture *aperture        = (squareAperture*)malloc(sizeof(squareAperture));
+                    squareAperture *squareApertArea = (squareAperture*)malloc(sizeof(squareAperture));
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    memset(squareApertArea,'\0',sizeof(squareApertArea));
+
+                    //
+                    //Crop original image to release the usable area
+                    //
+                    //Get Region of Interest
+                    if( !rectangleInPixelsFromSquareXML( _PATH_REGION_OF_INTERES, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                        return (void)false;
+                    }
+                    //Get usable area coordinates
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, squareApertArea ) )
+                    {
+                        funcShowMsg("ERROR","Loading Usable Area in Pixels: _PATH_SQUARE_USABLE");
+                        return (void)false;
+                    }
+
+
+                    //
+                    //Copy square aperture into diffraction image
+                    //
+                    for( int y=squareApertArea->rectY; y<=(squareApertArea->rectY+squareApertArea->rectH); y++ )
+                    {
+                        for( int x=squareApertArea->rectX; x<=(squareApertArea->rectX+squareApertArea->rectW); x++ )
+                        {
+                            diffImage.setPixel( x, y, apertureImage.pixel( x, y ) );
+                        }
+                    }
+
+                    //
+                    //Cut Resultant Image
+                    //
+                    diffImage       = diffImage.copy(QRect( aperture->rectX, aperture->rectY, aperture->rectW, aperture->rectH ));
+                    //apertureImage   = apertureImage.copy(QRect( squareApertArea->rectX, squareApertArea->rectY, squareApertArea->rectW, squareApertArea->rectH ));
+
+                    /*
+                    //
+                    //Get square aperture coordinates
+                    //
+                    memset(aperture,'\0',sizeof(squareAperture));
+                    if( !rectangleInPixelsFromSquareXML( _PATH_SQUARE_APERTURE, _PATH_REGION_OF_INTERES, aperture ) )
+                    {
+                        funcShowMsg("ERROR","Loading Rectangle in Pixels: _PATH_SQUARE_APERTURE");
+                        return (void)false;
+                    }
+                    funcPrintRectangle( "Square Aperture", aperture );
+                    */
+
+                    //
+                    //Save cropped image
+                    //
+                    *globalEditImg = diffImage;
+                    saveFile(_PATH_LAST_USED_IMG_FILENAME,_PATH_DISPLAY_IMAGE);
+                    updateDisplayImage(globalEditImg);
+
+
+                    //diffImage.save(_PATH_DISPLAY_IMAGE);
+                    //updateDisplayImage(&diffImage);
+                }
+            }
+        }
+    }
+
+    //progBarUpdateLabel("",0);
+    mouseCursorReset();
 }
